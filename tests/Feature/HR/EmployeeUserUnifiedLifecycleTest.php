@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Feature\HR;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\HR\EmployeeManager;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Modules\HR\Enums\EmploymentStatusEnum;
-use App\Modules\HR\Models\Department;
-use App\Modules\HR\Models\Employee;
-use App\Modules\HR\Models\JobTitle;
-use App\Services\Context\TenantContext;
-use App\Services\UserService;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\UserService;
+use App\Modules\Workforce\Enums\EmploymentStatusEnum;
+use App\Modules\Workforce\Enums\GenderEnum;
+use App\Modules\Workforce\Models\Department;
+use App\Modules\Workforce\Models\Employee;
+use App\Modules\Workforce\Models\JobTitle;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -107,7 +107,7 @@ class EmployeeUserUnifiedLifecycleTest extends TestCase
             'full_name' => $this->ownerUser->name,
             'email' => $this->ownerUser->email,
             'phone_number' => '081299998888',
-            'gender' => \App\Modules\HR\Enums\GenderEnum::MALE,
+            'gender' => GenderEnum::MALE,
             'department_id' => $this->dept->id,
             'job_title_id' => $this->jobTitle->id,
             'hire_date' => now()->toDateString(),
@@ -180,7 +180,7 @@ class EmployeeUserUnifiedLifecycleTest extends TestCase
             'full_name' => $cashierUser->name,
             'email' => $cashierUser->email,
             'phone_number' => '081277778888',
-            'gender' => \App\Modules\HR\Enums\GenderEnum::MALE,
+            'gender' => GenderEnum::MALE,
             'department_id' => $this->dept->id,
             'job_title_id' => $this->jobTitle->id,
             'employment_status' => EmploymentStatusEnum::ACTIVE,

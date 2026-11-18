@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Services;
 
-use App\Models\AccountingPeriod;
-use App\Models\User;
 use App\Modules\Finance\DataTransferObjects\FinancialEventDto;
 use App\Modules\Finance\Enums\DepreciationScheduleStatusEnum;
 use App\Modules\Finance\Enums\FixedAssetStatusEnum;
+use App\Modules\Finance\Models\AccountingPeriod;
 use App\Modules\Finance\Models\FixedAssetDepreciationSchedule;
+use App\Modules\Organization\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class DepreciationService

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Purchasing\Models;
 
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Store;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToTenant;
+use App\Modules\Organization\Models\Store;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

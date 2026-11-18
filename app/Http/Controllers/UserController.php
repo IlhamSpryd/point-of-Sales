@@ -7,6 +7,6 @@ namespace App\Http\Controllers;
 /**
  * Backward compatibility wrapper for modular architecture.
  *
- * @see \App\Modules\Users\Controllers\UserController
+ * @see \App\Modules\Organization\Controllers\UserController
  */
-class UserController extends \App\Modules\Users\Controllers\UserController {}
+class UserController extends \App\Modules\Organization\Controllers\UserController {}

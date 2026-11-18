@@ -7,6 +7,6 @@ namespace App\Http\Controllers;
 /**
  * Backward compatibility wrapper for modular architecture.
  *
- * @see \App\Modules\Products\Controllers\BrandController
+ * @see \App\Modules\Catalog\Controllers\BrandController
  */
-class BrandController extends \App\Modules\Products\Controllers\BrandController {}
+class BrandController extends \App\Modules\Catalog\Controllers\BrandController {}

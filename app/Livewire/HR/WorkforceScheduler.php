@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Livewire\HR;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Store;
-use App\Modules\HR\Enums\EmploymentStatusEnum;
-use App\Modules\HR\Enums\WorkScheduleStatusEnum;
-use App\Modules\HR\Models\Employee;
-use App\Modules\HR\Models\ShiftTemplate;
-use App\Modules\HR\Models\WorkSchedule;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Workforce\Enums\EmploymentStatusEnum;
+use App\Modules\Workforce\Enums\WorkScheduleStatusEnum;
+use App\Modules\Workforce\Models\Employee;
+use App\Modules\Workforce\Models\ShiftTemplate;
+use App\Modules\Workforce\Models\WorkSchedule;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;

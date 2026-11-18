@@ -1,0 +1,28 @@
+{
+    "name": "Customers",
+    "tier": 2,
+    "owner": "@ilhamsepriyadi",
+    "description": "Customer master data, customer groups, credit limits and customer merge management (ADR-102).",
+    "ownsTables": [
+        "customers",
+        "customer_groups",
+        "customer_addresses",
+        "customer_contacts",
+        "customer_credit_accounts",
+        "customer_credit_logs",
+        "customer_merge_logs"
+    ],
+    "allowedDependencies": [
+        "Organization",
+        "Pricing"
+    ],
+    "publishesEvents": [
+        "customers.customer.created.v1",
+        "customers.credit_limit.changed.v1"
+    ],
+    "consumesEvents": [],
+    "dependsOn": [
+        "Organization",
+        "Pricing"
+    ]
+}

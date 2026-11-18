@@ -1,0 +1,48 @@
+{
+    "name": "Pricing",
+    "tier": 3,
+    "owner": "@ilhamsepriyadi",
+    "description": "Price lists, promotion engines, vouchers, discounts, gift cards, store credit and loyalty (ADR-102).",
+    "ownsTables": [
+        "price_lists",
+        "price_list_items",
+        "promotion_campaigns",
+        "promotion_rules",
+        "promotion_rewards",
+        "promotion_reservations",
+        "promotion_store_mappings",
+        "discounts",
+        "discount_redemptions",
+        "vouchers",
+        "gift_cards",
+        "gift_card_ledger",
+        "store_credit_accounts",
+        "store_credit_ledger",
+        "loyalty_tiers",
+        "loyalty_ledger",
+        "customer_loyalty_accounts"
+    ],
+    "allowedDependencies": [
+        "Organization",
+        "Subscription",
+        "Catalog",
+        "Customers",
+        "Sales",
+        "Inventory"
+    ],
+    "publishesEvents": [
+        "pricing.promotion.applied.v1",
+        "pricing.voucher.redeemed.v1"
+    ],
+    "consumesEvents": [
+        "customers.customer.created.v1"
+    ],
+    "dependsOn": [
+        "Organization",
+        "Subscription",
+        "Catalog",
+        "Customers",
+        "Sales",
+        "Inventory"
+    ]
+}

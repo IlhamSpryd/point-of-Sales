@@ -62,8 +62,8 @@
                 <tbody class="divide-y divide-border">
                     @forelse ($vouchers as $voucher)
                         @php
-                            $typeVal = $voucher->discount_type instanceof \App\Modules\Customers\Enums\VoucherDiscountTypeEnum ? $voucher->discount_type->value : (string) $voucher->discount_type;
-                            $statusVal = $voucher->status instanceof \App\Modules\Customers\Enums\VoucherStatusEnum ? $voucher->status->value : (string) $voucher->status;
+                            $typeVal = $voucher->discount_type instanceof \BackedEnum ? $voucher->discount_type->value : (string) $voucher->discount_type;
+                            $statusVal = $voucher->status instanceof \BackedEnum ? $voucher->status->value : (string) $voucher->status;
                             $percentUsed = $voucher->max_uses > 0 ? min(100, round(($voucher->used_count / $voucher->max_uses) * 100)) : 0;
                         @endphp
                         <tr class="hover:bg-muted/30 transition-colors">

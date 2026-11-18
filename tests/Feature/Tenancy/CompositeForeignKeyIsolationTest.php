@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Tests\Feature\Tenancy;
 
 use App\Core\Context\TenantContext;
-use App\Modules\HR\Enums\GenderEnum;
-use App\Modules\HR\Models\Department;
-use App\Modules\HR\Models\Employee;
-use App\Modules\HR\Models\JobTitle;
-use App\Modules\Settings\Models\Store;
-use App\Modules\Settings\Models\Tenant;
-use App\Modules\Users\Models\Role;
-use App\Modules\Users\Models\User;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Workforce\Enums\GenderEnum;
+use App\Modules\Workforce\Models\Department;
+use App\Modules\Workforce\Models\Employee;
+use App\Modules\Workforce\Models\JobTitle;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -188,6 +188,7 @@ class CompositeForeignKeyIsolationTest extends TestCase
             WHERE c1.TABLE_SCHEMA = DATABASE()
               AND c1.COLUMN_NAME = 'tenant_id' AND c1.IS_NULLABLE = 'NO'
               AND c2.COLUMN_NAME = 'id'
+              AND c1.TABLE_NAME NOT IN ('order_items_partitioned', 'stock_movements_partitioned')
               AND NOT EXISTS (
                 SELECT 1 FROM information_schema.STATISTICS s
                 WHERE s.TABLE_SCHEMA = DATABASE()

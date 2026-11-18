@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Services;
 
-use App\Models\Order;
-use App\Models\User;
+use App\Core\Context\TenantContext;
 use App\Modules\Customers\Services\CustomerCreditService;
 use App\Modules\Inventory\Services\InventoryLedgerService;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Sales\Models\CustomerInvoice;
+use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\Quotation;
 use App\Modules\Sales\Models\SalesOrder;
 use App\Modules\Sales\Models\SalesOrderLine;
-use App\Services\AuditTrailService;
-use App\Services\Context\TenantContext;
 use DomainException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;

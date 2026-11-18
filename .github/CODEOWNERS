@@ -1,0 +1,30 @@
+# Apeiron Systems — Canonical Code Owners (ADR-102)
+# Maps each of the 13 canonical bounded contexts and app/Platform to their declared domain owners in module.json.
+
+# Tier 1: Core Identity & Foundation
+/app/Modules/Organization/   @ilhamsepriyadi
+/app/Modules/Subscription/   @ilhamsepriyadi
+
+# Tier 2: Domain Master Data
+/app/Modules/Catalog/        @ilhamsepriyadi
+/app/Modules/Customers/      @ilhamsepriyadi
+/app/Modules/Workforce/      @ilhamsepriyadi
+
+# Tier 3: Operational Engines & Rules
+/app/Modules/Pricing/        @ilhamsepriyadi
+/app/Modules/Inventory/      @ilhamsepriyadi
+/app/Modules/Manufacturing/  @ilhamsepriyadi
+
+# Tier 4: Commercial & Transactional Execution
+/app/Modules/Sales/          @ilhamsepriyadi
+/app/Modules/Purchasing/     @ilhamsepriyadi
+
+# Tier 5: Financial Integrity & General Ledger
+/app/Modules/Finance/        @ilhamsepriyadi
+
+# Tier 6: Analytics, Reporting & External Adapters
+/app/Modules/Reporting/      @ilhamsepriyadi
+/app/Modules/Integration/    @ilhamsepriyadi
+
+# Core Platform Primitives
+/app/Platform/               @ilhamsepriyadi

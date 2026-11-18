@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Iam;
 
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Models\UserStoreRole;
-use App\Services\Context\TenantContext;
-use App\Services\Iam\AuthorizationResult;
-use App\Services\Iam\DeterministicAuthorizationEngine;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Models\UserStoreRole;
+use App\Modules\Organization\Services\Iam\AuthorizationResult;
+use App\Modules\Organization\Services\Iam\DeterministicAuthorizationEngine;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
@@ -20,12 +20,19 @@ class DeterministicIamEngineTest extends TestCase
     use DatabaseTransactions;
 
     private Tenant $tenant;
+
     private Store $storeA;
+
     private Store $storeB;
+
     private Role $cashierRole;
+
     private Role $inventorySupervisorRole;
+
     private Role $managerRole;
+
     private Role $disciplinedRole;
+
     private DeterministicAuthorizationEngine $engine;
 
     protected bool $optOutFromDefaultTenant = true;

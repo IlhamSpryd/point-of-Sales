@@ -13,7 +13,7 @@
         </x-slot:breadcrumbs>
 
         <x-slot:actions>
-            @can('create', \App\Modules\HR\Models\PayrollBatch::class)
+            @can('create', \App\Modules\Workforce\Models\PayrollBatch::class)
             <x-ui.button variant="primary" wire:click="openCreateModal" class="gap-2">
                 <span class="material-symbols-rounded text-base">add_circle</span>
                 <span>Initiate Payroll Batch</span>
@@ -71,7 +71,7 @@
             <span class="text-xs font-bold text-muted-foreground uppercase tracking-wider">Batch Status:</span>
             <x-ui.select wire:model.live="statusFilter" class="w-auto text-xs sm:text-sm">
                 <option value="ALL">All Statuses</option>
-                @foreach (\App\Modules\HR\Enums\PayrollBatchStatusEnum::cases() as $case)
+                @foreach (\App\Modules\Workforce\Enums\PayrollBatchStatusEnum::cases() as $case)
                     <option value="{{ $case->value }}">{{ $case->label() }}</option>
                 @endforeach
             </x-ui.select>
@@ -114,10 +114,10 @@
                             <td class="px-6 py-4">
                                 @php
                                     $batchDot = match($batch->status) {
-                                        \App\Modules\HR\Enums\PayrollBatchStatusEnum::PAID => 'bg-success',
-                                        \App\Modules\HR\Enums\PayrollBatchStatusEnum::APPROVED, \App\Modules\HR\Enums\PayrollBatchStatusEnum::FINALIZED => 'bg-info',
-                                        \App\Modules\HR\Enums\PayrollBatchStatusEnum::PENDING_APPROVAL, \App\Modules\HR\Enums\PayrollBatchStatusEnum::CALCULATING, \App\Modules\HR\Enums\PayrollBatchStatusEnum::PAYMENT_PENDING => 'bg-warning',
-                                        \App\Modules\HR\Enums\PayrollBatchStatusEnum::VOIDED => 'bg-destructive',
+                                        \App\Modules\Workforce\Enums\PayrollBatchStatusEnum::PAID => 'bg-success',
+                                        \App\Modules\Workforce\Enums\PayrollBatchStatusEnum::APPROVED, \App\Modules\Workforce\Enums\PayrollBatchStatusEnum::FINALIZED => 'bg-info',
+                                        \App\Modules\Workforce\Enums\PayrollBatchStatusEnum::PENDING_APPROVAL, \App\Modules\Workforce\Enums\PayrollBatchStatusEnum::CALCULATING, \App\Modules\Workforce\Enums\PayrollBatchStatusEnum::PAYMENT_PENDING => 'bg-warning',
+                                        \App\Modules\Workforce\Enums\PayrollBatchStatusEnum::VOIDED => 'bg-destructive',
                                         default => 'bg-neutral',
                                     };
                                 @endphp
@@ -131,12 +131,12 @@
                                     <x-ui.table-action-item icon="visibility" wire:click="viewDetails({{ $batch->id }})" aria-label="View Batch Details">
                                         View Details
                                     </x-ui.table-action-item>
-                                    @if ($batch->status === \App\Modules\HR\Enums\PayrollBatchStatusEnum::DRAFT || $batch->status === \App\Modules\HR\Enums\PayrollBatchStatusEnum::CALCULATED)
+                                    @if ($batch->status === \App\Modules\Workforce\Enums\PayrollBatchStatusEnum::DRAFT || $batch->status === \App\Modules\Workforce\Enums\PayrollBatchStatusEnum::CALCULATED)
                                         <x-ui.table-action-item icon="calculate" wire:click="calculate({{ $batch->id }})" aria-label="Calculate Payroll Batch">
                                             Calculate Batch
                                         </x-ui.table-action-item>
                                     @endif
-                                    @if ($batch->status === \App\Modules\HR\Enums\PayrollBatchStatusEnum::CALCULATED)
+                                    @if ($batch->status === \App\Modules\Workforce\Enums\PayrollBatchStatusEnum::CALCULATED)
                                         <x-ui.table-action-item icon="lock" wire:click="finalize({{ $batch->id }})" aria-label="Finalize Payroll Batch">
                                             Finalize Batch
                                         </x-ui.table-action-item>

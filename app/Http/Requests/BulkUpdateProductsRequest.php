@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Models\Product;
+use App\Modules\Catalog\Models\Product;
 use Illuminate\Foundation\Http\FormRequest;
 
 class BulkUpdateProductsRequest extends FormRequest

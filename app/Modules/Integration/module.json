@@ -1,0 +1,36 @@
+{
+    "name": "Integration",
+    "tier": 6,
+    "owner": "@ilhamsepriyadi",
+    "description": "Payment gateway integrations, webhooks, multi-channel marketplace order syncing and WhatsApp notifications (ADR-102).",
+    "ownsTables": [
+        "webhook_subscriptions",
+        "webhook_delivery_logs",
+        "channel_order_logs",
+        "channel_product_mappings",
+        "whatsapp_message_outboxes"
+    ],
+    "allowedDependencies": [
+        "Organization",
+        "Subscription",
+        "Catalog",
+        "Customers",
+        "Sales",
+        "Finance"
+    ],
+    "publishesEvents": [
+        "integration.payment.settled.v1",
+        "integration.channel_order.received.v1"
+    ],
+    "consumesEvents": [
+        "sales.order.completed.v1"
+    ],
+    "dependsOn": [
+        "Organization",
+        "Subscription",
+        "Catalog",
+        "Customers",
+        "Sales",
+        "Finance"
+    ]
+}

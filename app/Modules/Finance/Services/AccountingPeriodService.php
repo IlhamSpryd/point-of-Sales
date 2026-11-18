@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Services;
 
-use App\Models\User;
+use App\Core\Context\TenantContext;
 use App\Modules\Finance\DataTransferObjects\JournalLineDto;
 use App\Modules\Finance\Enums\AccountingPeriodStatusEnum;
 use App\Modules\Finance\Enums\AccountTypeEnum;
@@ -19,7 +19,7 @@ use App\Modules\Finance\Models\ChartOfAccount;
 use App\Modules\Finance\Models\JournalEntry;
 use App\Modules\Finance\Models\PeriodClosingChecklist;
 use App\Modules\Finance\Models\PeriodClosingLog;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use DomainException;

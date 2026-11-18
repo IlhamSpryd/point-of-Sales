@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\Product;
-use App\Models\StoreProductAssortment;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\StoreProductAssortment;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

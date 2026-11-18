@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Services;
 
-use App\Models\User;
 use App\Modules\Finance\Enums\BankReconciliationMatchTypeEnum;
 use App\Modules\Finance\Enums\BankReconciliationSessionStatusEnum;
 use App\Modules\Finance\Enums\BankStatementLineMatchStatusEnum;
@@ -16,6 +15,7 @@ use App\Modules\Finance\Models\BankStatement;
 use App\Modules\Finance\Models\BankStatementLine;
 use App\Modules\Finance\Models\CashBankAccount;
 use App\Modules\Finance\Models\CashBankTransaction;
+use App\Modules\Organization\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use DomainException;

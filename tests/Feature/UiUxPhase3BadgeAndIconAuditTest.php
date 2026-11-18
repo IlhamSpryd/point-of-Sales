@@ -155,13 +155,13 @@ class UiUxPhase3BadgeAndIconAuditTest extends TestCase
                 if (str_contains($line, 'material-symbols')) {
                     foreach ($adHocSizes as $sz) {
                         if (str_contains($line, "text-[{$sz}]")) {
-                            $violations[] = "{$file->getRelativePathname()}:" . ($lineNum + 1) . " has text-[{$sz}]";
+                            $violations[] = "{$file->getRelativePathname()}:".($lineNum + 1)." has text-[{$sz}]";
                         }
                     }
                 }
             }
         }
 
-        $this->assertEmpty($violations, "Non-canonical icon sizes found:\n" . implode("\n", array_slice($violations, 0, 10)));
+        $this->assertEmpty($violations, "Non-canonical icon sizes found:\n".implode("\n", array_slice($violations, 0, 10)));
     }
 }

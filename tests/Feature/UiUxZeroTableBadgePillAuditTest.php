@@ -118,7 +118,7 @@ class UiUxZeroTableBadgePillAuditTest extends TestCase
         $violations = [];
 
         foreach ($targetViews as $view) {
-            $path = resource_path('views/' . $view);
+            $path = resource_path('views/'.$view);
             $this->assertFileExists($path, "Target view {$view} does not exist.");
 
             $content = File::get($path);
@@ -127,12 +127,12 @@ class UiUxZeroTableBadgePillAuditTest extends TestCase
             foreach ($matches[1] as $td) {
                 $result = $this->inspectCellForBadgePill($td);
                 if ($result['hasBadgeComponent']) {
-                    $violations[] = "{$view}: contains badge component in <td>: " . trim(substr($td, 0, 100));
+                    $violations[] = "{$view}: contains badge component in <td>: ".trim(substr($td, 0, 100));
                 }
             }
         }
 
-        $this->assertSame([], $violations, 'Badge components found in <td> cells: ' . implode("\n", $violations));
+        $this->assertSame([], $violations, 'Badge components found in <td> cells: '.implode("\n", $violations));
     }
 
     /**
@@ -144,19 +144,19 @@ class UiUxZeroTableBadgePillAuditTest extends TestCase
         $violations = [];
 
         foreach ($targetViews as $view) {
-            $path = resource_path('views/' . $view);
+            $path = resource_path('views/'.$view);
             $content = File::get($path);
             preg_match_all('/<td\b[^>]*>(.*?)<\/td>/si', $content, $matches);
 
             foreach ($matches[1] as $td) {
                 $result = $this->inspectCellForBadgePill($td);
                 if ($result['hasManualPill']) {
-                    $violations[] = "{$view}: contains manual badge pill in <td>: " . trim(substr($td, 0, 100));
+                    $violations[] = "{$view}: contains manual badge pill in <td>: ".trim(substr($td, 0, 100));
                 }
             }
         }
 
-        $this->assertSame([], $violations, 'Manual badge pills found in <td> cells: ' . implode("\n", $violations));
+        $this->assertSame([], $violations, 'Manual badge pills found in <td> cells: '.implode("\n", $violations));
     }
 
     /**
@@ -164,13 +164,13 @@ class UiUxZeroTableBadgePillAuditTest extends TestCase
      */
     public function test_entire_application_table_views_have_zero_badge_pills_in_table_cells(): void
     {
-        $finder = new Finder();
+        $finder = new Finder;
         $finder->files()->in(resource_path('views'))->name('*.blade.php');
 
         $violations = [];
 
         foreach ($finder as $file) {
-            $relPath = str_replace(resource_path('views') . '/', '', $file->getRealPath());
+            $relPath = str_replace(resource_path('views').'/', '', $file->getRealPath());
             $content = $file->getContents();
 
             preg_match_all('/<td\b[^>]*>(.*?)<\/td>/si', $content, $matches);
@@ -179,12 +179,12 @@ class UiUxZeroTableBadgePillAuditTest extends TestCase
                 $result = $this->inspectCellForBadgePill($td);
                 if ($result['hasBadgeComponent'] || $result['hasManualPill']) {
                     $type = $result['hasBadgeComponent'] ? 'badge_component' : 'manual_pill';
-                    $violations[] = "[{$type}] {$relPath}: " . trim(substr($td, 0, 100));
+                    $violations[] = "[{$type}] {$relPath}: ".trim(substr($td, 0, 100));
                 }
             }
         }
 
-        $this->assertSame([], $violations, 'Badge pills found in table <td> cells across application: ' . implode("\n", $violations));
+        $this->assertSame([], $violations, 'Badge pills found in table <td> cells across application: '.implode("\n", $violations));
     }
 
     /**
@@ -209,7 +209,7 @@ class UiUxZeroTableBadgePillAuditTest extends TestCase
         ];
 
         foreach ($viewsToCheck as $view) {
-            $path = resource_path('views/' . $view);
+            $path = resource_path('views/'.$view);
             $content = File::get($path);
 
             $this->assertMatchesRegularExpression(
@@ -229,7 +229,7 @@ class UiUxZeroTableBadgePillAuditTest extends TestCase
         $violations = [];
 
         foreach ($targetViews as $view) {
-            $path = resource_path('views/' . $view);
+            $path = resource_path('views/'.$view);
             $content = File::get($path);
 
             if (str_contains($content, '<x-ui.badge') || str_contains($content, '<x-badge')) {
@@ -237,7 +237,7 @@ class UiUxZeroTableBadgePillAuditTest extends TestCase
             }
         }
 
-        $this->assertSame([], $violations, 'Badge components found in target views: ' . implode("\n", $violations));
+        $this->assertSame([], $violations, 'Badge components found in target views: '.implode("\n", $violations));
     }
 
     /**
@@ -257,7 +257,7 @@ class UiUxZeroTableBadgePillAuditTest extends TestCase
         $violations = [];
 
         foreach ($viewsWithMobileList as $view) {
-            $path = resource_path('views/' . $view);
+            $path = resource_path('views/'.$view);
             $content = File::get($path);
 
             preg_match('/<div\s+class="[^"]*lg:hidden[^"]*"[^>]*>(.*?)<\/div>\s*@(?:endforelse|endif)/s', $content, $match);
@@ -269,6 +269,6 @@ class UiUxZeroTableBadgePillAuditTest extends TestCase
             }
         }
 
-        $this->assertSame([], $violations, 'Badge components found in mobile views: ' . implode("\n", $violations));
+        $this->assertSame([], $violations, 'Badge components found in mobile views: '.implode("\n", $violations));
     }
 }

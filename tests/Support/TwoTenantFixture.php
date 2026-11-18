@@ -2,18 +2,18 @@
 
 namespace Tests\Support;
 
+use App\Core\Context\TenantContext;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatusEnum;
-use App\Models\Category;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Payment;
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\OrderItem;
+use App\Modules\Sales\Models\Payment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Artisan;
 

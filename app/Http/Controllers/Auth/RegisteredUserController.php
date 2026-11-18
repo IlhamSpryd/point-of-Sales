@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Core\Context\TenantContext;
 use App\Http\Controllers\Controller;
-use App\Models\EmailOutbox;
-use App\Models\Role;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
-use App\Services\DatabaseErrorClassifier;
-use App\Services\EmailVerificationOtpService;
+use App\Modules\Organization\Models\EmailOutbox;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\EmailVerificationOtpService;
+use App\Platform\Database\DatabaseErrorClassifier;
 use App\Support\EmailNormalizer;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;

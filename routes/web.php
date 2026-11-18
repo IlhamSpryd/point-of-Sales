@@ -19,7 +19,7 @@ use App\Http\Controllers\OwnerOnboardingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileEmailChangeController;
 use App\Http\Controllers\UserInvitationController;
-use App\Services\OAuthService;
+use App\Modules\Organization\Services\OAuthService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 

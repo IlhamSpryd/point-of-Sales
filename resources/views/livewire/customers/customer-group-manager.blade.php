@@ -6,7 +6,7 @@
         title="Customer Groups & Segmentation"
         description="Manage customer segments, default price lists, and automated discount rates per customer group.">
         <x-slot:actions>
-            @can('manageGroups', \App\Models\Customer::class)
+            @can('manageGroups', \App\Modules\Customers\Models\Customer::class)
             <x-ui.button wire:click="create" icon="add" variant="primary">
                 Add Group
             </x-ui.button>
@@ -79,7 +79,7 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 text-right whitespace-nowrap">
-                            @can('manageGroups', \App\Models\Customer::class)
+                            @can('manageGroups', \App\Modules\Customers\Models\Customer::class)
                             <x-ui.table-actions>
                                 <x-ui.table-action-item icon="edit" wire:click="edit({{ $grp->id }})">
                                     Edit Group

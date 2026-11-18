@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Customers\Models;
 
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Customer;
-use App\Models\PriceList;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToTenant;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -55,11 +53,11 @@ class CustomerGroup extends Model
     }
 
     /**
-     * @return BelongsTo<PriceList, $this>
+     * @return BelongsTo<\App\Modules\Pricing\Models\PriceList, $this>
      */
     public function defaultPriceList(): BelongsTo
     {
-        return $this->belongsTo(PriceList::class, 'default_price_list_id');
+        return $this->belongsTo(\App\Modules\Pricing\Models\PriceList::class, 'default_price_list_id');
     }
 
     /**

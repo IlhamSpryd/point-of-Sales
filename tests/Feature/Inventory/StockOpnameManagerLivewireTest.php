@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Inventory;
 
+use App\Core\Context\TenantContext;
 use App\Enums\StockMovementType;
 use App\Enums\StockOpnameStatusEnum;
 use App\Livewire\Inventory\StockOpnameManager;
-use App\Models\StockOpname;
+use App\Modules\Inventory\Models\StockOpname;
 use App\Modules\Inventory\Services\InventoryLedgerService;
-use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\Support\TwoTenantFixture;

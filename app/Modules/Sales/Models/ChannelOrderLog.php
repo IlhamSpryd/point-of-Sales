@@ -2,15 +2,15 @@
 
 namespace App\Modules\Sales\Models;
 
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Order;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
  * @property int|null $order_id
+ * @property int|null $store_id
  * @property int $tenant_id
  */
 class ChannelOrderLog extends Model

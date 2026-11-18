@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Models;
 
-use App\Models\Concerns\AssignsStore;
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToStore;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Customer;
-use App\Models\Order;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Core\Traits\AssignsStore;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\BelongsToCompany;
+use App\Core\Traits\ScopedToStore;
+use App\Core\Traits\ScopedToTenant;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Contracts\InvoiceReaderInterface;
 use App\Modules\Sales\Enums\CustomerInvoiceStatusEnum;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -41,12 +42,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $payment_terms_days
  * @property int|null $posted_by_user_id
  * @property int|null $voided_by_user_id
+ * @property array<string, mixed>|null $customer_snapshot_json
  */
-class CustomerInvoice extends Model
+class CustomerInvoice extends Model implements InvoiceReaderInterface
 {
     use AssignsStore;
     use AssignsTenant;
-    use \App\Core\Traits\BelongsToCompany;
+    use BelongsToCompany;
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
@@ -227,5 +229,72 @@ class CustomerInvoice extends Model
         return $this->status === CustomerInvoiceStatusEnum::POSTED
             && bccomp((string) $this->paid_amount, '0.00', 2) === 0
             && bccomp((string) $this->credit_applied_amount, '0.00', 2) === 0;
+    }
+
+    public function getId(): int
+    {
+        return (int) $this->id;
+    }
+
+    public function getTenantId(): int
+    {
+        return (int) $this->tenant_id;
+    }
+
+    public function getInvoiceNumber(): string
+    {
+        return (string) $this->invoice_number;
+    }
+
+    public function getTaxInvoiceSerialNumber(): ?string
+    {
+        return $this->tax_invoice_serial_number;
+    }
+
+    public function setTaxInvoiceSerialNumber(?string $serialNumber): void
+    {
+        $this->tax_invoice_serial_number = $serialNumber;
+        $this->save();
+    }
+
+    public function getInvoiceDate(): mixed
+    {
+        return $this->invoice_date;
+    }
+
+    public function getSubtotal(): float|string
+    {
+        return $this->subtotal;
+    }
+
+    public function getTaxAmount(): float|string
+    {
+        return $this->tax_amount;
+    }
+
+    public function getTotalAmount(): float|string
+    {
+        return $this->total_amount;
+    }
+
+    public function getCustomerTaxId(): ?string
+    {
+        $snapshot = $this->customer_snapshot_json;
+
+        return $this->customer->tax_id ?? (is_array($snapshot) && isset($snapshot['tax_id']) ? (string) $snapshot['tax_id'] : null);
+    }
+
+    public function getCustomerName(): ?string
+    {
+        $snapshot = $this->customer_snapshot_json;
+
+        return $this->customer->name ?? (is_array($snapshot) && isset($snapshot['name']) ? (string) $snapshot['name'] : null);
+    }
+
+    public function getCustomerAddress(): ?string
+    {
+        $snapshot = $this->customer_snapshot_json;
+
+        return is_array($snapshot) && isset($snapshot['address']) ? (string) $snapshot['address'] : null;
     }
 }

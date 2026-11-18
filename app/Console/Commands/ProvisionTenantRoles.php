@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Tenant;
-use App\Services\RoleService;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Services\RoleService;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;

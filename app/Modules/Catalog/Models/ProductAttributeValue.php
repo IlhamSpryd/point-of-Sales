@@ -4,12 +4,64 @@ declare(strict_types=1);
 
 namespace App\Modules\Catalog\Models;
 
-use App\Modules\Products\Models\ProductAttributeValue as BaseProductAttributeValue;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToTenant;
+use App\Modules\Organization\Models\Tenant;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Catalog ProductAttributeValue Model wrapper.
+ * Model ProductAttributeValue mewakili opsi nilai dari atribut produk (misal: "Small", "Medium", "Large").
+ *
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $attribute_id
+ * @property string $value
+ * @property string|null $code
+ * @property int $sort_order
+ * @property bool $is_active
  */
-/**
- * @deprecated Use \App\Modules\Products\Models\ProductAttributeValue instead. Consolidated per DEC-002 / TASK-201.
- */
-class ProductAttributeValue extends BaseProductAttributeValue {}
+class ProductAttributeValue extends Model
+{
+    use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
+    use HasFactory;
+
+    use ScopedToTenant;
+
+    protected $table = 'product_attribute_values';
+
+    protected $fillable = [
+        'tenant_id',
+        'attribute_id',
+        'value',
+        'code',
+        'sort_order',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'attribute_id' => 'integer',
+        'sort_order' => 'integer',
+        'is_active' => 'boolean',
+    ];
+
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    /**
+     * @return BelongsTo<ProductAttribute, $this>
+     */
+    public function attribute(): BelongsTo
+    {
+        return $this->belongsTo(ProductAttribute::class, 'attribute_id');
+    }
+}

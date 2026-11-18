@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Tests\Feature\MasterData;
 
 use App\Core\Context\TenantContext;
-use App\Models\Category;
-use App\Models\Product;
-use App\Models\ProductUnitConversion;
-use App\Models\Store;
-use App\Models\TaxClass;
-use App\Models\Tenant;
-use App\Models\UnitOfMeasure;
-use App\Modules\MasterData\Services\DocumentSequenceService;
-use App\Modules\MasterData\Services\UnitConversionService;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\ProductUnitConversion;
+use App\Modules\Catalog\Models\TaxClass;
+use App\Modules\Catalog\Models\UnitOfMeasure;
+use App\Modules\Catalog\Services\UnitConversionService;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Platform\Documents\DocumentSequenceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

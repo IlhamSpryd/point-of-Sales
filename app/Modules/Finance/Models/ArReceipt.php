@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Models;
 
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Customer;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Modules\Sales\Models\ArPaymentAllocation;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToTenant;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -136,11 +135,11 @@ class ArReceipt extends Model
     }
 
     /**
-     * @return HasMany<ArPaymentAllocation, $this>
+     * @return HasMany<\App\Modules\Sales\Models\ArPaymentAllocation, $this>
      */
     public function allocations(): HasMany
     {
-        return $this->hasMany(ArPaymentAllocation::class, 'ar_receipt_id');
+        return $this->hasMany(\App\Modules\Sales\Models\ArPaymentAllocation::class, 'ar_receipt_id');
     }
 
     /**

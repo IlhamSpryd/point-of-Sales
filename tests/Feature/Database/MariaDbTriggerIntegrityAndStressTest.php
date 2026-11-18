@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace Tests\Feature\Database;
 
 use App\Enums\OrderStatus;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Product;
-use App\Models\Shift;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
 use App\Modules\Finance\Services\FinancialOutboxDispatcherService;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\OrderItem;
+use App\Modules\Sales\Models\Shift;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
@@ -37,12 +38,19 @@ class MariaDbTriggerIntegrityAndStressTest extends TestCase
     use DatabaseTransactions;
 
     private Tenant $tenant;
+
     private Store $store;
+
     private User $user;
+
     private Shift $shift;
+
     private Order $order;
+
     private OrderItem $orderItem;
+
     private Product $product;
+
     private FinancialOutboxDispatcherService $outboxDispatcher;
 
     protected function afterSubclassSetUp(): void
@@ -61,7 +69,7 @@ class MariaDbTriggerIntegrityAndStressTest extends TestCase
             'started_at' => now(),
         ]);
 
-        $category = \App\Models\Category::create([
+        $category = Category::create([
             'tenant_id' => $this->tenant->id,
             'name' => 'Kategori Tes Trigger',
         ]);

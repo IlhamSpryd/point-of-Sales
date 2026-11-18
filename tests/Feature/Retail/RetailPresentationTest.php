@@ -4,21 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Retail;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
 use App\Livewire\Retail\BarcodeManager;
 use App\Livewire\Retail\RetailExchangeManager;
 use App\Livewire\Retail\ShelfLabelManager;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Product;
-use App\Models\ProductVariant;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Modules\Retail\Models\ShelfLabel;
-use App\Modules\Retail\Services\RetailBarcodeService;
-use App\Services\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\ProductVariant;
+use App\Modules\Catalog\Models\ShelfLabel;
+use App\Modules\Catalog\Services\RetailBarcodeService;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\OrderItem;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -84,7 +85,7 @@ class RetailPresentationTest extends TestCase
             'store_id' => $this->store->id,
         ]);
 
-        $category = \App\Models\Category::withoutGlobalScopes()->create([
+        $category = Category::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
             'category_code' => 'CAT-'.substr(uniqid(), 0, 8),
             'category_name' => 'Fashion & Apparel',

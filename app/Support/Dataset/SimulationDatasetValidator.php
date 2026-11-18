@@ -84,7 +84,7 @@ final class SimulationDatasetValidator
         $discountSum = (float) DB::table('orders')->whereIn('tenant_id', $tenantIds)->where('order_status', 'paid')->sum('discount_amount');
         $returnSum = (float) DB::table('order_returns')->whereIn('tenant_id', $tenantIds)->where('status', 'completed')->sum('subtotal_returned');
         $netSales = $subtotalSum - $discountSum - $returnSum;
-        $results[] = $this->row('INV-05', 'Rekonsiliasi Penjualan Bersih (Net Sales = Subtotal - Diskon - Retur, Tanpa PPN/Svc)', $netSales > 0, "net_sales=Rp " . number_format($netSales, 2, ',', '.'));
+        $results[] = $this->row('INV-05', 'Rekonsiliasi Penjualan Bersih (Net Sales = Subtotal - Diskon - Retur, Tanpa PPN/Svc)', $netSales > 0, 'net_sales=Rp '.number_format($netSales, 2, ',', '.'));
 
         // 6. INV-06: Keseimbangan Mutlak Jurnal Umum Double-Entry
         $unbalancedJournals = DB::select(
@@ -114,7 +114,7 @@ final class SimulationDatasetValidator
             ->sum('jl.debit_amount');
         $netGlRevenue = $revenueCredit - $revenueDebit;
         $inv07Pass = ($netGlRevenue > 0 && abs($netGlRevenue - $netSales) < 1.00);
-        $results[] = $this->row('INV-07', 'Penyelarasan Subledger Penjualan ke Akun Pendapatan GL (Net Sales == Mutasi Kredit 4101/4102)', $inv07Pass, "gl_net=Rp " . number_format($netGlRevenue, 2, ',', '.') . " vs net_sales=Rp " . number_format($netSales, 2, ',', '.'));
+        $results[] = $this->row('INV-07', 'Penyelarasan Subledger Penjualan ke Akun Pendapatan GL (Net Sales == Mutasi Kredit 4101/4102)', $inv07Pass, 'gl_net=Rp '.number_format($netGlRevenue, 2, ',', '.').' vs net_sales=Rp '.number_format($netSales, 2, ',', '.'));
 
         // 8. INV-08: Integritas Snapshot HPP
         $missingHpp = (int) DB::table('order_items as oi')
@@ -201,7 +201,7 @@ final class SimulationDatasetValidator
         $apTenantsCount = (int) DB::table('ap_ledger_entries')->whereIn('tenant_id', $tenantIds)->distinct()->count('tenant_id');
         $apBalanceDiff = (float) DB::table('ap_ledger_entries')->whereIn('tenant_id', $tenantIds)->selectRaw('COALESCE(SUM(credit_amount) - SUM(debit_amount), 0) as diff')->value('diff');
         $inv14Pass = ($apCount > 0 && $apTenantsCount >= count($tenantIds) && abs($apBalanceDiff) < 0.01);
-        $results[] = $this->row('INV-14', 'Integritas Buku Pembantu Hutang AP (ap_ledger_entries 100% tenant & balanced)', $inv14Pass, "entri_ap={$apCount}, tenant_terisi={$apTenantsCount}, selisih_ap=Rp " . number_format($apBalanceDiff, 2));
+        $results[] = $this->row('INV-14', 'Integritas Buku Pembantu Hutang AP (ap_ledger_entries 100% tenant & balanced)', $inv14Pass, "entri_ap={$apCount}, tenant_terisi={$apTenantsCount}, selisih_ap=Rp ".number_format($apBalanceDiff, 2));
 
         // 15. INV-15: Rekonsiliasi Kas Masuk Kasir
         $closedShifts = (int) DB::table('shifts')->whereIn('tenant_id', $tenantIds)->where('status', 'closed')->count();
@@ -239,7 +239,7 @@ final class SimulationDatasetValidator
         $totalPayroll = (float) DB::table('payroll_records')->whereIn('tenant_id', $tenantIds)->sum('net_pay_amount');
         $laborRatio = ($netSales > 0) ? ($totalPayroll / $netSales) * 100 : 0.0;
         $ratioPass = ($laborRatio >= 15.0 && $laborRatio <= 25.0);
-        $results[] = $this->row('INV-19', 'Rasio Biaya Tenaga Kerja / Labor Cost Ratio (15.0% <= KPI <= 25.0%)', $ratioPass, "payroll_total=Rp " . number_format($totalPayroll, 0, ',', '.') . " (" . number_format($laborRatio, 2) . "% dari Net Sales, target 18.5% - 22.8%)");
+        $results[] = $this->row('INV-19', 'Rasio Biaya Tenaga Kerja / Labor Cost Ratio (15.0% <= KPI <= 25.0%)', $ratioPass, 'payroll_total=Rp '.number_format($totalPayroll, 0, ',', '.').' ('.number_format($laborRatio, 2).'% dari Net Sales, target 18.5% - 22.8%)');
 
         // 20. INV-20: Kesesuaian Target Cabang / Plan vs Actual
         $storeTargetCount = DB::table('store_targets')
@@ -305,7 +305,7 @@ final class SimulationDatasetValidator
                 $emptyTables[] = $t;
             }
         }
-        $results[] = $this->row('INV-25', 'Cakupan Skema 9 Tabel Baru (departments, lots, recipes, webhooks, dll.)', empty($emptyTables), empty($emptyTables) ? '9/9 tabel enterprise terisi' : 'kosong=' . implode(',', $emptyTables));
+        $results[] = $this->row('INV-25', 'Cakupan Skema 9 Tabel Baru (departments, lots, recipes, webhooks, dll.)', empty($emptyTables), empty($emptyTables) ? '9/9 tabel enterprise terisi' : 'kosong='.implode(',', $emptyTables));
 
         return $results;
     }

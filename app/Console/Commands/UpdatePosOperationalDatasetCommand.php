@@ -4,29 +4,25 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
-use App\Enums\PaymentAttemptStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PreparationStatus;
-use App\Models\Category;
-use App\Models\Customer;
-use App\Models\Device;
-use App\Models\Discount;
-use App\Models\Employee;
-use App\Models\Ingredient;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Payment;
-use App\Models\PaymentAttempt;
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Shift;
-use App\Models\Store;
-use App\Models\Table;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\CashierPinService;
-use App\Services\Context\TenantContext;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\CashierPinService;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\OrderItem;
+use App\Modules\Sales\Models\Payment;
+use App\Modules\Sales\Models\Shift;
+use App\Modules\Sales\Models\Table;
+use App\Modules\Workforce\Models\Employee;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -71,13 +67,14 @@ class UpdatePosOperationalDatasetCommand extends Command
 
         if ($tenants->isEmpty()) {
             $this->error('Tidak ada tenant yang cocok ditemukan!');
+
             return self::FAILURE;
         }
 
         foreach ($tenants as $tenant) {
             $this->info("\n==========================================================================");
             $this->info("MEMPROSES TENANT #{$tenant->id}: {$tenant->name} ({$tenant->primary_industry})");
-            $this->info("==========================================================================");
+            $this->info('==========================================================================');
 
             app(TenantContext::class)->setTenantId((int) $tenant->id);
             app(TenantContext::class)->setStoreId(null);
@@ -120,6 +117,7 @@ class UpdatePosOperationalDatasetCommand extends Command
         }
 
         $this->info("\n✅ DATASET OPERASIONAL 2026 TELAH BERHASIL DIPERBARUI & 100% SIAP DITEST DI POS!");
+
         return self::SUCCESS;
     }
 
@@ -189,15 +187,15 @@ class UpdatePosOperationalDatasetCommand extends Command
         $demoKasir = User::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('email', $demoKasirEmail)->first();
 
         if (! $demoKasir) {
-            $demoKasir = new User();
+            $demoKasir = new User;
             $demoKasir->tenant_id = $tenantId;
             $demoKasir->email = $demoKasirEmail;
         }
 
         $demoKasir->name = $demoKasirName;
-        $demoKasir->role_id = $roleKasir?->id ?? 3;
+        $demoKasir->role_id = $roleKasir->id ?? 3;
         $demoKasir->password = $hashedPassword;
-        $demoKasir->phone_number = '0812' . sprintf('%08d', mt_rand(10000000, 99999999));
+        $demoKasir->phone_number = '0812'.sprintf('%08d', mt_rand(10000000, 99999999));
         $demoKasir->is_active = true;
         $demoKasir->email_verified_at = now();
         $demoKasir->save();
@@ -389,7 +387,7 @@ class UpdatePosOperationalDatasetCommand extends Command
         if (! $isRetail) {
             $this->line("  ✓ {$ingredients->count()} bahan baku direstock (@ 50.000 unit per cabang).");
         }
-        $this->line("  ✓ Diskon & Voucher promo diperpanjang aktif hingga 31 Desember 2027.");
+        $this->line('  ✓ Diskon & Voucher promo diperpanjang aktif hingga 31 Desember 2027.');
 
         return [
             'healthy' => $products->count(),
@@ -689,8 +687,8 @@ class UpdatePosOperationalDatasetCommand extends Command
         $table2 = $tables->skip(1)->first();
 
         // Tetapkan context store & tenant agar observer / assigns store berjalan mulus
-        app(\App\Core\Context\TenantContext::class)->setTenantId($tenantId);
-        app(\App\Core\Context\TenantContext::class)->setStoreId($storeId);
+        app(TenantContext::class)->setTenantId($tenantId);
+        app(TenantContext::class)->setStoreId($storeId);
 
         $sampleProducts = Product::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
@@ -718,7 +716,7 @@ class UpdatePosOperationalDatasetCommand extends Command
             'customer_id' => $customer?->id,
             'table_id' => $table1?->id,
             'order_type' => $tenant->primary_industry === 'retail' ? 'takeaway' : 'dine_in',
-            'order_code' => 'ORD-20261111-001-' . $tenantId,
+            'order_code' => 'ORD-20261111-001-'.$tenantId,
             'order_date' => '2026-11-11',
             'idempotency_key' => $idempotencyCheck,
             'subtotal_amount' => $price1 * 2,
@@ -771,7 +769,7 @@ class UpdatePosOperationalDatasetCommand extends Command
             'shift_id' => $shift->id,
             'user_id' => $cashier->id,
             'order_type' => 'takeaway',
-            'order_code' => 'ORD-20261111-002-' . $tenantId,
+            'order_code' => 'ORD-20261111-002-'.$tenantId,
             'order_date' => '2026-11-11',
             'idempotency_key' => "op_trx_qris_{$tenantId}_20261111_002",
             'subtotal_amount' => $price2,
@@ -803,7 +801,7 @@ class UpdatePosOperationalDatasetCommand extends Command
             'order_id' => $order2->id,
             'payment_method' => PaymentMethod::Qris,
             'amount' => $order2->order_amount,
-            'reference_number' => 'MID-QRIS-20261111-' . sprintf('%04d', $tenantId),
+            'reference_number' => 'MID-QRIS-20261111-'.sprintf('%04d', $tenantId),
             'status' => 'captured',
             'captured_at' => Carbon::parse('2026-11-11 10:15:00'),
             'processed_by' => $cashier->id,
@@ -823,7 +821,7 @@ class UpdatePosOperationalDatasetCommand extends Command
             'customer_id' => $customer?->id,
             'table_id' => $table1?->id,
             'order_type' => 'dine_in',
-            'order_code' => 'ORD-20261111-KDS-' . $tenantId,
+            'order_code' => 'ORD-20261111-KDS-'.$tenantId,
             'order_date' => '2026-11-11',
             'idempotency_key' => "op_trx_kds_{$tenantId}_20261111_003",
             'subtotal_amount' => $price3,
@@ -860,7 +858,7 @@ class UpdatePosOperationalDatasetCommand extends Command
             'customer_id' => $customer?->id,
             'table_id' => $table2?->id,
             'order_type' => 'dine_in',
-            'order_code' => 'ORD-20261111-TAB-' . $tenantId,
+            'order_code' => 'ORD-20261111-TAB-'.$tenantId,
             'order_date' => '2026-11-11',
             'idempotency_key' => "op_trx_tab_{$tenantId}_20261111_004",
             'subtotal_amount' => $price4,
@@ -886,7 +884,7 @@ class UpdatePosOperationalDatasetCommand extends Command
             'updated_at' => Carbon::parse('2026-11-11 11:20:00'),
         ]);
 
-        $this->line("  ✓ Transaksi operasional hari ini (11 Nov 2026) berhasil dibuat di Cabang Utama (Cash, QRIS, KDS, Open Tab)");
+        $this->line('  ✓ Transaksi operasional hari ini (11 Nov 2026) berhasil dibuat di Cabang Utama (Cash, QRIS, KDS, Open Tab)');
 
         app(TenantContext::class)->setStoreId(null);
 
@@ -913,13 +911,13 @@ class UpdatePosOperationalDatasetCommand extends Command
                     'end_date' => $endDate,
                     'status' => $status,
                     'is_adjustment_period' => 0,
-                    'closed_at' => ($status === 'CLOSED') ? $endDate . ' 23:59:59' : null,
+                    'closed_at' => ($status === 'CLOSED') ? $endDate.' 23:59:59' : null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]
             );
         }
-        $this->line("  ✓ Periode Akuntansi 2026 disinkronisasi: 2026-01 s/d 2026-10 CLOSED, 2026-11 OPEN (Aktif).");
+        $this->line('  ✓ Periode Akuntansi 2026 disinkronisasi: 2026-01 s/d 2026-10 CLOSED, 2026-11 OPEN (Aktif).');
     }
 
     private function setupDraftJournalsForTrustIndicator(Tenant $tenant, array $users): void
@@ -946,7 +944,7 @@ class UpdatePosOperationalDatasetCommand extends Command
 
         $mainStore = Store::withoutGlobalScopes()->where('tenant_id', $tenantId)->first();
         $storeId = $mainStore?->id;
-        $userId = $users['owner']?->id ?? 1;
+        $userId = $users['owner']->id ?? 1;
 
         $draftJournals = [
             [
@@ -1033,7 +1031,7 @@ class UpdatePosOperationalDatasetCommand extends Command
                     'foreign_debit_amount' => 0.00,
                     'foreign_credit_amount' => 0.00,
                     'exchange_rate' => 1.000000,
-                    'description' => $dj['desc'] . ' [DEBIT]',
+                    'description' => $dj['desc'].' [DEBIT]',
                     'customer_id' => null,
                     'supplier_id' => null,
                     'tax_code_id' => null,
@@ -1052,7 +1050,7 @@ class UpdatePosOperationalDatasetCommand extends Command
                     'foreign_debit_amount' => 0.00,
                     'foreign_credit_amount' => 0.00,
                     'exchange_rate' => 1.000000,
-                    'description' => $dj['desc'] . ' [KREDIT]',
+                    'description' => $dj['desc'].' [KREDIT]',
                     'customer_id' => null,
                     'supplier_id' => null,
                     'tax_code_id' => null,
@@ -1062,7 +1060,7 @@ class UpdatePosOperationalDatasetCommand extends Command
             ]);
         }
 
-        $this->line("  ✓ 4 Jurnal Umum berstatus DRAFT dipersiapkan di periode 2026-11 (Memicu GL Trust Indicator Warning).");
+        $this->line('  ✓ 4 Jurnal Umum berstatus DRAFT dipersiapkan di periode 2026-11 (Memicu GL Trust Indicator Warning).');
     }
 
     private function renderTenantSummary(Tenant $tenant, array $users, array $activeShifts, array $stock, int $schedules, array $orders, string $rawPassword): void
@@ -1071,11 +1069,11 @@ class UpdatePosOperationalDatasetCommand extends Command
             ['Parameter Uji', 'Status / Nilai'],
             [
                 ['Tenant ID & Nama', "#{$tenant->id} - {$tenant->name} ({$tenant->primary_industry})"],
-                ['Akun Owner Login', $users['owner']->email . " (Password: {$rawPassword} | PIN: 123456)"],
-                ['Akun Kasir Demo', $users['kasir']->email . " (Password: {$rawPassword} | PIN: 123456)"],
+                ['Akun Owner Login', $users['owner']->email." (Password: {$rawPassword} | PIN: 123456)"],
+                ['Akun Kasir Demo', $users['kasir']->email." (Password: {$rawPassword} | PIN: 123456)"],
                 ['Katalog Produk Siap Jual', "{$stock['healthy']} produk (Stok {$stock['healthy']} pcs/cabang)"],
                 ['Bahan Baku Dapur (F&B)', "{$stock['ingredients']} bahan baku (50.000 unit/cabang)"],
-                ['Shift Kasir Aktif Hari Ini (2026-11-11)', count($activeShifts) . " cabang memiliki shift register OPEN (Saldo Awal Rp 500.000)"],
+                ['Shift Kasir Aktif Hari Ini (2026-11-11)', count($activeShifts).' cabang memiliki shift register OPEN (Saldo Awal Rp 500.000)'],
                 ['Jadwal Kerja Karyawan (work_schedules)', "{$schedules} jadwal kerja aktif terpasang (01 s/d 15 Nov 2026)"],
                 ['Periode Finansial Berjalan', 'Periode 2026-11: OPEN (Buku Besar & Jurnal Aktif)'],
             ]

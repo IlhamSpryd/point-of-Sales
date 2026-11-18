@@ -1,0 +1,37 @@
+{
+    "name": "Workforce",
+    "tier": 2,
+    "owner": "@ilhamsepriyadi",
+    "description": "Human resources, employees, attendance, statutory Indonesian overtime, PPh 21 and payroll (ADR-102).",
+    "ownsTables": [
+        "employees",
+        "employee_shifts",
+        "employee_compensations",
+        "departments",
+        "job_titles",
+        "attendance_records",
+        "overtime_records",
+        "leave_requests",
+        "payroll_batches",
+        "payslips",
+        "payroll_adjustments",
+        "statutory_rule_versions"
+    ],
+    "allowedDependencies": [
+        "Organization",
+        "Finance",
+        "Sales",
+        "Catalog"
+    ],
+    "publishesEvents": [
+        "workforce.payroll.approved.v1",
+        "workforce.employee.onboarded.v1"
+    ],
+    "consumesEvents": [],
+    "dependsOn": [
+        "Organization",
+        "Finance",
+        "Sales",
+        "Catalog"
+    ]
+}

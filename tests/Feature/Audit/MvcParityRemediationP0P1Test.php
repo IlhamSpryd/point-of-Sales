@@ -4,30 +4,28 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Audit;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
-use App\Enums\StockOpnameStatusEnum;
+use App\Livewire\Inventory\StockOpnameManager;
 use App\Livewire\Kasir\CreateOrder;
 use App\Livewire\Kds\Board as KdsBoard;
-use App\Livewire\Inventory\StockOpnameManager;
-use App\Models\Category;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Product;
-use App\Models\ProductBundleItem;
-use App\Models\ProductVariant;
-use App\Models\Role;
-use App\Models\Shift;
-use App\Models\Table;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Modules\FNB\Services\SplitBillService;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\ProductBundleItem;
+use App\Modules\Catalog\Models\ProductVariant;
+use App\Modules\Catalog\Services\BundleComponentExpanderService;
 use App\Modules\Integration\Logistics\DTOs\ShippingRateRequestDto;
-use App\Modules\Integrations\Logistics\Services\Logistics3PlAggregatorService;
-use App\Modules\Products\Services\BundleComponentExpanderService;
+use App\Modules\Integration\Logistics\Services\Logistics3PlAggregatorService;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\OrderItem;
+use App\Modules\Sales\Models\Shift;
+use App\Modules\Sales\Models\Table;
 use App\Modules\Sales\Services\TransactionService;
-use App\Modules\Settings\Models\Store;
-use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -39,9 +37,13 @@ class MvcParityRemediationP0P1Test extends TestCase
     use DatabaseTransactions;
 
     private Tenant $tenant;
+
     private Store $store;
+
     private User $managerUser;
+
     private User $staffUser;
+
     private Category $category;
 
     protected function afterSubclassSetUp(): void
@@ -73,7 +75,7 @@ class MvcParityRemediationP0P1Test extends TestCase
         $this->staffUser = User::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
             'name' => 'Staff Counter',
-            'email' => 'counter.' . uniqid() . '@example.com',
+            'email' => 'counter.'.uniqid().'@example.com',
             'password' => bcrypt('password'),
             'role_id' => $roleCashier->id,
             'email_verified_at' => now(),
@@ -107,7 +109,7 @@ class MvcParityRemediationP0P1Test extends TestCase
             }
         }
 
-        $this->assertEmpty($missing, 'Ditemukan rute yang mengarah ke method Controller kosong: ' . implode(', ', $missing));
+        $this->assertEmpty($missing, 'Ditemukan rute yang mengarah ke method Controller kosong: '.implode(', ', $missing));
     }
 
     /**
@@ -199,8 +201,8 @@ class MvcParityRemediationP0P1Test extends TestCase
             'tenant_id' => $this->tenant->id,
             'store_id' => $this->store->id,
             'user_id' => $this->managerUser->id,
-            'idempotency_key' => 'idem_' . uniqid(),
-            'order_code' => 'ORD-OPEN-' . uniqid(),
+            'idempotency_key' => 'idem_'.uniqid(),
+            'order_code' => 'ORD-OPEN-'.uniqid(),
             'order_type' => 'dine_in',
             'order_status' => OrderStatus::Pending->value,
             'table_id' => $table->id,
@@ -366,7 +368,7 @@ class MvcParityRemediationP0P1Test extends TestCase
             'tenant_id' => $this->tenant->id,
             'store_id' => $this->store->id,
             'table_name' => 'Meja A1',
-            'table_code' => 'T-A1-' . uniqid(),
+            'table_code' => 'T-A1-'.uniqid(),
             'capacity' => 2,
             'operational_status' => 'occupied',
             'is_active' => true,
@@ -376,7 +378,7 @@ class MvcParityRemediationP0P1Test extends TestCase
             'tenant_id' => $this->tenant->id,
             'store_id' => $this->store->id,
             'table_name' => 'Meja B2',
-            'table_code' => 'T-B2-' . uniqid(),
+            'table_code' => 'T-B2-'.uniqid(),
             'capacity' => 4,
             'operational_status' => 'available',
             'is_active' => true,
@@ -386,8 +388,8 @@ class MvcParityRemediationP0P1Test extends TestCase
             'tenant_id' => $this->tenant->id,
             'store_id' => $this->store->id,
             'user_id' => $this->managerUser->id,
-            'idempotency_key' => 'idem_' . uniqid(),
-            'order_code' => 'ORD-MOVE-' . uniqid(),
+            'idempotency_key' => 'idem_'.uniqid(),
+            'order_code' => 'ORD-MOVE-'.uniqid(),
             'order_type' => 'dine_in',
             'order_status' => 'pending',
             'table_id' => $tableA->id,
@@ -426,8 +428,8 @@ class MvcParityRemediationP0P1Test extends TestCase
             'tenant_id' => $this->tenant->id,
             'store_id' => $this->store->id,
             'user_id' => $this->managerUser->id,
-            'idempotency_key' => 'idem_' . uniqid(),
-            'order_code' => 'ORD-SPLIT-' . uniqid(),
+            'idempotency_key' => 'idem_'.uniqid(),
+            'order_code' => 'ORD-SPLIT-'.uniqid(),
             'order_type' => 'dine_in',
             'order_status' => 'pending',
             'order_amount' => 100000,
@@ -494,12 +496,12 @@ class MvcParityRemediationP0P1Test extends TestCase
     {
         // 1. Manager berhak melihat saldo ekspektasi sistem
         $this->actingAs($this->managerUser);
-        $managerComponent = new StockOpnameManager();
+        $managerComponent = new StockOpnameManager;
         $this->assertTrue($managerComponent->canViewExpectedStock());
 
         // 2. Staff counter (non-manager) tidak berhak melihat saldo ekspektasi (Blind Count)
         $this->actingAs($this->staffUser);
-        $staffComponent = new StockOpnameManager();
+        $staffComponent = new StockOpnameManager;
         $this->assertFalse($staffComponent->canViewExpectedStock());
     }
 

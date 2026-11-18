@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Livewire\HR;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Store;
-use App\Modules\HR\Enums\AttendanceStatusEnum;
-use App\Modules\HR\Models\AttendanceRecord;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Workforce\Enums\AttendanceStatusEnum;
+use App\Modules\Workforce\Models\AttendanceRecord;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;

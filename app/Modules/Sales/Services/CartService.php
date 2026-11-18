@@ -2,16 +2,15 @@
 
 namespace App\Modules\Sales\Services;
 
-use App\Models\Device;
-use App\Models\Discount;
-use App\Models\Modifier;
-use App\Models\ParkedCart;
-use App\Models\Product;
-use App\Models\Shift;
-use App\Services\AuditTrailService;
-use App\Services\CatalogPriceResolverService;
-use App\Services\Context\TenantContext;
-use App\Services\TransactionService;
+use App\Core\Context\TenantContext;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Inventory\Models\Modifier;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Services\AuditTrailService;
+use App\Modules\Pricing\Models\Discount;
+use App\Modules\Pricing\Services\CatalogPriceResolverService;
+use App\Modules\Sales\Models\ParkedCart;
+use App\Modules\Sales\Models\Shift;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Security;
 
+use App\Core\Context\TenantContext;
 use App\Exceptions\OwnershipTransferException;
-use App\Models\Role;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
-use App\Services\OwnershipTransferService;
-use App\Services\RoleService;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\OwnershipTransferService;
+use App\Modules\Organization\Services\RoleService;
 use Exception;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Eloquent\Model;

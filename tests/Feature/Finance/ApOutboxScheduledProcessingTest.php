@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Finance;
 
-use App\Models\AccountingPeriod;
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Supplier;
-use App\Models\User;
+use App\Core\Context\TenantContext;
+use App\Modules\Catalog\Models\Product;
 use App\Modules\Finance\Enums\AccountingPeriodStatusEnum;
 use App\Modules\Finance\Enums\ApEntryTypeEnum;
+use App\Modules\Finance\Models\AccountingPeriod;
 use App\Modules\Finance\Models\ApLedgerEntry;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
 use App\Modules\Purchasing\Models\AccountingPayableOutbox;
+use App\Modules\Purchasing\Models\Supplier;
 use App\Modules\Purchasing\Models\SupplierInvoice;
 use App\Modules\Purchasing\Services\GoodsReceivedNoteService;
 use App\Modules\Purchasing\Services\PurchaseOrderService;
 use App\Modules\Purchasing\Services\SupplierInvoiceMatchingService;
-use App\Services\Context\TenantContext;
 use Database\Seeders\ChartOfAccountsSeeder;
 use Database\Seeders\DefaultPostingRulesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

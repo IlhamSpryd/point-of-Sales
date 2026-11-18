@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Controllers;
 
+use App\Core\Context\TenantContext;
 use App\Http\Controllers\Controller;
 use App\Modules\Finance\Enums\AccountingPeriodStatusEnum;
 use App\Modules\Finance\Enums\JournalStatusEnum;
@@ -13,7 +14,6 @@ use App\Modules\Finance\Models\CashBankAccount;
 use App\Modules\Finance\Models\ChartOfAccount;
 use App\Modules\Finance\Models\FinancialEventOutbox;
 use App\Modules\Finance\Models\JournalEntry;
-use App\Services\Context\TenantContext;
 use Illuminate\View\View;
 
 class FinanceDashboardController extends Controller

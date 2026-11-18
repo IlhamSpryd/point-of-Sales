@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Products;
 
-use App\Models\Customer;
-use App\Models\PriceList;
-use App\Models\PriceListItem;
-use App\Models\Product;
-use App\Models\Tenant;
-use App\Modules\Products\Services\CatalogPriceResolverService;
+use App\Core\Context\TenantContext;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Pricing\Models\PriceList;
+use App\Modules\Pricing\Models\PriceListItem;
+use App\Modules\Pricing\Services\CatalogPriceResolverService;
 use App\Modules\Sales\Services\TransactionService;
-use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\TwoTenantFixture;
 use Tests\TestCase;

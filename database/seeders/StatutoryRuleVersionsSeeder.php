@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Modules\HR\Models\StatutoryRuleVersion;
+use App\Modules\Workforce\Models\StatutoryRuleVersion;
 use Illuminate\Database\Seeder;
 
 class StatutoryRuleVersionsSeeder extends Seeder

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Inventory;
 
+use App\Core\Context\TenantContext;
 use App\Enums\GoodsReceiptStatusEnum;
 use App\Livewire\Inventory\GoodsReceiptManager;
-use App\Models\GoodsReceipt;
-use App\Models\Ingredient;
-use App\Services\Context\TenantContext;
+use App\Modules\Inventory\Models\GoodsReceipt;
+use App\Modules\Inventory\Models\Ingredient;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\Support\TwoTenantFixture;

@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Domain1;
 
-use App\Models\ProvisioningRequest;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\EmployeeIdGenerator;
-use App\Services\ProvisioningService;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\EmployeeIdGenerator;
+use App\Modules\Subscription\Models\ProvisioningRequest;
+use App\Modules\Subscription\Services\ProvisioningService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\Group;

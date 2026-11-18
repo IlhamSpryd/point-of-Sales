@@ -2,8 +2,8 @@
 
 namespace Database\Seeders\Pos\Concerns;
 
-use App\Models\Store;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Store;
 use Illuminate\Support\Facades\Schema;
 
 /**

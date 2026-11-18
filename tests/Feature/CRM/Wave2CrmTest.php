@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\CRM;
 
-use App\Models\Tenant;
-use App\Modules\CRM\Services\CustomerMergeService;
-use App\Modules\CRM\Services\CustomerRegistrationService;
+use App\Core\Context\TenantContext;
 use App\Modules\Customers\Models\Customer;
 use App\Modules\Customers\Models\CustomerMergeLog;
+use App\Modules\Customers\Services\CustomerMergeService;
+use App\Modules\Customers\Services\CustomerRegistrationService;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use App\Modules\Pricing\Services\LoyaltyLedgerService;
 use App\Modules\Sales\Models\Order;
-use App\Modules\Settings\Models\Store;
-use App\Modules\Users\Models\User;
-use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;

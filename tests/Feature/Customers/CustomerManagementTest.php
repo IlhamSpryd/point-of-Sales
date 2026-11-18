@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Customers;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Customers\CustomerGroupManager;
 use App\Livewire\Customers\CustomerManager;
-use App\Models\Customer;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;

@@ -1,5 +1,5 @@
 {{-- SPLIT PAYMENT & CHECKOUT MODAL --}}
-<x-ui.modal name="checkout-payment" maxWidth="2xl" :closeButton="false" class="p-0 overflow-hidden">
+<x-ui.modal name="checkout-payment" maxWidth="2xl" :closeButton="false" :instant="true" class="p-0 overflow-hidden">
     <div x-data="checkoutPayment()" x-init="init()" class="bg-card text-card-foreground w-full flex flex-col overflow-hidden max-h-[92vh]">
         <!-- Header Modal Checkout -->
         <div class="p-4 border-b border-border flex items-center justify-between bg-muted shrink-0">
@@ -325,13 +325,18 @@
 
         <!-- Footer Modal Checkout -->
         <div class="p-4 bg-muted border-t border-border flex items-center justify-between shrink-0">
-            <button type="button" x-on:click="closeModal()"
-                class="px-4 py-2.5 rounded-lg border border-border hover:bg-white text-foreground font-medium text-sm transition-colors cursor-pointer">
+            <button type="button" x-on:click.prevent="closeModal()" wire:ignore
+                class="px-4 py-2.5 rounded-lg border border-border hover:bg-white text-foreground font-medium text-sm transition-colors cursor-pointer"
+                aria-label="Cancel payment and return to cart">
                 <span x-text="awaitingMidtransOrderCode ? 'Close Window' : 'Cancel'"></span>
             </button>
+            {{-- R-007: tombol konfirmasi tunggal (footer). Tombol duplikat di konten telah dihapus. --}}
             <button type="button" id="btn-confirm-pay"
                 x-show="!awaitingMidtransOrderCode"
-                x-on:click="submit()"
+                x-on:click.prevent="submit()"
+                wire:ignore
+                :aria-busy="submitting"
+                aria-live="polite"
                 :disabled="submitting || (method === 'split' ? remaining > 0 : false)"
                 class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-sm flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
                 <span x-show="submitting" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true"></span>
@@ -341,7 +346,9 @@
             <button type="button"
                 x-show="awaitingMidtransOrderCode"
                 x-cloak
-                x-on:click="checkMidtransStatus()"
+                x-on:click.prevent="checkMidtransStatus()"
+                wire:ignore
+                aria-live="polite"
                 :disabled="verifyingMidtrans"
                 class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-sm flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
                 <span x-show="verifyingMidtrans" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true"></span>

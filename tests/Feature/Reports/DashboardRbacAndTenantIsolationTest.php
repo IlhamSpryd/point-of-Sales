@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reports;
 
-use App\Models\Order;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\StoreTarget;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Modules\Reports\Services\ExecutiveDashboardService;
-use App\Modules\Reports\Services\ManagerDashboardService;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Reporting\Models\StoreTarget;
+use App\Modules\Reporting\Services\ExecutiveDashboardService;
+use App\Modules\Reporting\Services\ManagerDashboardService;
+use App\Modules\Sales\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class DashboardRbacAndTenantIsolationTest extends TestCase
@@ -42,8 +45,8 @@ class DashboardRbacAndTenantIsolationTest extends TestCase
     {
         parent::afterSubclassSetUp();
 
-        app(\App\Services\Context\TenantContext::class)->clear();
-        app(\App\Services\Context\TenantContext::class)->runWithoutTenant(function () {
+        app(TenantContext::class)->clear();
+        app(TenantContext::class)->runWithoutTenant(function () {
             // Setup Tenant A & B
             $this->tenantA = $this->defaultTenant;
             $this->tenantB = Tenant::create([
@@ -176,9 +179,9 @@ class DashboardRbacAndTenantIsolationTest extends TestCase
 
     protected function createOrderRecord(array $attributes): int
     {
-        return (int) \Illuminate\Support\Facades\DB::table('orders')->insertGetId(array_merge([
+        return (int) DB::table('orders')->insertGetId(array_merge([
             'order_code' => 'ORD-'.uniqid(),
-            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
+            'idempotency_key' => (string) Str::uuid(),
             'order_date' => Carbon::today('Asia/Jakarta')->toDateString(),
             'subtotal_amount' => 100000.00,
             'discount_amount' => 0.00,
@@ -226,7 +229,7 @@ class DashboardRbacAndTenantIsolationTest extends TestCase
 
         // Query Tenant A as Owner A
         $this->actingAs($this->ownerA);
-        app(\App\Services\Context\TenantContext::class)->setTenantId($this->tenantA->id);
+        app(TenantContext::class)->setTenantId($this->tenantA->id);
         $executiveService = app(ExecutiveDashboardService::class);
         $metricsA = $executiveService->getMetrics($this->ownerA, 'today');
 
@@ -235,7 +238,7 @@ class DashboardRbacAndTenantIsolationTest extends TestCase
 
         // Query Tenant B as Owner B
         $this->actingAs($this->ownerB);
-        app(\App\Services\Context\TenantContext::class)->setTenantId($this->tenantB->id);
+        app(TenantContext::class)->setTenantId($this->tenantB->id);
         $metricsB = $executiveService->getMetrics($this->ownerB, 'today');
 
         // Net sales in Tenant B must be exactly Rp 1.200.000 (never includes Tenant A's 500.000)
@@ -271,7 +274,7 @@ class DashboardRbacAndTenantIsolationTest extends TestCase
         ]);
 
         $this->actingAs($this->managerA);
-        app(\App\Services\Context\TenantContext::class)->setTenantId($this->tenantA->id);
+        app(TenantContext::class)->setTenantId($this->tenantA->id);
         $managerService = app(ManagerDashboardService::class);
 
         // Even if Store Manager attempts to request Store A2, service enforces user's assigned store A1
@@ -301,7 +304,7 @@ class DashboardRbacAndTenantIsolationTest extends TestCase
 
         // 1. User WITHOUT dashboard.metric.profit_margin (Manager A)
         $this->actingAs($this->managerA);
-        app(\App\Services\Context\TenantContext::class)->setTenantId($this->tenantA->id);
+        app(TenantContext::class)->setTenantId($this->tenantA->id);
         $metricsWithoutMargin = $executiveService->getMetrics($this->managerA, 'today');
 
         $this->assertFalse($metricsWithoutMargin['has_profit_margin_permission']);
@@ -312,7 +315,7 @@ class DashboardRbacAndTenantIsolationTest extends TestCase
 
         // 2. User WITH dashboard.metric.profit_margin (Owner A)
         $this->actingAs($this->ownerA);
-        app(\App\Services\Context\TenantContext::class)->setTenantId($this->tenantA->id);
+        app(TenantContext::class)->setTenantId($this->tenantA->id);
         $metricsWithMargin = $executiveService->getMetrics($this->ownerA, 'today');
 
         $this->assertTrue($metricsWithMargin['has_profit_margin_permission']);
@@ -325,7 +328,7 @@ class DashboardRbacAndTenantIsolationTest extends TestCase
     {
         // 1. Cashier Role resolves to cashier_workspace and renders Fast POS CTA
         $this->actingAs($this->cashierA);
-        app(\App\Services\Context\TenantContext::class)->setTenantId($this->tenantA->id);
+        app(TenantContext::class)->setTenantId($this->tenantA->id);
         $this->assertSame('cashier_workspace', $this->cashierA->getDashboardArchetype());
 
         $responseCashier = $this->get(route('dashboard'));
@@ -350,7 +353,7 @@ class DashboardRbacAndTenantIsolationTest extends TestCase
         ]);
 
         $this->actingAs($this->managerA);
-        app(\App\Services\Context\TenantContext::class)->setTenantId($this->tenantA->id);
+        app(TenantContext::class)->setTenantId($this->tenantA->id);
         $this->assertSame('branch_ops', $this->managerA->getDashboardArchetype());
 
         $responseManager = $this->get(route('dashboard'));
@@ -361,7 +364,7 @@ class DashboardRbacAndTenantIsolationTest extends TestCase
 
         // 3. Owner Role resolves to executive and renders Executive BI & ECharts
         $this->actingAs($this->ownerA);
-        app(\App\Services\Context\TenantContext::class)->setTenantId($this->tenantA->id);
+        app(TenantContext::class)->setTenantId($this->tenantA->id);
         $this->assertSame('executive', $this->ownerA->getDashboardArchetype());
 
         $responseOwner = $this->get(route('dashboard'));
@@ -404,7 +407,7 @@ class DashboardRbacAndTenantIsolationTest extends TestCase
         ]);
 
         $this->actingAs($this->ownerA);
-        app(\App\Services\Context\TenantContext::class)->setTenantId($this->tenantA->id);
+        app(TenantContext::class)->setTenantId($this->tenantA->id);
         $executiveService = app(ExecutiveDashboardService::class);
         $metrics = $executiveService->getMetrics($this->ownerA, '30d', $this->storeA1->id);
 

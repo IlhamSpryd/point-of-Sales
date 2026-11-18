@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
-use App\Models\Setting;
-use App\Services\Context\TenantContext;
-use App\Services\TransactionService;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Setting;
+use App\Modules\Sales\Services\TransactionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\TwoTenantFixture;
 use Tests\TestCase;

@@ -6,10 +6,8 @@ namespace App\Modules\Finance\Services;
 
 use App\Modules\Customers\Models\CustomerCreditAccount;
 use App\Modules\Finance\Models\JournalLine;
-use App\Modules\Sales\Enums\CustomerInvoiceStatusEnum;
-use App\Modules\Sales\Models\ArLedgerEntry;
-use App\Modules\Sales\Models\CustomerInvoice;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class ArGlReconciliationService
 {
@@ -26,11 +24,19 @@ class ArGlReconciliationService
     {
         $asOf = $asOfDate ? Carbon::parse($asOfDate) : Carbon::today();
 
-        $invoices = CustomerInvoice::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
-            ->whereIn('status', [CustomerInvoiceStatusEnum::POSTED, CustomerInvoiceStatusEnum::PARTIALLY_PAID])
-            ->where('balance_due', '>', 0)
-            ->with('customer')
+        $invoices = DB::table('customer_invoices')
+            ->leftJoin('customers', 'customer_invoices.customer_id', '=', 'customers.id')
+            ->where('customer_invoices.tenant_id', $tenantId)
+            ->whereIn('customer_invoices.status', ['posted', 'partially_paid'])
+            ->where('customer_invoices.balance_due', '>', 0)
+            ->select([
+                'customer_invoices.id',
+                'customer_invoices.invoice_number',
+                'customer_invoices.balance_due',
+                'customer_invoices.due_date',
+                'customers.name as customer_name',
+                'customers.company_name',
+            ])
             ->get();
 
         $buckets = [
@@ -69,8 +75,8 @@ class ArGlReconciliationService
             $buckets['details'][] = [
                 'invoice_id' => $inv->id,
                 'invoice_number' => $inv->invoice_number,
-                'customer_name' => $inv->customer?->name ?? $inv->customer?->company_name ?? 'N/A',
-                'due_date' => $inv->due_date->toDateString(),
+                'customer_name' => $inv->customer_name ?? $inv->company_name ?? 'N/A',
+                'due_date' => Carbon::parse($inv->due_date)->toDateString(),
                 'balance_due' => $balance,
                 'bucket' => $bucketKey,
                 'days_overdue' => $diffDays < 0 ? abs((int) $diffDays) : 0,
@@ -88,18 +94,18 @@ class ArGlReconciliationService
     public function reconcileArToGl(int $tenantId): array
     {
         // 1. Total Outstanding pada Customer Invoices
-        $invoiceTotal = (string) (CustomerInvoice::withoutGlobalScopes()
+        $invoiceTotal = (string) (DB::table('customer_invoices')
             ->where('tenant_id', $tenantId)
-            ->whereIn('status', [CustomerInvoiceStatusEnum::POSTED, CustomerInvoiceStatusEnum::PARTIALLY_PAID])
+            ->whereIn('status', ['posted', 'partially_paid'])
             ->sum('balance_due') ?? '0.00');
 
         // 2. Total Saldo pada Buku Pembantu Piutang (ar_ledger_entries)
         // Debit menambah piutang, Credit mengurangi piutang
-        $ledgerDebit = (string) (ArLedgerEntry::withoutGlobalScopes()
+        $ledgerDebit = (string) (DB::table('ar_ledger_entries')
             ->where('tenant_id', $tenantId)
             ->sum('debit_amount') ?? '0.00');
 
-        $ledgerCredit = (string) (ArLedgerEntry::withoutGlobalScopes()
+        $ledgerCredit = (string) (DB::table('ar_ledger_entries')
             ->where('tenant_id', $tenantId)
             ->sum('credit_amount') ?? '0.00');
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Reports;
 
-use App\Modules\Reports\Services\MetricRegistry;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Reporting\Services\MetricRegistry;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 

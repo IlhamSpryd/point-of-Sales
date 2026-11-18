@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Livewire\Customers;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Customer;
-use App\Models\GiftCard;
-use App\Models\Store;
-use App\Models\StoreCreditAccount;
-use App\Models\Voucher;
-use App\Modules\Customers\Enums\StoreCreditLedgerTypeEnum;
-use App\Modules\Customers\Services\GiftCardService;
-use App\Modules\Customers\Services\StoreCreditService;
-use App\Modules\Customers\Services\VoucherService;
-use App\Services\Context\TenantContext;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Pricing\Enums\StoreCreditLedgerTypeEnum;
+use App\Modules\Pricing\Models\GiftCard;
+use App\Modules\Pricing\Models\StoreCreditAccount;
+use App\Modules\Pricing\Models\Voucher;
+use App\Modules\Pricing\Services\GiftCardService;
+use App\Modules\Pricing\Services\StoreCreditService;
+use App\Modules\Pricing\Services\VoucherService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;

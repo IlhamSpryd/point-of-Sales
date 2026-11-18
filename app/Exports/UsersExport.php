@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;

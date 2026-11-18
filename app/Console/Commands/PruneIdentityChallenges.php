@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\EmailVerificationOtp;
-use App\Models\UserInvitation;
+use App\Modules\Organization\Models\EmailVerificationOtp;
+use App\Modules\Organization\Models\UserInvitation;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;

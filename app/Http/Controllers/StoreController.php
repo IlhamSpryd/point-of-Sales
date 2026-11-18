@@ -7,6 +7,6 @@ namespace App\Http\Controllers;
 /**
  * Backward compatibility wrapper for modular architecture.
  *
- * @see \App\Modules\Settings\Controllers\StoreController
+ * @see \App\Modules\Organization\Controllers\StoreController
  */
-class StoreController extends \App\Modules\Settings\Controllers\StoreController {}
+class StoreController extends \App\Modules\Organization\Controllers\StoreController {}

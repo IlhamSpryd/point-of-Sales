@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domain2;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
-use App\Models\Category;
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Shift;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
-use App\Services\TransactionService;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Shift;
+use App\Modules\Sales\Services\TransactionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

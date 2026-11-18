@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Navigation;
 
-use App\Models\ActivityLog;
-use App\Models\Role;
-use App\Models\Setting;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\ActivityLog;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Setting;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use App\Policies\ActivityLogPolicy;
 use App\Policies\RolePolicy;
 use App\Policies\SettingPolicy;
 use App\Policies\UserPolicy;
-use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;

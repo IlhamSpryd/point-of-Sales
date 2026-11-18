@@ -12,9 +12,6 @@ use App\Modules\Finance\Models\ArReceipt;
 use App\Modules\Finance\Models\CashBankAccount;
 use App\Modules\Finance\Models\CashBankTransaction;
 use App\Modules\Finance\Models\JournalEntry;
-use App\Modules\Sales\Models\AccountingReceivableOutbox;
-use App\Modules\Sales\Models\ArPaymentAllocation;
-use App\Modules\Sales\Models\CustomerInvoice;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -31,7 +28,7 @@ class ArOutboxConsumerService
      */
     public function processPendingOutbox(?int $tenantId = null, int $limit = 50): int
     {
-        $query = AccountingReceivableOutbox::withoutGlobalScopes()
+        $query = DB::table('accounting_receivable_outboxes')
             ->where('status', 'pending')
             ->orderBy('id', 'asc')
             ->limit($limit);
@@ -56,12 +53,7 @@ class ArOutboxConsumerService
                     'trace' => $e->getTraceAsString(),
                 ]);
 
-                $outbox->retry_count = ($outbox->retry_count ?? 0) + 1;
-                $outbox->last_error = substr($e->getMessage(), 0, 1000);
-                if ($outbox->retry_count >= 5) {
-                    $outbox->status = 'failed';
-                }
-                $outbox->save();
+                $this->markOutboxFailed($outbox, $e->getMessage());
             }
         }
 
@@ -71,7 +63,7 @@ class ArOutboxConsumerService
     /**
      * Memproses satu baris outbox AR secara atomik dan idempoten.
      */
-    public function processOutboxRecord(AccountingReceivableOutbox $outbox): void
+    public function processOutboxRecord(object $outbox): void
     {
         switch ($outbox->event_type) {
             case 'INVOICE_POSTED':
@@ -100,9 +92,7 @@ class ArOutboxConsumerService
                 break;
 
             default:
-                $outbox->status = 'processed_by_m7';
-                $outbox->processed_at = now();
-                $outbox->save();
+                $this->markOutboxProcessed($outbox);
                 break;
         }
     }
@@ -111,7 +101,7 @@ class ArOutboxConsumerService
      * Memproses INVOICE_POSTED (PR-AR-01):
      * Debit AR Control, Debit Sales Discount, Credit Sales Revenue B2B, Credit Shipping, Credit PPN Keluaran.
      */
-    protected function processInvoicePosted(AccountingReceivableOutbox $outbox): void
+    protected function processInvoicePosted(object $outbox): void
     {
         $tenantId = (int) $outbox->tenant_id;
         $payload = is_array($outbox->payload) ? $outbox->payload : json_decode((string) $outbox->payload, true);
@@ -119,15 +109,13 @@ class ArOutboxConsumerService
         DB::transaction(function () use ($outbox, $tenantId, $payload) {
             $invoiceId = (int) ($payload['invoice_id'] ?? $outbox->source_document_id);
 
-            /** @var CustomerInvoice|null $invoice */
-            $invoice = CustomerInvoice::withoutGlobalScopes()
+            $invoice = DB::table('customer_invoices')
                 ->where('tenant_id', $tenantId)
-                ->find($invoiceId);
+                ->where('id', $invoiceId)
+                ->first();
 
-            if ($invoice && $invoice->gl_journal_entry_id) {
-                $outbox->status = 'processed_by_m7';
-                $outbox->processed_at = now();
-                $outbox->save();
+            if ($invoice && ($invoice->gl_journal_entry_id ?? null)) {
+                $this->markOutboxProcessed($outbox);
 
                 return;
             }
@@ -165,14 +153,13 @@ class ArOutboxConsumerService
 
             $journal = $this->postingEngine->postEvent($eventDto);
 
-            if ($invoice && ! $invoice->gl_journal_entry_id) {
-                $invoice->gl_journal_entry_id = $journal->id;
-                $invoice->save();
+            if ($invoice && ! ($invoice->gl_journal_entry_id ?? null)) {
+                DB::table('customer_invoices')
+                    ->where('id', $invoiceId)
+                    ->update(['gl_journal_entry_id' => $journal->id]);
             }
 
-            $outbox->status = 'processed_by_m7';
-            $outbox->processed_at = now();
-            $outbox->save();
+            $this->markOutboxProcessed($outbox);
         });
     }
 
@@ -180,7 +167,7 @@ class ArOutboxConsumerService
      * Memproses PAYMENT_ALLOCATED (PR-AR-03):
      * Debit Kas/Bank, Debit Biaya Admin, Credit AR Control, Credit Kelebihan Bayar Pelanggan.
      */
-    protected function processPaymentAllocated(AccountingReceivableOutbox $outbox): void
+    protected function processPaymentAllocated(object $outbox): void
     {
         $tenantId = (int) $outbox->tenant_id;
         $payload = is_array($outbox->payload) ? $outbox->payload : json_decode((string) $outbox->payload, true);
@@ -198,9 +185,7 @@ class ArOutboxConsumerService
             }
 
             if ($receipt && $receipt->journal_entry_id) {
-                $outbox->status = 'processed_by_m7';
-                $outbox->processed_at = now();
-                $outbox->save();
+                $this->markOutboxProcessed($outbox);
 
                 return;
             }
@@ -281,15 +266,13 @@ class ArOutboxConsumerService
                 $receipt->save();
 
                 // Tautkan journal_entry_id ke alokasi
-                ArPaymentAllocation::withoutGlobalScopes()
+                DB::table('ar_payment_allocations')
                     ->where('tenant_id', $tenantId)
                     ->where('ar_receipt_id', $receipt->id)
                     ->update(['journal_entry_id' => $journal->id]);
             }
 
-            $outbox->status = 'processed_by_m7';
-            $outbox->processed_at = now();
-            $outbox->save();
+            $this->markOutboxProcessed($outbox);
         });
     }
 
@@ -297,7 +280,7 @@ class ArOutboxConsumerService
      * Memproses CREDIT_NOTE_APPLIED (PR-AR-04):
      * Debit Sales Return, Debit PPN Keluaran, Credit AR Control.
      */
-    protected function processCreditNoteApplied(AccountingReceivableOutbox $outbox): void
+    protected function processCreditNoteApplied(object $outbox): void
     {
         $tenantId = (int) $outbox->tenant_id;
         $payload = is_array($outbox->payload) ? $outbox->payload : json_decode((string) $outbox->payload, true);
@@ -333,16 +316,14 @@ class ArOutboxConsumerService
 
             $this->postingEngine->postEvent($eventDto);
 
-            $outbox->status = 'processed_by_m7';
-            $outbox->processed_at = now();
-            $outbox->save();
+            $this->markOutboxProcessed($outbox);
         });
     }
 
     /**
      * Memproses INVOICE_VOIDED: membalik jurnal faktur GL yang bersangkutan.
      */
-    protected function processInvoiceVoided(AccountingReceivableOutbox $outbox): void
+    protected function processInvoiceVoided(object $outbox): void
     {
         $tenantId = (int) $outbox->tenant_id;
         $payload = is_array($outbox->payload) ? $outbox->payload : json_decode((string) $outbox->payload, true);
@@ -350,10 +331,10 @@ class ArOutboxConsumerService
         DB::transaction(function () use ($outbox, $tenantId, $payload) {
             $invoiceId = (int) ($payload['invoice_id'] ?? $outbox->source_document_id);
 
-            /** @var CustomerInvoice|null $invoice */
-            $invoice = CustomerInvoice::withoutGlobalScopes()
+            $invoice = DB::table('customer_invoices')
                 ->where('tenant_id', $tenantId)
-                ->find($invoiceId);
+                ->where('id', $invoiceId)
+                ->first();
 
             if ($invoice && $invoice->gl_journal_entry_id) {
                 /** @var JournalEntry|null $journal */
@@ -370,20 +351,52 @@ class ArOutboxConsumerService
                 }
             }
 
-            $outbox->status = 'processed_by_m7';
-            $outbox->processed_at = now();
-            $outbox->save();
+            $this->markOutboxProcessed($outbox);
         });
     }
 
     /**
      * Memproses ALLOCATION_REVERSED: membalik jurnal penerimaan atau penyesuaian GL.
      */
-    protected function processAllocationReversed(AccountingReceivableOutbox $outbox): void
+    protected function processAllocationReversed(object $outbox): void
     {
-        $outbox->status = 'processed_by_m7';
-        $outbox->processed_at = now();
-        $outbox->save();
+        $this->markOutboxProcessed($outbox);
+    }
+
+    protected function markOutboxProcessed(object $outbox): void
+    {
+        if (method_exists($outbox, 'save')) {
+            $outbox->status = 'processed_by_m7';
+            $outbox->processed_at = now();
+            $outbox->save();
+        } else {
+            DB::table('accounting_receivable_outboxes')
+                ->where('id', $outbox->id)
+                ->update([
+                    'status' => 'processed_by_m7',
+                    'processed_at' => now(),
+                ]);
+        }
+    }
+
+    protected function markOutboxFailed(object $outbox, string $error): void
+    {
+        $retryCount = ($outbox->retry_count ?? 0) + 1;
+        $status = $retryCount >= 5 ? 'failed' : ($outbox->status ?? 'pending');
+        if (method_exists($outbox, 'save')) {
+            $outbox->retry_count = $retryCount;
+            $outbox->last_error = substr($error, 0, 1000);
+            $outbox->status = $status;
+            $outbox->save();
+        } else {
+            DB::table('accounting_receivable_outboxes')
+                ->where('id', $outbox->id)
+                ->update([
+                    'retry_count' => $retryCount,
+                    'last_error' => substr($error, 0, 1000),
+                    'status' => $status,
+                ]);
+        }
     }
 
     /**

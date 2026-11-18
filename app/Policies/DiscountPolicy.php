@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\Discount;
-use App\Models\User;
+use App\Modules\Organization\Models\User;
+use App\Modules\Pricing\Models\Discount;
 
 /**
  * [D2-BE-004] Policy Discount: CRUD diskon hanya Owner & Manager,

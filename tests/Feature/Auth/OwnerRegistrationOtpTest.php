@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\EmailOutbox;
-use App\Models\EmailVerificationOtp;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Modules\Organization\Models\EmailOutbox;
+use App\Modules\Organization\Models\EmailVerificationOtp;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

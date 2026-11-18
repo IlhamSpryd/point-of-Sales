@@ -59,6 +59,12 @@ class PopulateApeironFullYearDataset extends Command
 
     public function handle(): int
     {
+        if (app()->environment('production')) {
+            $this->error('Simulation commands are strictly forbidden in production!');
+
+            return self::FAILURE;
+        }
+
         $this->tenantId = (int) $this->option('tenant');
         $this->targetOrders = (int) $this->option('orders');
         $this->chunkSize = (int) $this->option('chunk');

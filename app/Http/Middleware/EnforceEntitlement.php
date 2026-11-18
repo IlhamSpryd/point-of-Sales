@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Services\Context\TenantContext;
-use App\Services\EntitlementService;
+use App\Core\Context\TenantContext;
+use App\Modules\Subscription\Services\EntitlementService;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

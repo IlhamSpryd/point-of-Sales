@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Retail;
 
-use App\Modules\Retail\Models\ShelfLabel;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Catalog\Models\ShelfLabel;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\Support\TwoTenantFixture;
 use Tests\TestCase;

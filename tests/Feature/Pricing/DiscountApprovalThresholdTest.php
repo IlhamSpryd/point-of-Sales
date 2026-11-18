@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Pricing;
 
-use App\Models\Approval;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Approval;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\CashierPinService;
 use App\Modules\Pricing\Services\DiscountApprovalService;
-use App\Modules\Users\Services\CashierPinService;
-use App\Services\Context\TenantContext;
 use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

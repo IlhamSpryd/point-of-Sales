@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Traits;
 
 use App\Core\Context\TenantContext;
-use App\Models\Store;
+use App\Modules\Organization\Models\Store;
 use Illuminate\Support\Facades\Auth;
 use RuntimeException;
 

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Services;
 
-use App\Models\IngredientStockMovement;
-use App\Models\Order;
-use App\Models\OrderReturn;
-use App\Models\Payment;
-use App\Models\Shift;
-use App\Models\StockMovement;
 use App\Modules\Finance\Jobs\ProcessFinancialOutboxJob;
 use App\Modules\Finance\Models\FinancialEventOutbox;
+use App\Modules\Inventory\Models\IngredientStockMovement;
+use App\Modules\Inventory\Models\StockMovement;
+use App\Modules\Sales\Contracts\OrderReturnReaderInterface;
+use App\Modules\Sales\Contracts\PosOrderReaderInterface;
+use App\Modules\Sales\Contracts\ShiftReaderInterface;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class FinancialOutboxDispatcherService
@@ -76,12 +76,12 @@ class FinancialOutboxDispatcherService
     /**
      * Emisi event outbox saat Order POS berstatus Paid (pos.order.paid).
      */
-    public function dispatchPosOrderPaid(Order $order): FinancialEventOutbox
+    public function dispatchPosOrderPaid(PosOrderReaderInterface $order): FinancialEventOutbox
     {
         // 1. Ekstraksi COGS Retail (stock_movements sale_deduction)
         $retailMovements = StockMovement::withoutGlobalScopes()
-            ->where('tenant_id', $order->tenant_id)
-            ->where('order_id', $order->id)
+            ->where('tenant_id', $order->getTenantId())
+            ->where('order_id', $order->getId())
             ->where('type', 'sale_deduction')
             ->get();
 
@@ -96,7 +96,7 @@ class FinancialOutboxDispatcherService
 
         // 2. Ekstraksi COGS F&B (ingredient_stock_movements)
         $fnbMovements = IngredientStockMovement::withoutGlobalScopes()
-            ->where('order_id', $order->id)
+            ->where('order_id', $order->getId())
             ->get();
 
         $cogsFood = '0.00';
@@ -110,8 +110,8 @@ class FinancialOutboxDispatcherService
         $totalCogs = bcadd($cogsRetail, $cogsFood, 2);
 
         // 3. Ekstraksi Pembayaran
-        $payments = Payment::withoutGlobalScopes()
-            ->where('order_id', $order->id)
+        $payments = DB::table('payments')
+            ->where('order_id', $order->getId())
             ->get();
 
         $paymentDetails = [];
@@ -120,13 +120,13 @@ class FinancialOutboxDispatcherService
 
         foreach ($payments as $p) {
             $amt = bcadd((string) $p->amount, '0', 2);
-            $rawPm = $p->getAttribute('payment_method');
-            $method = $rawPm instanceof \BackedEnum ? (string) $rawPm->value : (string) $rawPm;
+            $rawPm = $p->payment_method ?? null;
+            $method = (string) $rawPm;
             $paymentDetails[] = [
                 'payment_id' => $p->id,
                 'method' => $method,
                 'amount' => $amt,
-                'reference' => $p->reference_number,
+                'reference' => $p->reference_number ?? null,
             ];
 
             if ($method === 'cash') {
@@ -138,15 +138,15 @@ class FinancialOutboxDispatcherService
 
         $toBc = fn ($val) => (is_numeric($val) ? bcadd((string) $val, '0', 2) : '0.00');
 
-        $subtotal = $toBc($order->subtotal_amount ?? $order->subtotal ?? 0);
-        $tax = $toBc($order->tax_amount ?? 0);
-        $total = $toBc($order->order_amount ?? $order->total_amount ?? 0);
-        $discount = $toBc($order->discount_amount ?? 0);
+        $subtotal = $toBc($order->getSubtotal());
+        $tax = $toBc($order->getTaxAmount());
+        $total = $toBc($order->getTotalAmount());
+        $discount = $toBc($order->getDiscountAmount());
 
         $payload = [
-            'order_id' => $order->id,
-            'order_number' => $order->order_code ?? (string) $order->id,
-            'accounting_date' => Carbon::parse($order->created_at)->toDateString(),
+            'order_id' => $order->getId(),
+            'order_number' => $order->getOrderNumber(),
+            'accounting_date' => Carbon::parse($order->getCreatedAt() ?? now())->toDateString(),
             'subtotal' => $subtotal,
             'tax_amount' => $tax,
             'discount_amount' => $discount,
@@ -160,43 +160,38 @@ class FinancialOutboxDispatcherService
         ];
 
         return $this->recordOutboxEvent(
-            tenantId: (int) $order->tenant_id,
-            storeId: $order->store_id ? (int) $order->store_id : null,
+            tenantId: $order->getTenantId(),
+            storeId: $order->getStoreId(),
             eventType: 'pos.order.paid',
             sourceModule: 'POS',
             sourceType: 'ORDER',
-            sourceId: $order->id,
-            sourceNumber: $order->order_code ?? (string) $order->id,
-            idempotencyKey: "pos:order:paid:{$order->id}",
+            sourceId: $order->getId(),
+            sourceNumber: $order->getOrderNumber(),
+            idempotencyKey: "pos:order:paid:{$order->getId()}",
             payload: $payload,
-            occurredAt: $order->created_at ? Carbon::parse($order->created_at) : now()
+            occurredAt: $order->getCreatedAt() ? Carbon::parse($order->getCreatedAt()) : now()
         );
     }
 
     /**
      * Emisi event outbox saat Retur & Refund POS selesai (sales.return.refunded).
      */
-    public function dispatchSalesReturnRefunded(OrderReturn $orderReturn): FinancialEventOutbox
+    public function dispatchSalesReturnRefunded(OrderReturnReaderInterface $orderReturn): FinancialEventOutbox
     {
-        $order = $orderReturn->order;
-        $returnItems = $orderReturn->returnItems()->with('product')->get();
+        $returnItems = DB::table('order_return_items')
+            ->where('order_return_id', $orderReturn->getId())
+            ->get();
 
         $restockCogs = '0.00';
         $wasteCogs = '0.00';
 
         foreach ($returnItems as $item) {
-            $cost = (string) ($item->product?->standard_cost ?? $item->product?->cost_price ?? '0.00');
-            $lineCost = bcmul(bc_num($item->quantity_returned), bc_num($cost), 2);
+            $product = DB::table('products')->where('id', $item->product_id)->first();
+            $cost = (string) ($product?->standard_cost ?? $product?->cost_price ?? '0.00');
+            $lineCost = bcmul(bc_num((float) $item->quantity_returned), bc_num($cost), 2);
 
-            $rawDisposition = $item->getAttribute('disposition');
-            $isRestock = false;
-            if (is_object($rawDisposition) && method_exists($rawDisposition, 'isRestock')) {
-                $isRestock = $rawDisposition->isRestock();
-            } elseif (is_string($rawDisposition)) {
-                $isRestock = $rawDisposition === 'restock';
-            } elseif (is_object($rawDisposition) && property_exists($rawDisposition, 'value')) {
-                $isRestock = $rawDisposition->value === 'restock';
-            }
+            $rawDisposition = $item->disposition ?? null;
+            $isRestock = $rawDisposition === 'restock';
 
             if ($isRestock) {
                 $restockCogs = bcadd($restockCogs, $lineCost, 2);
@@ -205,39 +200,45 @@ class FinancialOutboxDispatcherService
             }
         }
 
+        $orderCode = null;
+        if ($orderReturn->getOrderId()) {
+            $orderRow = DB::table('orders')->where('id', $orderReturn->getOrderId())->first();
+            $orderCode = $orderRow ? (string) ($orderRow->order_code ?? '') : null;
+        }
+
         $payload = [
-            'order_return_id' => $orderReturn->id,
-            'return_number' => $orderReturn->return_number,
-            'order_id' => $orderReturn->order_id,
-            'order_number' => $order?->order_code,
-            'accounting_date' => Carbon::parse($orderReturn->completed_at ?? now())->toDateString(),
-            'total_refund_amount' => bcadd((string) $orderReturn->total_refundable_amount, '0', 2),
-            'subtotal_returned' => bcadd((string) $orderReturn->subtotal_returned, '0', 2),
-            'tax_returned' => bcadd((string) $orderReturn->tax_returned, '0', 2),
+            'order_return_id' => $orderReturn->getId(),
+            'return_number' => $orderReturn->getReturnNumber(),
+            'order_id' => $orderReturn->getOrderId(),
+            'order_number' => $orderCode,
+            'accounting_date' => Carbon::parse($orderReturn->getCompletedAt() ?? now())->toDateString(),
+            'total_refund_amount' => bcadd((string) $orderReturn->getRefundAmount(), '0', 2),
+            'subtotal_returned' => bcadd((string) $orderReturn->getSubtotalReturned(), '0', 2),
+            'tax_returned' => bcadd((string) $orderReturn->getTaxReturned(), '0', 2),
             'restock_cogs' => $restockCogs,
             'waste_cogs' => $wasteCogs,
         ];
 
         return $this->recordOutboxEvent(
-            tenantId: (int) $orderReturn->tenant_id,
-            storeId: $orderReturn->store_id ? (int) $orderReturn->store_id : null,
+            tenantId: $orderReturn->getTenantId(),
+            storeId: $orderReturn->getStoreId(),
             eventType: 'sales.return.refunded',
             sourceModule: 'SALES',
             sourceType: 'ORDER_RETURN',
-            sourceId: $orderReturn->id,
-            sourceNumber: $orderReturn->return_number,
-            idempotencyKey: "sales:return:refunded:{$orderReturn->id}",
+            sourceId: $orderReturn->getId(),
+            sourceNumber: $orderReturn->getReturnNumber(),
+            idempotencyKey: "sales:return:refunded:{$orderReturn->getId()}",
             payload: $payload,
-            occurredAt: $orderReturn->completed_at ? Carbon::parse($orderReturn->completed_at) : now()
+            occurredAt: $orderReturn->getCreatedAt() ? Carbon::parse($orderReturn->getCreatedAt()) : now()
         );
     }
 
     /**
      * Emisi event outbox saat Shift Kasir ditutup dengan selisih kas (pos.shift.closed).
      */
-    public function dispatchShiftClosed(Shift $shift): ?FinancialEventOutbox
+    public function dispatchShiftClosed(ShiftReaderInterface $shift): ?FinancialEventOutbox
     {
-        $cashDifference = (int) ($shift->cash_difference ?? 0);
+        $cashDifference = (int) $shift->getCashDifference();
 
         // Jika selisih kas 0.00, tidak memerlukan jurnal selisih kas (no-op)
         if ($cashDifference === 0) {
@@ -250,10 +251,10 @@ class FinancialOutboxDispatcherService
         $shortageAmount = ! $isOver ? $diffDec : '0.00';
 
         $payload = [
-            'shift_id' => $shift->id,
-            'accounting_date' => Carbon::parse($shift->closed_at ?? now())->toDateString(),
-            'expected_cash' => bcadd((string) ($shift->expected_cash ?? 0), '0', 2),
-            'closing_balance' => bcadd((string) ($shift->closing_balance ?? 0), '0', 2),
+            'shift_id' => $shift->getId(),
+            'accounting_date' => Carbon::parse($shift->getClosedAt() ?? now())->toDateString(),
+            'expected_cash' => bcadd((string) $shift->getExpectedCash(), '0', 2),
+            'closing_balance' => bcadd((string) $shift->getClosingBalance(), '0', 2),
             'cash_difference' => (string) $cashDifference,
             'difference_amount' => $diffDec,
             'overage_amount' => $overageAmount,
@@ -262,16 +263,16 @@ class FinancialOutboxDispatcherService
         ];
 
         return $this->recordOutboxEvent(
-            tenantId: (int) $shift->tenant_id,
-            storeId: $shift->store_id ? (int) $shift->store_id : null,
+            tenantId: $shift->getTenantId(),
+            storeId: $shift->getStoreId(),
             eventType: 'pos.shift.closed',
             sourceModule: 'POS',
             sourceType: 'SHIFT',
-            sourceId: $shift->id,
-            sourceNumber: 'SHIFT-'.$shift->id,
-            idempotencyKey: "pos:shift:closed:{$shift->id}",
+            sourceId: $shift->getId(),
+            sourceNumber: $shift->getShiftNumber() ?? ('SHIFT-'.$shift->getId()),
+            idempotencyKey: "pos:shift:closed:{$shift->getId()}",
             payload: $payload,
-            occurredAt: $shift->closed_at ? Carbon::parse($shift->closed_at) : now()
+            occurredAt: $shift->getClosedAt() ? Carbon::parse($shift->getClosedAt()) : now()
         );
     }
 }

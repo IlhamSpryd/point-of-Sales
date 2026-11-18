@@ -7,6 +7,6 @@ namespace App\Http\Controllers;
 /**
  * Backward compatibility wrapper for modular architecture.
  *
- * @see \App\Modules\Customers\Controllers\DiscountController
+ * @see \App\Modules\Pricing\Controllers\DiscountController
  */
-class DiscountController extends \App\Modules\Customers\Controllers\DiscountController {}
+class DiscountController extends \App\Modules\Pricing\Controllers\DiscountController {}

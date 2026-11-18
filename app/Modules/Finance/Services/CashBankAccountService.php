@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Services;
 
-use App\Models\User;
 use App\Modules\Finance\Enums\CashBankAccountTypeEnum;
 use App\Modules\Finance\Enums\JournalStatusEnum;
 use App\Modules\Finance\Models\CashBankAccount;
 use App\Modules\Finance\Models\ChartOfAccount;
+use App\Modules\Organization\Models\User;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 

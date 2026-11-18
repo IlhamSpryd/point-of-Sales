@@ -4,7 +4,67 @@ declare(strict_types=1);
 
 namespace App\Modules\Catalog\Models;
 
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToTenant;
+use Database\Factories\UnitOfMeasureFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 /**
- * @deprecated Use \App\Modules\Products\Models\UnitOfMeasure instead. Consolidated per DEC-002 / TASK-201.
+ * UnitOfMeasure: Satuan ukur standar (PCS, KG, L, PACK, dll) terisolasi per tenant.
+ *
+ * @property int $id
+ * @property int $tenant_id
  */
-class UnitOfMeasure extends \App\Modules\Products\Models\UnitOfMeasure {}
+class UnitOfMeasure extends Model
+{
+    use AssignsTenant;
+
+    /** @use HasFactory<UnitOfMeasureFactory> */
+    use HasFactory;
+
+    use ScopedToTenant;
+
+    protected $table = 'units_of_measure';
+
+    protected $fillable = [
+        'tenant_id',
+        'code',
+        'name',
+        'precision_scale',
+        'is_active',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'precision_scale' => 'integer',
+            'is_active' => 'boolean',
+        ];
+    }
+
+    /**
+     * @return HasMany<Product, $this>
+     */
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class, 'base_uom_id');
+    }
+
+    /**
+     * @return HasMany<ProductUnitConversion, $this>
+     */
+    public function conversionsFrom(): HasMany
+    {
+        return $this->hasMany(ProductUnitConversion::class, 'from_uom_id');
+    }
+
+    /**
+     * @return HasMany<ProductUnitConversion, $this>
+     */
+    public function conversionsTo(): HasMany
+    {
+        return $this->hasMany(ProductUnitConversion::class, 'to_uom_id');
+    }
+}

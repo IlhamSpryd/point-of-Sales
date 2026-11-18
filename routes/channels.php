@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Models\User;
+use App\Modules\Organization\Models\User;
 use Illuminate\Support\Facades\Broadcast;
 
 Broadcast::channel('tenant.{tenantId}.store.{storeId}.waiter-calls', function (User $user, int|string $tenantId, int|string $storeId): bool {
@@ -60,6 +60,7 @@ Broadcast::channel('tenant.{tenantId}.kds', function (User $user, int|string $te
     }
 
     $role = $user->role;
+
     return (bool) ($role && (
         $role->name === 'Owner' ||
         $role->name === 'Cook' ||

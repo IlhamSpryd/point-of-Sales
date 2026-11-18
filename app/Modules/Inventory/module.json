@@ -1,0 +1,42 @@
+{
+    "name": "Inventory",
+    "tier": 3,
+    "owner": "@ilhamsepriyadi",
+    "description": "Multi-warehouse stock tracking, stock opname, stock transfers, adjustments, lots and modifiers (ADR-102).",
+    "ownsTables": [
+        "warehouses",
+        "stock_movements",
+        "product_stock_balances",
+        "stock_opnames",
+        "stock_opname_items",
+        "stock_transfers",
+        "stock_transfer_items",
+        "stock_transfer_documents",
+        "stock_adjustments",
+        "stock_adjustment_items",
+        "product_lots",
+        "product_lot_movements",
+        "modifiers",
+        "modifier_groups"
+    ],
+    "allowedDependencies": [
+        "Organization",
+        "Catalog",
+        "Finance",
+        "Sales"
+    ],
+    "publishesEvents": [
+        "inventory.stock.deducted.v1",
+        "inventory.stock.transferred.v1"
+    ],
+    "consumesEvents": [
+        "sales.order.completed.v1",
+        "purchasing.grn.received.v1"
+    ],
+    "dependsOn": [
+        "Organization",
+        "Catalog",
+        "Finance",
+        "Sales"
+    ]
+}

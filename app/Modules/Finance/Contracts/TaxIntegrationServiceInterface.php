@@ -38,7 +38,7 @@ interface TaxIntegrationServiceInterface
     /**
      * Submit faktur pajak dengan perlindungan idempotensi, pencatatan audit, dan penyensoran data sensitif (PII).
      *
-     * @param array<string, mixed> $options
+     * @param  array<string, mixed>  $options
      */
     public function submitTaxInvoice(
         TaxInvoiceDocumentDto $document,
@@ -66,7 +66,7 @@ interface TaxIntegrationServiceInterface
     /**
      * Sensor data sensitif (NPWP, NIK, kunci rahasia) sebelum disimpan ke log / database.
      *
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
     public function maskSensitivePayload(array $payload): array;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Modules\Purchasing\Models;
 
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToTenant;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

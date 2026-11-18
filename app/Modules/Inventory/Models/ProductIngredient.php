@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Inventory\Models;
 
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Ingredient;
-use App\Models\Product;
-use App\Modules\Products\Services\MenuCacheService;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToTenant;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Services\MenuCacheService;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Facades\DB;

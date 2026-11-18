@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Inventory;
 
+use App\Core\Context\TenantContext;
 use App\Enums\IngredientStockMovementTypeEnum;
 use App\Enums\StockMovementType;
 use App\Enums\SupplierReturnStatusEnum;
 use App\Livewire\Inventory\SupplierReturnManager;
-use App\Models\Ingredient;
-use App\Models\SupplierReturn;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Inventory\Models\SupplierReturn;
 use App\Modules\Inventory\Services\InventoryLedgerService;
 use App\Modules\Inventory\Services\SupplierReturnService;
-use App\Services\Context\TenantContext;
 use DomainException;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;

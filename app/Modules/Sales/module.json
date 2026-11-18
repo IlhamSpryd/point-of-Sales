@@ -1,0 +1,57 @@
+{
+    "name": "Sales",
+    "tier": 4,
+    "owner": "@ilhamsepriyadi",
+    "description": "POS orders, cashier shifts, payment processing, F&B tables/split bill, quotations, B2B sales orders and AR invoices (ADR-102).",
+    "ownsTables": [
+        "orders",
+        "order_items",
+        "order_payments",
+        "payment_refunds",
+        "payment_attempts",
+        "shifts",
+        "shift_logs",
+        "cash_drawer_movements",
+        "sales_quotations",
+        "sales_quotation_items",
+        "sales_orders",
+        "sales_order_items",
+        "customer_invoices",
+        "customer_invoice_items",
+        "customer_credit_notes",
+        "ar_ledger_entries",
+        "ar_payment_allocations",
+        "tables",
+        "pos_offline_outboxes"
+    ],
+    "allowedDependencies": [
+        "Organization",
+        "Subscription",
+        "Catalog",
+        "Customers",
+        "Pricing",
+        "Inventory",
+        "Manufacturing",
+        "Integration",
+        "Finance"
+    ],
+    "publishesEvents": [
+        "sales.order.completed.v1",
+        "sales.shift.closed.v1",
+        "sales.invoice.issued.v1"
+    ],
+    "consumesEvents": [
+        "integration.payment.settled.v1"
+    ],
+    "dependsOn": [
+        "Organization",
+        "Subscription",
+        "Catalog",
+        "Customers",
+        "Pricing",
+        "Inventory",
+        "Manufacturing",
+        "Integration",
+        "Finance"
+    ]
+}

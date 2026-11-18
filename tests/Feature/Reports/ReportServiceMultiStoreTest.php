@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reports;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Exports\SalesExport;
-use App\Models\Order;
-use App\Services\Context\TenantContext;
-use App\Services\ReportService;
+use App\Modules\Reporting\Services\ReportService;
+use App\Modules\Sales\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;

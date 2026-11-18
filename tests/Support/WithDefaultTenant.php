@@ -2,10 +2,13 @@
 
 namespace Tests\Support;
 
-use App\Models\Company;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Company;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
 
@@ -25,9 +28,9 @@ trait WithDefaultTenant
         // Avoid database overhead and locking in unit tests that do not declare database traits
         if (str_starts_with(static::class, 'Tests\\Unit\\')) {
             $uses = array_flip(class_uses_recursive(static::class));
-            $hasDbTrait = isset($uses[\Illuminate\Foundation\Testing\DatabaseTransactions::class])
-                || isset($uses[\Illuminate\Foundation\Testing\RefreshDatabase::class])
-                || isset($uses[\Illuminate\Foundation\Testing\DatabaseTruncation::class]);
+            $hasDbTrait = isset($uses[DatabaseTransactions::class])
+                || isset($uses[RefreshDatabase::class])
+                || isset($uses[DatabaseTruncation::class]);
 
             if (! $hasDbTrait) {
                 return;

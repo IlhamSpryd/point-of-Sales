@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domain2;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
 use App\Livewire\Kasir\CreateOrder;
 use App\Livewire\Kasir\OrderHistory;
 use App\Livewire\ShiftManager;
-use App\Models\Device;
-use App\Models\Order;
-use App\Models\Payment;
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Shift;
-use App\Models\User;
-use App\Services\Context\TenantContext;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\Payment;
+use App\Modules\Sales\Models\Shift;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;

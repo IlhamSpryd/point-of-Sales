@@ -6,13 +6,13 @@ namespace App\Modules\Manufacturing\Services;
 
 use App\Enums\IngredientStockMovementTypeEnum;
 use App\Enums\StockMovementType;
-use App\Models\Ingredient;
-use App\Models\Product;
+use App\Modules\Catalog\Models\Product;
 use App\Modules\Finance\Services\FinancialOutboxDispatcherService;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Inventory\Models\ProductIngredient;
 use App\Modules\Inventory\Services\InventoryLedgerService;
 use App\Modules\Manufacturing\Models\IngredientRecipe;
 use App\Modules\Manufacturing\Models\ManufacturingOrder;
-use App\Modules\Manufacturing\Models\ProductIngredient;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use RuntimeException;
@@ -39,6 +39,14 @@ class ManufacturingOrderService
         $qtyStr = (string) $plannedQuantity;
         if (bccomp($qtyStr, '0', 4) <= 0) {
             throw new InvalidArgumentException('Planned quantity must be greater than zero.');
+        }
+
+        $productBelongsToTenant = DB::table('products')
+            ->where('tenant_id', $tenantId)
+            ->where('id', $productId)
+            ->exists();
+        if (! $productBelongsToTenant) {
+            throw new InvalidArgumentException("Product ID {$productId} not found or does not belong to tenant {$tenantId}.");
         }
 
         $orderNumber = 'MO-'.now()->format('Ymd').'-'.str_pad((string) random_int(1, 99999), 5, '0', STR_PAD_LEFT);
@@ -74,6 +82,14 @@ class ManufacturingOrderService
         $qtyStr = (string) $plannedQuantity;
         if (bccomp($qtyStr, '0', 4) <= 0) {
             throw new InvalidArgumentException('Planned quantity must be greater than zero.');
+        }
+
+        $ingredientBelongsToTenant = DB::table('ingredients')
+            ->where('tenant_id', $tenantId)
+            ->where('id', $ingredientId)
+            ->exists();
+        if (! $ingredientBelongsToTenant) {
+            throw new InvalidArgumentException("Ingredient ID {$ingredientId} not found or does not belong to tenant {$tenantId}.");
         }
 
         $orderNumber = 'MO-PREP-'.now()->format('Ymd').'-'.str_pad((string) random_int(1, 99999), 5, '0', STR_PAD_LEFT);
@@ -233,11 +249,11 @@ class ManufacturingOrderService
                     $requiredQty = bcmul($itemQty, $actualProduced, 4);
 
                     $ingredient = $bomItem->ingredient;
-                    $unitCost = $ingredient instanceof \App\Models\Ingredient ? (float) $ingredient->cost_per_unit : 0.0;
+                    $unitCost = $ingredient instanceof Ingredient ? (float) $ingredient->cost_per_unit : 0.0;
                     $lineCost = bcmul($requiredQty, (string) $unitCost, 4);
                     $totalMaterialCost = bcadd($totalMaterialCost, $lineCost, 4);
 
-                    $ingredientName = $ingredient instanceof \App\Models\Ingredient ? $ingredient->name : "#{$bomItem->ingredient_id}";
+                    $ingredientName = $ingredient instanceof Ingredient ? $ingredient->name : "#{$bomItem->ingredient_id}";
 
                     $consumedSummary[] = [
                         'ingredient_id' => $bomItem->ingredient_id,

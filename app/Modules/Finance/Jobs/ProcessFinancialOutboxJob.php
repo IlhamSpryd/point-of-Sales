@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Jobs;
 
+use App\Core\Context\TenantContext;
 use App\Modules\Finance\Enums\OutboxStatusEnum;
 use App\Modules\Finance\Models\FinancialEventOutbox;
 use App\Modules\Finance\Services\PostingEngineService;
-use App\Services\Context\TenantContext;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -43,7 +43,11 @@ class ProcessFinancialOutboxJob implements ShouldQueue
                     return;
                 }
 
-                if ($outbox->status === OutboxStatusEnum::PROCESSED) {
+                $canProcess = $outbox->status === OutboxStatusEnum::PENDING
+                    || ($outbox->status === OutboxStatusEnum::FAILED
+                        && ($outbox->next_retry_at === null || $outbox->next_retry_at->isPast() || $outbox->next_retry_at <= now()));
+
+                if (! $canProcess) {
                     return;
                 }
 

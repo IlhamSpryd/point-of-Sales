@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Pricing\Services;
 
-use App\Models\Product;
-use App\Models\User;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Organization\Models\User;
 use App\Modules\Pricing\DataTransferObjects\MarginSimulationResultDto;
 use App\Modules\Pricing\Models\PromotionCampaign;
 use App\Modules\Pricing\Models\PromotionReward;
@@ -32,7 +32,7 @@ class MarginSimulationService
 
         foreach ($productsWithQty as $entry) {
             $product = $entry['product'];
-            $qty = max(1.0, (float) ($entry['quantity'] ?? 10.0));
+            $qty = max(1.0, (float) $entry['quantity']);
 
             $unitPrice = (float) ($product->product_price ?? $product->price ?? 0.0);
             $standardCost = (float) ($product->standard_cost ?? $product->cost_price ?? $product->hpp ?? 0.0);

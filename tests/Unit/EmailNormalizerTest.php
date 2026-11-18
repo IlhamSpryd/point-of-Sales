@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Models\User;
+use App\Modules\Organization\Models\User;
 use App\Support\EmailNormalizer;
 use Tests\TestCase;
 

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Finance;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Finance\JournalEntryManager;
-use App\Models\Role;
-use App\Models\User;
 use App\Modules\Finance\Enums\AccountTypeEnum;
 use App\Modules\Finance\Models\ChartOfAccount;
 use App\Modules\Finance\Models\JournalEntry;
 use App\Modules\Finance\Services\AccountingPeriodService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
 use Database\Seeders\ChartOfAccountsSeeder;
 use Database\Seeders\DefaultPostingRulesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

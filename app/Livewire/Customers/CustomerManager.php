@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Livewire\Customers;
 
+use App\Core\Context\TenantContext;
 use App\Enums\ExportTaskStatus;
 use App\Jobs\ProcessCustomerStatementExportJob;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Customer;
-use App\Models\CustomerAddress;
-use App\Models\CustomerContact;
-use App\Models\CustomerGroup;
-use App\Models\ExportTask;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Customers\Models\CustomerAddress;
+use App\Modules\Customers\Models\CustomerContact;
+use App\Modules\Customers\Models\CustomerGroup;
 use App\Modules\Customers\Services\CustomerService;
+use App\Modules\Reporting\Models\ExportTask;
 use App\Modules\Sales\Services\AccountsReceivableService;
-use App\Services\Context\TenantContext;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;

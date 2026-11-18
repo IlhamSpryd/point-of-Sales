@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Core\Context\TenantContext;
 use App\Enums\TableStatusEnum;
-use App\Models\Store;
-use App\Models\Table;
-use App\Models\Tenant;
-use App\Services\Context\TenantContext;
-use App\Services\EntitlementService;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Sales\Models\Table;
+use App\Modules\Subscription\Services\EntitlementService;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

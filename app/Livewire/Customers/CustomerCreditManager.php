@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Livewire\Customers;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Customer;
 use App\Modules\Customers\Enums\CreditStatusEnum;
+use App\Modules\Customers\Models\Customer;
 use App\Modules\Customers\Models\CustomerCreditAccount;
 use App\Modules\Customers\Services\CustomerCreditService;
-use App\Services\Context\TenantContext;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;

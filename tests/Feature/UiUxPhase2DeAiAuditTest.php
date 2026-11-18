@@ -17,7 +17,7 @@ class UiUxPhase2DeAiAuditTest extends TestCase
         $partialsDir = resource_path('views/dashboard/partials');
         if (File::isDirectory($partialsDir)) {
             foreach (File::allFiles($partialsDir) as $partial) {
-                $content .= "\n" . File::get($partial->getPathname());
+                $content .= "\n".File::get($partial->getPathname());
             }
         }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Traits;
 
-use App\Models\Company;
+use App\Modules\Organization\Models\Company;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -21,4 +21,3 @@ trait BelongsToCompany
         return $this->belongsTo(Company::class, 'company_id');
     }
 }
-

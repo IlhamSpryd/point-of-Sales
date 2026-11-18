@@ -32,6 +32,7 @@ return new class extends Migration
                     ->cascadeOnUpdate()
                     ->restrictOnDelete();
 
+                $table->unique(['tenant_id', 'id'], 'currencies_tenant_id_id_unique');
                 $table->unique(['tenant_id', 'code'], 'currencies_tenant_code_unique');
                 $table->index(['tenant_id', 'is_active'], 'idx_currencies_tenant_active');
             });
@@ -55,6 +56,7 @@ return new class extends Migration
                     ->cascadeOnUpdate()
                     ->restrictOnDelete();
 
+                $table->unique(['tenant_id', 'id'], 'exchange_rates_tenant_id_id_unique');
                 $table->unique(['tenant_id', 'from_currency', 'to_currency', 'effective_date'], 'exch_rate_tenant_pair_date_unique');
                 $table->index(['tenant_id', 'effective_date'], 'idx_exch_rate_tenant_date');
             });
@@ -111,4 +113,3 @@ return new class extends Migration
         Schema::dropIfExists('currencies');
     }
 };
-

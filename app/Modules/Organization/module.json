@@ -1,0 +1,47 @@
+{
+    "name": "Organization",
+    "tier": 1,
+    "owner": "@ilhamsepriyadi",
+    "description": "Tenancy, identity, organizational structure, RBAC and system security baseline (ADR-102).",
+    "ownsTables": [
+        "tenants",
+        "companies",
+        "stores",
+        "devices",
+        "users",
+        "roles",
+        "permissions",
+        "role_permissions",
+        "user_stores",
+        "personal_access_tokens",
+        "user_oauth_identities",
+        "user_invitations",
+        "user_invitation_stores",
+        "password_reset_tokens",
+        "sessions",
+        "settings",
+        "operational_units",
+        "capability_definitions",
+        "tenant_capabilities",
+        "store_capabilities",
+        "activity_logs",
+        "email_verification_otps",
+        "email_outbox",
+        "owner_onboarding_tokens",
+        "approvals"
+    ],
+    "allowedDependencies": [
+        "Subscription",
+        "Workforce"
+    ],
+    "publishesEvents": [
+        "identity.user.created.v1",
+        "organization.store.created.v1",
+        "organization.tenant.provisioned.v1"
+    ],
+    "consumesEvents": [],
+    "dependsOn": [
+        "Subscription",
+        "Workforce"
+    ]
+}

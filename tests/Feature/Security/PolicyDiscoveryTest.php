@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Security;
 
-use App\Models\AccountingPeriod;
-use App\Models\Category;
-use App\Models\ChartOfAccount;
-use App\Models\Customer;
-use App\Models\CustomerGroup;
-use App\Models\GiftCard;
-use App\Models\GoodsReceivedNote;
-use App\Models\JournalEntry;
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\Shift;
-use App\Models\StockOpname;
-use App\Models\StoreCreditAccount;
-use App\Models\Supplier;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Customers\Models\CustomerGroup;
+use App\Modules\Finance\Models\AccountingPeriod;
+use App\Modules\Finance\Models\ChartOfAccount;
+use App\Modules\Finance\Models\JournalEntry;
+use App\Modules\Inventory\Models\StockOpname;
+use App\Modules\Pricing\Models\GiftCard;
+use App\Modules\Pricing\Models\StoreCreditAccount;
+use App\Modules\Purchasing\Models\GoodsReceivedNote;
+use App\Modules\Purchasing\Models\Supplier;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\Shift;
 use App\Policies\AccountingPeriodPolicy;
 use App\Policies\CategoryPolicy;
 use App\Policies\ChartOfAccountPolicy;
@@ -38,39 +38,30 @@ class PolicyDiscoveryTest extends TestCase
 {
     protected bool $optOutFromDefaultTenant = true;
 
-    public function test_gate_resolves_identical_policies_for_app_models_and_module_models(): void
+    public function test_gate_resolves_policies_for_canonical_modular_models(): void
     {
-        $pairs = [
-            [Product::class, \App\Modules\Products\Models\Product::class, ProductPolicy::class],
-            [Product::class, \App\Modules\Catalog\Models\Product::class, ProductPolicy::class],
-            [Category::class, \App\Modules\Products\Models\Category::class, CategoryPolicy::class],
-            [Category::class, \App\Modules\Catalog\Models\Category::class, CategoryPolicy::class],
-            [Order::class, \App\Modules\Sales\Models\Order::class, OrderPolicy::class],
-            [Shift::class, \App\Modules\Sales\Models\Shift::class, ShiftPolicy::class],
-            [StockOpname::class, \App\Modules\Inventory\Models\StockOpname::class, StockOpnamePolicy::class],
-            [Supplier::class, \App\Modules\Purchasing\Models\Supplier::class, SupplierPolicy::class],
-            [GoodsReceivedNote::class, \App\Modules\Purchasing\Models\GoodsReceivedNote::class, GrnPolicy::class],
-            [Customer::class, \App\Modules\Customers\Models\Customer::class, CustomerPolicy::class],
-            [Customer::class, \App\Modules\CRM\Models\Customer::class, CustomerPolicy::class],
-            [CustomerGroup::class, \App\Modules\Customers\Models\CustomerGroup::class, CustomerPolicy::class],
-            [CustomerGroup::class, \App\Modules\CRM\Models\CustomerGroup::class, CustomerPolicy::class],
-            [GiftCard::class, \App\Modules\Customers\Models\GiftCard::class, GiftCardPolicy::class],
-            [GiftCard::class, \App\Modules\CRM\Models\GiftCard::class, GiftCardPolicy::class],
-            [StoreCreditAccount::class, \App\Modules\Customers\Models\StoreCreditAccount::class, StoreCreditPolicy::class],
-            [StoreCreditAccount::class, \App\Modules\CRM\Models\StoreCreditAccount::class, StoreCreditPolicy::class],
-            [ChartOfAccount::class, \App\Modules\Finance\Models\ChartOfAccount::class, ChartOfAccountPolicy::class],
-            [AccountingPeriod::class, \App\Modules\Finance\Models\AccountingPeriod::class, AccountingPeriodPolicy::class],
-            [JournalEntry::class, \App\Modules\Finance\Models\JournalEntry::class, JournalEntryPolicy::class],
+        $models = [
+            [Product::class, ProductPolicy::class],
+            [Category::class, CategoryPolicy::class],
+            [Order::class, OrderPolicy::class],
+            [Shift::class, ShiftPolicy::class],
+            [StockOpname::class, StockOpnamePolicy::class],
+            [Supplier::class, SupplierPolicy::class],
+            [GoodsReceivedNote::class, GrnPolicy::class],
+            [Customer::class, CustomerPolicy::class],
+            [CustomerGroup::class, CustomerPolicy::class],
+            [GiftCard::class, GiftCardPolicy::class],
+            [StoreCreditAccount::class, StoreCreditPolicy::class],
+            [ChartOfAccount::class, ChartOfAccountPolicy::class],
+            [AccountingPeriod::class, AccountingPeriodPolicy::class],
+            [JournalEntry::class, JournalEntryPolicy::class],
         ];
 
-        foreach ($pairs as [$wrapperClass, $moduleClass, $expectedPolicyClass]) {
-            $wrapperPolicy = Gate::getPolicyFor($wrapperClass);
-            $modulePolicy = Gate::getPolicyFor($moduleClass);
+        foreach ($models as [$modelClass, $expectedPolicyClass]) {
+            $policy = Gate::getPolicyFor($modelClass);
 
-            $this->assertNotNull($wrapperPolicy, "Policy missing for {$wrapperClass}");
-            $this->assertNotNull($modulePolicy, "Policy missing for {$moduleClass}");
-            $this->assertInstanceOf($expectedPolicyClass, $wrapperPolicy);
-            $this->assertInstanceOf($expectedPolicyClass, $modulePolicy);
+            $this->assertNotNull($policy, "Policy missing for {$modelClass}");
+            $this->assertInstanceOf($expectedPolicyClass, $policy);
         }
     }
 }

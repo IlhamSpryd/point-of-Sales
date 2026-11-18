@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Services;
 
-use App\Models\Order;
-use App\Models\Payment;
-use App\Models\Shift;
-use App\Models\User;
-use App\Services\Context\TenantContext;
-use App\Services\TransactionService;
-use DomainException;
+use App\Core\Context\TenantContext;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\Shift;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class OfflineOrderSyncService
 {
@@ -44,6 +41,7 @@ class OfflineOrderSyncService
                     'status' => 'rejected',
                     'error' => 'offline_client_uuid is required for offline order synchronization.',
                 ];
+
                 continue;
             }
 
@@ -56,6 +54,7 @@ class OfflineOrderSyncService
                     'status' => 'rejected',
                     'error' => 'Offline transactions strictly restrict payment method to CASH only (DEC-006).',
                 ];
+
                 continue;
             }
 
@@ -73,6 +72,7 @@ class OfflineOrderSyncService
                     'order_code' => $existing->order_code,
                     'status' => 'already_synced',
                 ];
+
                 continue;
             }
 
@@ -116,7 +116,7 @@ class OfflineOrderSyncService
                     $orderPayload['created_by_device_id'] = $deviceId ?? ($orderPayload['device_id'] ?? null);
                     $orderPayload['offline_client_uuid'] = $uuid;
                     $rawKey = (string) ($orderPayload['idempotency_key'] ?? '');
-                    $orderPayload['idempotency_key'] = (! empty($rawKey) && strlen($rawKey) <= 36) ? $rawKey : (string) \Illuminate\Support\Str::uuid();
+                    $orderPayload['idempotency_key'] = (! empty($rawKey) && strlen($rawKey) <= 36) ? $rawKey : (string) Str::uuid();
                     $orderPayload['payment_method'] = 'cash';
                     $orderPayload['is_offline_sync'] = true;
                     $orderPayload['offline_synced_at'] = now();

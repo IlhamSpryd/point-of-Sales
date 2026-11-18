@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Finance;
 
-use App\Models\Category;
-use App\Models\Customer;
-use App\Models\Product;
-use App\Models\Store;
-use App\Models\Tenant;
+use App\Core\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Customers\Models\Customer;
 use App\Modules\Finance\Contracts\TaxIntegrationGatewayInterface;
 use App\Modules\Finance\Services\CoreTaxDjpGateway;
 use App\Modules\Finance\Services\TaxReportService;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
 use App\Modules\Sales\Models\CustomerInvoice;
 use App\Modules\Sales\Models\CustomerInvoiceLine;
-use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 

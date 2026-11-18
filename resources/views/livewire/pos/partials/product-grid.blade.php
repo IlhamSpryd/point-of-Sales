@@ -158,9 +158,11 @@
                                 @endif
 
                                 @if ($product->photo_url)
+                                    {{-- R-007b: lazy decode untuk grid katalog besar (FINDING-PERF-01) --}}
                                     <img src="{{ $product->photo_url }}"
                                         alt="{{ $product->product_name }}"
                                         loading="lazy"
+                                        decoding="async"
                                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                                 @else
                                     <div class="w-full h-full flex flex-col items-center justify-center text-gray-300">

@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\StoreCheckoutRequest;
-use App\Models\Customer;
-use App\Models\Modifier;
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\Setting;
-use App\Models\Table;
-use App\Models\User;
-use App\Services\CartService;
-use App\Services\CatalogPriceResolverService;
-use App\Services\Context\TenantContext;
-use App\Services\SystemUserResolver;
-use App\Services\TransactionService;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Inventory\Models\Modifier;
+use App\Modules\Organization\Models\Setting;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\SystemUserResolver;
+use App\Modules\Pricing\Services\CatalogPriceResolverService;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\Table;
+use App\Modules\Sales\Services\CartService;
+use App\Modules\Sales\Services\TransactionService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;

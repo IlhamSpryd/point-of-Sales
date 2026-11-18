@@ -4,21 +4,23 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domain2;
 
-use App\Models\CashDrawerMovement;
-use App\Models\Device;
-use App\Models\Order;
-use App\Models\Payment;
-use App\Models\Role;
-use App\Models\Shift;
-use App\Models\User;
-use App\Services\Context\TenantContext;
-use App\Services\ShiftService;
+use App\Core\Context\TenantContext;
+use App\Livewire\ShiftManager;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\CashDrawerMovement;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\Payment;
+use App\Modules\Sales\Models\Shift;
+use App\Modules\Sales\Services\ShiftService;
 use DomainException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Livewire\Livewire;
 use Tests\Support\TwoTenantFixture;
 use Tests\TestCase;
 
@@ -657,8 +659,8 @@ class ShiftDeviceHandoverAndConcurrencyTest extends TestCase
         );
 
         // Kasir 2 mencoba membuka shift di Device A via ShiftManager
-        \Livewire\Livewire::actingAs($this->cashier2)
-            ->test(\App\Livewire\ShiftManager::class)
+        Livewire::actingAs($this->cashier2)
+            ->test(ShiftManager::class)
             ->set('selectedDeviceId', $this->deviceA->id)
             ->set('opening_balance', 100000)
             ->set('cashierPin', '654321')

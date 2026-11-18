@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace App\Modules\Inventory\Models;
 
+use App\Core\Scopes\TenantScope;
 use App\Core\Traits\AssignsStore;
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\BelongsToCompany;
-use App\Models\Company;
-use App\Models\Product;
-use App\Models\ProductVariant;
-use App\Models\Scopes\TenantScope;
-use App\Models\Store;
-use App\Models\Tenant;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\ProductVariant;
+use App\Modules\Organization\Models\Company;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\Warehouse;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

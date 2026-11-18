@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Livewire\Finance;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\User;
 use App\Modules\Finance\DataTransferObjects\JournalLineDto;
 use App\Modules\Finance\DataTransferObjects\ManualJournalDto;
 use App\Modules\Finance\Enums\JournalStatusEnum;
 use App\Modules\Finance\Models\ChartOfAccount;
 use App\Modules\Finance\Models\JournalEntry;
 use App\Modules\Finance\Services\PostingEngineService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\User;
 use DomainException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;

@@ -3,11 +3,11 @@
 namespace Tests\Feature;
 
 use App\Enums\IngredientStockMovementTypeEnum;
-use App\Models\Ingredient;
-use App\Models\IngredientStockMovement;
-use App\Models\Role;
-use App\Models\User;
-use App\Services\Analytics\RestockPredictionService;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Inventory\Models\IngredientStockMovement;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
+use App\Modules\Reporting\Services\Analytics\RestockPredictionService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -31,24 +31,27 @@ class RestockForecastControllerTest extends TestCase
         ]);
 
         // Create some sale deductions within the last 14 days (split to ensure stable trend)
-        IngredientStockMovement::create([
+        $m1 = new IngredientStockMovement([
             'ingredient_id' => $ingredient->id,
             'type' => IngredientStockMovementTypeEnum::SaleDeduction->value,
             'quantity' => -14,
-            'created_at' => Carbon::now()->subDays(10),
             'order_id' => null,
             'order_item_id' => null,
             'idempotency_key' => uniqid('test_'),
         ]);
-        IngredientStockMovement::create([
+        $m1->created_at = Carbon::now()->subDays(10);
+        $m1->save();
+
+        $m2 = new IngredientStockMovement([
             'ingredient_id' => $ingredient->id,
             'type' => IngredientStockMovementTypeEnum::SaleDeduction->value,
             'quantity' => -14,
-            'created_at' => Carbon::now()->subDays(3),
             'order_id' => null,
             'order_item_id' => null,
             'idempotency_key' => uniqid('test_'),
         ]);
+        $m2->created_at = Carbon::now()->subDays(3);
+        $m2->save();
 
         app(RestockPredictionService::class)->recomputeAll();
 

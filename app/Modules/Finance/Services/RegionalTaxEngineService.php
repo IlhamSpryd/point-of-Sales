@@ -10,8 +10,11 @@ use DomainException;
 class RegionalTaxEngineService
 {
     public const COUNTRY_INDONESIA = 'ID';
+
     public const COUNTRY_MALAYSIA = 'MY';
+
     public const COUNTRY_SINGAPORE = 'SG';
+
     public const COUNTRY_PHILIPPINES = 'PH';
 
     /**
@@ -146,7 +149,7 @@ class RegionalTaxEngineService
     /**
      * Mengagregasi data transaksi untuk persiapan SPT Pajak Malaysia SST-02 (Royal Malaysian Customs Department).
      *
-     * @param array<int, array{type: 'sales'|'service'|'exempt', amount: string|float|int, rate?: string}> $lines
+     * @param  array<int, array{type: 'sales'|'service'|'exempt', amount: string|float|int, rate?: string}>  $lines
      * @return array{
      *     total_sales_value: string,
      *     taxable_sales_tax_amount: string,
@@ -202,7 +205,7 @@ class RegionalTaxEngineService
     /**
      * Mengagregasi data transaksi untuk persiapan SPT Pajak Singapura IRAS GST F5 Return.
      *
-     * @param array<int, array{type: 'standard'|'zero_rated'|'exempt', amount: string|float|int}> $lines
+     * @param  array<int, array{type: 'standard'|'zero_rated'|'exempt', amount: string|float|int}>  $lines
      * @return array{
      *     box_1_standard_rated_supplies: string,
      *     box_2_zero_rated_supplies: string,
@@ -246,7 +249,7 @@ class RegionalTaxEngineService
     /**
      * Mengagregasi data transaksi untuk persiapan SPT Pajak Filipina BIR Form 2550M/Q.
      *
-     * @param array<int, array{type: 'vatable'|'exempt'|'zero_rated', amount: string|float|int}> $lines
+     * @param  array<int, array{type: 'vatable'|'exempt'|'zero_rated', amount: string|float|int}>  $lines
      * @return array{
      *     vatable_sales: string,
      *     vat_exempt_sales: string,

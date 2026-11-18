@@ -206,4 +206,3 @@ class CurrencyExchangeService
         return $count;
     }
 }
-

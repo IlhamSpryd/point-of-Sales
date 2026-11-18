@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domain2;
 
+use App\Core\Context\TenantContext;
 use App\Http\Requests\StoreTransactionRequest;
-use App\Models\Category;
-use App\Models\Customer;
-use App\Models\Discount;
-use App\Models\Product;
-use App\Models\Store;
-use App\Models\Table;
-use App\Models\Tenant;
-use App\Services\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Pricing\Models\Discount;
+use App\Modules\Sales\Models\Table;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;

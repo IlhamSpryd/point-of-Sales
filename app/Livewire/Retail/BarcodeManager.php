@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Livewire\Retail;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Product;
-use App\Modules\Products\Models\ProductVariant;
-use App\Modules\Retail\Services\RetailBarcodeService;
-use App\Services\Context\TenantContext;
+use App\Modules\Catalog\Models\ProductVariant;
+use App\Modules\Catalog\Services\RetailBarcodeService;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -72,4 +71,3 @@ class BarcodeManager extends Component
         ]);
     }
 }
-

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Inventory;
 
+use App\Core\Context\TenantContext;
 use App\Enums\ExportTaskStatus;
 use App\Enums\IngredientStockMovementTypeEnum;
 use App\Enums\StockMovementType;
 use App\Exports\InventoryLedgerExport;
 use App\Jobs\ProcessInventoryLedgerExportJob;
-use App\Models\ExportTask;
-use App\Models\Ingredient;
+use App\Modules\Inventory\Models\Ingredient;
 use App\Modules\Inventory\Services\InventoryLedgerService;
-use App\Modules\Reports\Services\ReportService;
-use App\Services\Context\TenantContext;
+use App\Modules\Reporting\Models\ExportTask;
+use App\Modules\Reporting\Services\ReportService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;

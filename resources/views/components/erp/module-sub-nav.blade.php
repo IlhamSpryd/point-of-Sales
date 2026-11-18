@@ -24,6 +24,12 @@
             return false;
         }
 
+        // R-009 / FINDING-NAV-01: gate tambahan berbasis policy (@can) agar
+        // kasir biasa tidak melihat tautan yang akan berujung 403.
+        if (! empty($tab['can']) && ! \Illuminate\Support\Facades\Gate::allows($tab['can'])) {
+            return false;
+        }
+
         $allowedRoles = $tab['roles'] ?? [];
         if (in_array($roleName, $allowedRoles, true)) {
             return true;

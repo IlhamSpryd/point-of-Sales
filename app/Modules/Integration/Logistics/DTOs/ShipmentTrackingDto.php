@@ -9,7 +9,7 @@ use App\Enums\ShippingDispatchStatus;
 class ShipmentTrackingDto
 {
     /**
-     * @param list<array{timestamp: string, status: string, location: string, note: string}> $history
+     * @param  list<array{timestamp: string, status: string, location: string, note: string}>  $history
      */
     public function __construct(
         public string $courierCode,

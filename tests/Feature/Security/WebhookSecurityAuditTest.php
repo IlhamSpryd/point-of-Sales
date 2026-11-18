@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Security;
 
+use App\Core\Context\TenantContext;
 use App\Jobs\ProcessWebhookOrderJob;
-use App\Models\ChannelOrderLog;
-use App\Models\Store;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Sales\Models\ChannelOrderLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Queue;

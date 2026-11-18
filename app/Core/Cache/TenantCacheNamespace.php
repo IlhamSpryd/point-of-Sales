@@ -9,9 +9,9 @@ use Closure;
 use DateInterval;
 use DateTimeInterface;
 use Illuminate\Contracts\Cache\Lock;
+use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Support\Facades\Cache;
-use RuntimeException;
 
 /**
  * TenantCacheNamespace
@@ -103,7 +103,7 @@ class TenantCacheNamespace
     public function lockTenant(string $name, int $seconds = 10, ?string $owner = null): Lock
     {
         $store = $this->getStore();
-        if ($store instanceof \Illuminate\Contracts\Cache\LockProvider) {
+        if ($store instanceof LockProvider) {
             return $store->lock($this->tenantKey("lock:{$name}"), $seconds, $owner);
         }
 
@@ -135,7 +135,7 @@ class TenantCacheNamespace
     public function lockCompany(string $name, int $seconds = 10, ?int $companyId = null, ?string $owner = null): Lock
     {
         $store = $this->getStore();
-        if ($store instanceof \Illuminate\Contracts\Cache\LockProvider) {
+        if ($store instanceof LockProvider) {
             return $store->lock($this->companyKey("lock:{$name}", $companyId), $seconds, $owner);
         }
 

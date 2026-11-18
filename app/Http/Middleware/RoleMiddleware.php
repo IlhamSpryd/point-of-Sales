@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Modules\Organization\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,8 +31,11 @@ class RoleMiddleware
             abort(403, 'Anda tidak memiliki hak akses untuk halaman ini.');
         }
 
-        // Full access untuk Super Admin / Owner dengan wildcard permission
-        if ($user->hasPermission('*') || (bool) ($user->role->is_admin ?? false)) {
+        // Full access hanya untuk Super Admin / Owner dengan wildcard permission atau flag is_admin
+        $isOwnerOrAdmin = (bool) ($user->role->is_admin ?? false)
+            || in_array($user->role->name, ['Owner', 'Superadmin', 'Super Admin'], true);
+
+        if ($isOwnerOrAdmin && ($user->hasPermission('*') || (bool) ($user->role->is_admin ?? false))) {
             return $next($request);
         }
 
@@ -64,7 +68,7 @@ class RoleMiddleware
     /**
      * Evaluasi apakah Custom Role memiliki permission kanonikal yang terhubung dengan route aktif.
      */
-    private function customRoleHasRoutePermission(\App\Models\User $user, string $routeName): bool
+    private function customRoleHasRoutePermission(User $user, string $routeName): bool
     {
         foreach (config('navigation.sections', []) as $items) {
             foreach ($items as $item) {

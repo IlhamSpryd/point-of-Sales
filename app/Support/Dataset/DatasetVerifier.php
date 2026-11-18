@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Dataset;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -102,8 +103,8 @@ final class DatasetVerifier
             ->first();
         $expectedMonths = 3;
         if ($range && $range->mn && $range->mx) {
-            $start = \Carbon\Carbon::parse($range->mn)->startOfMonth();
-            $end = \Carbon\Carbon::parse($range->mx)->startOfMonth();
+            $start = Carbon::parse($range->mn)->startOfMonth();
+            $end = Carbon::parse($range->mx)->startOfMonth();
             $expectedMonths = max(1, (int) $start->diffInMonths($end) + 1);
         }
         $actualMonths = (int) ($range->months ?? 0);

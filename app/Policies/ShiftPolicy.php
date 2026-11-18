@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\User;
+use App\Modules\Organization\Models\User;
 use App\Modules\Sales\Models\Shift;
 
 /**
@@ -49,9 +49,16 @@ class ShiftPolicy
             && (int) $user->tenant_id === (int) $shift->tenant_id;
     }
 
+    /**
+     * R-009 / FINDING-NAV-01: hanya Owner/Manager/Supervisor/Admin yang boleh
+     * melihat riwayat shift seluruh kasir. Kasir biasa tetap bisa membuka
+     * halaman untuk shift miliknya via route 'shifts.show', tapi tautan
+     * indeks disembunyikan dari sub-nav.
+     */
     public function viewAny(User $user): bool
     {
-        return true;
+        return in_array($user->role?->name, ['Owner', 'Manager', 'Supervisor', 'Admin'], true)
+            || (bool) $user->role?->is_admin;
     }
 
     public function view(User $user, Shift $shift): bool

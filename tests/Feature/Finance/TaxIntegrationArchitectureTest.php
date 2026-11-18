@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Finance;
 
-use App\Modules\Core\Models\Company;
 use App\Modules\Finance\Contracts\TaxCalculationServiceInterface;
 use App\Modules\Finance\Contracts\TaxIntegrationServiceInterface;
+use App\Modules\Finance\Contracts\TaxProviderAdapterInterface;
 use App\Modules\Finance\DTOs\TaxInvoiceDocumentDto;
 use App\Modules\Finance\DTOs\TaxInvoiceItemDto;
+use App\Modules\Finance\DTOs\TaxSubmissionResultDto;
 use App\Modules\Finance\Models\TaxSubmission;
-use App\Modules\Finance\Services\TaxAdapters\CoreTaxPjapAdapter;
-use App\Modules\Finance\Services\TaxAdapters\InternalTaxWorkflowAdapter;
+use App\Modules\Organization\Models\Company;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class TaxIntegrationArchitectureTest extends TestCase
@@ -21,7 +20,9 @@ class TaxIntegrationArchitectureTest extends TestCase
     use DatabaseTransactions;
 
     private TaxIntegrationServiceInterface $taxIntegrationService;
+
     private TaxCalculationServiceInterface $taxCalculationService;
+
     private Company $defaultCompany;
 
     protected function afterSubclassSetUp(): void
@@ -268,16 +269,28 @@ class TaxIntegrationArchitectureTest extends TestCase
         );
 
         // Adapter mock: Gagal pada panggilan pertama, berhasil pada panggilan kedua
-        $flakyAdapter = new class implements \App\Modules\Finance\Contracts\TaxProviderAdapterInterface {
+        $flakyAdapter = new class implements TaxProviderAdapterInterface
+        {
             public int $attempts = 0;
-            public function getProviderName(): string { return 'flaky_mock'; }
-            public function calculateTax(float|string $taxableAmount, float|string $taxRatePercent, bool $isInclusive = false): array { return []; }
-            public function submitInvoice(TaxInvoiceDocumentDto $document, array $options = []): \App\Modules\Finance\DTOs\TaxSubmissionResultDto {
+
+            public function getProviderName(): string
+            {
+                return 'flaky_mock';
+            }
+
+            public function calculateTax(float|string $taxableAmount, float|string $taxRatePercent, bool $isInclusive = false): array
+            {
+                return [];
+            }
+
+            public function submitInvoice(TaxInvoiceDocumentDto $document, array $options = []): TaxSubmissionResultDto
+            {
                 $this->attempts++;
                 if ($this->attempts === 1) {
                     throw new \RuntimeException('Gateway timeout to CoreTax DJP sandbox.');
                 }
-                return new \App\Modules\Finance\DTOs\TaxSubmissionResultDto(
+
+                return new TaxSubmissionResultDto(
                     providerName: 'flaky_mock',
                     submissionReference: 'FLK-SUCCESS-001',
                     status: 'SUBMITTED',
@@ -288,11 +301,15 @@ class TaxIntegrationArchitectureTest extends TestCase
                     submittedAt: now()->toIso8601String()
                 );
             }
-            public function getSubmissionStatus(string $submissionReference): \App\Modules\Finance\DTOs\TaxSubmissionResultDto {
-                return new \App\Modules\Finance\DTOs\TaxSubmissionResultDto('flaky_mock', $submissionReference, 'SUBMITTED', null, '', [], []);
+
+            public function getSubmissionStatus(string $submissionReference): TaxSubmissionResultDto
+            {
+                return new TaxSubmissionResultDto('flaky_mock', $submissionReference, 'SUBMITTED', null, '', [], []);
             }
-            public function cancelInvoice(string $taxInvoiceSerialNumber, string $reason): \App\Modules\Finance\DTOs\TaxSubmissionResultDto {
-                return new \App\Modules\Finance\DTOs\TaxSubmissionResultDto('flaky_mock', 'REF-CANCEL', 'CANCELLED', $taxInvoiceSerialNumber, '', [], []);
+
+            public function cancelInvoice(string $taxInvoiceSerialNumber, string $reason): TaxSubmissionResultDto
+            {
+                return new TaxSubmissionResultDto('flaky_mock', 'REF-CANCEL', 'CANCELLED', $taxInvoiceSerialNumber, '', [], []);
             }
         };
 

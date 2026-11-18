@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Models\Brand;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Catalog\Models\Brand;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

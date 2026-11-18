@@ -1,0 +1,38 @@
+{
+    "name": "Catalog",
+    "tier": 2,
+    "owner": "@ilhamsepriyadi",
+    "description": "Product catalog, categories, brands, variants, units of measure and barcode generation (ADR-102).",
+    "ownsTables": [
+        "products",
+        "categories",
+        "brands",
+        "product_variants",
+        "product_attributes",
+        "product_attribute_values",
+        "product_variant_attribute_values",
+        "product_bundle_items",
+        "product_cost_histories",
+        "product_media",
+        "store_product_assortments",
+        "shelf_labels",
+        "units_of_measure",
+        "product_unit_conversions",
+        "tax_classes"
+    ],
+    "allowedDependencies": [
+        "Organization",
+        "Inventory",
+        "Pricing"
+    ],
+    "publishesEvents": [
+        "catalog.product.created.v1",
+        "catalog.product.updated.v1"
+    ],
+    "consumesEvents": [],
+    "dependsOn": [
+        "Organization",
+        "Inventory",
+        "Pricing"
+    ]
+}

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Traits;
 
-use App\Models\Scopes\DiscountStoreScope;
+use App\Core\Scopes\DiscountStoreScope;
 use Illuminate\Database\Eloquent\Builder;
 
 /**

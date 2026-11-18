@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Subscription;
 
-use App\Models\Plan;
-use App\Models\PlanEntitlement;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\TenantSubscription;
-use App\Models\User;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use App\Modules\Subscription\Exceptions\PlanLimitExceededException;
+use App\Modules\Subscription\Models\Plan;
+use App\Modules\Subscription\Models\PlanEntitlement;
+use App\Modules\Subscription\Models\TenantSubscription;
 use App\Modules\Subscription\Services\EntitlementEnforcementService;
 use App\Modules\Subscription\Services\SubscriptionLifecycleService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

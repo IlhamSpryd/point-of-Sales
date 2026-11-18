@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Models;
 
-use App\Models\Scopes\TenantScope;
-use App\Models\Tenant;
+use App\Core\Scopes\TenantScope;
+use App\Modules\Organization\Models\Tenant;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -45,4 +45,3 @@ class PaymentInbox extends Model
         return $this->belongsTo(Tenant::class);
     }
 }
-

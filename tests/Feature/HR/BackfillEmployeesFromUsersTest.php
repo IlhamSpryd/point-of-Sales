@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\HR;
 
-use App\Models\Role;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Modules\HR\Enums\EmploymentStatusEnum;
-use App\Modules\HR\Jobs\SyncUserToEmployeeJob;
-use App\Modules\HR\Models\Employee;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Workforce\Enums\EmploymentStatusEnum;
+use App\Modules\Workforce\Jobs\SyncUserToEmployeeJob;
+use App\Modules\Workforce\Models\Employee;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 

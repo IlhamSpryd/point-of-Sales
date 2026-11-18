@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\HR;
 
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Modules\HR\Services\ShiftTemplateService;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Workforce\Services\ShiftTemplateService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use InvalidArgumentException;

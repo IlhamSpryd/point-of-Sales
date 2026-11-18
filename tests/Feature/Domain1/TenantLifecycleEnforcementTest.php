@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Domain1;
 
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Table;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Table;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;

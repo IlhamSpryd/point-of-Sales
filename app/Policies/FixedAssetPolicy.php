@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Modules\Finance\Enums\FixedAssetStatusEnum;
 use App\Modules\Finance\Models\FixedAsset;
+use App\Modules\Organization\Models\User;
 
 class FixedAssetPolicy
 {

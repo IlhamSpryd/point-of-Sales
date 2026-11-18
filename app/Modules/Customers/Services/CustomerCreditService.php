@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace App\Modules\Customers\Services;
 
-use App\Models\Customer;
-use App\Models\User;
+use App\Core\Context\TenantContext;
 use App\Modules\Customers\DataTransferObjects\CreditEvaluationResultDto;
 use App\Modules\Customers\Enums\CreditEvaluationStatusEnum;
 use App\Modules\Customers\Enums\CreditStatusEnum;
+use App\Modules\Customers\Models\Customer;
 use App\Modules\Customers\Models\CustomerCreditAccount;
 use App\Modules\Customers\Models\CustomerCreditLog;
-use App\Modules\Sales\Models\SalesOrder;
-use App\Modules\Settings\Services\AuditTrailService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\AuditTrailService;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Support\Facades\DB;
@@ -192,7 +191,7 @@ class CustomerCreditService
      * Mereservasi eksposur kredit saat konfirmasi Sales Order (CONFIRMED).
      * Mengunci record CustomerCreditAccount (Deterministic Lock Step 2 A0/A8).
      */
-    public function reserveOrderExposure(SalesOrder $salesOrder, User $actor, bool $allowOverride = false, ?string $overrideReason = null): void
+    public function reserveOrderExposure(\App\Modules\Sales\Models\SalesOrder $salesOrder, User $actor, bool $allowOverride = false, ?string $overrideReason = null): void
     {
         $tenantId = (int) $salesOrder->tenant_id;
         $customerId = (int) $salesOrder->customer_id;
@@ -231,7 +230,7 @@ class CustomerCreditService
                         'approved_override_amount' => $orderTotal,
                         'reason' => $eval->reason,
                     ],
-                    'reference_type' => SalesOrder::class,
+                    'reference_type' => \App\Modules\Sales\Models\SalesOrder::class,
                     'reference_id' => $salesOrder->id,
                     'actor_user_id' => $actor->id,
                     'reason' => $overrideReason ?: "Disetujui override kredit manual oleh {$actor->name}",
@@ -259,7 +258,7 @@ class CustomerCreditService
             'event_type' => 'EXPOSURE_RESERVED',
             'old_values_json' => ['reserved_exposure' => $oldReserved],
             'new_values_json' => ['reserved_exposure' => $newReserved],
-            'reference_type' => SalesOrder::class,
+            'reference_type' => \App\Modules\Sales\Models\SalesOrder::class,
             'reference_id' => $salesOrder->id,
             'actor_user_id' => $actor->id,
             'reason' => "Reservasi eksposur kredit untuk Sales Order #{$salesOrder->so_number}",
@@ -280,7 +279,7 @@ class CustomerCreditService
     /**
      * Melepaskan reservasi eksposur kredit saat Sales Order dibatalkan atau ditutup.
      */
-    public function releaseOrderExposure(SalesOrder $salesOrder, User $actor, ?string $reason = null): void
+    public function releaseOrderExposure(\App\Modules\Sales\Models\SalesOrder $salesOrder, User $actor, ?string $reason = null): void
     {
         $tenantId = (int) $salesOrder->tenant_id;
         $customerId = (int) $salesOrder->customer_id;
@@ -319,7 +318,7 @@ class CustomerCreditService
             'event_type' => 'EXPOSURE_RELEASED',
             'old_values_json' => ['reserved_exposure' => $oldReserved],
             'new_values_json' => ['reserved_exposure' => $newReserved],
-            'reference_type' => SalesOrder::class,
+            'reference_type' => \App\Modules\Sales\Models\SalesOrder::class,
             'reference_id' => $salesOrder->id,
             'actor_user_id' => $actor->id,
             'reason' => $reason ?: "Pelepasan reservasi kredit SO #{$salesOrder->so_number}",

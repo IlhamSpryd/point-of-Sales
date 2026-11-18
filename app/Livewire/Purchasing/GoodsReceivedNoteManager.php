@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Livewire\Purchasing;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Livewire\Concerns\WithSorting;
 use App\Modules\Purchasing\Models\GoodsReceivedNote;
 use App\Modules\Purchasing\Models\PurchaseOrder;
 use App\Modules\Purchasing\Services\GoodsReceivedNoteService;
-use App\Services\Context\TenantContext;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;

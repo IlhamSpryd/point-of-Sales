@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\Payment;
-use App\Models\User;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Payment;
 
 class PaymentPolicy
 {

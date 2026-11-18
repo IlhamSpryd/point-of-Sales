@@ -4,7 +4,61 @@ declare(strict_types=1);
 
 namespace App\Modules\Catalog\Models;
 
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToTenant;
+use Database\Factories\BrandFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 /**
- * @deprecated Use \App\Modules\Products\Models\Brand instead. Consolidated per DEC-002 / TASK-201.
+ * Brand: Master merek dagang produk terisolasi per tenant.
+ *
+ * @property int $id
+ * @property int $tenant_id
+ * @property int|null $name_uniqueness_key
  */
-class Brand extends \App\Modules\Products\Models\Brand {}
+class Brand extends Model
+{
+    use AssignsTenant;
+
+    /** @use HasFactory<BrandFactory> */
+    use HasFactory;
+
+    use ScopedToTenant;
+    use SoftDeletes;
+
+    protected $fillable = [
+        'code',
+        'name',
+        'description',
+        'is_active',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+        ];
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function ($model) {
+            if (empty($model->code)) {
+                $latest = static::withoutTenantScope()->latest('id')->first();
+                $nextId = $latest ? $latest->id + 1 : 1;
+                $model->code = 'BRD-'.$model->tenant_id.'-'.str_pad((string) $nextId, 3, '0', STR_PAD_LEFT);
+            }
+        });
+    }
+
+    /**
+     * @return HasMany<Product, $this>
+     */
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+}

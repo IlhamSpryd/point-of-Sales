@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Services;
 
-use App\Models\Category;
-use App\Models\Product;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Services\Context\TenantContext;
-use App\Services\MenuCacheService;
+use App\Core\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Services\MenuCacheService;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Foundation\Testing\RefreshDatabase;

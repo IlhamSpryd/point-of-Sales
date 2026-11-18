@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Services;
 
-use App\Models\User;
+use App\Core\Context\TenantContext;
 use App\Modules\Finance\Contracts\PostingEngineContract;
 use App\Modules\Finance\DataTransferObjects\FinancialEventDto;
 use App\Modules\Finance\DataTransferObjects\JournalLineDto;
 use App\Modules\Finance\DataTransferObjects\ManualJournalDto;
 use App\Modules\Finance\Enums\JournalStatusEnum;
 use App\Modules\Finance\Enums\JournalTypeEnum;
+use App\Modules\Finance\Enums\OutboxStatusEnum;
 use App\Modules\Finance\Models\AccountingPeriod;
 use App\Modules\Finance\Models\ChartOfAccount;
 use App\Modules\Finance\Models\FinancialEventOutbox;
 use App\Modules\Finance\Models\JournalEntry;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\User;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 
@@ -165,7 +166,7 @@ class PostingEngineService implements PostingEngineContract
      */
     public function processOutboxEvent(FinancialEventOutbox $outbox): JournalEntry
     {
-        if ($outbox->journal_entry_id && $outbox->status === 'PROCESSED') {
+        if ($outbox->journal_entry_id && ($outbox->status === OutboxStatusEnum::PROCESSED || $outbox->status === 'PROCESSED')) {
             $existing = JournalEntry::withoutTenantScope()->find($outbox->journal_entry_id);
             if ($existing) {
                 return $existing;
@@ -191,7 +192,7 @@ class PostingEngineService implements PostingEngineContract
         $journal = $this->postEvent($eventDto);
 
         $outbox->update([
-            'status' => 'PROCESSED',
+            'status' => OutboxStatusEnum::PROCESSED,
             'journal_entry_id' => $journal->id,
             'processed_at' => now(),
         ]);

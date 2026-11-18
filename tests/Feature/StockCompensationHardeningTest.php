@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
 use App\Enums\StockMovementType;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Role;
-use App\Models\Shift;
-use App\Models\StockMovement;
-use App\Models\User;
-use App\Services\Context\TenantContext;
-use App\Services\TransactionService;
+use App\Modules\Inventory\Models\StockMovement;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\OrderItem;
+use App\Modules\Sales\Models\Shift;
+use App\Modules\Sales\Services\TransactionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;

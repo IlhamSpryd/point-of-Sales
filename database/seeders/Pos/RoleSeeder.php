@@ -2,6 +2,7 @@
 
 namespace Database\Seeders\Pos;
 
+use App\Core\Context\TenantContext;
 use Database\Seeders\Pos\Concerns\StampsTenantOnBulkInsert;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -221,7 +222,7 @@ class RoleSeeder extends Seeder
 
         $tenantId = null;
         try {
-            $tenantId = app(\App\Services\Context\TenantContext::class)->getTenantId();
+            $tenantId = app(TenantContext::class)->getTenantId();
         } catch (\Throwable) {
             $tenantId = null;
         }
@@ -231,7 +232,7 @@ class RoleSeeder extends Seeder
         }
 
         foreach ($roles as $role) {
-            $role['tenant_id'] = $role['tenant_id'] ?? $tenantId;
+            $role['tenant_id'] = $tenantId;
 
             DB::table('roles')->updateOrInsert(
                 [

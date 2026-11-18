@@ -6,13 +6,13 @@ namespace Tests\Unit\Cache;
 
 use App\Core\Cache\TenantCacheNamespace;
 use App\Core\Context\TenantContext;
-use Illuminate\Support\Facades\Cache;
 use RuntimeException;
 use Tests\TestCase;
 
 class TenantCacheNamespaceTest extends TestCase
 {
     private TenantContext $context;
+
     private TenantCacheNamespace $cacheNamespace;
 
     protected function afterSubclassSetUp(): void

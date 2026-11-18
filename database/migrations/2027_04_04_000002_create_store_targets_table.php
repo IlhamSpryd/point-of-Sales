@@ -23,6 +23,7 @@ return new class extends Migration
                 $table->decimal('max_labor_cost_pct', 5, 2)->default(0);
                 $table->timestamps();
 
+                $table->unique(['tenant_id', 'id'], 'store_targets_tenant_id_id_unique');
                 $table->unique(['tenant_id', 'store_id', 'target_period'], 'uniq_store_target_period');
                 $table->index(['tenant_id', 'company_id', 'target_period'], 'idx_store_target_company_period');
                 $table->index(['tenant_id', 'store_id'], 'idx_store_target_tenant_store');

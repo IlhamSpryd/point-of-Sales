@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Services;
 
-use App\Models\IngredientStockBalance;
-use App\Models\ProductStockBalance;
 use App\Modules\Finance\Models\AccountPeriodBalance;
 use App\Modules\Finance\Models\InventoryValuationSnapshot;
+use App\Modules\Inventory\Models\IngredientStockBalance;
+use App\Modules\Inventory\Models\ProductStockBalance;
 
 class InventoryGlReconciliationService
 {

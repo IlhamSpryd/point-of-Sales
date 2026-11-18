@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Livewire\Finance;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Store;
-use App\Models\User;
 use App\Modules\Finance\Enums\DepreciationMethodEnum;
-use App\Modules\Finance\Enums\FixedAssetStatusEnum;
 use App\Modules\Finance\Models\FixedAsset;
 use App\Modules\Finance\Models\FixedAssetCategory;
 use App\Modules\Finance\Services\FixedAssetService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\User;
 use DomainException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -35,19 +34,30 @@ class FixedAssetManager extends Component
 
     // Modal Create Asset State
     public bool $showCreateModal = false;
+
     public ?int $categoryId = null;
+
     public ?int $storeId = null;
+
     public string $assetCode = '';
+
     public string $assetName = '';
+
     public string $acquisitionDate = '';
+
     public string $acquisitionCost = '';
+
     public string $salvageValue = '0.00';
+
     public int $usefulLifeMonths = 48;
+
     public string $depreciationMethod = 'STRAIGHT_LINE';
+
     public string $locationNote = '';
 
     // Detail / Schedule Modal State
     public bool $showDetailModal = false;
+
     public ?int $selectedAssetId = null;
 
     public function mount(): void
@@ -59,7 +69,7 @@ class FixedAssetManager extends Component
     public function openCreateModal(): void
     {
         $this->resetValidation();
-        $this->assetCode = 'FA-' . strtoupper(substr(uniqid(), -6));
+        $this->assetCode = 'FA-'.strtoupper(substr(uniqid(), -6));
         $this->assetName = '';
         $this->acquisitionCost = '';
         $this->salvageValue = '0.00';

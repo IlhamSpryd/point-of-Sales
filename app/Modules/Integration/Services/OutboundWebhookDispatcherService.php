@@ -6,6 +6,7 @@ namespace App\Modules\Integration\Services;
 
 use App\Modules\Integration\Models\WebhookDeliveryLog;
 use App\Modules\Integration\Models\WebhookSubscription;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
@@ -144,7 +145,7 @@ class OutboundWebhookDispatcherService
         array $data,
         ?int $storeId = null
     ): array {
-        /** @var \Illuminate\Database\Eloquent\Collection<int, WebhookSubscription> $subscriptions */
+        /** @var Collection<int, WebhookSubscription> $subscriptions */
         $subscriptions = WebhookSubscription::where('tenant_id', $tenantId)
             ->where('is_active', true)
             ->get();

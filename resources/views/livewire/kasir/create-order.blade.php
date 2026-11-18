@@ -14,6 +14,26 @@
     triggerPay() {
         const btn = document.getElementById('btn-bayar') || document.getElementById('btn-proses-bayar');
         if (btn && !btn.disabled) btn.click();
+    },
+    // R-009: kursor baris keranjang untuk navigasi keyboard.
+    cartCursor: -1,
+    moveCartCursor(dir) {
+        if (this.$wire.pendingOrderId !== null && this.$wire.pendingOrderId !== undefined) return;
+        const count = (this.$wire.cart || []).length;
+        if (!count) { this.cartCursor = -1; window.__posCartCursor = -1; return; }
+        this.cartCursor = Math.min(count - 1, Math.max(0, this.cartCursor + dir));
+        window.__posCartCursor = this.cartCursor;
+        document.querySelectorAll('[data-cart-index]').forEach((el) => {
+            const idx = parseInt(el.getAttribute('data-cart-index'), 10);
+            el.classList.toggle('ring-2', idx === this.cartCursor);
+            el.classList.toggle('ring-foreground', idx === this.cartCursor);
+        });
+        const row = document.querySelector(`[data-cart-index="${this.cartCursor}"]`);
+        if (row) row.scrollIntoView({ block: 'nearest' });
+    },
+    bumpCartCursor(dir) {
+        if (this.cartCursor < 0) { this.moveCartCursor(1); return; }
+        this.$wire.updateCartQty(this.cartCursor, dir);
     }
 }"
     x-init="
@@ -31,9 +51,31 @@
             });
         }
 
-        // Hardware Barcode Scanner Global Detection (< 65ms per keystroke)
+        // R-006: Hardware Barcode Scanner Global Detection (< 65ms per keystroke).
+        // Antrean (queue) berbasis window agar scan beruntun tidak hilang saat
+        // Livewire melakukan DOM morph — kiriman berikutnya menunggu promise
+        // sebelumnya selesai, bukan dibuang.
+        window.__barcodeQueue = [];
+        window.__barcodeBusy = false;
+        window.__barcodeFlush = async () => {
+            if (window.__barcodeBusy) return;
+            window.__barcodeBusy = true;
+            try {
+                while (window.__barcodeQueue.length > 0) {
+                    const code = window.__barcodeQueue.shift();
+                    try {
+                        await $wire.scanBarcode(code);
+                    } catch (err) {
+                        // Scan lanjutan tetap diproses walau satu gagal.
+                    }
+                }
+            } finally {
+                window.__barcodeBusy = false;
+            }
+        };
         let barcodeBuf = '';
         let lastCharTime = Date.now();
+        let debounceTimer = null;
         window.addEventListener('keydown', (e) => {
             const el = e.target;
             const isEditing = el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
@@ -44,16 +86,29 @@
             lastCharTime = now;
             if (e.key === 'Enter' && barcodeBuf.length >= 3 && !isEditing) {
                 e.preventDefault();
-                $wire.scanBarcode(barcodeBuf);
+                const code = barcodeBuf;
                 barcodeBuf = '';
+                // Debounce 80ms: scanner kadang mengirim Enter dobel.
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    window.__barcodeQueue.push(code);
+                    window.__barcodeFlush();
+                }, 80);
                 return;
             }
             if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey && !isEditing) {
                 barcodeBuf += e.key;
             }
         });
+    
     "
     @destroy="window.apeironPosCartDirty = false"
+    {{-- R-009 / WCAG AAA: navigasi keranjang penuh via keyboard — panah atas/bawah memilih baris, +/- mengubah kuantitas. --}}
+    @keydown.window.arrowdown.prevent="moveCartCursor(1)"
+    @keydown.window.arrowup.prevent="moveCartCursor(-1)"
+    @keydown.window."+".prevent="bumpCartCursor(1)"
+    @keydown.window."=".prevent="bumpCartCursor(1)"
+    @keydown.window."-".prevent="bumpCartCursor(-1)"
     @keydown.window.f2.prevent="focusSearch()"
     @keydown.window.f4.prevent="triggerPay()"
     @keydown.window.f5.prevent="$wire.fastCashPay(0)"

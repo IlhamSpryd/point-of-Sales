@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace Tests\Feature\Integrations;
 
 use App\Enums\ShippingDispatchStatus;
+use App\Modules\Integration\Logistics\Adapters\AbstractCourierAdapter;
 use App\Modules\Integration\Logistics\Adapters\JneCourierAdapter;
 use App\Modules\Integration\Logistics\Adapters\JntCourierAdapter;
 use App\Modules\Integration\Logistics\Adapters\PosIndonesiaCourierAdapter;
 use App\Modules\Integration\Logistics\Adapters\SiCepatCourierAdapter;
+use App\Modules\Integration\Logistics\DTOs\ShipmentTrackingDto;
+use App\Modules\Integration\Logistics\DTOs\ShippingRateOptionDto;
 use App\Modules\Integration\Logistics\DTOs\ShippingRateRequestDto;
 use App\Modules\Integration\Logistics\DTOs\WaybillRequestDto;
+use App\Modules\Integration\Logistics\DTOs\WaybillResponseDto;
 use App\Modules\Integration\Logistics\Services\Logistics3PlAggregatorService;
 use InvalidArgumentException;
 use Tests\TestCase;
@@ -120,12 +124,22 @@ class Logistics3PlServiceTest extends TestCase
 
     public function test_fastest_rate_prioritizes_same_day_delivery_over_multi_day(): void
     {
-        $mockAdapter = new class extends \App\Modules\Integration\Logistics\Adapters\AbstractCourierAdapter {
-            public function getCourierCode(): string { return 'fastmock'; }
-            public function getCourierName(): string { return 'FastMock Express'; }
-            public function calculateRates(\App\Modules\Integration\Logistics\DTOs\ShippingRateRequestDto $request): array {
+        $mockAdapter = new class extends AbstractCourierAdapter
+        {
+            public function getCourierCode(): string
+            {
+                return 'fastmock';
+            }
+
+            public function getCourierName(): string
+            {
+                return 'FastMock Express';
+            }
+
+            public function calculateRates(ShippingRateRequestDto $request): array
+            {
                 return [
-                    new \App\Modules\Integration\Logistics\DTOs\ShippingRateOptionDto(
+                    new ShippingRateOptionDto(
                         courierCode: 'fastmock',
                         courierName: 'FastMock Express',
                         serviceCode: 'EXP',
@@ -133,7 +147,7 @@ class Logistics3PlServiceTest extends TestCase
                         cost: '30000.00',
                         estimatedDays: '1 hari'
                     ),
-                    new \App\Modules\Integration\Logistics\DTOs\ShippingRateOptionDto(
+                    new ShippingRateOptionDto(
                         courierCode: 'fastmock',
                         courierName: 'FastMock Express',
                         serviceCode: 'SAMEDAY',
@@ -143,15 +157,19 @@ class Logistics3PlServiceTest extends TestCase
                     ),
                 ];
             }
-            public function createWaybill(\App\Modules\Integration\Logistics\DTOs\WaybillRequestDto $request): \App\Modules\Integration\Logistics\DTOs\WaybillResponseDto {
-                return new \App\Modules\Integration\Logistics\DTOs\WaybillResponseDto('fastmock', 'AWB1', 'BK1', 'BOOKED', 'SAMEDAY', '50000.00', null, null);
+
+            public function createWaybill(WaybillRequestDto $request): WaybillResponseDto
+            {
+                return new WaybillResponseDto('fastmock', 'AWB1', 'BK1', 'BOOKED', 'SAMEDAY', '50000.00', null, null);
             }
-            public function trackShipment(string $waybillNumber): \App\Modules\Integration\Logistics\DTOs\ShipmentTrackingDto {
-                return new \App\Modules\Integration\Logistics\DTOs\ShipmentTrackingDto('fastmock', 'FastMock', $waybillNumber, \App\Enums\ShippingDispatchStatus::InTransit, 'On way');
+
+            public function trackShipment(string $waybillNumber): ShipmentTrackingDto
+            {
+                return new ShipmentTrackingDto('fastmock', 'FastMock', $waybillNumber, ShippingDispatchStatus::InTransit, 'On way');
             }
         };
 
-        $aggregator = new Logistics3PlAggregatorService();
+        $aggregator = new Logistics3PlAggregatorService;
         $aggregator->registerAdapter($mockAdapter);
 
         $request = new ShippingRateRequestDto(

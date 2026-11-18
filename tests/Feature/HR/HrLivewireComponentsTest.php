@@ -4,40 +4,40 @@ declare(strict_types=1);
 
 namespace Tests\Feature\HR;
 
+use App\Core\Context\TenantContext;
+use App\Enums\OrderStatus;
 use App\Livewire\HR\AttendanceMonitor;
 use App\Livewire\HR\CommissionManager;
 use App\Livewire\HR\EmployeeManager;
 use App\Livewire\HR\LeaveManager;
 use App\Livewire\HR\PayrollBatchManager;
 use App\Livewire\HR\WorkforceScheduler;
-use App\Enums\OrderStatus;
-use App\Models\Order;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Modules\HR\Enums\AttendanceSourceEnum;
-use App\Modules\HR\Enums\AttendanceStatusEnum;
-use App\Modules\HR\Enums\CommissionBasisTypeEnum;
-use App\Modules\HR\Enums\CommissionRecordStatusEnum;
-use App\Modules\HR\Enums\CommissionRecordTypeEnum;
-use App\Modules\HR\Enums\EmploymentStatusEnum;
-use App\Modules\HR\Enums\EmploymentTypeEnum;
-use App\Modules\HR\Enums\GenderEnum;
-use App\Modules\HR\Enums\LeaveRequestStatusEnum;
-use App\Modules\HR\Enums\MaritalStatusEnum;
-use App\Modules\HR\Enums\ReligionEnum;
-use App\Modules\HR\Models\AttendanceRecord;
-use App\Modules\HR\Models\CommissionRecord;
-use App\Modules\HR\Models\CommissionRule;
-use App\Modules\HR\Models\Department;
-use App\Modules\HR\Models\Employee;
-use App\Modules\HR\Models\JobTitle;
-use App\Modules\HR\Models\LeaveBalance;
-use App\Modules\HR\Models\LeavePolicy;
-use App\Modules\HR\Models\LeaveRequest;
-use App\Modules\HR\Models\ShiftTemplate;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Workforce\Enums\AttendanceSourceEnum;
+use App\Modules\Workforce\Enums\AttendanceStatusEnum;
+use App\Modules\Workforce\Enums\CommissionBasisTypeEnum;
+use App\Modules\Workforce\Enums\CommissionRecordStatusEnum;
+use App\Modules\Workforce\Enums\CommissionRecordTypeEnum;
+use App\Modules\Workforce\Enums\EmploymentStatusEnum;
+use App\Modules\Workforce\Enums\EmploymentTypeEnum;
+use App\Modules\Workforce\Enums\GenderEnum;
+use App\Modules\Workforce\Enums\LeaveRequestStatusEnum;
+use App\Modules\Workforce\Enums\MaritalStatusEnum;
+use App\Modules\Workforce\Enums\ReligionEnum;
+use App\Modules\Workforce\Models\AttendanceRecord;
+use App\Modules\Workforce\Models\CommissionRecord;
+use App\Modules\Workforce\Models\CommissionRule;
+use App\Modules\Workforce\Models\Department;
+use App\Modules\Workforce\Models\Employee;
+use App\Modules\Workforce\Models\JobTitle;
+use App\Modules\Workforce\Models\LeaveBalance;
+use App\Modules\Workforce\Models\LeavePolicy;
+use App\Modules\Workforce\Models\LeaveRequest;
+use App\Modules\Workforce\Models\ShiftTemplate;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Livewire\Livewire;
@@ -308,7 +308,7 @@ class HrLivewireComponentsTest extends TestCase
             'store_id' => $this->store->id,
             'user_id' => $this->ownerUser->id,
             'order_code' => 'ORD-COMM-TEST',
-            'idempotency_key' => 'idemp-comm-test-' . uniqid(),
+            'idempotency_key' => 'idemp-comm-test-'.uniqid(),
             'order_date' => now()->toDateString(),
             'order_amount' => 100000.00,
             'subtotal_amount' => 100000.00,

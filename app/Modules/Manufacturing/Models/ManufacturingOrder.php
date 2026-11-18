@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace App\Modules\Manufacturing\Models;
 
+use App\Core\Scopes\TenantScope;
 use App\Core\Traits\AssignsStore;
 use App\Core\Traits\AssignsTenant;
-use App\Models\Ingredient;
-use App\Models\Product;
-use App\Models\Scopes\TenantScope;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * Model Discrete Manufacturing Order (Perintah Kerja Manufaktur & Kitchen Prep).
@@ -30,8 +31,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property numeric-string $planned_quantity
  * @property numeric-string $produced_quantity
  * @property string $status
- * @property \Illuminate\Support\Carbon|null $planned_start_date
- * @property \Illuminate\Support\Carbon|null $completed_at
+ * @property Carbon|null $planned_start_date
+ * @property Carbon|null $completed_at
  * @property string|null $notes
  * @property int|null $created_by
  * @property-read Ingredient|null $destinationIngredient
@@ -118,4 +119,3 @@ class ManufacturingOrder extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 }
-

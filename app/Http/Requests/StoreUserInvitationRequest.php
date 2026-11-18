@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Role;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

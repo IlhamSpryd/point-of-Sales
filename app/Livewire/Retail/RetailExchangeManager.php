@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Livewire\Retail;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Modules\Products\Models\ProductVariant;
-use App\Modules\Retail\Services\RetailExchangeService;
+use App\Modules\Catalog\Models\ProductVariant;
 use App\Modules\Sales\Models\Order;
-use App\Modules\Sales\Models\OrderItem;
-use App\Services\Context\TenantContext;
+use App\Modules\Sales\Services\RetailExchangeService;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 

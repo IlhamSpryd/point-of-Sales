@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Inventory;
 
+use App\Core\Context\TenantContext;
 use App\Enums\StockMovementType;
-use App\Models\Tenant;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
 use App\Modules\Inventory\Exceptions\InsufficientStockException;
 use App\Modules\Inventory\Services\InventoryCostingService;
 use App\Modules\Inventory\Services\InventoryLedgerService;
 use App\Modules\Inventory\Services\StockTransferService;
-use App\Modules\Products\Models\Category;
-use App\Modules\Products\Models\Product;
-use App\Modules\Settings\Models\Store;
-use App\Modules\Users\Models\User;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Artisan;

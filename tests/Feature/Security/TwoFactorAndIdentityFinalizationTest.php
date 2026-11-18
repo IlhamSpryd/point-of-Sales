@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Security;
 
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Models\UserOAuthIdentity;
-use App\Services\Context\TenantContext;
-use App\Services\TwoFactorAuthService;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Models\UserOAuthIdentity;
+use App\Modules\Organization\Services\TwoFactorAuthService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;

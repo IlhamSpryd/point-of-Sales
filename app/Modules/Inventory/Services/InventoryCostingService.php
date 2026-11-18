@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Inventory\Services;
 
-use App\Modules\Products\Models\ProductCostHistory;
+use App\Modules\Catalog\Models\ProductCostHistory;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;

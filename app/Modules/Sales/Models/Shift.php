@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Models;
 
-use App\Models\CashDrawerMovement;
-use App\Models\Concerns\AssignsStore;
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToStore;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Device;
-use App\Models\Order;
-use App\Models\ShiftHandover;
-use App\Models\User;
+use App\Core\Traits\AssignsStore;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToStore;
+use App\Core\Traits\ScopedToTenant;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Contracts\ShiftReaderInterface;
 /** @use HasFactory<Factory<static>> */
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -39,8 +37,53 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $device_id
  * @property int|null $open_device_guard
  */
-class Shift extends Model
+class Shift extends Model implements ShiftReaderInterface
 {
+    public function getId(): int
+    {
+        return (int) $this->id;
+    }
+
+    public function getTenantId(): int
+    {
+        return (int) $this->tenant_id;
+    }
+
+    public function getStoreId(): ?int
+    {
+        return $this->store_id !== null ? (int) $this->store_id : null;
+    }
+
+    public function getUserId(): int
+    {
+        return (int) $this->user_id;
+    }
+
+    public function getShiftNumber(): ?string
+    {
+        return (string) ($this->shift_number ?? ('SHIFT-'.$this->id));
+    }
+
+    public function getCashDifference(): float|string
+    {
+        return (string) ($this->cash_difference ?? '0.00');
+    }
+
+    public function getExpectedCash(): float|string
+    {
+        return (string) ($this->expected_cash ?? '0.00');
+    }
+
+    public function getClosingBalance(): float|string
+    {
+        return (string) ($this->closing_balance ?? '0.00');
+    }
+
+    public function getClosedAt(): mixed
+    {
+        return $this->closed_at;
+    }
+
     use AssignsStore, AssignsTenant;
 
     /** @use HasFactory<Factory<static>> */

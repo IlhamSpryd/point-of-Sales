@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Modules\Finance\Services;
 
 use App\Enums\SupplierInvoiceStatusEnum;
-use App\Models\Supplier;
 use App\Modules\Finance\Models\ApLedgerEntry;
 use App\Modules\Finance\Models\JournalLine;
 use App\Modules\Purchasing\Models\GoodsReceivedNoteLine;
+use App\Modules\Purchasing\Models\Supplier;
 use App\Modules\Purchasing\Models\SupplierInvoice;
 use App\Modules\Purchasing\Models\SupplierInvoiceGrnMatch;
 use Carbon\Carbon;

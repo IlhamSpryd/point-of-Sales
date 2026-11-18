@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Livewire\HR;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Approval;
-use App\Modules\HR\Enums\PayrollBatchStatusEnum;
-use App\Modules\HR\Models\PayrollBatch;
-use App\Modules\HR\Models\PayrollRecord;
-use App\Modules\HR\Services\PayrollBatchService;
-use App\Modules\HR\Services\PayrollPostingService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Approval;
+use App\Modules\Workforce\Enums\PayrollBatchStatusEnum;
+use App\Modules\Workforce\Models\PayrollBatch;
+use App\Modules\Workforce\Models\PayrollRecord;
+use App\Modules\Workforce\Services\PayrollBatchService;
+use App\Modules\Workforce\Services\PayrollPostingService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;

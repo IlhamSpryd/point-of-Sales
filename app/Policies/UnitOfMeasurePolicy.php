@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\UnitOfMeasure;
-use App\Models\User;
+use App\Modules\Catalog\Models\UnitOfMeasure;
+use App\Modules\Organization\Models\User;
 
 class UnitOfMeasurePolicy
 {

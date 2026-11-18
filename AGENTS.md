@@ -32,8 +32,16 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 ## Application Structure & Architecture
 
-- Stick to existing directory structure; don't create new base folders without approval.
-- Do not change the application's dependencies without approval.
+- **13 Canonical Bounded Contexts (ADR-102):** The application is partitioned into exactly 13 modules across 6 tiers under `app/Modules/`:
+  - Tier 1: `Organization`, `Subscription`
+  - Tier 2: `Catalog`, `Customers`, `Workforce`
+  - Tier 3: `Pricing`, `Inventory`, `Manufacturing`
+  - Tier 4: `Sales`, `Purchasing`
+  - Tier 5: `Finance`
+  - Tier 6: `Reporting`, `Integration`
+- **Strict Anti-Drift Guardrails:** Strictly FORBIDDEN to recreate removed legacy directories (`HR`, `Products`, `FNB`, `Restaurant`, `Retail`, `MasterData`, `CRM`, `Users`, `Auth`, `Settings`, `Reports`, `Integrations`) or add thin wrapper classes in `app/Models/` or `app/Services/` (ADR-114). All domain logic and models reside exclusively within their canonical bounded contexts or shared platform primitives under `app/Platform/`.
+- **Core Platform Primitives (app/Platform/):** Mandatory use of `App\Platform\Money\Money` (ADR-106), `App\Platform\Authorization\AbilityRegistry` & `AbilityEvaluator` (ADR-110), `App\Platform\Configuration\TypedConfigService` (ADR-112), `App\Platform\Tenancy\TenantAwareJob` (OPS-01), `App\Platform\Workflow\MakerCheckerGuard` (EXT-04), `App\Platform\Audit\ImmutableAuditWriter`, `App\Platform\Documents\DocumentSequenceService`, and `App\Platform\Outbox\OutboxReaperService` (OPS-04, ADR-107).
+- **Mandatory Verification Gate:** Every change MUST pass `./vendor/bin/phpunit --testsuite=Arch,Unit`, `./vendor/bin/phpstan analyse --error-format=raw --memory-limit=1G`, and `./vendor/bin/pint --test` with 0 errors and zero ratchet ceiling increase (`NoGodClassTest`, `TenantScopeBypassTest`, `ModuleBoundaryTest`).
 
 ## Frontend Bundling
 

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Livewire\Purchasing;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Ingredient;
-use App\Models\Product;
-use App\Models\Supplier;
-use App\Models\SupplierContact;
-use App\Models\SupplierProduct;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Purchasing\Models\Supplier;
+use App\Modules\Purchasing\Models\SupplierContact;
+use App\Modules\Purchasing\Models\SupplierProduct;
 use App\Modules\Purchasing\Services\SupplierService;
-use App\Services\Context\TenantContext;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -119,11 +119,14 @@ class SupplierManager extends Component
         $this->bootRequiresTenantContext();
 
         $user = auth()->user();
+        $evaluator = app(\App\Platform\Authorization\AbilityEvaluator::class);
         $isAllowed = $user
             && $user->role
             && (
                 (bool) ($user->role->is_admin ?? false)
                 || in_array($user->role->name, ['Owner', 'Manager', 'Inventory', 'Admin'], true)
+                || $evaluator->can($user, 'purchasing.supplier.view')
+                || $evaluator->can($user, 'purchasing.view')
                 || $user->hasPermission('purchasing.supplier.view')
             );
 

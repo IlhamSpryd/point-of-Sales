@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Subscription;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Subscription\SubscriptionPortal;
-use App\Models\Plan;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Modules\Settings\Models\ProvisioningRequest;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Subscription\Models\Plan;
+use App\Modules\Subscription\Models\ProvisioningRequest;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
@@ -22,9 +22,13 @@ class PlanUpgradePersistenceTest extends TestCase
     use DatabaseTransactions;
 
     private Tenant $tenant;
+
     private Store $store;
+
     private User $user;
+
     private Plan $starterPlan;
+
     private Plan $enterprisePlan;
 
     protected function afterSubclassSetUp(): void

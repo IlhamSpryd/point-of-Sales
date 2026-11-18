@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domain4;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
 use App\Enums\OrderType;
 use App\Enums\PaymentStatusEnum;
 use App\Enums\PreparationStatus;
 use App\Livewire\Kasir\CreateOrder;
 use App\Livewire\Kasir\OrderHistory;
-use App\Models\Category;
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Shift;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Shift;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;

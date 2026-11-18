@@ -5,14 +5,14 @@
     $user = auth()->user();
     $roleName = $user?->role?->name;
     $isOwner = $roleName === 'Owner' || (bool) ($user?->role?->is_admin ?? false);
-    $tenantId = app(\App\Services\Context\TenantContext::class)->getTenantId();
+    $tenantId = app(\App\Core\Context\TenantContext::class)->getTenantId();
     $cacheKey = 'req_branch_switcher_stores_'.$user?->id.'_'.$tenantId;
     $stores = request()->attributes->get($cacheKey);
     if ($stores === null) {
-        $storeResolver = app(\App\Services\Context\StoreResolver::class);
+        $storeResolver = app(\App\Core\Context\StoreResolver::class);
         $allowedStoreIds = $user && $tenantId ? $storeResolver->allowedStoreIdsFor($user, $tenantId) : [];
         $stores = ! empty($allowedStoreIds) 
-            ? \App\Models\Store::whereIn('id', $allowedStoreIds)->orderBy('id')->get() 
+            ? \App\Modules\Organization\Models\Store::whereIn('id', $allowedStoreIds)->orderBy('id')->get() 
             : collect();
         request()->attributes->set($cacheKey, $stores);
     }

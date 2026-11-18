@@ -4,23 +4,25 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Restaurant;
 
+use App\Core\Context\TenantContext;
 use App\Enums\KitchenStation;
 use App\Enums\OrderStatus;
 use App\Enums\PreparationStatus;
 use App\Events\KdsItemUpdated;
-use App\Models\Category;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\OrderItem;
 use App\Modules\Sales\Services\KdsService;
-use App\Services\Context\TenantContext;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class KdsRealtimeBroadcastingTest extends TestCase
@@ -253,7 +255,7 @@ class KdsRealtimeBroadcastingTest extends TestCase
         $this->assertSame($this->cookUser->id, $claimed->processed_by);
 
         // Another staff member attempts to claim the exact same item concurrently
-        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $this->expectException(ValidationException::class);
         $this->kdsService->claim($this->orderItem->id, $this->managerUser->id);
 
         // Verify only 1 broadcast was dispatched
@@ -262,7 +264,7 @@ class KdsRealtimeBroadcastingTest extends TestCase
 
     public function test_channel_authorization_allows_tenant_staff_and_blocks_cross_tenant_intruders(): void
     {
-        $channels = \Illuminate\Support\Facades\Broadcast::getChannels();
+        $channels = Broadcast::getChannels();
         $this->assertArrayHasKey('tenant.{tenantId}.store.{storeId}.kds', $channels);
         $this->assertArrayHasKey('tenant.{tenantId}.kds', $channels);
 

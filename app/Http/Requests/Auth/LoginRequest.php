@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests\Auth;
 
-use App\Models\User;
-use App\Services\AuditTrailService;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\AuditTrailService;
 use App\Support\EmailNormalizer;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;

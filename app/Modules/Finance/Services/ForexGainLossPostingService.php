@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Services;
 
-use App\Models\User;
 use App\Modules\Finance\DataTransferObjects\JournalLineDto;
 use App\Modules\Finance\Enums\AccountSubtypeEnum;
 use App\Modules\Finance\Enums\AccountTypeEnum;
@@ -12,14 +11,18 @@ use App\Modules\Finance\Enums\JournalTypeEnum;
 use App\Modules\Finance\Enums\NormalBalanceEnum;
 use App\Modules\Finance\Models\ChartOfAccount;
 use App\Modules\Finance\Models\JournalEntry;
+use App\Modules\Organization\Models\User;
 use DomainException;
 use Illuminate\Support\Str;
 
 class ForexGainLossPostingService
 {
     public const SYSTEM_KEY_REALIZED_GAIN = 'FOREX_REALIZED_GAIN';
+
     public const SYSTEM_KEY_REALIZED_LOSS = 'FOREX_REALIZED_LOSS';
+
     public const SYSTEM_KEY_UNREALIZED_GAIN = 'FOREX_UNREALIZED_GAIN';
+
     public const SYSTEM_KEY_UNREALIZED_LOSS = 'FOREX_UNREALIZED_LOSS';
 
     public function __construct(
@@ -80,7 +83,7 @@ class ForexGainLossPostingService
             ->exists();
 
         if ($conflict) {
-            $code = $code . '-' . Str::random(3);
+            $code = $code.'-'.Str::random(3);
         }
 
         return ChartOfAccount::withoutTenantScope()->create([
@@ -130,7 +133,7 @@ class ForexGainLossPostingService
         $diff = $cmp < 0 ? bcmul($variance, '-1', 2) : $variance;
 
         $lines = [];
-        $key = $idempotencyKey ?? ('FX-REAL-' . Str::uuid()->toString());
+        $key = $idempotencyKey ?? ('FX-REAL-'.Str::uuid()->toString());
 
         if ($isReceivable) {
             // Pelunasan Piutang Usaha (AR Settlement)
@@ -348,7 +351,7 @@ class ForexGainLossPostingService
         }
 
         $lines = [];
-        $key = $idempotencyKey ?? ('FX-REVAL-' . Str::uuid()->toString());
+        $key = $idempotencyKey ?? ('FX-REVAL-'.Str::uuid()->toString());
 
         if ($cmp > 0) {
             // Nilai buku naik

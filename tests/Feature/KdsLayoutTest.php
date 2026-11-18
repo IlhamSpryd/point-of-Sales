@@ -1,7 +1,11 @@
 <?php
 
-use App\Models\Role;
-use App\Models\User;
+declare(strict_types=1);
+
+namespace Tests\Feature;
+
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

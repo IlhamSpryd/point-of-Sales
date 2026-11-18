@@ -4,41 +4,43 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Audit;
 
-use App\Models\Category;
-use App\Models\Company;
-use App\Models\Customer;
-use App\Models\Ingredient;
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Core\Context\TenantContext;
+use App\Enums\SupplierInvoiceStatusEnum;
+use App\Livewire\Kasir\CreateOrder;
+use App\Livewire\Sales\SalesOrderManager;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Services\RetailBarcodeService;
+use App\Modules\Customers\Models\Customer;
 use App\Modules\Finance\Enums\JournalStatusEnum;
 use App\Modules\Finance\Enums\JournalTypeEnum;
+use App\Modules\Finance\Models\AccountingPeriod;
 use App\Modules\Finance\Models\JournalEntry;
-use App\Modules\HR\Enums\EmploymentStatusEnum;
-use App\Modules\HR\Enums\EmploymentTypeEnum;
-use App\Modules\HR\Enums\GenderEnum;
-use App\Modules\HR\Enums\MaritalStatusEnum;
-use App\Modules\HR\Enums\PayrollBatchStatusEnum;
-use App\Modules\HR\Models\Department;
-use App\Modules\HR\Models\Employee;
-use App\Modules\HR\Models\JobTitle;
-use App\Modules\HR\Models\PayrollBatch;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Inventory\Models\IngredientRecipe;
 use App\Modules\Inventory\Models\IngredientStockBalance;
 use App\Modules\Inventory\Models\ProductLot;
 use App\Modules\Inventory\Services\LotFefoAllocationService;
-use App\Modules\Manufacturing\Models\IngredientRecipe;
-use App\Modules\Manufacturing\Models\ManufacturingOrder;
 use App\Modules\Manufacturing\Services\ManufacturingOrderService;
-use App\Modules\Purchasing\Enums\SupplierInvoiceStatusEnum;
+use App\Modules\Organization\Models\Company;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use App\Modules\Purchasing\Models\Supplier;
 use App\Modules\Purchasing\Models\SupplierInvoice;
-use App\Modules\Retail\Services\RetailBarcodeService;
+use App\Modules\Sales\Enums\CustomerInvoiceStatusEnum;
 use App\Modules\Sales\Models\CustomerInvoice;
 use App\Modules\Sales\Models\SalesOrder;
-use App\Services\Context\TenantContext;
-use Carbon\Carbon;
+use App\Modules\Workforce\Enums\EmploymentStatusEnum;
+use App\Modules\Workforce\Enums\EmploymentTypeEnum;
+use App\Modules\Workforce\Enums\GenderEnum;
+use App\Modules\Workforce\Enums\MaritalStatusEnum;
+use App\Modules\Workforce\Enums\PayrollBatchStatusEnum;
+use App\Modules\Workforce\Models\Department;
+use App\Modules\Workforce\Models\Employee;
+use App\Modules\Workforce\Models\JobTitle;
+use App\Modules\Workforce\Models\PayrollBatch;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -48,9 +50,13 @@ class EnterpriseEnhancementP2Test extends TestCase
     use DatabaseTransactions;
 
     protected Tenant $tenant;
+
     protected Company $company;
+
     protected Store $store;
+
     protected User $managerUser;
+
     protected Category $category;
 
     protected function afterSubclassSetUp(): void
@@ -249,7 +255,7 @@ class EnterpriseEnhancementP2Test extends TestCase
 
         // Simulasikan scan barcode timbangan pada Kasir POS (CreateOrder)
         // 1.500 kg x Rp 40.000 = Subtotal Rp 60.000
-        Livewire::test(\App\Livewire\Kasir\CreateOrder::class)
+        Livewire::test(CreateOrder::class)
             ->call('scanBarcode', $weightBarcode)
             ->assertSet('cart.0.product_id', $fruit->id)
             ->assertSet('cart.0.custom_price', 60000.0)
@@ -375,7 +381,7 @@ class EnterpriseEnhancementP2Test extends TestCase
         ]);
 
         // Simulasikan pemilihan tarif kirim JNE REG sebesar Rp 25.000 pada Livewire SalesOrderManager
-        Livewire::test(\App\Livewire\Sales\SalesOrderManager::class)
+        Livewire::test(SalesOrderManager::class)
             ->call('viewOrder', $so->id)
             ->call('applyShippingRate', 'JNE', 'REG', 25000.0);
 
@@ -449,9 +455,9 @@ class EnterpriseEnhancementP2Test extends TestCase
         $this->assertEquals($this->company->id, $payrollBatch->company->id);
 
         // 3. JournalEntry
-        $period = \App\Modules\Finance\Models\AccountingPeriod::withoutGlobalScopes()->create([
+        $period = AccountingPeriod::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
-            'period_code' => 'P2-' . rand(10000, 99999),
+            'period_code' => 'P2-'.rand(10000, 99999),
             'fiscal_year' => 2027,
             'period_number' => 4,
             'start_date' => now()->startOfMonth(),
@@ -492,7 +498,7 @@ class EnterpriseEnhancementP2Test extends TestCase
             'invoice_number' => 'INV-2027-001',
             'invoice_date' => now(),
             'due_date' => now()->addDays(30),
-            'status' => \App\Modules\Sales\Enums\CustomerInvoiceStatusEnum::POSTED,
+            'status' => CustomerInvoiceStatusEnum::POSTED,
             'subtotal' => '500000.00',
             'discount_amount' => '0.00',
             'tax_amount' => '55000.00',
@@ -527,7 +533,7 @@ class EnterpriseEnhancementP2Test extends TestCase
             'subtotal_amount' => '1000000.00',
             'total_amount' => '1110000.00',
             'tax_amount' => '110000.00',
-            'status' => \App\Enums\SupplierInvoiceStatusEnum::Draft,
+            'status' => SupplierInvoiceStatusEnum::Draft,
         ]);
 
         $this->assertEquals($this->company->id, $suppInvoice->company->id);

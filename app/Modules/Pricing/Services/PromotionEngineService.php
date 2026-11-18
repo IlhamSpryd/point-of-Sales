@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Pricing\Services;
 
+use App\Core\Context\TenantContext;
 use App\Modules\Pricing\DataTransferObjects\CartEvaluationContextDto;
 use App\Modules\Pricing\DataTransferObjects\CartEvaluationResultDto;
 use App\Modules\Pricing\Models\PromotionCampaign;
@@ -11,7 +12,6 @@ use App\Modules\Pricing\Models\PromotionReservation;
 use App\Modules\Pricing\Services\Evaluators\BundlePackageEvaluator;
 use App\Modules\Pricing\Services\Evaluators\BxgyRewardEvaluator;
 use App\Modules\Pricing\Services\Evaluators\HappyHourScheduleEvaluator;
-use App\Services\Context\TenantContext;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 

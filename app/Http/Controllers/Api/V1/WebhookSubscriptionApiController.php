@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Modules\Integration\Models\WebhookSubscription;
 use App\Modules\Integration\Services\SanctumScopeGuardService;
+use App\Modules\Organization\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -59,7 +59,7 @@ class WebhookSubscriptionApiController extends Controller
         $user = $request->user();
         $tenantId = (int) $user->tenant_id;
 
-        $secret = $validated['secret_key'] ?? ('whsec_' . Str::random(32));
+        $secret = $validated['secret_key'] ?? ('whsec_'.Str::random(32));
 
         $sub = WebhookSubscription::create([
             'tenant_id' => $tenantId,

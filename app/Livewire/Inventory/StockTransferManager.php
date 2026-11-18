@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Livewire\Inventory;
 
+use App\Core\Context\TenantContext;
 use App\Enums\StockTransferStatusEnum;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Ingredient;
-use App\Models\Product;
-use App\Models\StockTransfer;
-use App\Models\Store;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Inventory\Models\StockTransfer;
 use App\Modules\Inventory\Services\StockTransferService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Store;
 use DomainException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;

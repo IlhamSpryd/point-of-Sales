@@ -2,22 +2,22 @@
 
 namespace Tests\Feature\Domain1;
 
-use App\Models\Category;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Payment;
-use App\Models\Product;
-use App\Models\ProvisioningNonce;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Table;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Core\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\SystemUserResolver;
+use App\Modules\Organization\Services\TenantProvisioningService;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\OrderItem;
+use App\Modules\Sales\Models\Payment;
+use App\Modules\Sales\Models\Table;
+use App\Modules\Sales\Services\CartService;
+use App\Modules\Subscription\Models\ProvisioningNonce;
 use App\Providers\AppServiceProvider;
-use App\Services\CartService;
-use App\Services\Context\TenantContext;
-use App\Services\SystemUserResolver;
-use App\Services\TenantProvisioningService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;

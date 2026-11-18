@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\Device;
-use App\Models\Role;
-use App\Models\User;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class DevicePolicy

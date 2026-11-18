@@ -25,6 +25,12 @@ class SeedSimulationDatasetCommand extends Command
 
     public function handle(SimulationDatasetValidator $validator): int
     {
+        if (app()->environment('production')) {
+            $this->error('Simulation commands are strictly forbidden in production!');
+
+            return self::FAILURE;
+        }
+
         $this->info('');
         $this->info('╔══════════════════════════════════════════════════════════════════════════════════════════════════╗');
         $this->info('║  APEIRON POS & ERP — 90-DAY SIMULATION DATASET INJECTION & 25-INVARIANT VERIFICATION ENGINE     ║');
@@ -36,30 +42,34 @@ class SeedSimulationDatasetCommand extends Command
         $activeDb = DB::getDatabaseName();
 
         if (empty($confirmDb)) {
-            $this->error("Target database wajib dikonfirmasi lewat opsi --confirm-database=<nama_db>.");
+            $this->error('Target database wajib dikonfirmasi lewat opsi --confirm-database=<nama_db>.');
             $this->error("Contoh: php artisan pos:dataset:seed-simulation --confirm-database={$activeDb}");
+
             return self::FAILURE;
         }
 
         if ($confirmDb !== $activeDb) {
             $this->error("Nama database konfirmasi '{$confirmDb}' tidak cocok dengan database aktif '{$activeDb}'.");
+
             return self::FAILURE;
         }
 
         if ($this->option('verify-only')) {
             $this->info("Menjalankan Verifikasi 25 Invarian Integritas Matematika pada database [{$activeDb}]...");
+
             return $this->runVerification($validator);
         }
 
         if ($this->option('dry-run')) {
-            $this->warn("⚠️  MODE DRY-RUN: Rencana eksekusi DAG 5 langkah dipindai tanpa mutasi data.");
-            $this->line("1. StatutoryRuleVersionsSeeder");
+            $this->warn('⚠️  MODE DRY-RUN: Rencana eksekusi DAG 5 langkah dipindai tanpa mutasi data.');
+            $this->line('1. StatutoryRuleVersionsSeeder');
             $this->line("2. pos:dataset:generate --start-date=2026-08-14 --end-date=2026-11-11 --confirm-database={$activeDb}");
-            $this->line("3. ChartOfAccountsSeeder & DefaultPostingRulesSeeder");
-            $this->line("4. hr:backfill-employees-from-users");
+            $this->line('3. ChartOfAccountsSeeder & DefaultPostingRulesSeeder');
+            $this->line('4. hr:backfill-employees-from-users');
             $this->line("5. pos:dataset:populate-enterprise --confirm-database={$activeDb}");
-            $this->line("6. pos:dataset:refresh-operational");
-            $this->line("7. Verifikasi 25 Invarian Matematika");
+            $this->line('6. pos:dataset:refresh-operational');
+            $this->line('7. Verifikasi 25 Invarian Matematika');
+
             return self::SUCCESS;
         }
 
@@ -89,6 +99,7 @@ class SeedSimulationDatasetCommand extends Command
 
             if ($genExit !== 0) {
                 $this->error("pos:dataset:generate gagal dengan exit code {$genExit}");
+
                 return self::FAILURE;
             }
 
@@ -117,6 +128,7 @@ class SeedSimulationDatasetCommand extends Command
 
             if ($entExit !== 0) {
                 $this->error("pos:dataset:populate-enterprise gagal dengan exit code {$entExit}");
+
                 return self::FAILURE;
             }
 
@@ -128,6 +140,7 @@ class SeedSimulationDatasetCommand extends Command
 
             if ($opExit !== 0) {
                 $this->error("pos:dataset:refresh-operational gagal dengan exit code {$opExit}");
+
                 return self::FAILURE;
             }
 
@@ -135,14 +148,15 @@ class SeedSimulationDatasetCommand extends Command
             $this->info("\n✅ PIPELINE INJEKSI DATASET SELESAI DALAM {$elapsed} DETIK.");
 
             // LANGKAH FINAL: Verifikasi 25 Invarian Matematika
-            $this->info("\n" . str_repeat('═', 100));
-            $this->info("MEMULAI VERIFIKASI 25 INVARIAN MATEMATIKA & INTEGRITAS DATASET");
+            $this->info("\n".str_repeat('═', 100));
+            $this->info('MEMULAI VERIFIKASI 25 INVARIAN MATEMATIKA & INTEGRITAS DATASET');
             $this->info(str_repeat('═', 100));
 
             return $this->runVerification($validator);
         } catch (Throwable $e) {
-            $this->error("Eksepsi terjadi saat eksekusi pipeline: " . $e->getMessage());
+            $this->error('Eksepsi terjadi saat eksekusi pipeline: '.$e->getMessage());
             $this->error($e->getTraceAsString());
+
             return self::FAILURE;
         }
     }
@@ -175,14 +189,16 @@ class SeedSimulationDatasetCommand extends Command
             $rows
         );
 
-        $this->info("\nRingkasan Validasi: {$passCount}/" . count($results) . " PASS | {$failCount} FAIL");
+        $this->info("\nRingkasan Validasi: {$passCount}/".count($results)." PASS | {$failCount} FAIL");
 
         if ($failCount > 0) {
             $this->error("❌ Verifikasi gagal: Ditemukan {$failCount} invarian yang tidak lolos!");
+
             return self::FAILURE;
         }
 
-        $this->info("🎉 100% INVARIAN INTEGRITAS MATEMATIKA (25/25) LOLOS TANPA CACAT!");
+        $this->info('🎉 100% INVARIAN INTEGRITAS MATEMATIKA (25/25) LOLOS TANPA CACAT!');
+
         return self::SUCCESS;
     }
 }

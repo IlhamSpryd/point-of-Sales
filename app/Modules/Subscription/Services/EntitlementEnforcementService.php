@@ -4,19 +4,22 @@ declare(strict_types=1);
 
 namespace App\Modules\Subscription\Services;
 
-use App\Models\Device;
-use App\Models\Plan;
-use App\Models\PlanEntitlement;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\TenantEntitlementOverride;
-use App\Models\TenantSubscription;
-use App\Models\User;
+use App\Core\Traits\InteractsWithTenantCache;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use App\Modules\Subscription\Exceptions\PlanLimitExceededException;
+use App\Modules\Subscription\Models\Plan;
+use App\Modules\Subscription\Models\PlanEntitlement;
+use App\Modules\Subscription\Models\TenantEntitlementOverride;
+use App\Modules\Subscription\Models\TenantSubscription;
 use Illuminate\Support\Facades\Cache;
 
 class EntitlementEnforcementService
 {
+    use InteractsWithTenantCache;
+
     public const QUOTA_MAX_STORES = 'max_stores';
 
     public const QUOTA_MAX_DEVICES = 'max_devices';

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Livewire\Sales;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\SalesOrder;
 use App\Modules\Integration\Logistics\DTOs\ShippingRateOptionDto;
 use App\Modules\Integration\Logistics\DTOs\ShippingRateRequestDto;
-use App\Modules\Integrations\Logistics\Services\Logistics3PlAggregatorService;
+use App\Modules\Integration\Logistics\Services\Logistics3PlAggregatorService;
+use App\Modules\Sales\Models\SalesOrder;
 use App\Modules\Sales\Services\SalesOrderService;
-use App\Services\Context\TenantContext;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
@@ -316,8 +316,8 @@ class SalesOrderManager extends Component
         $costStr = number_format($cost, 2, '.', '');
         $so->shipping_amount = $costStr;
 
-        $notePrefix = "[3PL: {$courierCode} - {$serviceName} (Rp " . number_format($cost, 0, ',', '.') . ")]";
-        $so->notes = trim($notePrefix . ' ' . (string) ($so->notes ?? ''));
+        $notePrefix = "[3PL: {$courierCode} - {$serviceName} (Rp ".number_format($cost, 0, ',', '.').')]';
+        $so->notes = trim($notePrefix.' '.(string) ($so->notes ?? ''));
 
         // Hitung ulang total_amount = subtotal - discount_amount + tax_amount + shipping_amount via BCMath
         $sub = (string) $so->subtotal;
@@ -330,7 +330,7 @@ class SalesOrderManager extends Component
 
         $this->showShippingRateModal = false;
         $this->viewOrder($this->selectedSOId);
-        $this->dispatch('toast', message: "Tarif kurir {$courierCode} ({$serviceName}) sebesar Rp " . number_format($cost, 0, ',', '.') . " berhasil diterapkan pada SO.", type: 'success');
+        $this->dispatch('toast', message: "Tarif kurir {$courierCode} ({$serviceName}) sebesar Rp ".number_format($cost, 0, ',', '.').' berhasil diterapkan pada SO.', type: 'success');
     }
 
     public function render(): View

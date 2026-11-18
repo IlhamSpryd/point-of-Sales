@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Integration;
 
+use App\Core\Context\TenantContext;
 use App\Jobs\SendWhatsAppReceiptJob;
-use App\Models\Customer;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Modules\Customers\Models\Customer;
 use App\Modules\Integration\Models\WhatsAppMessageOutbox;
 use App\Modules\Integration\Services\WhatsAppNotificationService;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use App\Modules\Sales\Models\Order;
-use App\Services\Context\TenantContext;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
@@ -21,9 +21,13 @@ use Tests\TestCase;
 class WhatsAppReceiptNotificationTest extends TestCase
 {
     protected Tenant $tenantA;
+
     protected Tenant $tenantB;
+
     protected Store $storeA;
+
     protected User $userA;
+
     protected Customer $customerA;
 
     protected function afterSubclassSetUp(): void

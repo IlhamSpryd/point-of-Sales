@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Controllers;
 
+use App\Core\Context\TenantContext;
 use App\Http\Controllers\Controller;
 use App\Modules\Sales\Services\OfflineOrderSyncService;
-use App\Services\Context\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -55,4 +55,3 @@ class OfflineOrderSyncController extends Controller
         ]);
     }
 }
-

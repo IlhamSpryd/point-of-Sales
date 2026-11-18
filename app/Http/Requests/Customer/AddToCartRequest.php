@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Customer;
 
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

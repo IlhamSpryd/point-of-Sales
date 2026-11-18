@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\Setting;
-use App\Models\User;
+use App\Modules\Organization\Models\Setting;
+use App\Modules\Organization\Models\User;
 use App\Modules\Purchasing\Models\PurchaseOrder;
 
 class PurchaseOrderPolicy

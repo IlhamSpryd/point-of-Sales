@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Purchasing;
 
+use App\Core\Context\TenantContext;
 use App\Enums\SupplierStatusEnum;
 use App\Livewire\Purchasing\SupplierManager;
-use App\Models\Category;
-use App\Models\Ingredient;
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Supplier;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Purchasing\Models\Supplier;
 use App\Modules\Purchasing\Services\SupplierService;
-use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

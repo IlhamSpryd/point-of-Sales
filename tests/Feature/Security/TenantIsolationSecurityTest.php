@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Security;
 
+use App\Core\Context\TenantContext;
 use App\Enums\ExportTaskStatus;
-use App\Models\ChannelOrderLog;
-use App\Models\ExportTask;
-use App\Models\Role;
-use App\Models\User;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
+use App\Modules\Reporting\Models\ExportTask;
+use App\Modules\Sales\Models\ChannelOrderLog;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;

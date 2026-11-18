@@ -7,6 +7,6 @@ namespace App\Http\Controllers;
 /**
  * Backward compatibility wrapper for modular architecture.
  *
- * @see \App\Modules\Reports\Controllers\ReportController
+ * @see \App\Modules\Reporting\Controllers\ReportController
  */
-class ReportController extends \App\Modules\Reports\Controllers\ReportController {}
+class ReportController extends \App\Modules\Reporting\Controllers\ReportController {}

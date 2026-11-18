@@ -33,6 +33,8 @@ return new class extends Migration
             $table->timestamp('sent_at')->nullable();
             $table->timestamps();
 
+            $table->unique(['tenant_id', 'id'], 'whatsapp_message_outbox_tenant_id_id_unique');
+
             $table->foreign('tenant_id')
                 ->references('id')
                 ->on('tenants')
@@ -52,4 +54,3 @@ return new class extends Migration
         Schema::dropIfExists('whatsapp_message_outbox');
     }
 };
-

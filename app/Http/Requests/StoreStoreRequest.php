@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Models\Store;
+use App\Modules\Organization\Models\Store;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreStoreRequest extends FormRequest

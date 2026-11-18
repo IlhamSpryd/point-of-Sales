@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Adversarial;
 
-use App\Models\Category;
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Table;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Modules\Retail\Models\ShelfLabel;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\ShelfLabel;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Table;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -28,17 +28,29 @@ class Milestone1AdversarialFeatureTest extends TestCase
     protected bool $optOutFromDefaultTenant = true;
 
     protected Tenant $tenantA;
+
     protected Tenant $tenantB;
+
     protected Store $storeA1;
+
     protected Store $storeA2;
+
     protected Store $storeB;
+
     protected Product $productA;
+
     protected Product $productB;
+
     protected User $ownerA;
+
     protected User $managerA1;
+
     protected User $cashierA;
+
     protected Table $tableA1;
+
     protected Table $tableA2;
+
     protected Table $tableB;
 
     protected function afterSubclassSetUp(): void

@@ -51,9 +51,11 @@ jobs:
           php artisan key:generate --ansi
 
       - name: Pint (mode cek, tanpa auto-fix)
-        run: vendor/bin/pint --test || true # Toleran untuk langkah non-kritis style check
+        run: vendor/bin/pint --test
       - name: PHPStan / Larastan (butuh phpstan.neon)
         run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+      - name: Fast Gate (Architecture Guardrails)
+        run: vendor/bin/phpunit --testsuite=Arch
 
   tests:
     name: Tests (MySQL nyata)
@@ -131,6 +133,9 @@ jobs:
 
       - name: Smoke test migrasi + seeder
         run: php artisan migrate:fresh --seed --force
+
+      - name: Fast Gate (Architecture Guardrails & Unit suite)
+        run: vendor/bin/phpunit --testsuite=Arch,Unit
 
       - name: Test suite (paralel, tanpa grup chaos)
         run: php artisan test --parallel --exclude-group=chaos --coverage --min=${{ env.COVERAGE_MIN }}

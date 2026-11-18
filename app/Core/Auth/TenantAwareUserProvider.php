@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Auth;
 
-use App\Models\Scopes\TenantScope;
+use App\Core\Scopes\TenantScope;
 use Illuminate\Auth\EloquentUserProvider;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;

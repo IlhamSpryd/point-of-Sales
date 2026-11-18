@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Inventory;
 
+use App\Core\Context\TenantContext;
 use App\Enums\StockMovementType;
-use App\Models\StockTransferItem;
+use App\Modules\Inventory\Models\StockTransferItem;
 use App\Modules\Inventory\Services\InventoryLedgerService;
 use App\Modules\Inventory\Services\StockTransferService;
-use App\Services\Context\TenantContext;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;

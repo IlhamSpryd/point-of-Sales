@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Pricing;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
-use App\Models\Category;
-use App\Models\Customer;
-use App\Models\Discount;
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Shift;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use App\Modules\Pricing\DataTransferObjects\CheckoutCalculationInputDto;
+use App\Modules\Pricing\Models\Discount;
 use App\Modules\Pricing\Models\PromotionCampaign;
 use App\Modules\Pricing\Models\PromotionReward;
 use App\Modules\Pricing\Models\PromotionRule;
 use App\Modules\Pricing\Services\UnifiedPricingCalculationPipelineService;
+use App\Modules\Sales\Models\Shift;
 use App\Modules\Sales\Services\TransactionService;
-use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

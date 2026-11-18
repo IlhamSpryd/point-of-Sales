@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\TaxClass;
-use App\Models\User;
+use App\Modules\Catalog\Models\TaxClass;
+use App\Modules\Organization\Models\User;
 
 class TaxClassPolicy
 {

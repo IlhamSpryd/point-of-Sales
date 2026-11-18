@@ -51,7 +51,17 @@ return [
             'port' => env('DB_PORT', '3306'),
             'database' => env('DB_DATABASE', 'laravel'),
             'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', ''),
+            'password' => (function () {
+                $pass = env('DB_PASSWORD');
+                if ($pass !== null && $pass !== '' && $pass !== '${DB_PASSWORD}') {
+                    return $pass;
+                }
+                if (file_exists(base_path('.env')) && preg_match('/^DB_PASSWORD=(.*)$/m', (string) file_get_contents(base_path('.env')), $m)) {
+                    return trim($m[1], " \t\n\r\0\x0B\"'");
+                }
+
+                return '';
+            })(),
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => env('DB_CHARSET', 'utf8mb4'),
             'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
@@ -71,7 +81,17 @@ return [
             'port' => env('DB_PORT', '3306'),
             'database' => env('DB_DATABASE', 'laravel'),
             'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', ''),
+            'password' => (function () {
+                $pass = env('DB_PASSWORD');
+                if ($pass !== null && $pass !== '' && $pass !== '${DB_PASSWORD}') {
+                    return $pass;
+                }
+                if (file_exists(base_path('.env')) && preg_match('/^DB_PASSWORD=(.*)$/m', (string) file_get_contents(base_path('.env')), $m)) {
+                    return trim($m[1], " \t\n\r\0\x0B\"'");
+                }
+
+                return '';
+            })(),
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => env('DB_CHARSET', 'utf8mb4'),
             'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
@@ -91,7 +111,17 @@ return [
             'port' => env('DB_PORT', '5432'),
             'database' => env('DB_DATABASE', 'laravel'),
             'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', ''),
+            'password' => (function () {
+                $pass = env('DB_PASSWORD');
+                if ($pass !== null && $pass !== '' && $pass !== '${DB_PASSWORD}') {
+                    return $pass;
+                }
+                if (file_exists(base_path('.env')) && preg_match('/^DB_PASSWORD=(.*)$/m', (string) file_get_contents(base_path('.env')), $m)) {
+                    return trim($m[1], " \t\n\r\0\x0B\"'");
+                }
+
+                return '';
+            })(),
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,
@@ -106,7 +136,17 @@ return [
             'port' => env('DB_PORT', '1433'),
             'database' => env('DB_DATABASE', 'laravel'),
             'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', ''),
+            'password' => (function () {
+                $pass = env('DB_PASSWORD');
+                if ($pass !== null && $pass !== '' && $pass !== '${DB_PASSWORD}') {
+                    return $pass;
+                }
+                if (file_exists(base_path('.env')) && preg_match('/^DB_PASSWORD=(.*)$/m', (string) file_get_contents(base_path('.env')), $m)) {
+                    return trim($m[1], " \t\n\r\0\x0B\"'");
+                }
+
+                return '';
+            })(),
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,

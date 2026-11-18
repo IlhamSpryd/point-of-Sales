@@ -4,4 +4,76 @@ declare(strict_types=1);
 
 namespace App\Modules\Subscription\Models;
 
-class TenantSubscription extends \App\Modules\Settings\Models\TenantSubscription {}
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToTenant;
+use App\Modules\Organization\Models\Tenant;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+/**
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $plan_id
+ */
+class TenantSubscription extends Model
+{
+    use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
+    use HasFactory;
+
+    use ScopedToTenant;
+
+    public const STATUS_TRIALING = 'trialing';
+
+    public const STATUS_ACTIVE = 'active';
+
+    public const STATUS_PAST_DUE = 'past_due';
+
+    public const STATUS_CANCELED = 'canceled';
+
+    public const STATUS_EXPIRED = 'expired';
+
+    protected $fillable = [
+        'tenant_id',
+        'plan_id',
+        'status',
+        'starts_at',
+        'ends_at',
+        'trial_ends_at',
+        'metadata',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'starts_at' => 'datetime',
+            'ends_at' => 'datetime',
+            'trial_ends_at' => 'datetime',
+            'metadata' => 'array',
+        ];
+    }
+
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    /**
+     * @return BelongsTo<Plan, $this>
+     */
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(Plan::class);
+    }
+
+    public function isActive(): bool
+    {
+        return in_array($this->status, [self::STATUS_ACTIVE, self::STATUS_TRIALING], true);
+    }
+}

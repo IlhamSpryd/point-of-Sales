@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\HR;
 
-use App\Models\Department as CompatDepartment;
-use App\Models\JobTitle as CompatJobTitle;
-use App\Models\Tenant;
-use App\Modules\HR\Enums\EmploymentStatusEnum;
-use App\Modules\HR\Enums\EmploymentTypeEnum;
-use App\Modules\HR\Models\Department;
-use App\Modules\HR\Models\JobTitle;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Workforce\Enums\EmploymentStatusEnum;
+use App\Modules\Workforce\Enums\EmploymentTypeEnum;
+use App\Modules\Workforce\Models\Department;
+use App\Modules\Workforce\Models\Department as CompatDepartment;
+use App\Modules\Workforce\Models\JobTitle;
+use App\Modules\Workforce\Models\JobTitle as CompatJobTitle;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use RuntimeException;

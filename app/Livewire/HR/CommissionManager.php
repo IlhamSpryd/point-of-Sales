@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Livewire\HR;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Modules\HR\Enums\CommissionRecordStatusEnum;
-use App\Modules\HR\Enums\CommissionRecordTypeEnum;
-use App\Modules\HR\Enums\EmploymentStatusEnum;
-use App\Modules\HR\Models\CommissionRecord;
-use App\Modules\HR\Models\Employee;
-use App\Services\Context\TenantContext;
+use App\Modules\Workforce\Enums\CommissionRecordStatusEnum;
+use App\Modules\Workforce\Enums\CommissionRecordTypeEnum;
+use App\Modules\Workforce\Enums\EmploymentStatusEnum;
+use App\Modules\Workforce\Models\CommissionRecord;
+use App\Modules\Workforce\Models\Employee;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Livewire\Component;

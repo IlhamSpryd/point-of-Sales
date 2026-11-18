@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\OrderItem;
+use App\Modules\Sales\Models\OrderItem;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 

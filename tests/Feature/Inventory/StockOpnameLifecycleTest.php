@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Inventory;
 
+use App\Core\Context\TenantContext;
 use App\Enums\IngredientStockMovementTypeEnum;
 use App\Enums\StockMovementType;
 use App\Enums\StockOpnameStatusEnum;
-use App\Models\Ingredient;
-use App\Models\IngredientStockMovement;
-use App\Models\StockMovement;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Inventory\Models\IngredientStockMovement;
+use App\Modules\Inventory\Models\StockMovement;
 use App\Modules\Inventory\Services\InventoryLedgerService;
 use App\Modules\Inventory\Services\StockOpnameService;
-use App\Services\Context\TenantContext;
 use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\TwoTenantFixture;

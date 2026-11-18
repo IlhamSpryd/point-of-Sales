@@ -1,12 +1,16 @@
 <!-- Scrollable Products Area in Cart -->
-<div class="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1 py-1 min-h-[160px]">
+{{-- R-009 WCAG AAA: region live untuk pembaca layar saat keranjang berubah. --}}
+<div aria-live="polite" aria-atomic="true" class="sr-only" role="status">
+    {{ count($this->cartLines) }} item dalam keranjang, total Rp {{ number_format($this->totalAmount, 0, ',', '.') }}
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1 py-1 min-h-[160px]" role="list" aria-label="Current order items">
     @if ($pendingOrderId)
         <div class="p-2.5 bg-muted border border-border rounded-lg text-xs font-semibold text-foreground flex items-center justify-between shadow-2xs">
             <span class="flex items-center gap-1.5 truncate">
                 <span class="material-symbols-rounded text-[16px] text-muted-foreground">lock</span>
                 QR Settlement Mode #{{ $pendingOrderCode }}
             </span>
-            <button type="button" wire:click="cancelPendingOrderMode" class="text-xs font-semibold text-rose-600 hover:text-rose-800 transition-colors ml-2 shrink-0">
+            <button type="button" wire:click="cancelPendingOrderMode" aria-label="Cancel pending QR order settlement" class="text-xs font-semibold text-rose-600 hover:text-rose-800 transition-colors ml-2 shrink-0">
                 Cancel
             </button>
         </div>
@@ -40,7 +44,10 @@
         </div>
     @else
         @foreach ($this->cartLines as $line)
+            {{-- R-009: data-cart-index + highlight kursor keyboard (WCAG AAA focus visible). --}}
             <div wire:key="cart-line-{{ $line['product_id'] }}-{{ implode('-', $line['modifier_ids'] ?? []) }}-{{ md5((string) ($line['notes'] ?? '')) }}-{{ $line['index'] }}"
+                data-cart-index="{{ $line['index'] }}"
+                role="listitem"
                 class="p-2.5 rounded-lg bg-muted border border-border hover:border-foreground flex flex-col gap-2 transition-all group">
 
                 <div class="flex items-start justify-between gap-2">
@@ -58,7 +65,7 @@
                         @endif
                     </div>
                     @unless ($pendingOrderId)
-                        <button type="button" wire:click="removeFromCart({{ $line['index'] }})"
+                        <button type="button" wire:click.prevent="removeFromCart({{ $line['index'] }})"
                             aria-label="Remove {{ $line['product_name'] }} from cart"
                             class="text-muted-foreground hover:text-rose-600 transition-colors p-0.5 shrink-0" title="Remove">
                             <span class="material-symbols-rounded text-[16px]">close</span>
@@ -75,7 +82,7 @@
                             </span>
                         @else
                             <button type="button"
-                                wire:click="updateCartQty({{ $line['index'] }}, -1)"
+                                wire:click.prevent="updateCartQty({{ $line['index'] }}, -1)"
                                 aria-label="Decrease quantity of {{ $line['product_name'] }}"
                                 class="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-colors">
                                 <span class="material-symbols-rounded text-[14px]">remove</span>
@@ -84,7 +91,7 @@
                                 {{ $line['qty'] }}
                             </span>
                             <button type="button"
-                                wire:click="updateCartQty({{ $line['index'] }}, 1)"
+                                wire:click.prevent="updateCartQty({{ $line['index'] }}, 1)"
                                 aria-label="Increase quantity of {{ $line['product_name'] }}"
                                 class="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-colors">
                                 <span class="material-symbols-rounded text-[14px]">add</span>

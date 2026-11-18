@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Navigation;
 
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\RoleService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -58,7 +59,7 @@ class ErpSidebarReachabilityTest extends TestCase
 
         $ownerRole = Role::create(['tenant_id' => $this->tenant->id, 'name' => 'Owner', 'permissions' => ['*']]);
         $managerRole = Role::create(['tenant_id' => $this->tenant->id, 'name' => 'Manager', 'permissions' => ['*']]);
-        $kasirRole = Role::create(['tenant_id' => $this->tenant->id, 'name' => 'Kasir', 'permissions' => ['*']]);
+        $kasirRole = Role::create(['tenant_id' => $this->tenant->id, 'name' => 'Kasir', 'permissions' => ['pos.access', 'orders.create', 'orders.view']]);
         $salesRole = Role::create(['tenant_id' => $this->tenant->id, 'name' => 'Sales', 'permissions' => ['*']]);
         $financeRole = Role::create(['tenant_id' => $this->tenant->id, 'name' => 'Finance', 'permissions' => ['*']]);
         $cookRole = Role::create(['tenant_id' => $this->tenant->id, 'name' => 'Cook', 'permissions' => ['*']]);
@@ -273,7 +274,7 @@ class ErpSidebarReachabilityTest extends TestCase
 
     public function test_owner_role_immutability_and_permission_normalization(): void
     {
-        $roleService = app(\App\Modules\Users\Services\RoleService::class);
+        $roleService = app(RoleService::class);
         $ownerRole = $this->ownerUser->role;
 
         // 1. Attempting to downgrade Owner permissions or deactivate Owner role preserves wildcard & active state
@@ -298,7 +299,7 @@ class ErpSidebarReachabilityTest extends TestCase
 
     public function test_role_service_normalizes_sequential_and_associative_permissions(): void
     {
-        $roleService = app(\App\Modules\Users\Services\RoleService::class);
+        $roleService = app(RoleService::class);
 
         $customRole = $roleService->store([
             'tenant_id' => $this->tenant->id,

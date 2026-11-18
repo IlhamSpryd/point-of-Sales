@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Services;
 
-use App\Models\User;
+use App\Core\Context\TenantContext;
 use App\Modules\Finance\DataTransferObjects\JournalLineDto;
 use App\Modules\Finance\DataTransferObjects\ManualJournalDto;
 use App\Modules\Finance\Enums\JournalStatusEnum;
@@ -15,8 +15,8 @@ use App\Modules\Finance\Models\AccountPeriodBalance;
 use App\Modules\Finance\Models\ChartOfAccount;
 use App\Modules\Finance\Models\JournalEntry;
 use App\Modules\Finance\Models\JournalLine;
-use App\Modules\Purchasing\Services\DocumentSequenceService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\User;
+use App\Platform\Documents\DocumentSequenceService;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use DomainException;

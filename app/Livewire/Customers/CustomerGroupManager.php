@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Livewire\Customers;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Customer;
-use App\Models\CustomerGroup;
-use App\Models\PriceList;
-use App\Modules\Settings\Services\AuditTrailService;
-use App\Services\Context\TenantContext;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Customers\Models\CustomerGroup;
+use App\Modules\Organization\Services\AuditTrailService;
+use App\Modules\Pricing\Models\PriceList;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

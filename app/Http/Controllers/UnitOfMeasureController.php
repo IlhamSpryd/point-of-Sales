@@ -7,6 +7,6 @@ namespace App\Http\Controllers;
 /**
  * Backward compatibility wrapper for modular architecture.
  *
- * @see \App\Modules\Products\Controllers\UnitOfMeasureController
+ * @see \App\Modules\Catalog\Controllers\UnitOfMeasureController
  */
-class UnitOfMeasureController extends \App\Modules\Products\Controllers\UnitOfMeasureController {}
+class UnitOfMeasureController extends \App\Modules\Catalog\Controllers\UnitOfMeasureController {}

@@ -17,7 +17,7 @@ interface TaxProviderAdapterInterface
     /**
      * Submit dokumen faktur pajak ke penyedia pajak atau workflow internal.
      *
-     * @param array<string, mixed> $options
+     * @param  array<string, mixed>  $options
      */
     public function submitInvoice(TaxInvoiceDocumentDto $document, array $options = []): TaxSubmissionResultDto;
 

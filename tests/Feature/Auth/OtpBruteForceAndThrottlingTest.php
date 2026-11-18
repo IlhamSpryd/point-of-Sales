@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\EmailVerificationOtp;
-use App\Models\Role;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\EmailVerificationOtpService;
+use App\Modules\Organization\Models\EmailVerificationOtp;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\EmailVerificationOtpService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;

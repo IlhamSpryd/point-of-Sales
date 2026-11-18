@@ -4,21 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Customers\Models;
 
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\CustomerAddress;
-use App\Models\CustomerContact;
-use App\Models\CustomerGroup;
-use App\Models\CustomerLoyaltyAccount;
-use App\Models\CustomerMergeLog;
-use App\Models\LoyaltyLedger;
-use App\Models\Order;
-use App\Models\PriceList;
-use App\Models\Store;
-use App\Models\User;
-use App\Modules\Sales\Models\ArLedgerEntry;
-use App\Modules\Sales\Models\ArPaymentAllocation;
-use App\Modules\Sales\Models\CustomerInvoice;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToTenant;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -35,6 +24,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $merged_into_customer_id
  * @property int|null $phone_uniqueness_key
  * @property int $tenant_id
+ * @property string $name
+ * @property string|null $company_name
+ * @property string|null $tax_id
  */
 class Customer extends Model
 {
@@ -75,27 +67,27 @@ class Customer extends Model
     }
 
     /**
-     * @return HasOne<CustomerLoyaltyAccount, $this>
+     * @return HasOne<\App\Modules\Pricing\Models\CustomerLoyaltyAccount, $this>
      */
     public function loyaltyAccount(): HasOne
     {
-        return $this->hasOne(CustomerLoyaltyAccount::class);
+        return $this->hasOne(\App\Modules\Pricing\Models\CustomerLoyaltyAccount::class);
     }
 
     /**
-     * @return HasMany<Order, $this>
+     * @return HasMany<\App\Modules\Sales\Models\Order, $this>
      */
     public function orders(): HasMany
     {
-        return $this->hasMany(Order::class);
+        return $this->hasMany(\App\Modules\Sales\Models\Order::class);
     }
 
     /**
-     * @return HasMany<LoyaltyLedger, $this>
+     * @return HasMany<\App\Modules\Pricing\Models\LoyaltyLedger, $this>
      */
     public function loyaltyLedgers(): HasMany
     {
-        return $this->hasMany(LoyaltyLedger::class);
+        return $this->hasMany(\App\Modules\Pricing\Models\LoyaltyLedger::class);
     }
 
     /**
@@ -155,11 +147,11 @@ class Customer extends Model
     }
 
     /**
-     * @return BelongsTo<PriceList, $this>
+     * @return BelongsTo<\App\Modules\Pricing\Models\PriceList, $this>
      */
     public function priceList(): BelongsTo
     {
-        return $this->belongsTo(PriceList::class, 'price_list_id');
+        return $this->belongsTo(\App\Modules\Pricing\Models\PriceList::class, 'price_list_id');
     }
 
     /**
@@ -203,59 +195,59 @@ class Customer extends Model
     }
 
     /**
-     * @return HasMany<CustomerInvoice, $this>
+     * @return HasMany<\App\Modules\Sales\Models\CustomerInvoice, $this>
      */
     public function invoices(): HasMany
     {
-        return $this->hasMany(CustomerInvoice::class);
+        return $this->hasMany(\App\Modules\Sales\Models\CustomerInvoice::class);
     }
 
     /**
-     * @return HasMany<ArLedgerEntry, $this>
+     * @return HasMany<\App\Modules\Sales\Models\ArLedgerEntry, $this>
      */
     public function arLedgerEntries(): HasMany
     {
-        return $this->hasMany(ArLedgerEntry::class);
+        return $this->hasMany(\App\Modules\Sales\Models\ArLedgerEntry::class);
     }
 
     /**
-     * @return HasMany<ArPaymentAllocation, $this>
+     * @return HasMany<\App\Modules\Sales\Models\ArPaymentAllocation, $this>
      */
     public function arPaymentAllocations(): HasMany
     {
-        return $this->hasMany(ArPaymentAllocation::class);
+        return $this->hasMany(\App\Modules\Sales\Models\ArPaymentAllocation::class);
     }
 
     /**
-     * @return HasMany<Voucher, $this>
+     * @return HasMany<\App\Modules\Pricing\Models\Voucher, $this>
      */
     public function vouchers(): HasMany
     {
-        return $this->hasMany(Voucher::class);
+        return $this->hasMany(\App\Modules\Pricing\Models\Voucher::class);
     }
 
     /**
-     * @return HasMany<GiftCard, $this>
+     * @return HasMany<\App\Modules\Pricing\Models\GiftCard, $this>
      */
     public function giftCards(): HasMany
     {
-        return $this->hasMany(GiftCard::class);
+        return $this->hasMany(\App\Modules\Pricing\Models\GiftCard::class);
     }
 
     /**
-     * @return HasOne<StoreCreditAccount, $this>
+     * @return HasOne<\App\Modules\Pricing\Models\StoreCreditAccount, $this>
      */
     public function storeCreditAccount(): HasOne
     {
-        return $this->hasOne(StoreCreditAccount::class);
+        return $this->hasOne(\App\Modules\Pricing\Models\StoreCreditAccount::class);
     }
 
     /**
-     * @return HasMany<StoreCreditLedger, $this>
+     * @return HasMany<\App\Modules\Pricing\Models\StoreCreditLedger, $this>
      */
     public function storeCreditLedgers(): HasMany
     {
-        return $this->hasMany(StoreCreditLedger::class);
+        return $this->hasMany(\App\Modules\Pricing\Models\StoreCreditLedger::class);
     }
 
     public function isCompany(): bool

@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Tenancy;
 
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;

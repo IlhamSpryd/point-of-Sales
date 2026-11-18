@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Pricing;
 
-use App\Models\Customer;
-use App\Models\LoyaltyTier;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Modules\Customers\Services\LoyaltyService;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Pricing\Models\LoyaltyTier;
+use App\Modules\Pricing\Services\LoyaltyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Services\Database\PartitionManagementService;
+use App\Platform\Database\PartitionManagementService;
 use Illuminate\Console\Command;
 
 /**
@@ -65,4 +65,3 @@ class CreateMonthlyPartitionsCommand extends Command
         return self::SUCCESS;
     }
 }
-

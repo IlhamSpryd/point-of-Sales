@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
-use App\Services\SystemUserResolver;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\SystemUserResolver;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 

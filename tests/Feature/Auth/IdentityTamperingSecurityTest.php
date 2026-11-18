@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
-use App\Services\ShiftService;
-use App\Services\UserInvitationService;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\UserInvitationService;
+use App\Modules\Sales\Services\ShiftService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

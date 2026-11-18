@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Kasir;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Kasir\CreateOrder;
-use App\Models\Category;
-use App\Models\Modifier;
-use App\Models\ModifierGroup;
-use App\Models\Product;
-use App\Models\ProductUnitConversion;
-use App\Models\ProductVariant;
-use App\Models\Role;
-use App\Models\Shift;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\UnitOfMeasure;
-use App\Models\User;
-use App\Services\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\ProductUnitConversion;
+use App\Modules\Catalog\Models\ProductVariant;
+use App\Modules\Catalog\Models\UnitOfMeasure;
+use App\Modules\Inventory\Models\Modifier;
+use App\Modules\Inventory\Models\ModifierGroup;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Shift;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
@@ -655,5 +655,97 @@ class PosProductConfiguratorModalTest extends TestCase
             ->assertSet('selectingProductId', $product->id)
             ->assertSet('pendingVariantId', $variant->id)
             ->assertSet('pendingModifierIds', [$modIce->id]);
+    }
+
+    /**
+     * Requirement: Modal Parked List terbuka dan me-render daftar antrean dengan benar saat isParkedListOpen = true.
+     */
+    public function test_parked_list_modal_renders_cleanly_when_opened(): void
+    {
+        Livewire::actingAs($this->cashierUser)
+            ->test(CreateOrder::class)
+            ->assertDontSeeHtml('id="pos-parked-list-modal"')
+            ->set('isParkedListOpen', true)
+            ->assertSeeHtml('id="pos-parked-list-modal"')
+            ->assertSee('Parked Orders (Held Orders)')
+            ->assertSee('Active parked orders held at this branch register.')
+            ->set('isParkedListOpen', false)
+            ->assertDontSeeHtml('id="pos-parked-list-modal"');
+    }
+
+    /**
+     * Requirement: Modal Park Current Cart (F8) terbuka dan tertutup bersih.
+     */
+    public function test_park_cart_modal_renders_cleanly_when_opened(): void
+    {
+        Livewire::actingAs($this->cashierUser)
+            ->test(CreateOrder::class)
+            ->assertDontSeeHtml('id="pos-park-modal"')
+            ->set('isParkModalOpen', true)
+            ->assertSeeHtml('id="pos-park-modal"')
+            ->assertSee('Park Order')
+            ->set('isParkModalOpen', false)
+            ->assertDontSeeHtml('id="pos-park-modal"');
+    }
+
+    /**
+     * Requirement: Modal Manual Discount terbuka dan tertutup bersih.
+     */
+    public function test_manual_discount_modal_renders_cleanly_when_opened(): void
+    {
+        Livewire::actingAs($this->cashierUser)
+            ->test(CreateOrder::class)
+            ->assertDontSeeHtml('id="pos-manual-discount-modal"')
+            ->set('isManualDiscountModalOpen', true)
+            ->assertSeeHtml('id="pos-manual-discount-modal"')
+            ->assertSee('Configure Discount')
+            ->set('isManualDiscountModalOpen', false)
+            ->assertDontSeeHtml('id="pos-manual-discount-modal"');
+    }
+
+    /**
+     * Requirement: Modal Configurator Produk otomatis memilih varian aktif pertama saat dibuka.
+     */
+    public function test_configurator_modal_auto_preselects_first_active_variant(): void
+    {
+        $product = Product::create([
+            'tenant_id' => $this->tenant->id,
+            'category_id' => $this->category->id,
+            'product_code' => 'COF-VAR-01',
+            'product_name' => 'Caramel Macchiato',
+            'product_price' => 30000,
+            'stock' => 50,
+            'is_active' => true,
+            'status' => 'active',
+            'track_inventory' => false,
+            'has_variants' => true,
+        ]);
+
+        $regular = ProductVariant::create([
+            'tenant_id' => $this->tenant->id,
+            'product_id' => $product->id,
+            'variant_name' => 'Regular',
+            'price_override' => 30000,
+            'is_active' => true,
+        ]);
+
+        $large = ProductVariant::create([
+            'tenant_id' => $this->tenant->id,
+            'product_id' => $product->id,
+            'variant_name' => 'Large',
+            'price_override' => 35000,
+            'is_active' => true,
+        ]);
+
+        Livewire::actingAs($this->cashierUser)
+            ->test(CreateOrder::class)
+            ->call('openModifierPicker', $product->id)
+            ->assertSet('selectingProductId', $product->id)
+            ->assertSet('pendingVariantId', $regular->id)
+            ->assertSeeHtml('id="product-configurator-picker"')
+            ->assertSee('Caramel Macchiato')
+            ->assertSee('Regular')
+            ->assertSee('Large')
+            ->assertSee('Tambah ke Pesanan');
     }
 }

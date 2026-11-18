@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\UnitOfMeasure;
+use App\Modules\Catalog\Models\UnitOfMeasure;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

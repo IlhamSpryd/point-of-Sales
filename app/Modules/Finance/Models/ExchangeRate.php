@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Models;
 
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Tenant;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToTenant;
+use App\Modules\Organization\Models\Tenant;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -19,10 +20,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $to_currency
  * @property numeric-string $rate
  * @property numeric-string $inverse_rate
- * @property \Carbon\Carbon $effective_date
+ * @property Carbon $effective_date
  * @property string $rate_source
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class ExchangeRate extends Model
 {
@@ -53,4 +54,3 @@ class ExchangeRate extends Model
         return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 }
-

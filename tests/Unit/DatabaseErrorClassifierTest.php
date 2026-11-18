@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Services\DatabaseErrorClassifier;
+use App\Platform\Database\DatabaseErrorClassifier;
 use Illuminate\Database\QueryException;
 use PHPUnit\Framework\TestCase;
 

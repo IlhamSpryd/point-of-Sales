@@ -7,6 +7,6 @@ namespace App\Http\Controllers;
 /**
  * Backward compatibility wrapper for modular architecture.
  *
- * @see \App\Modules\Users\Controllers\ProfileEmailChangeController
+ * @see \App\Modules\Organization\Controllers\ProfileEmailChangeController
  */
-class ProfileEmailChangeController extends \App\Modules\Users\Controllers\ProfileEmailChangeController {}
+class ProfileEmailChangeController extends \App\Modules\Organization\Controllers\ProfileEmailChangeController {}

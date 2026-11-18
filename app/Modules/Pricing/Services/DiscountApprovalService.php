@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Pricing\Services;
 
-use App\Models\Approval;
-use App\Models\User;
-use App\Modules\Users\Services\CashierPinService;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Approval;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\CashierPinService;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Security;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Finance\AccountingPeriodManager;
 use App\Livewire\Finance\ChartOfAccountManager;
 use App\Livewire\Finance\JournalEntryManager;
@@ -25,9 +26,8 @@ use App\Livewire\Purchasing\PurchaseReturnManager;
 use App\Livewire\Purchasing\SupplierInvoiceManager;
 use App\Livewire\Sales\QuotationManager;
 use App\Livewire\Sales\SalesOrderManager;
-use App\Models\Role;
-use App\Models\User;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\Support\TwoTenantFixture;

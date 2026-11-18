@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Livewire\Inventory;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\GoodsReceipt;
-use App\Models\Ingredient;
-use App\Models\Product;
-use App\Models\SupplierReturn;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Inventory\Models\GoodsReceipt;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Inventory\Models\SupplierReturn;
 use App\Modules\Inventory\Services\SupplierReturnService;
-use App\Services\Context\TenantContext;
 use DomainException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;

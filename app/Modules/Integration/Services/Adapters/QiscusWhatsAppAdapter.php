@@ -16,8 +16,11 @@ use Throwable;
 class QiscusWhatsAppAdapter implements WhatsAppGatewayInterface
 {
     protected string $apiUrl;
+
     protected string $appId;
+
     protected string $secretKey;
+
     protected string $channelId;
 
     public function __construct()
@@ -133,4 +136,3 @@ class QiscusWhatsAppAdapter implements WhatsAppGatewayInterface
         }
     }
 }
-

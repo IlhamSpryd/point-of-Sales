@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Manufacturing;
 
-use App\Models\Modifier;
-use App\Models\ModifierGroup;
-use App\Models\Order;
-use App\Models\Tenant;
-use App\Modules\Manufacturing\Models\Ingredient;
-use App\Modules\Manufacturing\Models\IngredientStockBalance;
-use App\Modules\Manufacturing\Models\IngredientStockMovement;
+use App\Core\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Inventory\Models\IngredientStockBalance;
+use App\Modules\Inventory\Models\IngredientStockMovement;
+use App\Modules\Inventory\Models\Modifier;
+use App\Modules\Inventory\Models\ModifierGroup;
+use App\Modules\Inventory\Models\ModifierIngredient;
+use App\Modules\Inventory\Models\ProductIngredient;
+use App\Modules\Inventory\Services\ProductFulfillmentResolverService;
 use App\Modules\Manufacturing\Models\KitchenWasteLog;
-use App\Modules\Manufacturing\Models\ModifierIngredient;
-use App\Modules\Manufacturing\Models\ProductIngredient;
 use App\Modules\Manufacturing\Services\KitchenWasteService;
-use App\Modules\Manufacturing\Services\ProductFulfillmentResolverService;
 use App\Modules\Manufacturing\Services\RecipeCostingService;
-use App\Modules\Products\Models\Category;
-use App\Modules\Products\Models\Product;
-use App\Modules\Settings\Models\Store;
-use App\Modules\Users\Models\User;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Order;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -48,8 +48,8 @@ class Wave3ManufacturingTest extends TestCase
         ]);
 
         app(TenantContext::class)->setTenantId($this->tenant->id);
-        if (class_exists(\App\Core\Context\TenantContext::class) && app()->bound(\App\Core\Context\TenantContext::class)) {
-            app(\App\Core\Context\TenantContext::class)->setTenantId($this->tenant->id);
+        if (class_exists(TenantContext::class) && app()->bound(TenantContext::class)) {
+            app(TenantContext::class)->setTenantId($this->tenant->id);
         }
 
         $this->store = Store::withoutGlobalScopes()->create([
@@ -60,8 +60,8 @@ class Wave3ManufacturingTest extends TestCase
         ]);
 
         app(TenantContext::class)->setStoreId($this->store->id);
-        if (class_exists(\App\Core\Context\TenantContext::class) && app()->bound(\App\Core\Context\TenantContext::class)) {
-            app(\App\Core\Context\TenantContext::class)->setStoreId($this->store->id);
+        if (class_exists(TenantContext::class) && app()->bound(TenantContext::class)) {
+            app(TenantContext::class)->setStoreId($this->store->id);
         }
 
         $this->category = Category::withoutGlobalScopes()->create([
@@ -251,7 +251,8 @@ class Wave3ManufacturingTest extends TestCase
 
         $this->assertCount(4, $movements);
         foreach ($movements as $m) {
-            $this->assertStringContainsString('sale', strtolower($m->type));
+            $typeStr = $m->type instanceof \BackedEnum ? $m->type->value : (string) $m->type;
+            $this->assertStringContainsString('sale', strtolower($typeStr));
             $this->assertLessThan(0, (float) $m->quantity);
         }
     }
@@ -347,7 +348,8 @@ class Wave3ManufacturingTest extends TestCase
             ->first();
 
         $this->assertNotNull($restoreMovement);
-        $this->assertStringContainsString('restore', strtolower($restoreMovement->type));
+        $restoreTypeStr = $restoreMovement->type instanceof \BackedEnum ? $restoreMovement->type->value : (string) $restoreMovement->type;
+        $this->assertStringContainsString('restore', strtolower($restoreTypeStr));
         $this->assertEquals(0.4000, (float) $restoreMovement->quantity);
     }
 

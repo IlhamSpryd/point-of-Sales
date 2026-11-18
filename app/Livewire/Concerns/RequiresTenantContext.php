@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Concerns;
 
-use App\Services\Context\StoreResolver;
-use App\Services\Context\TenantContext;
+use App\Core\Context\StoreResolver;
+use App\Core\Context\TenantContext;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -17,7 +17,7 @@ trait RequiresTenantContext
             abort(401, 'Unauthenticated.');
         }
 
-        if ((method_exists($user, 'trashed') && $user->trashed()) || ! $user->is_active || ($user->status ?? 'active') === 'suspended') {
+        if ($user->trashed() || ! $user->is_active || ($user->status ?? 'active') === 'suspended') {
             try {
                 DB::table('sessions')->where('user_id', $user->id)->delete();
             } catch (\Throwable) {

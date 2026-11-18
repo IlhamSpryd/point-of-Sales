@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Ui;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\HR\EmployeeManager;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Livewire\Livewire;
 use Tests\TestCase;

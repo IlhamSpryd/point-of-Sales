@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Models;
 
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Product;
-use App\Models\ProductVariant;
-use App\Models\Tenant;
-use App\Models\UnitOfMeasure;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToTenant;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\ProductVariant;
+use App\Modules\Catalog\Models\UnitOfMeasure;
+use App\Modules\Organization\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

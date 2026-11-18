@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domain2;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
 use App\Events\WaiterCalled;
 use App\Jobs\ProcessWebhookOrderJob;
-use App\Models\Category;
-use App\Models\ChannelOrderLog;
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Shift;
-use App\Models\User;
-use App\Services\Context\TenantContext;
-use App\Services\TransactionService;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\ChannelOrderLog;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\Shift;
+use App\Modules\Sales\Services\TransactionService;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;

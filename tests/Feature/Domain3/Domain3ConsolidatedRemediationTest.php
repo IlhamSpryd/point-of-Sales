@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domain3;
 
+use App\Core\Context\TenantContext;
 use App\Enums\ExportTaskStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
@@ -17,28 +18,27 @@ use App\Livewire\Inventory\ModifierManager;
 use App\Livewire\Kasir\CreateOrder;
 use App\Livewire\Kasir\OrderHistory;
 use App\Livewire\ShiftManager;
-use App\Models\Category;
-use App\Models\ChannelProductMapping;
-use App\Models\ExportTask;
-use App\Models\Ingredient;
-use App\Models\ModifierGroup;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Payment;
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Setting;
-use App\Models\Shift;
-use App\Models\Store;
-use App\Models\Table;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Services\MenuCacheService;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Inventory\Models\ModifierGroup;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Setting;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Reporting\Models\ExportTask;
+use App\Modules\Reporting\Services\ReportService;
+use App\Modules\Sales\Models\ChannelProductMapping;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\OrderItem;
+use App\Modules\Sales\Models\Payment;
+use App\Modules\Sales\Models\Shift;
+use App\Modules\Sales\Models\Table;
+use App\Modules\Sales\Services\CartService;
+use App\Modules\Sales\Services\TransactionService;
 use App\Policies\OrderPolicy;
-use App\Services\CartService;
-use App\Services\Context\TenantContext;
-use App\Services\MenuCacheService;
-use App\Services\ReportService;
-use App\Services\TransactionService;
 use Illuminate\Broadcasting\Broadcasters\Broadcaster;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -898,8 +898,8 @@ class Domain3ConsolidatedRemediationTest extends TestCase
     public function test_app_js_does_not_unconditionally_start_alpine_in_head(): void
     {
         $appJsContent = file_get_contents(resource_path('js/app.js'));
-        $this->assertStringContainsString('DOMContentLoaded', $appJsContent);
-        $this->assertStringContainsString('window.Livewire', $appJsContent);
-        $this->assertStringNotContainsString('if (!window.Alpine) {', $appJsContent);
+        $this->assertStringContainsString('alpine:init', $appJsContent);
+        $this->assertStringContainsString('window.Alpine', $appJsContent);
+        $this->assertStringNotContainsString('Alpine.start()', $appJsContent);
     }
 }

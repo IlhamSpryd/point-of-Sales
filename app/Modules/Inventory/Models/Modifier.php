@@ -2,13 +2,10 @@
 
 namespace App\Modules\Inventory\Models;
 
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Ingredient;
-use App\Models\ModifierGroup;
-use App\Models\ModifierIngredient;
-use App\Models\OrderItem;
-use App\Models\OrderItemModifier;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToTenant;
+use App\Modules\Sales\Models\OrderItem;
+use App\Modules\Sales\Models\OrderItemModifier;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

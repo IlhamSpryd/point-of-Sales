@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\Tenant;
-use App\Models\User;
-use App\Modules\HR\Enums\EmploymentStatusEnum;
-use App\Modules\HR\Enums\EmploymentTypeEnum;
-use App\Modules\HR\Enums\GenderEnum;
-use App\Modules\HR\Enums\PtkpStatusEnum;
-use App\Modules\HR\Enums\TaxCalculationMethodEnum;
-use App\Modules\HR\Models\Department;
-use App\Modules\HR\Models\Employee;
-use App\Modules\HR\Models\EmployeeTaxProfile;
-use App\Modules\HR\Models\JobTitle;
-use App\Services\Context\TenantContext;
-use App\Services\EmployeeIdGenerator;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\EmployeeIdGenerator;
+use App\Modules\Workforce\Enums\EmploymentStatusEnum;
+use App\Modules\Workforce\Enums\EmploymentTypeEnum;
+use App\Modules\Workforce\Enums\GenderEnum;
+use App\Modules\Workforce\Enums\PtkpStatusEnum;
+use App\Modules\Workforce\Enums\TaxCalculationMethodEnum;
+use App\Modules\Workforce\Models\Department;
+use App\Modules\Workforce\Models\Employee;
+use App\Modules\Workforce\Models\EmployeeTaxProfile;
+use App\Modules\Workforce\Models\JobTitle;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Livewire\Finance;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\User;
 use App\Modules\Finance\Enums\AccountTypeEnum;
 use App\Modules\Finance\Enums\NormalBalanceEnum;
 use App\Modules\Finance\Models\ChartOfAccount;
 use App\Modules\Finance\Services\ChartOfAccountService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;

@@ -4,44 +4,44 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Services;
 
+use App\Core\Context\TenantContext;
 use App\Enums\LoyaltyLedgerTypeEnum;
 use App\Enums\PaymentMethod;
 use App\Enums\ReturnDispositionEnum;
 use App\Enums\StockMovementType;
-use App\Models\CashDrawerMovement;
-use App\Models\Customer;
-use App\Models\Device;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\OrderReturn;
-use App\Models\OrderReturnItem;
-use App\Models\Payment;
-use App\Models\PaymentRefund;
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Shift;
-use App\Models\StockBalance;
-use App\Models\StockMovement;
-use App\Models\User;
-use App\Modules\Customers\Enums\StoreCreditLedgerTypeEnum;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Customers\Models\Customer;
 use App\Modules\Customers\Models\CustomerCreditAccount;
-use App\Modules\Customers\Services\GiftCardService;
-use App\Modules\Customers\Services\LoyaltyService;
-use App\Modules\Customers\Services\StoreCreditService;
-use App\Modules\Customers\Services\VoucherService;
 use App\Modules\Finance\Services\FinancialOutboxDispatcherService;
-use App\Modules\Purchasing\Services\DocumentSequenceService;
+use App\Modules\Inventory\Models\StockBalance;
+use App\Modules\Inventory\Models\StockMovement;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\AuditTrailService;
+use App\Modules\Organization\Services\CashierPinService;
+use App\Modules\Pricing\Enums\StoreCreditLedgerTypeEnum;
+use App\Modules\Pricing\Services\GiftCardService;
+use App\Modules\Pricing\Services\LoyaltyService;
+use App\Modules\Pricing\Services\StoreCreditService;
+use App\Modules\Pricing\Services\VoucherService;
 use App\Modules\Sales\Enums\ArLedgerEntryTypeEnum;
 use App\Modules\Sales\Enums\CreditNoteStatusEnum;
 use App\Modules\Sales\Enums\CustomerInvoiceStatusEnum;
 use App\Modules\Sales\Models\AccountingReceivableOutbox;
 use App\Modules\Sales\Models\ArLedgerEntry;
+use App\Modules\Sales\Models\CashDrawerMovement;
 use App\Modules\Sales\Models\CustomerInvoice;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\OrderItem;
+use App\Modules\Sales\Models\OrderReturn;
+use App\Modules\Sales\Models\OrderReturnItem;
+use App\Modules\Sales\Models\Payment;
+use App\Modules\Sales\Models\PaymentRefund;
 use App\Modules\Sales\Models\SalesCreditNote;
 use App\Modules\Sales\Models\SalesCreditNoteApplication;
-use App\Services\AuditTrailService;
-use App\Services\CashierPinService;
-use App\Services\Context\TenantContext;
+use App\Modules\Sales\Models\Shift;
+use App\Platform\Documents\DocumentSequenceService;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Support\Facades\DB;
@@ -74,7 +74,7 @@ class ReturnRefundService
      * Memproses permohonan retur dan refund secara atomik dalam satu transaksi database.
      *
      * @param  array<int, array{order_item_id: int, quantity: int, disposition: string|ReturnDispositionEnum, disposition_reason?: ?string}>  $returnItemsWithDisposition
-     * @param  array<int, array{payment_id: int, amount: int|float, refund_method?: ?string, is_method_override?: bool, method_override_reason?: ?string}>  $refundAllocations
+     * @param  array<int, array{payment_id: int, amount: int|float, refund_method?: ?string, is_method_override?: bool, method_override_reason?: ?string, card_number?: ?string}>  $refundAllocations
      *
      * @throws ValidationException|DomainException
      */
@@ -152,7 +152,7 @@ class ReturnRefundService
 
                 // 3.3 Lock Shift jika ada refund tunai
                 $hasCashRefund = collect($refundAllocations)->contains(function ($alloc) use ($lockedPayments) {
-                    $payment = $lockedPayments->get($alloc['payment_id'] ?? null);
+                    $payment = $lockedPayments->get($alloc['payment_id']);
                     $origMethod = $payment ? (is_string($payment->payment_method) ? $payment->payment_method : $payment->payment_method->value) : null;
                     $targetMethod = $alloc['refund_method'] ?? $origMethod;
 
@@ -283,8 +283,8 @@ class ReturnRefundService
                 $totalRefundAmount = 0;
 
                 foreach ($refundAllocations as $alloc) {
-                    $paymentId = (int) ($alloc['payment_id'] ?? 0);
-                    $amount = (float) ($alloc['amount'] ?? 0);
+                    $paymentId = (int) $alloc['payment_id'];
+                    $amount = (float) $alloc['amount'];
 
                     $payment = $lockedPayments->get($paymentId);
                     if (! $payment) {
@@ -339,6 +339,7 @@ class ReturnRefundService
                         'amount' => $amount,
                         'original_method' => $origMethod,
                         'refund_method' => $targetMethod,
+                        'card_number' => $alloc['card_number'] ?? null,
                         'is_override' => $isOverride,
                         'override_reason' => $alloc['method_override_reason'] ?? null,
                     ];

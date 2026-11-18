@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Modules\Customers;
 
-use App\Models\Customer;
-use App\Models\CustomerGroup;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Core\Context\TenantContext;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Customers\Models\CustomerGroup;
 use App\Modules\Customers\Services\CustomerService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;

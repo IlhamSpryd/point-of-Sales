@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Livewire\Reports;
 
+use App\Core\Context\TenantContext;
 use App\Enums\ExportTaskStatus;
 use App\Jobs\ProcessAnalyticsExportJob;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\ExportTask;
-use App\Models\Store;
-use App\Modules\Reports\Services\Analytics\CustomerAnalyticsService;
-use App\Modules\Reports\Services\Analytics\FinancialBiService;
-use App\Modules\Reports\Services\Analytics\InventoryAnalyticsService;
-use App\Modules\Reports\Services\Analytics\SalesAnalyticsService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Reporting\Models\ExportTask;
+use App\Modules\Reporting\Services\Analytics\CustomerAnalyticsService;
+use App\Modules\Reporting\Services\Analytics\FinancialBiService;
+use App\Modules\Reporting\Services\Analytics\InventoryAnalyticsService;
+use App\Modules\Reporting\Services\Analytics\SalesAnalyticsService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -183,9 +183,9 @@ class AdvancedAnalyticsDashboard extends Component
                 $dates = [];
                 $netSales = [];
                 foreach ($trend as $point) {
-                    $dateStr = (string) ($point['sample_date'] ?? $point['period_key'] ?? '');
+                    $dateStr = (string) $point['period_key'];
                     $dates[] = $dateStr !== '' ? Carbon::parse($dateStr)->format('d M') : '';
-                    $netSales[] = (float) ($point['net_sales'] ?? $point['gross_sales'] ?? 0);
+                    $netSales[] = (float) $point['net_sales'];
                 }
 
                 $data['salesTrendChartOptions'] = [

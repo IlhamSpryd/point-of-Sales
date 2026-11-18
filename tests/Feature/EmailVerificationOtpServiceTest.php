@@ -2,14 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Core\Context\TenantContext;
 use App\Exceptions\OtpRateLimitedException;
 use App\Jobs\ProcessProvisioningOutboxJob;
-use App\Models\EmailOutbox;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
-use App\Services\EmailVerificationOtpService;
-use App\Services\OtpVerificationResult;
+use App\Modules\Organization\Models\EmailOutbox;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\EmailVerificationOtpService;
+use App\Modules\Organization\Services\OtpVerificationResult;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;

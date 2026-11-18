@@ -2,15 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\DiscountManager;
 use App\Livewire\Inventory\IngredientManager;
-use App\Models\Discount;
-use App\Models\Ingredient;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Pricing\Models\Discount;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;

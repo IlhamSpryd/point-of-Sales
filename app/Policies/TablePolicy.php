@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\Table;
-use App\Models\User;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Table;
 
 class TablePolicy
 {

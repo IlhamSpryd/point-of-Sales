@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Integration\Models;
 
+use App\Core\Scopes\TenantScope;
 use App\Core\Traits\AssignsTenant;
-use App\Models\Scopes\TenantScope;
-use App\Models\Tenant;
+use App\Modules\Organization\Models\Tenant;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

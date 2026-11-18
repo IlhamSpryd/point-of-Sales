@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Customer;
 
+use App\Core\Context\TenantContext;
 use App\Events\WaiterCalled;
 use App\Http\Controllers\Controller;
-use App\Models\Table;
-use App\Services\Context\TenantContext;
+use App\Modules\Sales\Models\Table;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;

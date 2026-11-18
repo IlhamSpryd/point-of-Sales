@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Services;
 
-use App\Models\User;
 use App\Modules\Finance\DataTransferObjects\JournalLineDto;
 use App\Modules\Finance\Enums\CashBankAccountTypeEnum;
 use App\Modules\Finance\Enums\CashBankTransactionStatusEnum;
@@ -12,7 +11,8 @@ use App\Modules\Finance\Enums\CashBankTransactionTypeEnum;
 use App\Modules\Finance\Models\CashBankAccount;
 use App\Modules\Finance\Models\CashBankTransaction;
 use App\Modules\Finance\Models\JournalEntry;
-use App\Modules\Purchasing\Services\DocumentSequenceService;
+use App\Modules\Organization\Models\User;
+use App\Platform\Documents\DocumentSequenceService;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use DomainException;

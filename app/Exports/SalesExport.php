@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Exports;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
-use App\Models\Order;
-use App\Services\Context\TenantContext;
+use App\Modules\Sales\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Concerns\FromQuery;

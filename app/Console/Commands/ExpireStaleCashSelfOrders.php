@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
-use App\Models\Order;
-use App\Services\Context\TenantContext;
-use App\Services\TransactionService;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Services\TransactionService;
 use Illuminate\Console\Command;
 
 class ExpireStaleCashSelfOrders extends Command

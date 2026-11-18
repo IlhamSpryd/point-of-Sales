@@ -10,10 +10,10 @@
     $canonicalRoles = ['Owner', 'Admin', 'Manager', 'Finance', 'Sales', 'Kasir', 'Waiter', 'Barista', 'Inventory', 'Supervisor', 'Cook'];
     $isCustomRole = $roleName !== null && ! in_array($roleName, $canonicalRoles, true);
 
-    $tenantId = app(\App\Services\Context\TenantContext::class)->getTenantId();
-    $storeId = app(\App\Services\Context\TenantContext::class)->getStoreId();
+    $tenantId = app(\App\Core\Context\TenantContext::class)->getTenantId();
+    $storeId = app(\App\Core\Context\TenantContext::class)->getStoreId();
     $tablesEnabled = ($tenantId && $storeId)
-        ? app(\App\Services\EntitlementService::class)->isTablesEnabled((int) $tenantId, (int) $storeId)
+        ? app(\App\Modules\Subscription\Services\EntitlementService::class)->isTablesEnabled((int) $tenantId, (int) $storeId)
         : true;
 
     $menu = config('navigation.sections', []);

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Contracts;
 
-use App\Models\User;
 use App\Modules\Finance\DataTransferObjects\FinancialEventDto;
 use App\Modules\Finance\DataTransferObjects\ManualJournalDto;
 use App\Modules\Finance\Models\JournalEntry;
+use App\Modules\Organization\Models\User;
 
 interface PostingEngineContract
 {

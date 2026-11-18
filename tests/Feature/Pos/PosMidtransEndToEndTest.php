@@ -4,28 +4,28 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Pos;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentAttemptStatus;
 use App\Enums\PreparationStatus;
 use App\Livewire\Kasir\CreateOrder;
 use App\Livewire\Kasir\OrderHistory;
 use App\Livewire\Kds\Board;
-use App\Models\Category;
-use App\Models\Customer;
-use App\Models\Device;
-use App\Models\Order;
-use App\Models\Payment;
-use App\Models\PaymentAttempt;
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Setting;
-use App\Models\Shift;
-use App\Models\Store;
-use App\Models\Table;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\CashierPinService;
-use App\Services\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Setting;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\CashierPinService;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\Payment;
+use App\Modules\Sales\Models\PaymentAttempt;
+use App\Modules\Sales\Models\Shift;
+use App\Modules\Sales\Models\Table;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -634,4 +634,3 @@ class PosMidtransEndToEndTest extends TestCase
         $this->assertNotEmpty($edcTerminals);
     }
 }
-

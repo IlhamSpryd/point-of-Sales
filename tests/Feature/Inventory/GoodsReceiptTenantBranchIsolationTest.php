@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Inventory;
 
-use App\Models\GoodsReceipt;
-use App\Models\Ingredient;
-use App\Models\Role;
-use App\Models\User;
+use App\Core\Context\TenantContext;
+use App\Modules\Inventory\Models\GoodsReceipt;
+use App\Modules\Inventory\Models\Ingredient;
 use App\Modules\Inventory\Services\GoodsReceiptService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;

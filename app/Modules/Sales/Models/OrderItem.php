@@ -2,21 +2,19 @@
 
 namespace App\Modules\Sales\Models;
 
+use App\Core\Traits\AssignsStore;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToStore;
+use App\Core\Traits\ScopedToTenant;
 use App\Enums\FulfillmentChannel;
 use App\Enums\KitchenPrepStatus;
 use App\Enums\PreparationStatus;
 use App\Enums\ShippingDispatchStatus;
-use App\Models\Concerns\AssignsStore;
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToStore;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Discount;
-use App\Models\Modifier;
-use App\Models\Order;
-use App\Models\OrderItemModifier;
-use App\Models\Product;
-use App\Models\ProductVariant;
-use App\Models\User;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\ProductVariant;
+use App\Modules\Inventory\Models\Modifier;
+use App\Modules\Organization\Models\User;
+use App\Modules\Pricing\Models\Discount;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -42,6 +40,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property numeric-string $allocated_order_discount_amount
  * @property numeric-string $net_line_total
  * @property int|null $product_variant_id
+ * @property int|null $uom_id
  * @property int|null $item_discount_id
  */
 class OrderItem extends Model
@@ -57,6 +56,7 @@ class OrderItem extends Model
         'order_id',
         'product_id',
         'product_variant_id',
+        'uom_id',
         'qty',
         'order_price',
         'order_subtotal',

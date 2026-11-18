@@ -7,6 +7,6 @@ namespace App\Http\Controllers;
 /**
  * Backward compatibility wrapper for modular architecture.
  *
- * @see \App\Modules\Settings\Controllers\ActivityLogController
+ * @see \App\Modules\Organization\Controllers\ActivityLogController
  */
-class ActivityLogController extends \App\Modules\Settings\Controllers\ActivityLogController {}
+class ActivityLogController extends \App\Modules\Organization\Controllers\ActivityLogController {}

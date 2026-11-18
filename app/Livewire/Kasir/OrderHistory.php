@@ -7,16 +7,15 @@ namespace App\Livewire\Kasir;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentAttemptStatus;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Order;
-use App\Models\OrderReturnItem;
-use App\Models\PaymentAttempt;
-use App\Models\PaymentRefund;
-use App\Models\Scopes\StoreScope;
-use App\Models\Shift;
-use App\Services\CashierPinService;
-use App\Services\Printing\ReceiptPrinterService;
-use App\Services\ReturnRefundService;
-use App\Services\TransactionService;
+use App\Modules\Organization\Services\CashierPinService;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\OrderReturnItem;
+use App\Modules\Sales\Models\PaymentAttempt;
+use App\Modules\Sales\Models\PaymentRefund;
+use App\Modules\Sales\Models\Shift;
+use App\Modules\Sales\Services\Printing\ReceiptPrinterService;
+use App\Modules\Sales\Services\ReturnRefundService;
+use App\Modules\Sales\Services\TransactionService;
 use App\Support\Traits\RequiresActiveStoreContext;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -359,9 +358,7 @@ class OrderHistory extends Component
             return;
         }
 
-        $activeShift = Shift::withoutGlobalScopes()
-            ->where('tenant_id', $order->tenant_id)
-            ->where('store_id', $order->store_id)
+        $activeShift = Shift::forBranch((int) $order->store_id)
             ->where('status', 'open')
             ->first();
 
@@ -567,14 +564,14 @@ class OrderHistory extends Component
 
         if ($this->isOwnerConsolidated()) {
             $query->with([
-                'orderItems' => fn ($q) => $q->withoutGlobalScope(StoreScope::class)->with('product:id,product_name'),
-                'payments' => fn ($q) => $q->withoutGlobalScope(StoreScope::class),
+                'orderItems' => fn ($q) => $q->allBranchesInTenant()->with('product:id,product_name'),
+                'payments' => fn ($q) => $q->allBranchesInTenant(),
                 'customer:id,name,phone',
                 'user:id,name',
-                'table' => fn ($q) => $q->withoutGlobalScope(StoreScope::class)->select('id', 'table_name'),
-                'orderReturns' => fn ($q) => $q->withoutGlobalScope(StoreScope::class),
-                'paymentRefunds' => fn ($q) => $q->withoutGlobalScope(StoreScope::class),
-            ])->withCount(['orderItems' => fn ($q) => $q->withoutGlobalScope(StoreScope::class)]);
+                'table' => fn ($q) => $q->allBranchesInTenant()->select('id', 'table_name'),
+                'orderReturns' => fn ($q) => $q->allBranchesInTenant(),
+                'paymentRefunds' => fn ($q) => $q->allBranchesInTenant(),
+            ])->withCount(['orderItems' => fn ($q) => $q->allBranchesInTenant()]);
         } else {
             $query->with([
                 'orderItems.product:id,product_name',
@@ -638,15 +635,15 @@ class OrderHistory extends Component
 
         if ($this->isOwnerConsolidated()) {
             $query->with([
-                'orderItems' => fn ($q) => $q->withoutGlobalScope(StoreScope::class)->with('product.ingredients'),
-                'payments' => fn ($q) => $q->withoutGlobalScope(StoreScope::class),
+                'orderItems' => fn ($q) => $q->allBranchesInTenant()->with('product.ingredients'),
+                'payments' => fn ($q) => $q->allBranchesInTenant(),
                 'customer.loyaltyAccount.currentTier',
                 'user:id,name',
-                'table' => fn ($q) => $q->withoutGlobalScope(StoreScope::class)->select('id', 'table_name'),
+                'table' => fn ($q) => $q->allBranchesInTenant()->select('id', 'table_name'),
                 'discount',
                 'voidedBy:id,name',
-                'orderReturns.items' => fn ($q) => $q->withoutGlobalScope(StoreScope::class)->with('orderItem.product'),
-                'paymentRefunds' => fn ($q) => $q->withoutGlobalScope(StoreScope::class),
+                'orderReturns.items' => fn ($q) => $q->allBranchesInTenant()->with('orderItem.product'),
+                'paymentRefunds' => fn ($q) => $q->allBranchesInTenant(),
                 'device',
                 'shift',
             ]);

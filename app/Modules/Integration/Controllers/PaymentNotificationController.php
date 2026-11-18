@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\Integration\Controllers;
 
+use App\Core\Context\TenantContext;
 use App\Http\Controllers\Controller;
-use App\Models\Order;
-use App\Models\PaymentAttempt;
 use App\Modules\Integration\Services\PaymentWebhookVerificationService;
-use App\Services\Context\TenantContext;
-use App\Services\TransactionService;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\PaymentAttempt;
+use App\Modules\Sales\Services\TransactionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

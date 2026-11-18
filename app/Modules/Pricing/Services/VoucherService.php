@@ -1,0 +1,431 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Modules\Pricing\Services;
+
+use App\Core\Context\TenantContext;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Organization\Models\User;
+use App\Modules\Pricing\Enums\VoucherDiscountTypeEnum;
+use App\Modules\Pricing\Enums\VoucherStatusEnum;
+use App\Modules\Pricing\Models\PromotionReservation;
+use App\Modules\Pricing\Models\Voucher;
+use Carbon\Carbon;
+use DomainException;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+
+class VoucherService
+{
+    public function __construct(
+        protected TenantContext $tenantContext
+    ) {}
+
+    /**
+     * Buat kode voucher baru.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function createVoucher(array $data, User $actor): Voucher
+    {
+        $tenantId = (int) $this->tenantContext->requireTenantId();
+
+        $code = strtoupper(trim((string) ($data['code'] ?? $data['voucher_code'] ?? '')));
+        if (empty($code)) {
+            throw ValidationException::withMessages(['code' => ['Voucher code is required.']]);
+        }
+
+        $existing = Voucher::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('code', $code)
+            ->exists();
+
+        if ($existing) {
+            throw ValidationException::withMessages(['code' => ['Voucher code is already registered for this tenant.']]);
+        }
+
+        $discountType = $data['discount_type'] instanceof VoucherDiscountTypeEnum
+            ? $data['discount_type']
+            : VoucherDiscountTypeEnum::from((string) ($data['discount_type'] ?? 'PERCENTAGE'));
+
+        $discountValue = bcadd(bc_num($data['discount_value'] ?? '0'), '0', 2);
+        if (bccomp($discountValue, '0.00', 2) <= 0) {
+            throw ValidationException::withMessages(['discount_value' => ['Voucher discount value must be greater than 0.']]);
+        }
+
+        if ($discountType === VoucherDiscountTypeEnum::PERCENTAGE && bccomp($discountValue, '100.00', 2) > 0) {
+            throw ValidationException::withMessages(['discount_value' => ['Voucher discount percentage cannot exceed 100%.']]);
+        }
+
+        return Voucher::create([
+            'tenant_id' => $tenantId,
+            'code' => $code,
+            'name' => (string) ($data['name'] ?? $code),
+            'discount_id' => ! empty($data['discount_id']) ? (int) $data['discount_id'] : null,
+            'customer_id' => ! empty($data['customer_id']) ? (int) $data['customer_id'] : null,
+            'customer_group_id' => ! empty($data['customer_group_id']) ? (int) $data['customer_group_id'] : null,
+            'discount_type' => $discountType,
+            'discount_value' => $discountValue,
+            'max_discount_amount' => ! empty($data['max_discount_amount']) ? bcadd(bc_num($data['max_discount_amount']), '0', 2) : null,
+            'min_order_amount' => bcadd(bc_num($data['min_order_amount'] ?? '0'), '0', 2),
+            'max_uses' => (int) ($data['max_uses'] ?? $data['max_uses_global'] ?? 1),
+            'max_uses_per_customer' => (int) ($data['max_uses_per_customer'] ?? 1),
+            'used_count' => 0,
+            'valid_from' => ! empty($data['valid_from']) ? Carbon::parse($data['valid_from']) : Carbon::now(),
+            'valid_until' => ! empty($data['valid_until']) ? Carbon::parse($data['valid_until']) : null,
+            'status' => VoucherStatusEnum::ACTIVE,
+        ]);
+    }
+
+    /**
+     * Validasi kelayakan voucher terhadap keranjang / transaksi belanja pelanggan.
+     *
+     * @return array{is_valid: bool, discount_amount: string, voucher: Voucher, reason?: string}
+     */
+    public function validateVoucher(string $code, ?Customer $customer, string $orderAmount): array
+    {
+        $tenantId = (int) $this->tenantContext->requireTenantId();
+        $code = strtoupper(trim($code));
+
+        /** @var Voucher|null $voucher */
+        $voucher = Voucher::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('code', $code)
+            ->first();
+
+        if (! $voucher) {
+            throw new DomainException("Voucher with code '{$code}' was not found.");
+        }
+
+        if (! $voucher->isValidNow()) {
+            throw new DomainException("Voucher '{$code}' is inactive, expired, or usage limit reached.");
+        }
+
+        // Cek kuota pemakaian global (used_count + active reserved)
+        $activeReserved = PromotionReservation::where('voucher_id', $voucher->id)
+            ->where('status', PromotionReservation::STATUS_RESERVED)
+            ->where('expires_at', '>', now())
+            ->count();
+
+        if ($voucher->max_uses > 0 && ($voucher->used_count + $activeReserved) >= $voucher->max_uses) {
+            throw new DomainException("Voucher '{$code}' quota is exhausted.");
+        }
+
+        // Cek batas pemakaian per pelanggan jika customerId diberikan
+        if ($customer && $voucher->max_uses_per_customer > 0) {
+            $customerReserved = PromotionReservation::where('voucher_id', $voucher->id)
+                ->where('customer_id', $customer->id)
+                ->whereIn('status', [
+                    PromotionReservation::STATUS_RESERVED,
+                    PromotionReservation::STATUS_COMMITTED,
+                ])
+                ->where(function ($q) {
+                    $q->where('status', PromotionReservation::STATUS_COMMITTED)
+                        ->orWhere('expires_at', '>', now());
+                })
+                ->count();
+
+            if ($customerReserved >= $voucher->max_uses_per_customer) {
+                throw new DomainException("Maximum usage limit per customer for voucher '{$code}' has been reached.");
+            }
+        }
+
+        // Cek syarat minimum transaksi
+        if (bccomp(bc_num($orderAmount), bc_num($voucher->min_order_amount), 2) < 0) {
+            $formattedMin = number_format((float) $voucher->min_order_amount, 0, ',', '.');
+            throw new DomainException("Order total does not meet the minimum voucher purchase requirement ({$formattedMin}).");
+        }
+
+        // Cek eksklusivitas pelanggan
+        if ($voucher->customer_id !== null) {
+            if (! $customer || (int) $customer->id !== (int) $voucher->customer_id) {
+                throw new DomainException('This voucher is exclusive and not applicable to this customer account.');
+            }
+        }
+
+        // Cek grup pelanggan
+        if ($voucher->customer_group_id !== null) {
+            if (! $customer || (int) $customer->customer_group_id !== (int) $voucher->customer_group_id) {
+                throw new DomainException('This voucher is only valid for specific customer groups.');
+            }
+        }
+
+        // Hitung diskon yang diperoleh
+        $discountAmount = '0.00';
+        if ($voucher->discount_type === VoucherDiscountTypeEnum::PERCENTAGE) {
+            $rawDiscount = bcdiv(bcmul(bc_num($orderAmount), bc_num($voucher->discount_value), 4), '100', 2);
+            if ($voucher->max_discount_amount && bccomp($rawDiscount, (string) $voucher->max_discount_amount, 2) > 0) {
+                $discountAmount = (string) $voucher->max_discount_amount;
+            } else {
+                $discountAmount = $rawDiscount;
+            }
+        } else {
+            // FIXED_AMOUNT
+            $discountAmount = bccomp(bc_num($voucher->discount_value), bc_num($orderAmount), 2) > 0
+                ? $orderAmount
+                : (string) $voucher->discount_value;
+        }
+
+        return [
+            'is_valid' => true,
+            'discount_amount' => $discountAmount,
+            'voucher' => $voucher,
+        ];
+    }
+
+    /**
+     * Fase 1: Memesan (reserve) kuota voucher dengan batas waktu TTL 15 menit (PromotionReservationService::RESERVATION_LIFETIME_MINUTES).
+     */
+    public function reserveVoucher(
+        string $code,
+        string $cartUuid,
+        int $storeId,
+        ?int $customerId = null,
+        float $reservedAmount = 0.0
+    ): PromotionReservation {
+        $tenantId = (int) $this->tenantContext->requireTenantId();
+        $code = strtoupper(trim($code));
+
+        return DB::transaction(function () use ($tenantId, $code, $cartUuid, $storeId, $customerId, $reservedAmount) {
+            /** @var Voucher $lockedVoucher */
+            $lockedVoucher = Voucher::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('code', $code)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (! $lockedVoucher->isValidNow()) {
+                throw new DomainException("Voucher '{$code}' is inactive or expired.");
+            }
+
+            // Cek apakah cartUuid sudah memiliki reservasi aktif untuk voucher ini
+            $existing = PromotionReservation::where('tenant_id', $tenantId)
+                ->where('cart_uuid', $cartUuid)
+                ->where('voucher_id', $lockedVoucher->id)
+                ->where('status', PromotionReservation::STATUS_RESERVED)
+                ->where('expires_at', '>', now())
+                ->lockForUpdate()
+                ->first();
+
+            if ($existing) {
+                $existing->update([
+                    'expires_at' => now()->addMinutes(PromotionReservationService::RESERVATION_LIFETIME_MINUTES),
+                    'reserved_amount' => $reservedAmount > 0 ? $reservedAmount : $existing->reserved_amount,
+                ]);
+
+                return $existing;
+            }
+
+            // Hitung kuota aktif (used_count + active RESERVED yang belum expired)
+            $activeReserved = PromotionReservation::where('tenant_id', $tenantId)
+                ->where('voucher_id', $lockedVoucher->id)
+                ->where('status', PromotionReservation::STATUS_RESERVED)
+                ->where('expires_at', '>', now())
+                ->count();
+
+            if ($lockedVoucher->max_uses > 0 && ($lockedVoucher->used_count + $activeReserved) >= $lockedVoucher->max_uses) {
+                throw new DomainException("Voucher '{$code}' quota is exhausted.");
+            }
+
+            if ($customerId !== null && $lockedVoucher->max_uses_per_customer > 0) {
+                $custCount = PromotionReservation::where('tenant_id', $tenantId)
+                    ->where('voucher_id', $lockedVoucher->id)
+                    ->where('customer_id', $customerId)
+                    ->where(function ($q) {
+                        $q->where('status', PromotionReservation::STATUS_COMMITTED)
+                            ->orWhere(function ($sub) {
+                                $sub->where('status', PromotionReservation::STATUS_RESERVED)
+                                    ->where('expires_at', '>', now());
+                            });
+                    })
+                    ->count();
+
+                if ($custCount >= $lockedVoucher->max_uses_per_customer) {
+                    throw new DomainException("Maximum usage limit per customer for voucher '{$code}' has been reached.");
+                }
+            }
+
+            return PromotionReservation::create([
+                'tenant_id' => $tenantId,
+                'store_id' => $storeId,
+                'voucher_id' => $lockedVoucher->id,
+                'customer_id' => $customerId,
+                'cart_uuid' => $cartUuid,
+                'reserved_amount' => $reservedAmount,
+                'status' => PromotionReservation::STATUS_RESERVED,
+                'expires_at' => now()->addMinutes(PromotionReservationService::RESERVATION_LIFETIME_MINUTES),
+            ]);
+        });
+    }
+
+    /**
+     * Fase 2: Mengomit reservasi voucher menjadi terpakai permanen saat order berhasil dibuat.
+     */
+    public function commitVoucher(string $cartUuid, int $orderId): void
+    {
+        DB::transaction(function () use ($cartUuid, $orderId) {
+            $reservations = PromotionReservation::where('cart_uuid', $cartUuid)
+                ->where('status', PromotionReservation::STATUS_RESERVED)
+                ->lockForUpdate()
+                ->get();
+
+            foreach ($reservations as $reservation) {
+                $reservation->update([
+                    'status' => PromotionReservation::STATUS_COMMITTED,
+                    'order_id' => $orderId,
+                ]);
+
+                if ($reservation->voucher_id) {
+                    $voucher = Voucher::withoutGlobalScopes()
+                        ->where('id', $reservation->voucher_id)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if ($voucher) {
+                        $voucher->used_count = (int) $voucher->used_count + 1;
+                        if ($voucher->max_uses > 0 && $voucher->used_count >= $voucher->max_uses) {
+                            $voucher->status = VoucherStatusEnum::EXPIRED;
+                        }
+                        $voucher->save();
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Membatalkan/melepaskan reservasi voucher jika cart dibersihkan atau checkout dibatalkan.
+     */
+    public function releaseVoucher(string $cartUuid): void
+    {
+        DB::transaction(function () use ($cartUuid) {
+            PromotionReservation::where('cart_uuid', $cartUuid)
+                ->where('status', PromotionReservation::STATUS_RESERVED)
+                ->lockForUpdate()
+                ->update([
+                    'status' => PromotionReservation::STATUS_RELEASED,
+                ]);
+        });
+    }
+
+    /**
+     * Gunakan voucher pada transaksi penjualan dengan row locking A0/A8.
+     *
+     * @return array{voucher_id: int, code: string, discount_amount: string, used_count: int}
+     */
+    public function redeemVoucher(
+        string $code,
+        ?Customer $customer,
+        string $orderAmount,
+        ?int $orderId = null,
+        ?User $actor = null
+    ): array {
+        $tenantId = (int) $this->tenantContext->requireTenantId();
+        $code = strtoupper(trim($code));
+
+        return DB::transaction(function () use ($tenantId, $code, $customer, $orderAmount) {
+            /** @var Voucher $lockedVoucher */
+            $lockedVoucher = Voucher::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('code', $code)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $validation = $this->validateVoucher($code, $customer, $orderAmount);
+            $discountAmount = $validation['discount_amount'];
+
+            $lockedVoucher->used_count += 1;
+            if ($lockedVoucher->max_uses > 0 && $lockedVoucher->used_count >= $lockedVoucher->max_uses) {
+                $lockedVoucher->status = VoucherStatusEnum::EXPIRED;
+            }
+            $lockedVoucher->save();
+
+            return [
+                'voucher_id' => (int) $lockedVoucher->id,
+                'code' => $lockedVoucher->code,
+                'discount_amount' => $discountAmount,
+                'used_count' => (int) $lockedVoucher->used_count,
+            ];
+        });
+    }
+
+    /**
+     * Memulihkan pemakaian voucher akibat pembatalan atau refund penuh.
+     */
+    public function restoreVoucherForOrder(int $orderId): void
+    {
+        DB::transaction(function () use ($orderId) {
+            $reservations = PromotionReservation::withoutGlobalScopes()
+                ->where('order_id', $orderId)
+                ->where('status', PromotionReservation::STATUS_COMMITTED)
+                ->lockForUpdate()
+                ->get();
+
+            foreach ($reservations as $reservation) {
+                $reservation->update([
+                    'status' => PromotionReservation::STATUS_RELEASED,
+                ]);
+
+                if ($reservation->voucher_id) {
+                    $voucher = Voucher::withoutGlobalScopes()
+                        ->where('id', $reservation->voucher_id)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if ($voucher && $voucher->used_count > 0) {
+                        $voucher->used_count = max(0, (int) $voucher->used_count - 1);
+
+                        $now = Carbon::now();
+                        $startsAt = $voucher->starts_at ?? $voucher->valid_from;
+                        $expiresAt = $voucher->expires_at ?? $voucher->valid_until;
+                        $dateValid = (! $startsAt || $now->gte($startsAt)) &&
+                                     (! $expiresAt || $now->lte($expiresAt));
+
+                        if ($dateValid && ($voucher->max_uses === 0 || $voucher->used_count < $voucher->max_uses)) {
+                            $voucher->status = VoucherStatusEnum::ACTIVE;
+                        }
+
+                        $voucher->save();
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Nonaktifkan voucher.
+     */
+    public function deactivateVoucher(int $voucherId, User $actor): Voucher
+    {
+        $tenantId = (int) $this->tenantContext->requireTenantId();
+
+        /** @var Voucher $voucher */
+        $voucher = Voucher::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->findOrFail($voucherId);
+
+        $voucher->status = VoucherStatusEnum::DISABLED;
+        $voucher->save();
+
+        return $voucher;
+    }
+
+    /**
+     * Aktifkan kembali voucher yang sebelumnya nonaktif.
+     */
+    public function activateVoucher(int $voucherId, User $actor): Voucher
+    {
+        $tenantId = (int) $this->tenantContext->requireTenantId();
+
+        /** @var Voucher $voucher */
+        $voucher = Voucher::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->findOrFail($voucherId);
+
+        $voucher->status = VoucherStatusEnum::ACTIVE;
+        $voucher->save();
+
+        return $voucher;
+    }
+}

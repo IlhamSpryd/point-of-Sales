@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\Inventory\Models;
 
+use App\Core\Traits\AssignsStore;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToStore;
+use App\Core\Traits\ScopedToTenant;
 use App\Enums\IngredientStockMovementTypeEnum;
-use App\Models\Concerns\AssignsStore;
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToStore;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Ingredient;
-use App\Models\Store;
+use App\Modules\Organization\Models\Store;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

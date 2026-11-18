@@ -13,7 +13,7 @@ return new class extends Migration
      * MENCATAT transaksi) karena satu order bisa dikerjakan lebih dari satu
      * staf sekaligus (satu meracik kopi, satu menyiapkan makanan).
      *
-     * Sebelum migrasi ini, App\Models\OrderItem::processedBy() adalah
+     * Sebelum migrasi ini, App\Modules\Sales\Models\OrderItem::processedBy() adalah
      * relasi "hantu" yang mengacu ke kolom yang tidak pernah ada di DB.
      */
     public function up(): void

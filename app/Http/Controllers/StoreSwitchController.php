@@ -7,6 +7,6 @@ namespace App\Http\Controllers;
 /**
  * Backward compatibility wrapper for modular architecture.
  *
- * @see \App\Modules\Settings\Controllers\StoreSwitchController
+ * @see \App\Modules\Organization\Controllers\StoreSwitchController
  */
-class StoreSwitchController extends \App\Modules\Settings\Controllers\StoreSwitchController {}
+class StoreSwitchController extends \App\Modules\Organization\Controllers\StoreSwitchController {}

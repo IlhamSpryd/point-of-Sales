@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Modules\Customers\Services;
 
 use App\Modules\Customers\Models\Customer;
-use App\Modules\Customers\Models\CustomerLoyaltyAccount;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -88,7 +87,7 @@ class CustomerRegistrationService
 
                 // Inisialisasi akun loyalitas jika eligible
                 if ($customer->is_loyalty_eligible) {
-                    CustomerLoyaltyAccount::withoutGlobalScopes()->firstOrCreate(
+                    \App\Modules\Pricing\Models\CustomerLoyaltyAccount::withoutGlobalScopes()->firstOrCreate(
                         [
                             'tenant_id' => $tenantId,
                             'customer_id' => $customer->id,

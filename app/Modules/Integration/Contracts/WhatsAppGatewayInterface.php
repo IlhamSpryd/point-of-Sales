@@ -27,8 +27,6 @@ interface WhatsAppGatewayInterface
     /**
      * Kirim pesan teks bebas (untuk sesi percakapan 24 jam aktif).
      *
-     * @param  string  $toPhone
-     * @param  string  $message
      * @return array{
      *     success: bool,
      *     message_id: string|null,
@@ -37,4 +35,3 @@ interface WhatsAppGatewayInterface
      */
     public function sendTextMessage(string $toPhone, string $message): array;
 }
-

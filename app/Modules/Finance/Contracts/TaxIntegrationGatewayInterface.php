@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Finance\Contracts;
 
 use App\Modules\Finance\DTOs\TaxInvoiceDocumentDto;
-use App\Modules\Sales\Models\CustomerInvoice;
+use App\Modules\Sales\Contracts\InvoiceReaderInterface;
 
 interface TaxIntegrationGatewayInterface
 {
@@ -34,7 +34,7 @@ interface TaxIntegrationGatewayInterface
     /**
      * Mengonversi entitas CustomerInvoice menjadi DTO faktur pajak standar.
      */
-    public function buildDocumentFromCustomerInvoice(CustomerInvoice $invoice): TaxInvoiceDocumentDto;
+    public function buildDocumentFromCustomerInvoice(InvoiceReaderInterface $invoice): TaxInvoiceDocumentDto;
 
     /**
      * Menghasilkan teks CSV e-Faktur resmi DJP siap impor (memuat baris FK, LT, dan OF).
@@ -53,4 +53,3 @@ interface TaxIntegrationGatewayInterface
      */
     public function syncWithCoreTax(TaxInvoiceDocumentDto $document): array;
 }
-

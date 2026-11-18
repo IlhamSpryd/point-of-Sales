@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Jobs;
 
-use App\Models\AccountingPeriod;
-use App\Models\User;
+use App\Core\Context\TenantContext;
+use App\Modules\Finance\Models\AccountingPeriod;
 use App\Modules\Finance\Services\DepreciationService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;

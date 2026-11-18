@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reports;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
-use App\Models\Order;
-use App\Models\Role;
-use App\Models\Shift;
-use App\Models\Store;
-use App\Models\StoreTarget;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Modules\Reports\Services\ExecutiveDashboardService;
-use App\Modules\Reports\Services\ManagerDashboardService;
-use App\Modules\Users\Services\CashierPinService;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\CashierPinService;
+use App\Modules\Reporting\Services\ExecutiveDashboardService;
+use App\Modules\Reporting\Services\ManagerDashboardService;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\Shift;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
@@ -35,7 +35,7 @@ class DashboardOperationalWiringTest extends TestCase
     {
         parent::afterSubclassSetUp();
 
-        $tenantContext = app(\App\Services\Context\TenantContext::class);
+        $tenantContext = app(TenantContext::class);
         $tenantContext->clear();
 
         $tenantContext->runWithoutTenant(function () {
@@ -200,7 +200,7 @@ class DashboardOperationalWiringTest extends TestCase
         ]);
 
         // Verifikasi kalkulasi Plan vs Actual langsung ter-update di Executive Dashboard
-        app(\App\Services\Context\TenantContext::class)->setTenantId($this->tenant->id);
+        app(TenantContext::class)->setTenantId($this->tenant->id);
         $execService = app(ExecutiveDashboardService::class);
         $data = $execService->getMetrics($this->ownerUser, '30d', $this->store->id, null, true);
 
@@ -228,7 +228,7 @@ class DashboardOperationalWiringTest extends TestCase
         ]);
 
         // Pastikan order awalnya masuk ke antrean approval queue
-        app(\App\Services\Context\TenantContext::class)->setTenantId($this->tenant->id);
+        app(TenantContext::class)->setTenantId($this->tenant->id);
         $managerService = app(ManagerDashboardService::class);
         $mMetricsBefore = $managerService->getMetrics($this->supervisorUser, $this->store->id);
         $foundInQueue = collect($mMetricsBefore['approvalQueue'])->contains('ticket_no', 'ORD-VOID-TEST-99');
@@ -253,7 +253,7 @@ class DashboardOperationalWiringTest extends TestCase
         $this->assertEquals($this->supervisorUser->id, (int) $order->voided_by);
 
         // Verifikasi order keluar dari antrean approval queue
-        app(\App\Services\Context\TenantContext::class)->setTenantId($this->tenant->id);
+        app(TenantContext::class)->setTenantId($this->tenant->id);
         $mMetricsAfter = $managerService->getMetrics($this->supervisorUser, $this->store->id);
         $stillInQueue = collect($mMetricsAfter['approvalQueue'])->contains('ticket_no', 'ORD-VOID-TEST-99');
         $this->assertFalse($stillInQueue, 'Authorized void order must be cleared from the approval queue.');
@@ -277,7 +277,7 @@ class DashboardOperationalWiringTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        app(\App\Services\Context\TenantContext::class)->setTenantId($this->tenant->id);
+        app(TenantContext::class)->setTenantId($this->tenant->id);
         $managerService = app(ManagerDashboardService::class);
         $mMetricsBefore = $managerService->getMetrics($this->supervisorUser, $this->store->id);
         $foundInQueue = collect($mMetricsBefore['approvalQueue'])->contains('ticket_no', 'ORD-VOID-REJECT-99');
@@ -299,7 +299,7 @@ class DashboardOperationalWiringTest extends TestCase
         $this->assertStringStartsWith('Ditolak:', (string) $order->void_reason);
         $this->assertNull($order->voided_by);
 
-        app(\App\Services\Context\TenantContext::class)->setTenantId($this->tenant->id);
+        app(TenantContext::class)->setTenantId($this->tenant->id);
         $mMetricsAfter = $managerService->getMetrics($this->supervisorUser, $this->store->id);
         $stillInQueue = collect($mMetricsAfter['approvalQueue'])->contains('ticket_no', 'ORD-VOID-REJECT-99');
         $this->assertFalse($stillInQueue, 'Rejected void order must be cleared from the approval queue.');
@@ -323,7 +323,7 @@ class DashboardOperationalWiringTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        app(\App\Services\Context\TenantContext::class)->setTenantId($this->tenant->id);
+        app(TenantContext::class)->setTenantId($this->tenant->id);
         $managerService = app(ManagerDashboardService::class);
         $mMetricsBefore = $managerService->getMetrics($this->supervisorUser, $this->store->id);
         $foundInQueue = collect($mMetricsBefore['approvalQueue'])->contains('ticket_no', 'ORD-PAID-REJECT-99');
@@ -346,7 +346,7 @@ class DashboardOperationalWiringTest extends TestCase
         $this->assertStringStartsWith('Ditolak:', (string) $order->void_reason);
         $this->assertNull($order->voided_by);
 
-        app(\App\Services\Context\TenantContext::class)->setTenantId($this->tenant->id);
+        app(TenantContext::class)->setTenantId($this->tenant->id);
         $mMetricsAfter = $managerService->getMetrics($this->supervisorUser, $this->store->id);
         $stillInQueue = collect($mMetricsAfter['approvalQueue'])->contains('ticket_no', 'ORD-PAID-REJECT-99');
         $this->assertFalse($stillInQueue, 'Rejected paid void order must be cleared from the approval queue.');

@@ -4,18 +4,15 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Models;
 
-use App\Models\Concerns\AssignsStore;
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToStore;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Device;
-use App\Models\Order;
-use App\Models\OrderReturnItem;
-use App\Models\PaymentRefund;
-use App\Models\Shift;
-use App\Models\Store;
-use App\Models\User;
+use App\Core\Traits\AssignsStore;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToStore;
+use App\Core\Traits\ScopedToTenant;
 use App\Modules\Customers\Models\Customer;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Contracts\OrderReturnReaderInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -38,8 +35,58 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int $requested_by_user_id
  * @property int $approved_by_user_id
  */
-class OrderReturn extends Model
+class OrderReturn extends Model implements OrderReturnReaderInterface
 {
+    public function getId(): int
+    {
+        return (int) $this->id;
+    }
+
+    public function getTenantId(): int
+    {
+        return (int) $this->tenant_id;
+    }
+
+    public function getStoreId(): ?int
+    {
+        return (int) $this->store_id;
+    }
+
+    public function getOrderId(): ?int
+    {
+        return (int) $this->order_id;
+    }
+
+    public function getReturnNumber(): string
+    {
+        return (string) ($this->return_number ?? ('RET-'.$this->id));
+    }
+
+    public function getRefundAmount(): float|string
+    {
+        return (string) ($this->total_refundable_amount ?? '0.00');
+    }
+
+    public function getSubtotalReturned(): float|string
+    {
+        return (string) ($this->subtotal_returned ?? '0.00');
+    }
+
+    public function getTaxReturned(): float|string
+    {
+        return (string) ($this->tax_returned ?? '0.00');
+    }
+
+    public function getCreatedAt(): mixed
+    {
+        return $this->created_at;
+    }
+
+    public function getCompletedAt(): mixed
+    {
+        return $this->completed_at ?? $this->created_at;
+    }
+
     use AssignsStore, AssignsTenant;
     use ScopedToStore;
     use ScopedToTenant;

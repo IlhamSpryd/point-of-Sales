@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reports;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
-use App\Models\Category;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Product;
-use App\Modules\Reports\Services\Analytics\InventoryAnalyticsService;
-use App\Services\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Reporting\Services\Analytics\InventoryAnalyticsService;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\OrderItem;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;

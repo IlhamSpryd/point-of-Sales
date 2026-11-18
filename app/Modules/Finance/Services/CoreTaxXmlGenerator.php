@@ -6,7 +6,6 @@ namespace App\Modules\Finance\Services;
 
 use App\Modules\Finance\DTOs\TaxInvoiceDocumentDto;
 use DOMDocument;
-use DOMElement;
 
 class CoreTaxXmlGenerator
 {
@@ -100,7 +99,7 @@ class CoreTaxXmlGenerator
     /**
      * Menghasilkan batch XML memuat kumpulan faktur pajak keluaran.
      *
-     * @param list<TaxInvoiceDocumentDto> $documents
+     * @param  list<TaxInvoiceDocumentDto>  $documents
      * @param array{
      *     npwp?: string,
      *     name?: string,
@@ -117,7 +116,7 @@ class CoreTaxXmlGenerator
 
         foreach ($documents as $doc) {
             $singleXml = $this->generateXml($doc, $sellerInfo);
-            $singleDoc = new DOMDocument();
+            $singleDoc = new DOMDocument;
             $singleDoc->loadXML($singleXml);
             if ($singleDoc->documentElement) {
                 $imported = $dom->importNode($singleDoc->documentElement, true);

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\Inventory\Models;
 
-use App\Models\Concerns\AssignsStore;
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToStore;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Product;
-use App\Models\Store;
+use App\Core\Traits\AssignsStore;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToStore;
+use App\Core\Traits\ScopedToTenant;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Organization\Models\Store;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

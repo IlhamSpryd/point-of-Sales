@@ -19,8 +19,8 @@
             }
         }">
         @php
-            $activeStoreId = app(\App\Services\Context\TenantContext::class)->getStoreId();
-            $activeStore = $activeStoreId ? \App\Models\Store::find($activeStoreId) : null;
+            $activeStoreId = app(\App\Core\Context\TenantContext::class)->getStoreId();
+            $activeStore = $activeStoreId ? \App\Modules\Organization\Models\Store::find($activeStoreId) : null;
         @endphp
 
         <!-- Header -->

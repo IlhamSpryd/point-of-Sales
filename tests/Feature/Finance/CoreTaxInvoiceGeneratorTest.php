@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Finance;
 
-use App\Models\Category;
-use App\Models\Customer;
-use App\Models\Product;
-use App\Models\Store;
-use App\Models\Tenant;
+use App\Core\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Customers\Models\Customer;
 use App\Modules\Finance\DTOs\TaxInvoiceDocumentDto;
 use App\Modules\Finance\DTOs\TaxInvoiceItemDto;
 use App\Modules\Finance\Services\CoreTaxDjpGateway;
 use App\Modules\Finance\Services\CoreTaxJsonGenerator;
 use App\Modules\Finance\Services\CoreTaxSchemaValidator;
 use App\Modules\Finance\Services\CoreTaxXmlGenerator;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
 use App\Modules\Sales\Models\CustomerInvoice;
 use App\Modules\Sales\Models\CustomerInvoiceLine;
-use App\Services\Context\TenantContext;
 use DomainException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
@@ -46,7 +46,7 @@ class CoreTaxInvoiceGeneratorTest extends TestCase
     {
         parent::afterSubclassSetUp();
 
-        $this->validator = new CoreTaxSchemaValidator();
+        $this->validator = new CoreTaxSchemaValidator;
         $this->xmlGenerator = new CoreTaxXmlGenerator($this->validator);
         $this->jsonGenerator = new CoreTaxJsonGenerator($this->validator);
         $this->gateway = new CoreTaxDjpGateway($this->validator, $this->xmlGenerator, $this->jsonGenerator);

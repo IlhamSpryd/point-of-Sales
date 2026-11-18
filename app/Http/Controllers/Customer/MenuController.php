@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Core\Context\TenantContext;
 use App\Http\Controllers\Controller;
-use App\Models\Product;
-use App\Services\CatalogPriceResolverService;
-use App\Services\Context\TenantContext;
-use App\Services\MenuCacheService;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Services\MenuCacheService;
+use App\Modules\Pricing\Services\CatalogPriceResolverService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 

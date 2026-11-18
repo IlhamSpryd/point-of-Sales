@@ -4,13 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Integration\Logistics\Adapters;
 
-use App\Enums\ShippingDispatchStatus;
 use App\Modules\Integration\Logistics\Contracts\CourierAdapterInterface;
-use App\Modules\Integration\Logistics\DTOs\ShipmentTrackingDto;
-use App\Modules\Integration\Logistics\DTOs\ShippingRateOptionDto;
-use App\Modules\Integration\Logistics\DTOs\ShippingRateRequestDto;
-use App\Modules\Integration\Logistics\DTOs\WaybillRequestDto;
-use App\Modules\Integration\Logistics\DTOs\WaybillResponseDto;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 

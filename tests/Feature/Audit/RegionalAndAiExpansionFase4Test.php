@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Audit;
 
-use App\Models\AccountingPeriod;
-use App\Models\Category;
-use App\Models\Company;
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Core\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
 use App\Modules\Finance\Enums\AccountSubtypeEnum;
 use App\Modules\Finance\Enums\AccountTypeEnum;
 use App\Modules\Finance\Enums\JournalStatusEnum;
 use App\Modules\Finance\Enums\NormalBalanceEnum;
+use App\Modules\Finance\Models\AccountingPeriod;
 use App\Modules\Finance\Models\ChartOfAccount;
 use App\Modules\Finance\Models\JournalEntry;
 use App\Modules\Finance\Services\ForexGainLossPostingService;
 use App\Modules\Finance\Services\RegionalTaxEngineService;
-use App\Modules\Reports\Services\AiBusinessAssistantService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Company;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Reporting\Services\AiBusinessAssistantService;
+use App\Modules\Sales\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
@@ -35,12 +35,19 @@ class RegionalAndAiExpansionFase4Test extends TestCase
     use DatabaseTransactions;
 
     protected Tenant $tenant;
+
     protected Company $company;
+
     protected Store $store;
+
     protected User $apiUser;
+
     protected AccountingPeriod $period;
+
     protected ChartOfAccount $accountBank;
+
     protected ChartOfAccount $accountAr;
+
     protected ChartOfAccount $accountAp;
 
     protected function afterSubclassSetUp(): void
@@ -78,7 +85,7 @@ class RegionalAndAiExpansionFase4Test extends TestCase
         // Periode Akuntansi Aktif
         $this->period = AccountingPeriod::withoutTenantScope()->create([
             'tenant_id' => $this->tenant->id,
-            'period_code' => 'P4-' . rand(10000, 99999),
+            'period_code' => 'P4-'.rand(10000, 99999),
             'period_number' => (int) date('m'),
             'fiscal_year' => (int) date('Y'),
             'start_date' => Carbon::now()->startOfMonth()->toDateString(),
@@ -90,7 +97,7 @@ class RegionalAndAiExpansionFase4Test extends TestCase
         // Akun Bank
         $this->accountBank = ChartOfAccount::withoutTenantScope()->create([
             'tenant_id' => $this->tenant->id,
-            'account_code' => '1101-' . Str::random(4),
+            'account_code' => '1101-'.Str::random(4),
             'account_name' => 'Kas & Bank Operasional',
             'account_type' => AccountTypeEnum::ASSET,
             'account_subtype' => AccountSubtypeEnum::CASH_BANK,
@@ -104,7 +111,7 @@ class RegionalAndAiExpansionFase4Test extends TestCase
         // Akun Piutang Usaha (AR)
         $this->accountAr = ChartOfAccount::withoutTenantScope()->create([
             'tenant_id' => $this->tenant->id,
-            'account_code' => '1130-' . Str::random(4),
+            'account_code' => '1130-'.Str::random(4),
             'account_name' => 'Piutang Usaha Dagang (AR)',
             'account_type' => AccountTypeEnum::ASSET,
             'account_subtype' => AccountSubtypeEnum::RECEIVABLE,
@@ -118,7 +125,7 @@ class RegionalAndAiExpansionFase4Test extends TestCase
         // Akun Hutang Usaha (AP)
         $this->accountAp = ChartOfAccount::withoutTenantScope()->create([
             'tenant_id' => $this->tenant->id,
-            'account_code' => '2101-' . Str::random(4),
+            'account_code' => '2101-'.Str::random(4),
             'account_name' => 'Hutang Usaha Dagang (AP)',
             'account_type' => AccountTypeEnum::LIABILITY,
             'account_subtype' => AccountSubtypeEnum::PAYABLE,

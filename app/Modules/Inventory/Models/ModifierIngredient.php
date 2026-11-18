@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Inventory\Models;
 
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Ingredient;
-use App\Models\Modifier;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToTenant;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 

@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
-use App\Models\Ingredient;
-use App\Models\IngredientRestockForecast;
-use App\Models\Order;
-use App\Models\Payment;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
-use App\Services\DashboardService;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Inventory\Models\IngredientRestockForecast;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Reporting\Services\DashboardService;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\Payment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

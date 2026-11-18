@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
-use App\Services\Context\TenantContext;
-use App\Services\TransactionService;
+use App\Modules\Sales\Services\TransactionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;

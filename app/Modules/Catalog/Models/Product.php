@@ -4,12 +4,504 @@ declare(strict_types=1);
 
 namespace App\Modules\Catalog\Models;
 
-use App\Modules\Products\Models\Product as BaseProduct;
+use App\Core\Context\TenantContext;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToTenant;
+use App\Enums\KitchenStation;
+use App\Modules\Catalog\Services\MenuCacheService;
+use App\Modules\Catalog\Services\ProductService;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Inventory\Models\ModifierGroup;
+use App\Modules\Inventory\Models\ProductIngredient;
+use App\Modules\Organization\Models\Store;
+use Database\Factories\ProductFactory;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 /**
- * Catalog Product Model wrapper.
+ * Model Product untuk memetakan rekaman setiap komoditas atau
+ * barang dagangan yang diperjualbelikan pada antarmuka sistem.
+ *
+ * @property int $id
+ * @property int $tenant_id
+ * @property string $product_name
+ * @property string|null $product_code
+ * @property string|null $sku
+ * @property string|null $barcode
+ * @property int|null $category_id
+ * @property int|null $brand_id
+ * @property int|null $base_uom_id
+ * @property string $product_type
+ * @property int|float $product_price
+ * @property string $costing_method
+ * @property float|numeric-string $standard_cost
+ * @property KitchenStation|null $kitchen_station
+ * @property int|null $tax_class_id
+ * @property bool $is_tax_inclusive
+ * @property bool $track_inventory
+ * @property int $stock
+ * @property string $status
+ * @property bool $is_active
+ * @property bool|null $is_fulfillable
+ * @property int|null $available_portions
+ * @property bool|null $has_bom
+ * @property-read Category|null $category
+ * @property-read Brand|null $brand
+ * @property-read UnitOfMeasure|null $baseUom
+ * @property-read TaxClass|null $taxClass
+ * @property-read Collection<int, ProductVariant> $variants
+ * @property-read Collection<int, Ingredient> $ingredients
  */
-/**
- * @deprecated Use \App\Modules\Products\Models\Product instead. Consolidated per DEC-002 / TASK-201.
- */
-class Product extends BaseProduct {}
+class Product extends Model
+{
+    use AssignsTenant;
+
+    /** @use HasFactory<ProductFactory> */
+    use HasFactory;
+
+    use ScopedToTenant;
+    use SoftDeletes;
+
+    protected $attributes = [
+        'status' => 'active',
+        'is_active' => true,
+        'has_variants' => false,
+        'track_inventory' => true,
+    ];
+
+    /**
+     * Atribut yang diizinkan untuk diisi massal oleh aplikasi.
+     */
+    protected $fillable = [
+        'tenant_id',
+        'category_id',
+        'brand_id',
+        'base_uom_id',
+        'product_name',
+        'name',
+        'product_code',
+        'sku',
+        'barcode',
+        'product_type',
+        'status',
+        'has_variants',
+        'track_inventory',
+        'product_photo',
+        'product_price',
+        'price',
+        'base_price',
+        'costing_method',
+        'standard_cost',
+        'cost_price',
+        'tax_class_id',
+        'is_tax_inclusive',
+        'product_description',
+        'stock',
+        'is_active',
+        'is_open_price',
+        'kitchen_station',
+    ];
+
+    public function setNameAttribute(mixed $value): void
+    {
+        $this->attributes['product_name'] = $value;
+    }
+
+    public function getNameAttribute(): ?string
+    {
+        return $this->attributes['product_name'] ?? null;
+    }
+
+    public function setDisplayNameAttribute(mixed $value): void
+    {
+        if (empty($this->attributes['product_name'])) {
+            $this->attributes['product_name'] = $value;
+        }
+    }
+
+    public function getDisplayNameAttribute(): ?string
+    {
+        return $this->attributes['product_name'] ?? null;
+    }
+
+    public function setPriceAttribute(mixed $value): void
+    {
+        $this->attributes['product_price'] = $value;
+    }
+
+    public function getPriceAttribute(): mixed
+    {
+        return $this->attributes['product_price'] ?? null;
+    }
+
+    public function setBasePriceAttribute(mixed $value): void
+    {
+        $this->attributes['product_price'] = $value;
+    }
+
+    public function getBasePriceAttribute(): mixed
+    {
+        return $this->attributes['product_price'] ?? null;
+    }
+
+    public function setCostPriceAttribute(mixed $value): void
+    {
+        $this->attributes['standard_cost'] = $value;
+    }
+
+    public function getCostPriceAttribute(): mixed
+    {
+        return $this->attributes['standard_cost'] ?? 0;
+    }
+
+    public function setSkuAttribute(mixed $value): void
+    {
+        if (empty($this->attributes['product_code']) && ! empty($value)) {
+            $this->attributes['product_code'] = $value;
+        }
+    }
+
+    public function getSkuAttribute(): ?string
+    {
+        return isset($this->attributes['product_code']) ? (string) $this->attributes['product_code'] : null;
+    }
+
+    /**
+     * Resolves absolute/root-relative web-accessible URL for the product photo.
+     */
+    public function getPhotoUrlAttribute(): ?string
+    {
+        $photo = $this->attributes['product_photo'] ?? null;
+        if (empty($photo)) {
+            return null;
+        }
+
+        if (filter_var($photo, FILTER_VALIDATE_URL)) {
+            return (string) $photo;
+        }
+
+        return '/storage/'.ltrim((string) $photo, '/');
+    }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->getPhotoUrlAttribute();
+    }
+
+    protected static function booted()
+    {
+        static::created(function ($model) {
+            $stores = Store::where('tenant_id', $model->tenant_id)->orderBy('id')->get();
+            $defaultStore = $stores->first();
+            foreach ($stores as $store) {
+                $qty = ($defaultStore && $store->id === $defaultStore->id) ? $model->stock : 0;
+                DB::table('product_stock_balances')->insertOrIgnore([
+                    'tenant_id' => $model->tenant_id,
+                    'store_id' => $store->id,
+                    'product_id' => $model->id,
+                    'quantity' => $qty,
+                    'baseline_quantity' => $qty,
+                    'baseline_movement_id' => 0,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        });
+
+        static::creating(function ($model) {
+            if (empty($model->product_code)) {
+                $tenantId = (int) ($model->tenant_id ?: app(TenantContext::class)->getTenantId());
+                $maxId = (int) (static::where('tenant_id', $tenantId)->max('id') ?? 0);
+                $candidateCode = 'PRD-'.$tenantId.'-'.str_pad((string) ($maxId + 1), 4, '0', STR_PAD_LEFT);
+                while (static::where('tenant_id', $tenantId)->where('product_code', $candidateCode)->exists()) {
+                    $maxId++;
+                    $candidateCode = 'PRD-'.$tenantId.'-'.str_pad((string) ($maxId + 1), 4, '0', STR_PAD_LEFT);
+                }
+                $model->product_code = $candidateCode;
+            }
+        });
+
+        // Invalidasi cache OTOMATIS saat status ketersediaan
+        // produk berubah. Menutup celah: TransactionService::createTransaction()
+        // memotong `stock` lewat Product::decrement() (untuk produk TANPA
+        // resep BOM) -- jalur ini TIDAK PERNAH melalui ProductService,
+        // satu-satunya tempat MenuCacheService::flush() dipanggil manual
+        // sebelumnya. Tanpa hook ini, produk yang baru saja habis terjual
+        // tetap tampil "tersedia" di menu Self-Order/Kasir hingga TTL
+        // cache (1 jam) habis -- pelanggan bisa menambah produk itu ke
+        // keranjang lalu baru gagal saat checkout. Hook yang sama juga
+        // menangkap arah sebaliknya: TransactionService::restoreStockForOrder()
+        // memakai Product::increment('stock', ...) saat order dibatalkan/
+        // kedaluwarsa -- produk yang tadinya habis harus kembali tampil.
+        //
+        // Model::increment()/decrement() MEMANGGIL save() secara internal
+        // ketika model sudah exists, sehingga event 'saved' di bawah ini
+        // pasti terpicu untuk KEDUA operasi tersebut.
+        //
+        // Sengaja HANYA bereaksi saat stok melewati ambang 0 (bukan pada
+        // SETIAP perubahan angka stok) atau saat is_active berubah --
+        // bukan pada setiap save() -- agar tidak menggandakan flush() yang
+        // sudah dipanggil eksplisit oleh ProductService pada perubahan
+        // nama/harga/foto, dan agar penjualan normal (stok 50 -> 49) tidak
+        // memicu invalidasi cache yang tidak perlu.
+        static::saved(function (Product $product) {
+            if ($product->wasChanged('stock')) {
+                $context = app(TenantContext::class);
+                $storeId = $context->getStoreId() ?? Store::where('tenant_id', $product->tenant_id)->orderBy('id')->value('id');
+
+                if ($storeId) {
+                    $delta = (int) $product->stock - (int) $product->getOriginal('stock');
+                    DB::table('product_stock_balances')
+                        ->where('tenant_id', $product->tenant_id)
+                        ->where('store_id', $storeId)
+                        ->where('product_id', $product->id)
+                        ->increment('quantity', $delta, [
+                            'updated_at' => now(),
+                        ]);
+                }
+            }
+
+            $stockCrossedToZero = $product->wasChanged('stock')
+                && $product->stock <= 0
+                && (int) $product->getOriginal('stock') > 0;
+
+            $stockCrossedFromZero = $product->wasChanged('stock')
+                && $product->stock > 0
+                && (int) $product->getOriginal('stock') <= 0;
+
+            $visibilityChanged = $product->wasChanged('is_active');
+
+            if ($stockCrossedToZero || $stockCrossedFromZero || $visibilityChanged) {
+                // WAJIB DB::afterCommit(), BUKAN flush() langsung: hook ini
+                // bisa terpicu di tengah DB::transaction() milik
+                // TransactionService::createTransaction() SAAT baris
+                // products masih dikunci (lockForUpdate()). Melakukan I/O
+                // tambahan (DELETE ke tabel `cache`, yang notabene berbagi
+                // koneksi database yang sama karena CACHE_STORE=database)
+                // SELAGI lock baris masih dipegang akan memperpanjang
+                // critical section dan menambah kontensi di bawah beban
+                // banyak kasir bersamaan -- tepat kebalikan dari tujuan
+                // optimasi ini. DB::afterCommit() menunda flush() sampai
+                // TEPAT setelah transaksi benar-benar commit (dan berjalan
+                // seketika jika model ini disimpan di luar transaksi sama
+                // sekali, misal lewat ProductController biasa).
+                DB::afterCommit(fn () => app(MenuCacheService::class)->flush($product->tenant_id));
+            }
+        });
+    }
+
+    /**
+     * Konversi boolean di ranah aplikasi meskipun tersimpan dalam format TinyInt database.
+     */
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+            'has_variants' => 'boolean',
+            'track_inventory' => 'boolean',
+            'standard_cost' => 'decimal:2',
+            'is_open_price' => 'boolean',
+            'kitchen_station' => KitchenStation::class,
+        ];
+    }
+
+    /**
+     * Relasi (BelongsTo): Setiap Entitas Produk harus masuk ke dalam suatu entitas kategori tertentu.
+     *
+     * @return BelongsTo<Category, $this>
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * @return BelongsTo<Brand, $this>
+     */
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(Brand::class);
+    }
+
+    /**
+     * @return BelongsTo<UnitOfMeasure, $this>
+     */
+    public function baseUom(): BelongsTo
+    {
+        return $this->belongsTo(UnitOfMeasure::class, 'base_uom_id');
+    }
+
+    /**
+     * @return HasMany<ProductUnitConversion, $this>
+     */
+    public function unitConversions(): HasMany
+    {
+        return $this->hasMany(ProductUnitConversion::class);
+    }
+
+    /**
+     * @return BelongsTo<TaxClass, $this>
+     */
+    public function taxClass(): BelongsTo
+    {
+        return $this->belongsTo(TaxClass::class, 'tax_class_id');
+    }
+
+    /**
+     * @return HasMany<ProductCostHistory, $this>
+     */
+    public function costHistories(): HasMany
+    {
+        return $this->hasMany(ProductCostHistory::class)->orderBy('effective_at', 'desc');
+    }
+
+    /**
+     * @return HasMany<ProductMedia, $this>
+     */
+    public function media(): HasMany
+    {
+        return $this->hasMany(ProductMedia::class)->orderBy('is_primary', 'desc')->orderBy('sort_order', 'asc');
+    }
+
+    /**
+     * @return HasMany<StoreProductAssortment, $this>
+     */
+    public function storeAssortments(): HasMany
+    {
+        return $this->hasMany(StoreProductAssortment::class);
+    }
+
+    /**
+     * Relasi (HasMany): Produk terkait sering dilampirkan dalam ragam deretan bon rincian pesanan.
+     *
+     * @return HasMany<\App\Modules\Sales\Models\OrderItem, $this>
+     */
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(\App\Modules\Sales\Models\OrderItem::class);
+    }
+
+    /**
+     * Relasi (BelongsToMany): Produk ini memakai grup varian apa saja.
+     * Contoh: Produk "Kopi Susu Gula Aren" memakai grup "Pilihan Suhu" dan "Tingkat Gula".
+     *
+     * @return BelongsToMany<ModifierGroup, $this>
+     */
+    public function modifierGroups(): BelongsToMany
+    {
+        return $this->belongsToMany(ModifierGroup::class, 'modifier_group_product');
+    }
+
+    /**
+     * KUNCI INTEGRASI: menu self-order & kasir HANYA boleh menampilkan produk
+     * yang benar-benar bisa dijual -- aktif, tidak di-soft-delete, stok ada.
+     * CATATAN AUDIT: untuk produk ber-BOM, `stock` di sini TIDAK LAGI dipotong
+     * oleh TransactionService::createTransaction().
+     * KETERBATASAN DIKETAHUI (di luar cakupan audit ini):
+     * untuk produk ber-BOM, ketersediaan sesungguhnya ditentukan oleh
+     * `ingredients.current_stock`, BUKAN kolom `stock` di tabel ini --
+     * kolom `stock` produk ber-BOM tidak lagi dimutakhirkan sama sekali
+     * (lihat catatan Node 1 di atas).
+     * [F-07 RESOLVED] Cache invalidation untuk produk ber-BOM kini
+     * ditangani oleh Ingredient::booted()::saved() -- saat current_stock
+     * melewati ambang nol, menu cache di-flush otomatis via
+     * DB::afterCommit(), pola identik dengan Product::booted()::saved().
+     *
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
+    public function scopeAvailableForOrder(Builder $query): Builder
+    {
+        return $query->where('is_active', true)
+            ->where('status', 'active')
+            ->where(function ($q) {
+                $q->where('track_inventory', false)
+                    ->orWhereIn('product_type', ['service', 'non_inventory', 'bundle'])
+                    ->orWhere('stock', '>', 0)
+                    ->orWhereHas('ingredients');
+            });
+    }
+
+    /**
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
+    public function scopeSellable(Builder $query): Builder
+    {
+        return $query->where('is_active', true)->where('status', 'active');
+    }
+
+    public function isSellable(): bool
+    {
+        return $this->is_active && $this->status === 'active';
+    }
+
+    public function isPhysical(): bool
+    {
+        return $this->product_type === 'standard';
+    }
+
+    public function isService(): bool
+    {
+        return $this->product_type === 'service';
+    }
+
+    public function isNonInventory(): bool
+    {
+        return $this->product_type === 'non_inventory';
+    }
+
+    public function isBundle(): bool
+    {
+        return $this->product_type === 'bundle';
+    }
+
+    /**
+     * Relasi ke varian-varian spesifik (ADR-01).
+     *
+     * @return HasMany<ProductVariant, $this>
+     */
+    public function variants(): HasMany
+    {
+        return $this->hasMany(ProductVariant::class, 'product_id')->orderBy('sort_order', 'asc');
+    }
+
+    /**
+     * Relasi ke komponen penyusun bundel/kit jika produk bertipe bundle (ADR-04).
+     *
+     * @return HasMany<ProductBundleItem, $this>
+     */
+    public function bundleItems(): HasMany
+    {
+        return $this->hasMany(ProductBundleItem::class, 'bundle_product_id')->orderBy('sort_order', 'asc');
+    }
+
+    /**
+     * Relasi ke bundel-bundel di mana produk ini menjadi salah satu komponennya.
+     *
+     * @return HasMany<ProductBundleItem, $this>
+     */
+    public function bundleComponentOf(): HasMany
+    {
+        return $this->hasMany(ProductBundleItem::class, 'component_product_id');
+    }
+
+    /**
+     * FIX PRASYARAT BOM: Hapus 'unit_of_measurement' karena tidak ada di tabel pivot.
+     *
+     * @return BelongsToMany<Ingredient, $this, ProductIngredient>
+     */
+    public function ingredients(): BelongsToMany
+    {
+        return $this->belongsToMany(Ingredient::class, 'product_ingredients')
+            ->using(ProductIngredient::class)
+            ->withPivot('quantity_required');
+    }
+}

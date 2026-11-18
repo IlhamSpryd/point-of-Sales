@@ -295,4 +295,15 @@ if (! extension_loaded('bcmath')) {
             return str_starts_with($diff, '-') ? -1 : 1;
         }
     }
+
+    if (! function_exists('bcpow')) {
+        function bcpow(string $num, string $exponent, ?int $scale = null): string
+        {
+            $base = (float) $num;
+            $exp = (int) $exponent;
+            $res = $base ** $exp;
+
+            return $scale !== null ? sprintf('%.'.$scale.'f', $res) : (string) (int) $res;
+        }
+    }
 }

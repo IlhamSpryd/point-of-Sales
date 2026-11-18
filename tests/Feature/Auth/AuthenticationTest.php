@@ -2,9 +2,10 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\User;
+use App\Modules\Organization\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
@@ -25,7 +26,7 @@ class AuthenticationTest extends TestCase
     public function test_users_can_authenticate_with_dataset_criteria_password(): void
     {
         $user = User::factory()->create([
-            'password' => \Illuminate\Support\Facades\Hash::make('M3m3x123!@#'),
+            'password' => Hash::make('M3m3x123!@#'),
         ]);
 
         $response = $this->post('/login', [

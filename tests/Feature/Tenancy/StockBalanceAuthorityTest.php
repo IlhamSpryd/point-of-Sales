@@ -2,14 +2,14 @@
 
 namespace Tests\Feature\Tenancy;
 
+use App\Core\Context\TenantContext;
 use App\Enums\StockMovementType;
-use App\Models\Category;
-use App\Models\Ingredient;
-use App\Models\Product;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Services\Context\TenantContext;
-use App\Services\ProductService;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Services\ProductService;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Dataset\Generators;
 
-use App\Modules\Users\Services\EmployeeIdGenerator;
+use App\Modules\Organization\Services\EmployeeIdGenerator;
 use App\Support\Dataset\CatalogFixtures;
 use App\Support\Dataset\DatasetConfig;
 use App\Support\Dataset\DatasetGenerationException;
@@ -340,6 +340,7 @@ final class TenantFoundationGenerator
             $existing = DB::table('warehouses')->where('tenant_id', $tenantId)->where('warehouse_code', $code)->first();
             if ($existing) {
                 $warehouseIds[$store['code']] = (int) $existing->id;
+
                 continue;
             }
 
@@ -350,7 +351,7 @@ final class TenantFoundationGenerator
                 'warehouse_code' => $code,
                 'warehouse_name' => sprintf('Gudang Stok %s', $store['name']),
                 'warehouse_type' => 'RETAIL',
-                'address' => $store['name'] . ', ' . ($store['city'] ?? 'Jakarta'),
+                'address' => $store['name'].', '.($store['city'] ?? 'Jakarta'),
                 'is_active' => 1,
                 'created_at' => $store['opened_at'] ?? $this->config->startDate->subDays(10),
                 'updated_at' => $store['opened_at'] ?? $this->config->startDate->subDays(10),
@@ -389,6 +390,7 @@ final class TenantFoundationGenerator
 
                 if ($existing) {
                     $opUnits[$store['id']][$tmpl['code']] = (int) $existing->id;
+
                     continue;
                 }
 

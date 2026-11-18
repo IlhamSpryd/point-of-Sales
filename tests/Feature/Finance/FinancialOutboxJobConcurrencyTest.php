@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Finance;
 
-use App\Models\AccountingPeriod;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Core\Context\TenantContext;
 use App\Modules\Finance\Enums\OutboxStatusEnum;
 use App\Modules\Finance\Jobs\ProcessFinancialOutboxJob;
+use App\Modules\Finance\Models\AccountingPeriod;
 use App\Modules\Finance\Models\FinancialEventOutbox;
 use App\Modules\Finance\Models\JournalEntry;
 use App\Modules\Finance\Services\PostingEngineService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use Database\Seeders\ChartOfAccountsSeeder;
 use Database\Seeders\DefaultPostingRulesSeeder;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -155,5 +155,38 @@ class FinancialOutboxJobConcurrencyTest extends TestCase
         $fresh = $outbox->fresh();
         $this->assertEquals(OutboxStatusEnum::PROCESSED, $fresh->status);
         $this->assertSame(999, $fresh->journal_entry_id);
+    }
+
+    public function test_concurrent_job_skips_row_currently_in_processing_status(): void
+    {
+        $mockPostingEngine = Mockery::mock(PostingEngineService::class);
+
+        $outbox = FinancialEventOutbox::create([
+            'tenant_id' => $this->tenant->id,
+            'store_id' => $this->store->id,
+            'event_id' => 'evt-'.uniqid(),
+            'event_type' => 'POS_ORDER_PAID',
+            'source_module' => 'SALES',
+            'source_type' => 'ORDER',
+            'source_id' => 303,
+            'source_number' => 'ORD-303',
+            'idempotency_key' => 'idemp-processing-'.uniqid(),
+            'payload' => [
+                'order_id' => 303,
+                'order_amount' => '100000.00',
+            ],
+            'status' => OutboxStatusEnum::PROCESSING,
+            'occurred_at' => now(),
+        ]);
+
+        // Posting engine MUST NOT be called because outbox is already locked/PROCESSING by another worker
+        $mockPostingEngine->shouldNotReceive('processOutboxEvent');
+
+        $job = new ProcessFinancialOutboxJob($outbox->id);
+        $job->handle($mockPostingEngine, app(TenantContext::class));
+
+        $fresh = $outbox->fresh();
+        $this->assertEquals(OutboxStatusEnum::PROCESSING, $fresh->status);
+        $this->assertNull($fresh->journal_entry_id);
     }
 }

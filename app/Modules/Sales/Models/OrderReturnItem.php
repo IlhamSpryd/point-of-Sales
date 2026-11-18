@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Models;
 
+use App\Core\Traits\AssignsStore;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToStore;
+use App\Core\Traits\ScopedToTenant;
 use App\Enums\ReturnDispositionEnum;
-use App\Models\Concerns\AssignsStore;
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToStore;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\OrderItem;
-use App\Models\OrderReturn;
-use App\Models\Product;
-use App\Models\StockMovement;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Inventory\Models\StockMovement;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Context;
 
-use App\Models\Store;
-use App\Models\User;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\User;
 
 /**
  * Resolusi store (cabang) aktif.

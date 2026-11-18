@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Catalog;
 
+use App\Core\Context\TenantContext;
 use App\Http\Requests\StoreProductRequest;
-use App\Models\Category;
-use App\Models\Product;
-use App\Models\ProductCostHistory;
-use App\Models\Store;
-use App\Models\TaxClass;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
-use App\Services\ProductService;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\ProductCostHistory;
+use App\Modules\Catalog\Models\TaxClass;
+use App\Modules\Catalog\Services\ProductService;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;

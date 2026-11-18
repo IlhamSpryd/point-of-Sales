@@ -12,7 +12,7 @@
         </x-slot:breadcrumbs>
 
         <x-slot:actions>
-            @can('create', \App\Models\Quotation::class)
+            @can('create', \App\Modules\Sales\Models\Quotation::class)
             <x-ui.button variant="primary" wire:click="openCreateModal" class="gap-2">
                 <span class="material-symbols-rounded text-base">add_circle</span>
                 Create New Quotation

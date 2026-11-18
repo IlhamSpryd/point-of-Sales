@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Traits;
 
-use App\Models\Device;
-use App\Models\Store;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Models\Store;
 use DomainException;
 
 /**

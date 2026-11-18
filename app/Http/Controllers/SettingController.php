@@ -7,6 +7,6 @@ namespace App\Http\Controllers;
 /**
  * Backward compatibility wrapper for modular architecture.
  *
- * @see \App\Modules\Settings\Controllers\SettingController
+ * @see \App\Modules\Organization\Controllers\SettingController
  */
-class SettingController extends \App\Modules\Settings\Controllers\SettingController {}
+class SettingController extends \App\Modules\Organization\Controllers\SettingController {}

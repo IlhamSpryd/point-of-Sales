@@ -8,9 +8,7 @@ use App\Modules\Customers\Models\Customer;
 use App\Modules\Customers\Models\CustomerAddress;
 use App\Modules\Customers\Models\CustomerContact;
 use App\Modules\Customers\Models\CustomerMergeLog;
-use App\Modules\Customers\Models\Voucher;
 use App\Modules\Pricing\Services\LoyaltyLedgerService;
-use App\Modules\Sales\Models\Order;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -86,14 +84,14 @@ class CustomerMergeService
             ];
 
             // 1. Pindahkan riwayat orders
-            $ordersCount = Order::withoutGlobalScopes()
+            $ordersCount = DB::table('orders')
                 ->where('tenant_id', $tenantId)
                 ->where('customer_id', $duplicateCustomerId)
                 ->update(['customer_id' => $targetCustomerId]);
             $reassignedSummary['orders_count'] = $ordersCount;
 
             // 2. Pindahkan voucher
-            $vouchersCount = Voucher::withoutGlobalScopes()
+            $vouchersCount = DB::table('vouchers')
                 ->where('tenant_id', $tenantId)
                 ->where('customer_id', $duplicateCustomerId)
                 ->update(['customer_id' => $targetCustomerId]);

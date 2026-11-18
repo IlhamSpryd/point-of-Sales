@@ -6,20 +6,16 @@ namespace Tests\Feature\Manufacturing;
 
 use App\Enums\IngredientStockMovementTypeEnum;
 use App\Enums\StockMovementType;
-use App\Models\Category;
-use App\Models\Ingredient;
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Modules\Manufacturing\Models\ManufacturingOrder;
-use App\Modules\Manufacturing\Models\ProductIngredient;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Inventory\Models\ProductIngredient;
 use App\Modules\Manufacturing\Services\ManufacturingOrderService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class ManufacturingStockLedgerIntegrationTest extends TestCase
@@ -27,11 +23,17 @@ class ManufacturingStockLedgerIntegrationTest extends TestCase
     use DatabaseTransactions;
 
     private Tenant $tenant;
+
     private Store $store;
+
     private User $user;
+
     private Product $finishedProduct;
+
     private Ingredient $rawIngredient1;
+
     private Ingredient $rawIngredient2;
+
     private ManufacturingOrderService $service;
 
     protected function afterSubclassSetUp(): void

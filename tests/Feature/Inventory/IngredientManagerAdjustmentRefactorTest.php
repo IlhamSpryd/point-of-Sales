@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Inventory;
 
+use App\Core\Context\TenantContext;
 use App\Enums\StockAdjustmentReasonEnum;
 use App\Enums\StockAdjustmentStatusEnum;
 use App\Livewire\Inventory\IngredientManager;
-use App\Models\Ingredient;
-use App\Models\StockAdjustment;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Inventory\Models\StockAdjustment;
 use App\Modules\Inventory\Services\InventoryLedgerService;
-use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\Support\TwoTenantFixture;

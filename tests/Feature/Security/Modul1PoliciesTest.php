@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Security;
 
+use App\Core\Context\TenantContext;
 use App\Enums\ExportTaskStatus;
-use App\Models\ExportTask;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Models\UserInvitation;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Models\UserInvitation;
+use App\Modules\Reporting\Models\ExportTask;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Tests\TestCase;

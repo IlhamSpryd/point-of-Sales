@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Traits;
 
-use App\Models\Scopes\TenantScope;
+use App\Core\Scopes\TenantScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 

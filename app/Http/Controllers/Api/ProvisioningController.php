@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProvisioningRequest;
-use App\Services\ProvisioningService;
+use App\Modules\Subscription\Services\ProvisioningService;
 use Illuminate\Http\JsonResponse;
 
 /**

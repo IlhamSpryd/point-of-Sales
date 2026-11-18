@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\Inventory\Models;
 
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Product;
-use App\Models\ProductIngredient;
-use App\Models\Store;
-use App\Services\Context\TenantContext;
-use App\Services\MenuCacheService;
-use App\Services\TransactionService;
+use App\Core\Context\TenantContext;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToTenant;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Services\MenuCacheService;
+use App\Modules\Organization\Models\Store;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;

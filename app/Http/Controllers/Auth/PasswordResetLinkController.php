@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\EmailOutbox;
-use App\Models\User;
+use App\Modules\Organization\Models\EmailOutbox;
+use App\Modules\Organization\Models\User;
 use App\Support\EmailNormalizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

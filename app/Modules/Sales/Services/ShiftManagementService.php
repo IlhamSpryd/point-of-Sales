@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Services;
 
-use App\Models\CashDrawerMovement;
-use App\Models\Device;
-use App\Models\Payment;
-use App\Models\Shift;
-use App\Models\User;
+use App\Core\Context\TenantContext;
 use App\Modules\Finance\Services\FinancialOutboxDispatcherService;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\AuditTrailService;
+use App\Modules\Organization\Services\CashierPinService;
 use App\Modules\Sales\Exceptions\ShiftClosedException;
-use App\Services\AuditTrailService;
-use App\Services\CashierPinService;
-use App\Services\Context\TenantContext;
+use App\Modules\Sales\Models\CashDrawerMovement;
+use App\Modules\Sales\Models\Payment;
+use App\Modules\Sales\Models\Shift;
 use DomainException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;

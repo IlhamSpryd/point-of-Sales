@@ -7,6 +7,6 @@ namespace App\Http\Controllers;
 /**
  * Backward compatibility wrapper for modular architecture.
  *
- * @see \App\Modules\Reports\Controllers\ExportTaskController
+ * @see \App\Modules\Reporting\Controllers\ExportTaskController
  */
-class ExportTaskController extends \App\Modules\Reports\Controllers\ExportTaskController {}
+class ExportTaskController extends \App\Modules\Reporting\Controllers\ExportTaskController {}

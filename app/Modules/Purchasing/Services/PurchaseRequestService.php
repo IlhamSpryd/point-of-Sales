@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace App\Modules\Purchasing\Services;
 
+use App\Core\Context\TenantContext;
 use App\Enums\ApprovalStatusEnum;
 use App\Enums\PurchaseRequestFulfillmentStatusEnum;
 use App\Enums\PurchaseRequestStatusEnum;
-use App\Models\Ingredient;
-use App\Models\Product;
-use App\Models\Store;
-use App\Models\User;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Purchasing\Models\PurchaseRequest;
 use App\Modules\Purchasing\Models\PurchaseRequestLine;
-use App\Modules\Settings\Services\AuditTrailService;
-use App\Services\Context\TenantContext;
+use App\Platform\Documents\DocumentSequenceService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;

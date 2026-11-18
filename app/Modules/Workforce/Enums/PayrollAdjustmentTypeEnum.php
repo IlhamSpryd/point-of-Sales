@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Modules\Workforce\Enums;
+
+enum PayrollAdjustmentTypeEnum: string
+{
+    case ADDITION = 'ADDITION';
+    case DEDUCTION = 'DEDUCTION';
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::ADDITION => 'Addition / Allowance',
+            self::DEDUCTION => 'Deduction',
+        };
+    }
+}

@@ -2,20 +2,20 @@
 
 namespace Tests\Feature\Domain1;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
 use App\Jobs\ProcessSalesReportExportJob;
-use App\Models\Category;
-use App\Models\Customer;
-use App\Models\Discount;
-use App\Models\ExportTask;
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\Store;
-use App\Models\Table;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
-use App\Services\MenuCacheService;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Services\MenuCacheService;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Pricing\Models\Discount;
+use App\Modules\Reporting\Models\ExportTask;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\Table;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;

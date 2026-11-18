@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Finance;
 
-use App\Models\AccountingPeriod;
-use App\Models\Role;
-use App\Models\User;
+use App\Core\Context\TenantContext;
 use App\Modules\Finance\Enums\AccountingPeriodStatusEnum;
 use App\Modules\Finance\Enums\CashBankAccountTypeEnum;
 use App\Modules\Finance\Enums\ExpenseStatusEnum;
 use App\Modules\Finance\Enums\JournalStatusEnum;
 use App\Modules\Finance\Enums\TaxCalculationTypeEnum;
 use App\Modules\Finance\Enums\TaxTypeEnum;
+use App\Modules\Finance\Models\AccountingPeriod;
 use App\Modules\Finance\Models\CashBankAccount;
 use App\Modules\Finance\Models\ExpenseCategory;
 use App\Modules\Finance\Models\TaxCode;
@@ -21,8 +20,9 @@ use App\Modules\Finance\Services\ChartOfAccountService;
 use App\Modules\Finance\Services\ExpenseService;
 use App\Modules\Finance\Services\JournalEntryService;
 use App\Modules\Finance\Services\TaxConfigurationService;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
 use App\Policies\ExpensePolicy;
-use App\Services\Context\TenantContext;
 use Database\Seeders\ChartOfAccountsSeeder;
 use Database\Seeders\DefaultPostingRulesSeeder;
 use DomainException;

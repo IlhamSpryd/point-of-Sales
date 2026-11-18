@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Livewire\Manufacturing;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Product;
+use App\Modules\Catalog\Models\Product;
 use App\Modules\Manufacturing\Models\ManufacturingOrder;
 use App\Modules\Manufacturing\Services\ManufacturingOrderService;
-use App\Services\Context\TenantContext;
 use Illuminate\Contracts\View\View;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -34,13 +35,17 @@ class ManufacturingOrderManager extends Component
 
     public function createOrder(): void
     {
-        $this->validate([
-            'selectedProductId' => 'required|integer|exists:products,id',
-            'plannedQuantity' => 'required|numeric|min:0.0001',
-        ]);
-
         $tenantId = (int) app(TenantContext::class)->getTenantId();
         $storeId = (int) (app(TenantContext::class)->getStoreId() ?? 1);
+
+        $this->validate([
+            'selectedProductId' => [
+                'required',
+                'integer',
+                Rule::exists('products', 'id')->where('tenant_id', $tenantId),
+            ],
+            'plannedQuantity' => 'required|numeric|min:0.0001',
+        ]);
 
         $service = app(ManufacturingOrderService::class);
         $order = $service->createOrder(

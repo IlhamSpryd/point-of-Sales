@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\Tenant;
-use App\Services\EmailVerificationOtpService;
-use App\Services\OtpVerificationResult;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Services\EmailVerificationOtpService;
+use App\Modules\Organization\Services\OtpVerificationResult;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;

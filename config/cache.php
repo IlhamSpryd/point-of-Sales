@@ -1,10 +1,10 @@
 <?php
 
-use App\Models\Category;
-use App\Models\Ingredient;
-use App\Models\Modifier;
-use App\Models\ModifierGroup;
-use App\Models\Product;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Inventory\Models\Modifier;
+use App\Modules\Inventory\Models\ModifierGroup;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Str;

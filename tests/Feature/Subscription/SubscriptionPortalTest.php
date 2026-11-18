@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Subscription;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Subscription\SubscriptionPortal;
-use App\Models\Device;
-use App\Models\Plan;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\TenantSubscription;
-use App\Models\User;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Subscription\Models\Plan;
+use App\Modules\Subscription\Models\TenantSubscription;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;

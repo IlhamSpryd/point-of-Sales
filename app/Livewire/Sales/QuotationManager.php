@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Livewire\Sales;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Customer;
-use App\Models\Product;
-use App\Models\Quotation;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Sales\Models\Quotation;
 use App\Modules\Sales\Services\QuotationService;
-use App\Services\Context\TenantContext;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;

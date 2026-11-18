@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Modules\Purchasing\Models;
 
+use App\Core\Context\TenantContext;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToTenant;
 use App\Enums\PurchaseRequestFulfillmentStatusEnum;
 use App\Enums\PurchaseRequestStatusEnum;
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;

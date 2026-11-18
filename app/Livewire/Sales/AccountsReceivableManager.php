@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Livewire\Sales;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Customer;
+use App\Modules\Customers\Models\Customer;
 use App\Modules\Sales\Enums\CustomerInvoiceStatusEnum;
 use App\Modules\Sales\Models\CustomerInvoice;
 use App\Modules\Sales\Services\AccountsReceivableService;
-use App\Services\Context\TenantContext;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;

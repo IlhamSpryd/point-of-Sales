@@ -3,18 +3,25 @@
 namespace App\Providers;
 
 use App\Core\Auth\TenantAwareUserProvider;
+use App\Core\Context\TenantContext;
 use App\Http\Middleware\SetTenantContext;
-use App\Models\Ingredient;
-use App\Models\Product;
+use App\Modules\Catalog\Models\Product;
 use App\Modules\Finance\Contracts\PostingEngineContract;
+use App\Modules\Finance\Contracts\TaxCalculationServiceInterface;
 use App\Modules\Finance\Contracts\TaxIntegrationGatewayInterface;
+use App\Modules\Finance\Contracts\TaxIntegrationServiceInterface;
 use App\Modules\Finance\Services\CoreTaxDjpGateway;
 use App\Modules\Finance\Services\PostingEngineService;
+use App\Modules\Finance\Services\TaxCalculationService;
+use App\Modules\Finance\Services\TaxIntegrationService;
+use App\Modules\Integration\Contracts\WhatsAppGatewayInterface;
+use App\Modules\Integration\Services\Adapters\QiscusWhatsAppAdapter;
+use App\Modules\Inventory\Models\Ingredient;
 use App\Policies\CustomerPolicy;
 use App\Policies\GrnPolicy;
 use App\Policies\StoreCreditPolicy;
-use App\Services\Context\TenantContext;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -38,8 +45,6 @@ class AppServiceProvider extends ServiceProvider
             return new TenantContext;
         });
 
-        $this->app->alias(TenantContext::class, \App\Core\Context\TenantContext::class);
-
         $this->app->singleton(
             PostingEngineContract::class,
             PostingEngineService::class
@@ -51,19 +56,37 @@ class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
-            \App\Modules\Finance\Contracts\TaxCalculationServiceInterface::class,
-            \App\Modules\Finance\Services\TaxCalculationService::class
+            TaxCalculationServiceInterface::class,
+            TaxCalculationService::class
         );
 
         $this->app->singleton(
-            \App\Modules\Finance\Contracts\TaxIntegrationServiceInterface::class,
-            \App\Modules\Finance\Services\TaxIntegrationService::class
+            TaxIntegrationServiceInterface::class,
+            TaxIntegrationService::class
         );
 
         $this->app->bind(
-            \App\Modules\Integration\Contracts\WhatsAppGatewayInterface::class,
-            \App\Modules\Integration\Services\Adapters\QiscusWhatsAppAdapter::class
+            WhatsAppGatewayInterface::class,
+            QiscusWhatsAppAdapter::class
         );
+
+        $this->app->bind(
+            \App\Modules\Customers\Contracts\CustomerSegmentReaderInterface::class,
+            \App\Modules\Customers\Services\CustomerService::class
+        );
+
+        $this->app->bind(
+            \App\Modules\Integration\Contracts\PaymentGatewayInterface::class,
+            \App\Modules\Integration\Services\MidtransPaymentGatewayAdapter::class
+        );
+
+        $this->app->bind(
+            \App\Modules\Subscription\Contracts\EntitlementGateInterface::class,
+            \App\Modules\Subscription\Services\EntitlementService::class
+        );
+
+        $this->app->singleton(\App\Platform\Authorization\AbilityRegistry::class);
+        $this->app->singleton(\App\Platform\Authorization\AbilityEvaluator::class);
     }
 
     /**
@@ -72,6 +95,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         ini_set('unserialize_callback_func', 'spl_autoload_call');
+
+        Factory::guessFactoryNamesUsing(static function (string $modelName): string {
+            return 'Database\\Factories\\'.class_basename($modelName).'Factory';
+        });
 
         Auth::provider('eloquent', function ($app, array $config) {
             return new TenantAwareUserProvider($app['hash'], $config['model']);
@@ -82,6 +109,25 @@ class AppServiceProvider extends ServiceProvider
             'tenant.context',
             'role',
         ]);
+
+        Gate::before(static function ($user, string $ability, array $arguments = []): ?bool {
+            if ($user instanceof \App\Modules\Organization\Models\User) {
+                /** @var \App\Platform\Authorization\AbilityRegistry $registry */
+                $registry = app(\App\Platform\Authorization\AbilityRegistry::class);
+                if ($registry->has($ability)) {
+                    $context = [];
+                    if (isset($arguments[0]) && is_array($arguments[0])) {
+                        $context = $arguments[0];
+                    }
+                    /** @var \App\Platform\Authorization\AbilityEvaluator $evaluator */
+                    $evaluator = app(\App\Platform\Authorization\AbilityEvaluator::class);
+
+                    return $evaluator->can($user, $ability, $context);
+                }
+            }
+
+            return null;
+        });
 
         Gate::guessPolicyNamesUsing(static function (string $modelClass): array|string {
             $base = class_basename($modelClass);

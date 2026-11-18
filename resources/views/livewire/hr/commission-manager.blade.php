@@ -74,7 +74,7 @@
                 <span class="text-xs font-bold text-muted-foreground uppercase tracking-wider">Status:</span>
                 <x-ui.select wire:model.live="statusFilter" class="w-auto text-xs sm:text-sm">
                     <option value="ALL">All Statuses</option>
-                    @foreach (\App\Modules\HR\Enums\CommissionRecordStatusEnum::cases() as $case)
+                    @foreach (\App\Modules\Workforce\Enums\CommissionRecordStatusEnum::cases() as $case)
                         <option value="{{ $case->value }}">{{ $case->label() }}</option>
                     @endforeach
                 </x-ui.select>
@@ -99,8 +99,8 @@
                 <tbody class="divide-y divide-border">
                     @forelse ($records as $record)
                         @php
-                            $isReversal = $record->type === \App\Modules\HR\Enums\CommissionRecordTypeEnum::REVERSAL
-                                || $record->status === \App\Modules\HR\Enums\CommissionRecordStatusEnum::REVERSED
+                            $isReversal = $record->type === \App\Modules\Workforce\Enums\CommissionRecordTypeEnum::REVERSAL
+                                || $record->status === \App\Modules\Workforce\Enums\CommissionRecordStatusEnum::REVERSED
                                 || (float) $record->commission_amount < 0;
                             $amountAbs = abs((float) $record->commission_amount);
                             $basisAmount = (float) ($record->calculation_basis_amount ?? $record->basis_amount ?? 0);
@@ -127,10 +127,10 @@
                             <td class="px-6 py-4">
                                 @php
                                     $commDot = match($record->status) {
-                                        \App\Modules\HR\Enums\CommissionRecordStatusEnum::APPROVED, \App\Modules\HR\Enums\CommissionRecordStatusEnum::EARNED, \App\Modules\HR\Enums\CommissionRecordStatusEnum::PAID => 'bg-success',
-                                        \App\Modules\HR\Enums\CommissionRecordStatusEnum::PENDING => 'bg-warning',
-                                        \App\Modules\HR\Enums\CommissionRecordStatusEnum::PROCESSED_IN_PAYROLL => 'bg-info',
-                                        \App\Modules\HR\Enums\CommissionRecordStatusEnum::REVERSED => 'bg-destructive',
+                                        \App\Modules\Workforce\Enums\CommissionRecordStatusEnum::APPROVED, \App\Modules\Workforce\Enums\CommissionRecordStatusEnum::EARNED, \App\Modules\Workforce\Enums\CommissionRecordStatusEnum::PAID => 'bg-success',
+                                        \App\Modules\Workforce\Enums\CommissionRecordStatusEnum::PENDING => 'bg-warning',
+                                        \App\Modules\Workforce\Enums\CommissionRecordStatusEnum::PROCESSED_IN_PAYROLL => 'bg-info',
+                                        \App\Modules\Workforce\Enums\CommissionRecordStatusEnum::REVERSED => 'bg-destructive',
                                         default => 'bg-neutral',
                                     };
                                 @endphp

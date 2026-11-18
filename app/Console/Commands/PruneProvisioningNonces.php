@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\ProvisioningNonce;
+use App\Modules\Subscription\Models\ProvisioningNonce;
 use Illuminate\Console\Command;
 
 /**

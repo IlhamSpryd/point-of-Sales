@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Modules\Finance\Services;
 
 use App\Enums\InvoiceSettlementStatusEnum;
-use App\Models\User;
 use App\Modules\Finance\DataTransferObjects\FinancialEventDto;
 use App\Modules\Finance\Enums\ApEntryTypeEnum;
 use App\Modules\Finance\Enums\ApPaymentAllocationStatusEnum;
@@ -18,6 +17,7 @@ use App\Modules\Finance\Models\ApPaymentAllocation;
 use App\Modules\Finance\Models\CashBankAccount;
 use App\Modules\Finance\Models\CashBankTransaction;
 use App\Modules\Finance\Models\JournalEntry;
+use App\Modules\Organization\Models\User;
 use App\Modules\Purchasing\Models\SupplierInvoice;
 use DomainException;
 use Illuminate\Support\Facades\DB;

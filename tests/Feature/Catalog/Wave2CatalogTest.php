@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Catalog;
 
-use App\Models\Tenant;
+use App\Core\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\ProductAttribute;
+use App\Modules\Catalog\Models\ProductAttributeValue;
+use App\Modules\Catalog\Models\ProductVariant;
 use App\Modules\Catalog\Services\ProductCostHistoryService;
 use App\Modules\Catalog\Services\ProductVariantMatrixService;
 use App\Modules\Catalog\Services\StoreAssortmentService;
-use App\Modules\Products\Models\Category;
-use App\Modules\Products\Models\Product;
-use App\Modules\Products\Models\ProductAttribute;
-use App\Modules\Products\Models\ProductAttributeValue;
-use App\Modules\Products\Models\ProductVariant;
-use App\Modules\Settings\Models\Store;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 

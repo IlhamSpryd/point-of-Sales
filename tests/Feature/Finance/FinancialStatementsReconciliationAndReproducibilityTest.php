@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Finance;
 
+use App\Core\Context\TenantContext;
 use App\Enums\ExportTaskStatus;
-use App\Models\AccountingPeriod;
-use App\Models\ExportTask;
-use App\Models\Role;
-use App\Models\User;
 use App\Modules\Finance\DataTransferObjects\JournalLineDto;
 use App\Modules\Finance\Enums\AccountingPeriodStatusEnum;
 use App\Modules\Finance\Jobs\GenerateFinancialStatementExportJob;
+use App\Modules\Finance\Models\AccountingPeriod;
 use App\Modules\Finance\Models\AccountPeriodBalance;
 use App\Modules\Finance\Models\ChartOfAccount;
 use App\Modules\Finance\Services\AccountingPeriodService;
 use App\Modules\Finance\Services\FinancialStatementService;
 use App\Modules\Finance\Services\JournalEntryService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
+use App\Modules\Reporting\Models\ExportTask;
 use Database\Seeders\ChartOfAccountsSeeder;
 use Database\Seeders\DefaultPostingRulesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

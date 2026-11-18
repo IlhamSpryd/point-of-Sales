@@ -2,12 +2,12 @@
 
 namespace App\Livewire\Inventory;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Ingredient;
-use App\Models\Modifier;
-use App\Models\ModifierGroup;
-use App\Services\Context\TenantContext;
-use App\Services\MenuCacheService;
+use App\Modules\Catalog\Services\MenuCacheService;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Inventory\Models\Modifier;
+use App\Modules\Inventory\Models\ModifierGroup;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;

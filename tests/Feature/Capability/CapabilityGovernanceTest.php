@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Capability;
 
-use App\Models\CapabilityDefinition;
-use App\Models\Plan;
-use App\Models\PlanEntitlement;
-use App\Models\Store;
-use App\Models\StoreCapability;
-use App\Models\Table;
-use App\Models\Tenant;
-use App\Models\TenantCapability;
-use App\Models\TenantSubscription;
-use App\Services\Capability\CapabilityManager;
-use App\Services\Context\TenantContext;
-use App\Services\EntitlementService;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\CapabilityDefinition;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\StoreCapability;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\TenantCapability;
+use App\Modules\Organization\Services\Capability\CapabilityManager;
+use App\Modules\Sales\Models\Table;
+use App\Modules\Subscription\Models\Plan;
+use App\Modules\Subscription\Models\PlanEntitlement;
+use App\Modules\Subscription\Models\TenantSubscription;
+use App\Modules\Subscription\Services\EntitlementService;
 use DomainException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
@@ -27,7 +27,9 @@ class CapabilityGovernanceTest extends TestCase
     protected bool $optOutFromDefaultTenant = true;
 
     private Tenant $tenant;
+
     private Store $store;
+
     private CapabilityManager $capabilityManager;
 
     protected function afterSubclassSetUp(): void

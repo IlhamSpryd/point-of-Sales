@@ -7,6 +7,6 @@ namespace App\Http\Controllers;
 /**
  * Backward compatibility wrapper for modular architecture.
  *
- * @see \App\Modules\Users\Controllers\UserInvitationController
+ * @see \App\Modules\Organization\Controllers\UserInvitationController
  */
-class UserInvitationController extends \App\Modules\Users\Controllers\UserInvitationController {}
+class UserInvitationController extends \App\Modules\Organization\Controllers\UserInvitationController {}

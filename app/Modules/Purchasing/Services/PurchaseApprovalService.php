@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Modules\Purchasing\Services;
 
+use App\Core\Context\TenantContext;
 use App\Enums\ApprovalStatusEnum;
 use App\Enums\PurchaseOrderStatusEnum;
 use App\Enums\PurchaseRequestStatusEnum;
-use App\Models\User;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Purchasing\Models\PurchaseApprovalLog;
 use App\Modules\Purchasing\Models\PurchaseApprovalRequest;
 use App\Modules\Purchasing\Models\PurchaseApprovalRule;
 use App\Modules\Purchasing\Models\PurchaseOrder;
 use App\Modules\Purchasing\Models\PurchaseRequest;
-use App\Modules\Settings\Services\AuditTrailService;
-use App\Services\Context\TenantContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;

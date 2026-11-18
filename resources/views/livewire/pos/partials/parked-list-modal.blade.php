@@ -1,5 +1,6 @@
 {{-- MODAL PARKED ORDERS LIST --}}
-<x-ui.modal wire:model="isParkedListOpen" maxWidth="lg">
+@if ($isParkedListOpen)
+<x-ui.modal :open="true" id="pos-parked-list-modal" maxWidth="lg" onClose="$wire.set('isParkedListOpen', false)">
     <x-slot:header>
         <div class="flex items-center gap-2">
             <h3 class="text-base font-semibold text-foreground">Parked Orders (Held Orders)</h3>
@@ -31,15 +32,15 @@
                         ? $pc->parked_at->format('H:i')
                         : ($pc->created_at ? $pc->created_at->format('H:i') : '-');
                 @endphp
-                <div class="p-3 rounded-xl border border-border hover:border-foreground bg-muted flex items-center justify-between transition-all">
+                <div class="p-3.5 rounded-xl border border-border hover:border-foreground/30 bg-muted/40 hover:bg-muted/70 flex items-center justify-between transition-all">
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="font-sans tabular-nums font-semibold text-xs text-foreground">{{ $pc->hold_reference }}</span>
-                            <span class="px-1.5 py-0.5 rounded bg-white text-xs border border-border font-medium uppercase text-foreground">
+                            <span class="font-sans tabular-nums font-bold text-xs text-foreground">{{ $pc->hold_reference }}</span>
+                            <span class="px-1.5 py-0.5 rounded bg-background text-[11px] border border-border font-medium uppercase text-muted-foreground">
                                 {{ $pc->order_type }}
                             </span>
                         </div>
-                        <span class="text-xs text-muted-foreground block mt-0.5">
+                        <span class="text-xs text-muted-foreground block mt-1">
                             {{ $pCount }} {{ Str::plural('Item', $pCount) }} &bull; Parked at {{ $parkedTime }}
                         </span>
                         @if($pc->notes)
@@ -49,18 +50,18 @@
 
                     <div class="flex items-center gap-2 shrink-0">
                         <button type="button" wire:click="resumeCart({{ $pc->id }})"
-                            class="px-3 py-1.5 rounded-lg bg-white border border-border hover:bg-primary hover:text-white font-medium text-xs transition-colors shadow-xs">
+                            class="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs transition-colors shadow-2xs cursor-pointer">
                             Resume Order
                         </button>
                         <button type="button" wire:click="discardHeldCart({{ $pc->id }})"
-                            class="p-1.5 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Discard Order">
-                            <span class="material-symbols-rounded text-[16px] block">close</span>
+                            class="p-1.5 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer" title="Discard Order">
+                            <span class="material-symbols-rounded text-[18px] block">close</span>
                         </button>
                     </div>
                 </div>
             @empty
                 <div class="py-10 text-center text-muted-foreground space-y-1">
-                    <span class="material-symbols-rounded text-[36px] text-gray-300 block mb-1">inbox</span>
+                    <span class="material-symbols-rounded text-[36px] text-muted-foreground/60 block mb-1">inbox</span>
                     <p class="text-xs font-semibold text-foreground">No parked orders found.</p>
                     <p class="text-xs text-muted-foreground">Active orders can be held using the Park Order (F8) action.</p>
                 </div>
@@ -70,15 +71,16 @@
 
     <x-slot:footer>
         <div class="flex justify-between items-center w-full">
-            <button type="button" wire:click="$set('isParkModalOpen', true)"
-                class="px-3.5 py-2 rounded-lg bg-primary text-white text-xs font-medium hover:bg-primary/90 flex items-center gap-1.5 shadow-xs transition-all">
+            <button type="button" wire:click="$set('isParkedListOpen', false); $set('isParkModalOpen', true)"
+                class="px-3.5 py-2 rounded-lg bg-primary text-white text-xs font-medium hover:bg-primary/90 flex items-center gap-1.5 shadow-xs transition-all cursor-pointer">
                 <span class="material-symbols-rounded text-[16px]">archive</span>
                 <span>Park Current Order</span>
             </button>
             <button type="button" wire:click="$set('isParkedListOpen', false)"
-                class="px-4 py-2 rounded-lg border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors">
+                class="px-4 py-2 rounded-lg border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors cursor-pointer">
                 Close
             </button>
         </div>
     </x-slot:footer>
 </x-ui.modal>
+@endif

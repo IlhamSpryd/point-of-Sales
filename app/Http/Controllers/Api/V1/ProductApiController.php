@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
-use App\Models\User;
+use App\Modules\Catalog\Models\Product;
 use App\Modules\Integration\Services\SanctumScopeGuardService;
+use App\Modules\Organization\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

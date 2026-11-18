@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Services\Printing;
 
-use App\Models\Modifier;
-use App\Models\Order;
+use App\Modules\Inventory\Models\Modifier;
+use App\Modules\Sales\Models\Order;
 
 /**
  * Service khusus untuk pencetakan tiket dapur (Kitchen Printer).

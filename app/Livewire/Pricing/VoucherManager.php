@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Livewire\Pricing;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Modules\Customers\Enums\VoucherDiscountTypeEnum;
-use App\Modules\Customers\Enums\VoucherStatusEnum;
-use App\Modules\Customers\Models\Voucher;
-use App\Services\Context\TenantContext;
+use App\Modules\Pricing\Enums\VoucherDiscountTypeEnum;
+use App\Modules\Pricing\Enums\VoucherStatusEnum;
+use App\Modules\Pricing\Models\Voucher;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;

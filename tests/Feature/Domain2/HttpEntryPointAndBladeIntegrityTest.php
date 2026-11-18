@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domain2;
 
+use App\Core\Context\TenantContext;
 use App\Enums\PaymentMethod;
-use App\Models\Discount;
-use App\Models\Order;
-use App\Models\Shift;
-use App\Models\Table;
-use App\Services\Context\TenantContext;
+use App\Modules\Pricing\Models\Discount;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\Shift;
+use App\Modules\Sales\Models\Table;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\Support\TwoTenantFixture;

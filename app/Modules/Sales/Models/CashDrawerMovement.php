@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Models;
 
+use App\Core\Traits\AssignsStore;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToStore;
+use App\Core\Traits\ScopedToTenant;
 use App\Enums\CashDrawerMovementCategoryEnum;
 use App\Enums\CashDrawerMovementTypeEnum;
-use App\Models\Concerns\AssignsStore;
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToStore;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Device;
-use App\Models\Shift;
-use App\Models\User;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

@@ -11,6 +11,7 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\StoreSwitchController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserInvitationController;
+use App\Livewire\Subscription\SubscriptionPortal;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -56,7 +57,7 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
 
         // Meja & Perangkat Kasir (Devices) & Audit Logs & Subscription Portal
         Route::middleware('role:Owner,Manager')->group(function () {
-            Route::get('/subscription', \App\Livewire\Subscription\SubscriptionPortal::class)->name('subscription.portal');
+            Route::get('/subscription', SubscriptionPortal::class)->name('subscription.portal');
             Route::post('devices/{device}/revoke', [DeviceController::class, 'revoke'])->name('devices.revoke');
             Route::post('devices/{device}/regenerate-token', [DeviceController::class, 'regenerateToken'])->name('devices.regenerate-token');
             Route::resource('devices', DeviceController::class);

@@ -88,4 +88,3 @@ return new class extends Migration
         Schema::dropIfExists('order_items_partitioned');
     }
 };
-

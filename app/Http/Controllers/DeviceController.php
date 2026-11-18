@@ -7,6 +7,6 @@ namespace App\Http\Controllers;
 /**
  * Backward compatibility wrapper for modular architecture.
  *
- * @see \App\Modules\Settings\Controllers\DeviceController
+ * @see \App\Modules\Organization\Controllers\DeviceController
  */
-class DeviceController extends \App\Modules\Settings\Controllers\DeviceController {}
+class DeviceController extends \App\Modules\Organization\Controllers\DeviceController {}

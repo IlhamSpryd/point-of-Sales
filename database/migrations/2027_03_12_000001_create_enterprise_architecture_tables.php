@@ -61,6 +61,7 @@ return new class extends Migration
                 $table->boolean('is_active')->default(true);
                 $table->timestamps();
 
+                $table->unique(['tenant_id', 'id'], 'user_store_roles_tenant_id_id_unique');
                 $table->unique(['tenant_id', 'user_id', 'store_id', 'role_id'], 'unique_user_store_role');
 
                 $table->foreign(['tenant_id', 'store_id'], 'fk_usr_store_composite')
@@ -108,6 +109,7 @@ return new class extends Migration
                 $table->json('configuration')->nullable();
                 $table->timestamps();
 
+                $table->unique(['tenant_id', 'id'], 'tenant_capabilities_tenant_id_id_unique');
                 $table->unique(['tenant_id', 'capability_code'], 'unique_tenant_capability');
 
                 $table->foreign('tenant_id')
@@ -128,6 +130,7 @@ return new class extends Migration
                 $table->json('configuration')->nullable();
                 $table->timestamps();
 
+                $table->unique(['tenant_id', 'id'], 'store_capabilities_tenant_id_id_unique');
                 $table->unique(['tenant_id', 'store_id', 'capability_code'], 'unique_store_capability');
 
                 $table->foreign(['tenant_id', 'store_id'], 'fk_store_cap_composite')
@@ -152,6 +155,7 @@ return new class extends Migration
                 $table->timestamp('processed_at')->nullable();
                 $table->timestamps();
 
+                $table->unique(['tenant_id', 'id'], 'payment_inbox_tenant_id_id_unique');
                 $table->unique(['tenant_id', 'idempotency_key'], 'unique_tenant_payment_inbox');
 
                 $table->foreign('tenant_id')
@@ -167,10 +171,11 @@ return new class extends Migration
                 $table->unsignedBigInteger('operational_unit_id')->nullable()->after('store_id');
                 $table->index(['tenant_id', 'operational_unit_id'], 'idx_devices_tenant_operational_unit');
 
-                $table->foreign('operational_unit_id', 'fk_devices_operational_unit')
-                    ->references('id')
+                $table->foreign(['tenant_id', 'operational_unit_id'], 'fk_devices_operational_unit')
+                    ->references(['tenant_id', 'id'])
                     ->on('operational_units')
-                    ->onDelete('set null');
+                    ->onUpdate('cascade')
+                    ->onDelete('restrict');
             }
         });
 

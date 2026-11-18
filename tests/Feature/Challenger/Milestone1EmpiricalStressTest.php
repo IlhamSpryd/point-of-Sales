@@ -4,28 +4,27 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Challenger;
 
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Table;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Core\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\ShelfLabel;
 use App\Modules\Customers\Models\Customer;
 use App\Modules\Finance\Models\JournalEntry;
-use App\Modules\HR\Models\Employee;
-use App\Modules\HR\Models\PayrollBatch;
-use App\Modules\HR\Models\PayrollItem;
-use App\Modules\HR\Models\PayrollRecord;
 use App\Modules\Inventory\Models\Ingredient;
-use App\Modules\Products\Models\Category;
-use App\Modules\Products\Models\Product;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use App\Modules\Purchasing\Models\PurchaseOrder;
 use App\Modules\Purchasing\Models\SupplierInvoice;
-use App\Modules\Retail\Models\ShelfLabel;
-use App\Services\Context\TenantContext;
+use App\Modules\Sales\Models\Table;
+use App\Modules\Workforce\Models\Employee;
+use App\Modules\Workforce\Models\PayrollBatch;
+use App\Modules\Workforce\Models\PayrollItem;
+use App\Modules\Workforce\Models\PayrollRecord;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -37,17 +36,25 @@ class Milestone1EmpiricalStressTest extends TestCase
     protected bool $optOutFromDefaultTenant = true;
 
     protected Tenant $tenantAlpha;
+
     protected Tenant $tenantBeta;
+
     protected Store $storeAlpha1;
+
     protected Store $storeAlpha2;
+
     protected Store $storeBeta1;
 
     protected User $userOwner;
+
     protected User $userManagerAlpha1;
+
     protected User $userCashier;
+
     protected User $userCustomer;
 
     protected Table $tableAlpha1;
+
     protected Table $tableAlpha2;
 
     protected function afterSubclassSetUp(): void
@@ -583,7 +590,7 @@ class Milestone1EmpiricalStressTest extends TestCase
         }
 
         // 3. Check for broken foreign keys in test database pointing to non-existent tables
-        $brokenFks = DB::select("
+        $brokenFks = DB::select('
             SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME
             FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
             WHERE TABLE_SCHEMA = DATABASE()
@@ -591,7 +598,7 @@ class Milestone1EmpiricalStressTest extends TestCase
               AND REFERENCED_TABLE_NAME NOT IN (
                   SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE()
               )
-        ");
+        ');
 
         $this->assertEmpty(
             $brokenFks,

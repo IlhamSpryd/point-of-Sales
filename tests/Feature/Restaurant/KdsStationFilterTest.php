@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Restaurant;
 
+use App\Core\Context\TenantContext;
 use App\Enums\KitchenStation;
 use App\Enums\OrderStatus;
 use App\Enums\PreparationStatus;
 use App\Livewire\Kds\Board;
-use App\Models\Category;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Modules\Settings\Models\Store;
-use App\Services\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\OrderItem;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -26,12 +26,19 @@ class KdsStationFilterTest extends TestCase
     use DatabaseTransactions;
 
     private Tenant $tenant;
+
     private Store $store;
+
     private User $cookUser;
+
     private Order $paidOrder;
+
     private OrderItem $kitchenItem;
+
     private OrderItem $barItem;
+
     private OrderItem $dessertItem;
+
     private OrderItem $overrideBarItem;
 
     protected function afterSubclassSetUp(): void

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Customers;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Kasir\CreateOrder;
-use App\Models\Customer;
-use App\Models\CustomerGroup;
-use App\Models\LoyaltyTier;
-use App\Modules\Customers\Enums\StoreCreditStatusEnum;
-use App\Modules\Customers\Models\StoreCreditAccount;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Customers\Models\CustomerGroup;
 use App\Modules\Customers\Services\CustomerService;
-use App\Modules\Customers\Services\LoyaltyService;
-use App\Modules\Purchasing\Services\DocumentSequenceService;
-use App\Services\Context\TenantContext;
+use App\Modules\Pricing\Enums\StoreCreditStatusEnum;
+use App\Modules\Pricing\Models\LoyaltyTier;
+use App\Modules\Pricing\Models\StoreCreditAccount;
+use App\Modules\Pricing\Services\LoyaltyService;
+use App\Platform\Documents\DocumentSequenceService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;

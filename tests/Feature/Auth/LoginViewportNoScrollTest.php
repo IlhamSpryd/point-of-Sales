@@ -33,4 +33,3 @@ class LoginViewportNoScrollTest extends TestCase
         $response->assertSee('Apple');
     }
 }
-

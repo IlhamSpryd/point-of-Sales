@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Core;
 
-use App\Models\Company;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Modules\Core\Services\CompanyService;
-use App\Modules\Core\Services\TenantProvisioningService;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Http\Middleware\SetTenantContext;
+use App\Modules\Organization\Models\Company;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\CompanyService;
+use App\Modules\Organization\Services\TenantProvisioningService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -19,7 +21,9 @@ class MultiCompanyBaselineTest extends TestCase
     use DatabaseTransactions;
 
     private Tenant $tenant;
+
     private User $user;
+
     private CompanyService $companyService;
 
     protected function afterSubclassSetUp(): void
@@ -116,14 +120,14 @@ class MultiCompanyBaselineTest extends TestCase
 
     public function test_middleware_resolves_and_binds_default_company_to_tenant_context(): void
     {
-        $middleware = app(\App\Http\Middleware\SetTenantContext::class);
+        $middleware = app(SetTenantContext::class);
         $tenantContext = app(TenantContext::class);
 
         // Reset context
         $tenantContext->clear();
         $this->assertNull($tenantContext->getCompanyId());
 
-        $request = \Illuminate\Http\Request::create('/dashboard', 'GET');
+        $request = Request::create('/dashboard', 'GET');
         $request->setUserResolver(fn () => $this->user);
 
         // Laravel Session store

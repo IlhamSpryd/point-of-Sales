@@ -13,7 +13,9 @@ use Illuminate\Support\Str;
 class CoreTaxPjapAdapter implements TaxProviderAdapterInterface
 {
     protected ?string $apiUrl;
+
     protected ?string $apiKey;
+
     protected int $timeout;
 
     public function __construct(

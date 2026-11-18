@@ -1,0 +1,49 @@
+{
+    "name": "Finance",
+    "tier": 5,
+    "owner": "@ilhamsepriyadi",
+    "description": "Double-entry general ledger, chart of accounts, accounting periods, tax reporting (CoreTax DJP) and bank reconciliation (ADR-102).",
+    "ownsTables": [
+        "chart_of_accounts",
+        "accounting_periods",
+        "account_period_balances",
+        "journal_entries",
+        "journal_lines",
+        "posting_rules",
+        "financial_event_outboxes",
+        "ar_receipts",
+        "ap_payments",
+        "tax_reports",
+        "cash_bank_accounts",
+        "bank_statements",
+        "expenses",
+        "fixed_assets",
+        "currencies",
+        "exchange_rates"
+    ],
+    "allowedDependencies": [
+        "Organization",
+        "Sales",
+        "Inventory",
+        "Purchasing",
+        "Workforce",
+        "Reporting"
+    ],
+    "publishesEvents": [
+        "finance.journal.posted.v1",
+        "finance.period.locked.v1"
+    ],
+    "consumesEvents": [
+        "sales.order.completed.v1",
+        "workforce.payroll.approved.v1",
+        "purchasing.grn.received.v1"
+    ],
+    "dependsOn": [
+        "Organization",
+        "Sales",
+        "Inventory",
+        "Purchasing",
+        "Workforce",
+        "Reporting"
+    ]
+}

@@ -1,0 +1,44 @@
+{
+    "name": "Reporting",
+    "tier": 6,
+    "owner": "@ilhamsepriyadi",
+    "description": "Centralized metrics registry, executive BI dashboards, asynchronous Excel reports and historical snapshots (ADR-102).",
+    "ownsTables": [
+        "export_tasks",
+        "report_snapshots",
+        "store_targets",
+        "inventory_valuation_snapshots"
+    ],
+    "allowedDependencies": [
+        "Organization",
+        "Subscription",
+        "Catalog",
+        "Customers",
+        "Workforce",
+        "Pricing",
+        "Inventory",
+        "Manufacturing",
+        "Sales",
+        "Purchasing",
+        "Integration",
+        "Finance"
+    ],
+    "publishesEvents": [
+        "reporting.export.completed.v1"
+    ],
+    "consumesEvents": [],
+    "dependsOn": [
+        "Organization",
+        "Subscription",
+        "Catalog",
+        "Customers",
+        "Workforce",
+        "Pricing",
+        "Inventory",
+        "Manufacturing",
+        "Sales",
+        "Purchasing",
+        "Integration",
+        "Finance"
+    ]
+}

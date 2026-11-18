@@ -3,10 +3,10 @@
 namespace Tests\Feature;
 
 use App\Events\WaiterCalled;
-use App\Models\Category;
-use App\Models\Product;
-use App\Models\Table;
-use App\Services\CartService;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Sales\Models\Table;
+use App\Modules\Sales\Services\CartService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;

@@ -4,21 +4,23 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Audit;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Finance\FixedAssetManager;
-use App\Models\Company;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
 use App\Modules\Finance\Enums\AccountSubtypeEnum;
 use App\Modules\Finance\Enums\AccountTypeEnum;
 use App\Modules\Finance\Enums\DepreciationMethodEnum;
 use App\Modules\Finance\Enums\FixedAssetStatusEnum;
 use App\Modules\Finance\Enums\NormalBalanceEnum;
+use App\Modules\Finance\Models\AccountingPeriod;
 use App\Modules\Finance\Models\ChartOfAccount;
 use App\Modules\Finance\Models\FixedAsset;
 use App\Modules\Finance\Models\FixedAssetCategory;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Company;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use Database\Seeders\DefaultPostingRulesSeeder;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -28,9 +30,13 @@ class FixedAssetManagerUiAuditTest extends TestCase
     use DatabaseTransactions;
 
     protected Tenant $tenant;
+
     protected Company $company;
+
     protected Store $store;
+
     protected User $user;
+
     protected FixedAssetCategory $category;
 
     protected function afterSubclassSetUp(): void
@@ -64,7 +70,7 @@ class FixedAssetManagerUiAuditTest extends TestCase
         app(TenantContext::class)->setStoreId($this->store->id);
 
         // Open Accounting Period for 2026-01
-        \App\Models\AccountingPeriod::withoutTenantScope()->create([
+        AccountingPeriod::withoutTenantScope()->create([
             'tenant_id' => $this->tenant->id,
             'period_code' => '2026-01',
             'period_number' => 1,
@@ -78,7 +84,7 @@ class FixedAssetManagerUiAuditTest extends TestCase
         // Bank Account for BANK_MAIN
         ChartOfAccount::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
-            'account_code' => '1110-' . substr(uniqid(), -4),
+            'account_code' => '1110-'.substr(uniqid(), -4),
             'account_name' => 'Bank Utama Operasional',
             'account_type' => AccountTypeEnum::ASSET,
             'account_subtype' => AccountSubtypeEnum::CASH_BANK,
@@ -90,12 +96,12 @@ class FixedAssetManagerUiAuditTest extends TestCase
         ]);
 
         // Seed default posting rules including fixed_asset.capitalized
-        (new \Database\Seeders\DefaultPostingRulesSeeder())->run($this->tenant->id);
+        (new DefaultPostingRulesSeeder)->run($this->tenant->id);
 
         // Chart of Accounts for Fixed Assets
         $assetAccount = ChartOfAccount::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
-            'account_code' => '1510-' . substr(uniqid(), -4),
+            'account_code' => '1510-'.substr(uniqid(), -4),
             'account_name' => 'Peralatan & Mesin POS',
             'account_type' => AccountTypeEnum::ASSET,
             'account_subtype' => AccountSubtypeEnum::FIXED_ASSET,
@@ -107,7 +113,7 @@ class FixedAssetManagerUiAuditTest extends TestCase
 
         $accumDeprAccount = ChartOfAccount::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
-            'account_code' => '1590-' . substr(uniqid(), -4),
+            'account_code' => '1590-'.substr(uniqid(), -4),
             'account_name' => 'Akumulasi Depresiasi Mesin',
             'account_type' => AccountTypeEnum::ASSET,
             'account_subtype' => AccountSubtypeEnum::ACCUMULATED_DEPRECIATION,
@@ -119,7 +125,7 @@ class FixedAssetManagerUiAuditTest extends TestCase
 
         $deprExpAccount = ChartOfAccount::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
-            'account_code' => '6210-' . substr(uniqid(), -4),
+            'account_code' => '6210-'.substr(uniqid(), -4),
             'account_name' => 'Beban Penyusutan Mesin POS',
             'account_type' => AccountTypeEnum::EXPENSE,
             'account_subtype' => AccountSubtypeEnum::DEPRECIATION_EXPENSE,
@@ -131,7 +137,7 @@ class FixedAssetManagerUiAuditTest extends TestCase
 
         $this->category = FixedAssetCategory::withoutTenantScope()->create([
             'tenant_id' => $this->tenant->id,
-            'category_code' => 'CAT-POS-' . substr(uniqid(), -4),
+            'category_code' => 'CAT-POS-'.substr(uniqid(), -4),
             'category_name' => 'Terminal POS Hardware',
             'asset_gl_account_id' => $assetAccount->id,
             'accum_depr_gl_account_id' => $accumDeprAccount->id,
@@ -154,7 +160,7 @@ class FixedAssetManagerUiAuditTest extends TestCase
 
     public function test_fixed_asset_manager_livewire_can_create_and_activate_asset(): void
     {
-        $code = 'FA-TEST-' . substr(uniqid(), -4);
+        $code = 'FA-TEST-'.substr(uniqid(), -4);
 
         Livewire::actingAs($this->user)
             ->test(FixedAssetManager::class)

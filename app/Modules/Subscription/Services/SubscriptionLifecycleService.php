@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Subscription\Services;
 
-use App\Models\Plan;
-use App\Models\Tenant;
-use App\Models\TenantSubscription;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Subscription\Models\Plan;
+use App\Modules\Subscription\Models\TenantSubscription;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 

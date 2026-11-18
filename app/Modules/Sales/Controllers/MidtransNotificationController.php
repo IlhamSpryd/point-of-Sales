@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Controllers;
 
+use App\Core\Context\TenantContext;
 use App\Http\Controllers\Controller;
-use App\Models\Order;
-use App\Models\PaymentAttempt;
-use App\Services\Context\TenantContext;
-use App\Services\TransactionService;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\PaymentAttempt;
+use App\Modules\Sales\Services\Payment\PaymentInboxDispatcher;
+use App\Modules\Sales\Services\TransactionService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -114,7 +115,7 @@ class MidtransNotificationController extends Controller
             $transactionStatus = (string) ($payload['transaction_status'] ?? 'unknown');
             $idempotencyKey = "midtrans_{$transactionId}_{$transactionStatus}";
 
-            $result = app(\App\Services\Payment\PaymentInboxDispatcher::class)->dispatch(
+            $result = app(PaymentInboxDispatcher::class)->dispatch(
                 tenantId: (int) $order->tenant_id,
                 provider: 'midtrans',
                 idempotencyKey: $idempotencyKey,
@@ -135,7 +136,5 @@ class MidtransNotificationController extends Controller
                 $tenantContext->setStoreId($prevStoreId);
             }
         }
-
-        return response()->json(['message' => 'ok']);
     }
 }

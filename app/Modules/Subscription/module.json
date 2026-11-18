@@ -1,0 +1,27 @@
+{
+    "name": "Subscription",
+    "tier": 1,
+    "owner": "@ilhamsepriyadi",
+    "description": "SaaS subscription plans, quotas, feature entitlements and tenant provisioning (ADR-102).",
+    "ownsTables": [
+        "plans",
+        "plan_entitlements",
+        "tenant_subscriptions",
+        "tenant_entitlement_overrides",
+        "provisioning_requests",
+        "provisioning_nonces"
+    ],
+    "allowedDependencies": [
+        "Organization"
+    ],
+    "publishesEvents": [
+        "subscription.plan.upgraded.v1",
+        "subscription.entitlement.updated.v1"
+    ],
+    "consumesEvents": [
+        "organization.tenant.provisioned.v1"
+    ],
+    "dependsOn": [
+        "Organization"
+    ]
+}

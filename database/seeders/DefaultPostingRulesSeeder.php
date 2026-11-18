@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Models\Tenant;
+use App\Core\Context\TenantContext;
 use App\Modules\Finance\Models\PostingRule;
 use App\Modules\Finance\Models\PostingRuleLine;
 use App\Modules\Finance\Models\PostingRuleVersion;
+use App\Modules\Organization\Models\Tenant;
 use Illuminate\Database\Seeder;
 
 class DefaultPostingRulesSeeder extends Seeder
@@ -25,7 +26,7 @@ class DefaultPostingRulesSeeder extends Seeder
 
     public function seedForTenant(int $tenantId): void
     {
-        app(\App\Services\Context\TenantContext::class)->setTenantId($tenantId);
+        app(TenantContext::class)->setTenantId($tenantId);
 
         // 1. pos.order.paid
         $posRule = PostingRule::firstOrCreate(

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Pricing\Services;
 
-use App\Modules\Users\Models\User;
+use App\Modules\Organization\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 

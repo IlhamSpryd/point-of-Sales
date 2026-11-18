@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Finance;
 
-use App\Models\Tenant;
-use App\Models\User;
 use App\Modules\Finance\Enums\AccountSubtypeEnum;
 use App\Modules\Finance\Enums\AccountTypeEnum;
 use App\Modules\Finance\Enums\NormalBalanceEnum;
 use App\Modules\Finance\Exceptions\UnresolvableAccountMappingException;
 use App\Modules\Finance\Models\ChartOfAccount;
 use App\Modules\Finance\Services\ChartOfAccountService;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use DomainException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
@@ -20,6 +20,7 @@ use Tests\TestCase;
 class ChartOfAccountServiceTest extends TestCase
 {
     use DatabaseTransactions;
+
     protected ChartOfAccountService $service;
 
     protected Tenant $tenant;

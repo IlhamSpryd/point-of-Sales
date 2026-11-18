@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\Tenant;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use Carbon\Carbon;
+use Database\Seeders\ChartOfAccountsSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -21,30 +23,39 @@ class PopulateEnterpriseDatasetCommand extends Command
     protected $description = 'Populate all 90 empty tables across Finance, HRM, B2B Sales, Promotions and Partitioned Ledgers up to 06 Nov 2026';
 
     private bool $dryRun = false;
+
     private bool $force = false;
 
     public function handle(): int
     {
+        if (app()->environment('production')) {
+            $this->error('Simulation commands are strictly forbidden in production!');
+
+            return self::FAILURE;
+        }
+
         $dbName = DB::getDatabaseName();
         $confirmedDb = (string) $this->option('confirm-database');
 
         if ($confirmedDb !== $dbName) {
             $this->error("Safety Guard: Harap sertakan --confirm-database={$dbName}");
+
             return self::FAILURE;
         }
 
         $this->dryRun = (bool) $this->option('dry-run');
         $this->force = (bool) $this->option('force');
 
-        $this->info("=== APEIRON SYSTEMS: ENTERPRISE DATASET INJECTION (100% TABLE POPULATION) ===");
-        $this->info("Target Database: {$dbName} | Mode: " . ($this->dryRun ? 'DRY-RUN' : 'LIVE EXECUTION') . ($this->force ? ' | FORCE REFRESH' : ''));
+        $this->info('=== APEIRON SYSTEMS: ENTERPRISE DATASET INJECTION (100% TABLE POPULATION) ===');
+        $this->info("Target Database: {$dbName} | Mode: ".($this->dryRun ? 'DRY-RUN' : 'LIVE EXECUTION').($this->force ? ' | FORCE REFRESH' : ''));
 
         $tenants = Tenant::whereIn('slug', ['fnb-demo', 'retail-demo'])
             ->orWhereIn('id', DB::table('users')->whereIn('email', ['ilhamsepriyadi8@gmail.com', 'ilhamsepriyadi0@gmail.com'])->pluck('tenant_id'))
             ->orWhereIn('id', [1, 2])
             ->get();
         if ($tenants->isEmpty()) {
-            $this->error("Tenant F&B dan Retail tidak ditemukan di database!");
+            $this->error('Tenant F&B dan Retail tidak ditemukan di database!');
+
             return self::FAILURE;
         }
 
@@ -63,22 +74,23 @@ class PopulateEnterpriseDatasetCommand extends Command
         $this->seedPersonalAccessTokens();
 
         $this->info("\n=== INJEKSI DATASET ENTERPRISE SELESAI ===");
+
         return self::SUCCESS;
     }
 
     private function cleanEnterpriseTables(Tenant $tenant): void
     {
         // 1. Drop immutability triggers on journals, lines, payroll, and AP
-        DB::unprepared("DROP TRIGGER IF EXISTS trg_journal_entries_before_update;");
-        DB::unprepared("DROP TRIGGER IF EXISTS trg_journal_entries_before_delete;");
-        DB::unprepared("DROP TRIGGER IF EXISTS trg_journal_lines_before_update;");
-        DB::unprepared("DROP TRIGGER IF EXISTS trg_journal_lines_before_delete;");
-        DB::unprepared("DROP TRIGGER IF EXISTS trg_payroll_records_immutable_update;");
-        DB::unprepared("DROP TRIGGER IF EXISTS trg_payroll_records_immutable_delete;");
-        DB::unprepared("DROP TRIGGER IF EXISTS trg_ap_ledger_entries_before_update;");
-        DB::unprepared("DROP TRIGGER IF EXISTS trg_ap_ledger_entries_before_delete;");
-        DB::unprepared("DROP TRIGGER IF EXISTS trg_tax_ledger_entries_before_update;");
-        DB::unprepared("DROP TRIGGER IF EXISTS trg_tax_ledger_entries_before_delete;");
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_journal_entries_before_update;');
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_journal_entries_before_delete;');
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_journal_lines_before_update;');
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_journal_lines_before_delete;');
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_payroll_records_immutable_update;');
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_payroll_records_immutable_delete;');
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_ap_ledger_entries_before_update;');
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_ap_ledger_entries_before_delete;');
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_tax_ledger_entries_before_update;');
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_tax_ledger_entries_before_delete;');
 
         // 2. Re-open accounting periods so journals can be inserted/deleted
         DB::table('accounting_periods')->where('tenant_id', $tenant->id)->update(['status' => 'OPEN']);
@@ -187,7 +199,7 @@ class PopulateEnterpriseDatasetCommand extends Command
 
     private function restoreTriggers(): void
     {
-        DB::unprepared("DROP TRIGGER IF EXISTS trg_journal_entries_before_update;");
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_journal_entries_before_update;');
         DB::unprepared("
             CREATE TRIGGER trg_journal_entries_before_update BEFORE UPDATE ON journal_entries
             FOR EACH ROW
@@ -209,7 +221,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             END
         ");
 
-        DB::unprepared("DROP TRIGGER IF EXISTS trg_journal_entries_before_delete;");
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_journal_entries_before_delete;');
         DB::unprepared("
             CREATE TRIGGER trg_journal_entries_before_delete BEFORE DELETE ON journal_entries
             FOR EACH ROW
@@ -220,7 +232,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             END
         ");
 
-        DB::unprepared("DROP TRIGGER IF EXISTS trg_journal_lines_before_update;");
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_journal_lines_before_update;');
         DB::unprepared("
             CREATE TRIGGER trg_journal_lines_before_update BEFORE UPDATE ON journal_lines
             FOR EACH ROW
@@ -233,7 +245,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             END
         ");
 
-        DB::unprepared("DROP TRIGGER IF EXISTS trg_journal_lines_before_delete;");
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_journal_lines_before_delete;');
         DB::unprepared("
             CREATE TRIGGER trg_journal_lines_before_delete BEFORE DELETE ON journal_lines
             FOR EACH ROW
@@ -246,7 +258,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             END
         ");
 
-        DB::unprepared("DROP TRIGGER IF EXISTS trg_payroll_records_immutable_update;");
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_payroll_records_immutable_update;');
         DB::unprepared("
             CREATE TRIGGER trg_payroll_records_immutable_update BEFORE UPDATE ON payroll_records
             FOR EACH ROW
@@ -259,7 +271,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             END
         ");
 
-        DB::unprepared("DROP TRIGGER IF EXISTS trg_payroll_records_immutable_delete;");
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_payroll_records_immutable_delete;');
         DB::unprepared("
             CREATE TRIGGER trg_payroll_records_immutable_delete BEFORE DELETE ON payroll_records
             FOR EACH ROW
@@ -272,7 +284,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             END
         ");
 
-        DB::unprepared("DROP TRIGGER IF EXISTS trg_ap_ledger_entries_before_update;");
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_ap_ledger_entries_before_update;');
         DB::unprepared("
             CREATE TRIGGER trg_ap_ledger_entries_before_update BEFORE UPDATE ON ap_ledger_entries
             FOR EACH ROW
@@ -292,7 +304,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             END
         ");
 
-        DB::unprepared("DROP TRIGGER IF EXISTS trg_ap_ledger_entries_before_delete;");
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_ap_ledger_entries_before_delete;');
         DB::unprepared("
             CREATE TRIGGER trg_ap_ledger_entries_before_delete BEFORE DELETE ON ap_ledger_entries
             FOR EACH ROW
@@ -301,7 +313,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             END
         ");
 
-        DB::unprepared("DROP TRIGGER IF EXISTS trg_tax_ledger_entries_before_update;");
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_tax_ledger_entries_before_update;');
         DB::unprepared("
             CREATE TRIGGER trg_tax_ledger_entries_before_update BEFORE UPDATE ON tax_ledger_entries
             FOR EACH ROW
@@ -310,7 +322,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             END
         ");
 
-        DB::unprepared("DROP TRIGGER IF EXISTS trg_tax_ledger_entries_before_delete;");
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_tax_ledger_entries_before_delete;');
         DB::unprepared("
             CREATE TRIGGER trg_tax_ledger_entries_before_delete BEFORE DELETE ON tax_ledger_entries
             FOR EACH ROW
@@ -329,45 +341,45 @@ class PopulateEnterpriseDatasetCommand extends Command
             $this->callSilently('hr:backfill-employees-from-users', ['--tenant' => $tenant->id]);
             $employees = DB::table('employees')->where('tenant_id', $tenant->id)->get();
         }
-        $userId = $users->first()?->id ?? ($tenant->id === 2 ? 4 : 47);
+        $userId = $users->first()->id ?? ($tenant->id === 2 ? 4 : 47);
 
-        $this->line("1. Chart of Accounts, Currencies & Tax Engine...");
+        $this->line('1. Chart of Accounts, Currencies & Tax Engine...');
         $coaMap = $this->seedChartOfAccountsAndTax($tenant);
 
-        $this->line("2. Accounting Periods (Initialized OPEN)...");
+        $this->line('2. Accounting Periods (Initialized OPEN)...');
         $periods = $this->seedAccountingPeriods($tenant, $userId);
 
-        $this->line("3. Cash & Bank Accounts, Statements, Transactions & Reconciliations...");
+        $this->line('3. Cash & Bank Accounts, Statements, Transactions & Reconciliations...');
         $cashBankMap = $this->seedCashAndBank($tenant, $stores, $coaMap, $userId);
 
-        $this->line("4. Fixed Assets, Categories, Depreciation & Disposal...");
+        $this->line('4. Fixed Assets, Categories, Depreciation & Disposal...');
         $this->seedFixedAssets($tenant, $stores, $coaMap, $periods, $userId);
 
-        $this->line("5. Operational Expenses, Lines, Approvals & Attachments...");
+        $this->line('5. Operational Expenses, Lines, Approvals & Attachments...');
         $this->seedExpenses($tenant, $stores, $coaMap, $cashBankMap, $userId);
 
-        $this->line("6. General Ledger Journals (Double-Entry Balanced) & Period Balances...");
+        $this->line('6. General Ledger Journals (Double-Entry Balanced) & Period Balances...');
         $this->seedGeneralLedgerAndTaxEntries($tenant, $stores, $coaMap, $periods, $userId);
 
-        $this->line("7. AP Subledger (Ledger Entries, Payments & Allocations)...");
+        $this->line('7. AP Subledger (Ledger Entries, Payments & Allocations)...');
         $this->seedApSubledger($tenant, $stores, $cashBankMap, $userId);
 
-        $this->line("8. B2B Sales & CRM (Groups, Addresses, Contacts, Credit, Quotations, Orders, Invoices, Credit Notes)...");
+        $this->line('8. B2B Sales & CRM (Groups, Addresses, Contacts, Credit, Quotations, Orders, Invoices, Credit Notes)...');
         $this->seedB2bSalesAndCrm($tenant, $stores, $userId);
 
-        $this->line("9. Customer Loyalty Instruments (Store Credit & Gift Cards)...");
+        $this->line('9. Customer Loyalty Instruments (Store Credit & Gift Cards)...');
         $this->seedCustomerCreditAndInstruments($tenant, $stores, $userId);
 
-        $this->line("10. 9 New Enterprise Tables (Departments, Job Titles, Targets, Lots, Recipes, Tax Submissions, Webhooks)...");
+        $this->line('10. 9 New Enterprise Tables (Departments, Job Titles, Targets, Lots, Recipes, Tax Submissions, Webhooks)...');
         $this->seedNineEnterpriseTables($tenant, $stores, $users, $employees, $userId);
 
-        $this->line("11. HRM & Payroll (Compensations, Schedules, Attendance, Leaves, Overtime, Payroll, Commissions)...");
+        $this->line('11. HRM & Payroll (Compensations, Schedules, Attendance, Leaves, Overtime, Payroll, Commissions)...');
         $this->seedHrmAndPayroll($tenant, $stores, $employees, $userId);
 
-        $this->line("12. Promotions, Operations & Outboxes (Campaigns, Shelf Labels, Waste, Approvals, WhatsApp)...");
+        $this->line('12. Promotions, Operations & Outboxes (Campaigns, Shelf Labels, Waste, Approvals, WhatsApp)...');
         $this->seedPromotionsAndOperations($tenant, $stores, $userId);
 
-        $this->line("13. Closing Past Accounting Periods (2026-08 s/d 2026-10 CLOSED, 2026-11 OPEN)...");
+        $this->line('13. Closing Past Accounting Periods (2026-08 s/d 2026-10 CLOSED, 2026-11 OPEN)...');
         $this->closePastAccountingPeriods($tenant, $periods, $userId);
     }
 
@@ -376,7 +388,7 @@ class PopulateEnterpriseDatasetCommand extends Command
         // 1. Chart of Accounts
         $existingCoa = DB::table('chart_of_accounts')->where('tenant_id', $tenant->id)->pluck('id', 'account_code')->toArray();
         if (empty($existingCoa)) {
-            (new \Database\Seeders\ChartOfAccountsSeeder())->seedForTenant($tenant->id);
+            (new ChartOfAccountsSeeder)->seedForTenant($tenant->id);
             $existingCoa = DB::table('chart_of_accounts')->where('tenant_id', $tenant->id)->pluck('id', 'account_code')->toArray();
         }
 
@@ -466,7 +478,7 @@ class PopulateEnterpriseDatasetCommand extends Command
 
         // 5. Posting Rules
         $ruleRow = DB::table('posting_rules')->where('tenant_id', $tenant->id)->where('event_code', 'POS_SALE_COMPLETED')->first();
-        if (!$ruleRow) {
+        if (! $ruleRow) {
             $ruleId = DB::table('posting_rules')->insertGetId([
                 'tenant_id' => $tenant->id,
                 'event_code' => 'POS_SALE_COMPLETED',
@@ -636,19 +648,19 @@ class PopulateEnterpriseDatasetCommand extends Command
         $mainStore = $stores->first();
 
         // 1. Cash & Bank Accounts (Compliant with chk_cba_account_type: BANK_ACCOUNT, PETTY_CASH, PAYMENT_GATEWAY_CLEARING)
-        $bcaRow = DB::table('cash_bank_accounts')->where('tenant_id', $tenant->id)->where('account_code', 'BCA-OPS-' . $tenant->id)->first();
+        $bcaRow = DB::table('cash_bank_accounts')->where('tenant_id', $tenant->id)->where('account_code', 'BCA-OPS-'.$tenant->id)->first();
         if ($bcaRow) {
             $bcaId = $bcaRow->id;
         } else {
             $bcaId = DB::table('cash_bank_accounts')->insertGetId([
                 'tenant_id' => $tenant->id,
                 'store_id' => $mainStore?->id,
-                'account_code' => 'BCA-OPS-' . $tenant->id,
+                'account_code' => 'BCA-OPS-'.$tenant->id,
                 'account_name' => 'Bank BCA Rekening Operasional',
                 'account_type' => 'BANK_ACCOUNT',
                 'gl_account_id' => $bankAccId,
                 'bank_name' => 'Bank Central Asia',
-                'bank_account_number' => '80019283' . $tenant->id . '1',
+                'bank_account_number' => '80019283'.$tenant->id.'1',
                 'bank_account_holder' => $tenant->name,
                 'currency_code' => 'IDR',
                 'opening_balance' => 250000000.00,
@@ -659,19 +671,19 @@ class PopulateEnterpriseDatasetCommand extends Command
             ]);
         }
 
-        $mandiriRow = DB::table('cash_bank_accounts')->where('tenant_id', $tenant->id)->where('account_code', 'PG-QRIS-' . $tenant->id)->first();
+        $mandiriRow = DB::table('cash_bank_accounts')->where('tenant_id', $tenant->id)->where('account_code', 'PG-QRIS-'.$tenant->id)->first();
         if ($mandiriRow) {
             $mandiriId = $mandiriRow->id;
         } else {
             $mandiriId = DB::table('cash_bank_accounts')->insertGetId([
                 'tenant_id' => $tenant->id,
                 'store_id' => $mainStore?->id,
-                'account_code' => 'PG-QRIS-' . $tenant->id,
+                'account_code' => 'PG-QRIS-'.$tenant->id,
                 'account_name' => 'Kliring Payment Gateway & QRIS',
                 'account_type' => 'PAYMENT_GATEWAY_CLEARING',
                 'gl_account_id' => $pgAccId,
                 'bank_name' => 'Midtrans / QRIS Kliring',
-                'bank_account_number' => 'PG-MIDTRANS-' . $tenant->id,
+                'bank_account_number' => 'PG-MIDTRANS-'.$tenant->id,
                 'bank_account_holder' => $tenant->name,
                 'currency_code' => 'IDR',
                 'opening_balance' => 50000000.00,
@@ -682,14 +694,14 @@ class PopulateEnterpriseDatasetCommand extends Command
             ]);
         }
 
-        $pettyRow = DB::table('cash_bank_accounts')->where('tenant_id', $tenant->id)->where('account_code', 'PETTY-' . $tenant->id)->first();
+        $pettyRow = DB::table('cash_bank_accounts')->where('tenant_id', $tenant->id)->where('account_code', 'PETTY-'.$tenant->id)->first();
         if ($pettyRow) {
             $pettyCashId = $pettyRow->id;
         } else {
             $pettyCashId = DB::table('cash_bank_accounts')->insertGetId([
                 'tenant_id' => $tenant->id,
                 'store_id' => $mainStore?->id,
-                'account_code' => 'PETTY-' . $tenant->id,
+                'account_code' => 'PETTY-'.$tenant->id,
                 'account_name' => 'Kas Kecil Operasional Outlet',
                 'account_type' => 'PETTY_CASH',
                 'gl_account_id' => $cashAccId,
@@ -716,106 +728,104 @@ class PopulateEnterpriseDatasetCommand extends Command
                     'tenant_id' => $tenant->id,
                     'store_id' => $mainStore?->id,
                     'cash_bank_account_id' => $bcaId,
-                    'transaction_number' => 'CBT-' . str_replace('-', '', $dt) . '-' . Str::upper(Str::random(4)),
+                    'transaction_number' => 'CBT-'.str_replace('-', '', $dt).'-'.Str::upper(Str::random(4)),
                     'transaction_type' => 'PG_SETTLEMENT',
                     'transaction_date' => $dt,
                     'amount' => $amountIn,
                     'running_balance_after' => $runningBal,
                     'status' => 'POSTED',
-                    'reference_number' => 'SETTLE-POS-' . $dt,
+                    'reference_number' => 'SETTLE-POS-'.$dt,
                     'description' => 'Settlement Merchant QRIS & EDC POS',
-                    'idempotency_key' => 'cbt-dep-' . $tenant->id . '-' . $dt,
+                    'idempotency_key' => 'cbt-dep-'.$tenant->id.'-'.$dt,
                     'created_by_user_id' => $userId,
-                    'created_at' => $dt . ' 22:00:00',
-                    'updated_at' => $dt . ' 22:00:00',
+                    'created_at' => $dt.' 22:00:00',
+                    'updated_at' => $dt.' 22:00:00',
                 ]);
 
                 // Bank statement per month
-                if ($idx < 12) {
-                    $mDate = Carbon::parse($dt);
-                    $stmtNum = 'STMT-BCA-' . $tenant->id . '-' . $mDate->format('Ym');
-                    $existingStmt = DB::table('bank_statements')->where('tenant_id', $tenant->id)->where('statement_number', $stmtNum)->first();
-                    if ($existingStmt) {
-                        $stmtId = $existingStmt->id;
-                        DB::table('bank_statements')->where('id', $stmtId)->update([
-                            'closing_balance' => $runningBal,
-                            'updated_at' => now(),
-                        ]);
-                    } else {
-                        $stmtId = DB::table('bank_statements')->insertGetId([
-                            'tenant_id' => $tenant->id,
-                            'cash_bank_account_id' => $bcaId,
-                            'statement_number' => $stmtNum,
-                            'statement_date' => $mDate->endOfMonth()->toDateString(),
-                            'opening_balance' => $runningBal - $amountIn,
-                            'closing_balance' => $runningBal,
-                            'imported_file_path' => 'statements/bca_' . $mDate->format('Ym') . '.csv',
-                            'imported_by_user_id' => $userId,
-                            'status' => 'RECONCILED',
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
-                    }
-
-                    $maxLine = (int) DB::table('bank_statement_lines')->where('bank_statement_id', $stmtId)->max('line_number');
-                    $stmtLineId = DB::table('bank_statement_lines')->insertGetId([
-                        'tenant_id' => $tenant->id,
-                        'bank_statement_id' => $stmtId,
-                        'cash_bank_account_id' => $bcaId,
-                        'line_number' => $maxLine + 1,
-                        'value_date' => $dt,
-                        'external_reference' => 'BCA-REF-' . $mDate->format('Ymd') . '-' . ($maxLine + 1),
-                        'debit_amount' => 0.00,
-                        'credit_amount' => $amountIn,
-                        'running_balance' => $runningBal,
-                        'description' => 'CR SETTLEMENT QRIS APEIRON',
-                        'line_fingerprint_hash' => hash('sha256', $tenant->id . '-' . $stmtId . '-' . $dt . '-' . $amountIn . '-' . ($maxLine + 1)),
-                        'match_status' => 'MATCHED',
-                        'created_at' => now(),
+                $mDate = Carbon::parse($dt);
+                $stmtNum = 'STMT-BCA-'.$tenant->id.'-'.$mDate->format('Ym');
+                $existingStmt = DB::table('bank_statements')->where('tenant_id', $tenant->id)->where('statement_number', $stmtNum)->first();
+                if ($existingStmt) {
+                    $stmtId = $existingStmt->id;
+                    DB::table('bank_statements')->where('id', $stmtId)->update([
+                        'closing_balance' => $runningBal,
                         'updated_at' => now(),
                     ]);
-
-                    // Reconciliation session & match
-                    $sessionNum = 'RECON-' . $tenant->id . '-' . $mDate->format('Y-m');
-                    $existingSession = DB::table('bank_reconciliation_sessions')->where('tenant_id', $tenant->id)->where('session_number', $sessionNum)->first();
-                    if ($existingSession) {
-                        $sessionId = $existingSession->id;
-                        DB::table('bank_reconciliation_sessions')->where('id', $sessionId)->update([
-                            'statement_ending_balance' => $runningBal,
-                            'book_ending_balance' => $runningBal,
-                            'updated_at' => now(),
-                        ]);
-                    } else {
-                        $sessionId = DB::table('bank_reconciliation_sessions')->insertGetId([
-                            'tenant_id' => $tenant->id,
-                            'cash_bank_account_id' => $bcaId,
-                            'session_number' => $sessionNum,
-                            'statement_end_date' => $mDate->endOfMonth()->toDateString(),
-                            'statement_ending_balance' => $runningBal,
-                            'book_ending_balance' => $runningBal,
-                            'unreconciled_difference' => 0.00,
-                            'status' => 'COMPLETED',
-                            'started_by_user_id' => $userId,
-                            'completed_by_user_id' => $userId,
-                            'completed_at' => $mDate->endOfMonth()->addHours(15)->toDateTimeString(),
-                            'notes' => 'Rekonsiliasi otomatis 100% kliring settlement POS',
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
-                    }
-
-                    DB::table('bank_reconciliation_matches')->insert([
+                } else {
+                    $stmtId = DB::table('bank_statements')->insertGetId([
                         'tenant_id' => $tenant->id,
-                        'reconciliation_session_id' => $sessionId,
-                        'bank_statement_line_id' => $stmtLineId,
-                        'cash_bank_transaction_id' => $txId,
-                        'match_type' => 'EXACT_AUTO',
-                        'matched_amount' => $amountIn,
-                        'matched_by_user_id' => $userId,
+                        'cash_bank_account_id' => $bcaId,
+                        'statement_number' => $stmtNum,
+                        'statement_date' => $mDate->endOfMonth()->toDateString(),
+                        'opening_balance' => $runningBal - $amountIn,
+                        'closing_balance' => $runningBal,
+                        'imported_file_path' => 'statements/bca_'.$mDate->format('Ym').'.csv',
+                        'imported_by_user_id' => $userId,
+                        'status' => 'RECONCILED',
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
                 }
+
+                $maxLine = (int) DB::table('bank_statement_lines')->where('bank_statement_id', $stmtId)->max('line_number');
+                $stmtLineId = DB::table('bank_statement_lines')->insertGetId([
+                    'tenant_id' => $tenant->id,
+                    'bank_statement_id' => $stmtId,
+                    'cash_bank_account_id' => $bcaId,
+                    'line_number' => $maxLine + 1,
+                    'value_date' => $dt,
+                    'external_reference' => 'BCA-REF-'.$mDate->format('Ymd').'-'.($maxLine + 1),
+                    'debit_amount' => 0.00,
+                    'credit_amount' => $amountIn,
+                    'running_balance' => $runningBal,
+                    'description' => 'CR SETTLEMENT QRIS APEIRON',
+                    'line_fingerprint_hash' => hash('sha256', $tenant->id.'-'.$stmtId.'-'.$dt.'-'.$amountIn.'-'.($maxLine + 1)),
+                    'match_status' => 'MATCHED',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                // Reconciliation session & match
+                $sessionNum = 'RECON-'.$tenant->id.'-'.$mDate->format('Y-m');
+                $existingSession = DB::table('bank_reconciliation_sessions')->where('tenant_id', $tenant->id)->where('session_number', $sessionNum)->first();
+                if ($existingSession) {
+                    $sessionId = $existingSession->id;
+                    DB::table('bank_reconciliation_sessions')->where('id', $sessionId)->update([
+                        'statement_ending_balance' => $runningBal,
+                        'book_ending_balance' => $runningBal,
+                        'updated_at' => now(),
+                    ]);
+                } else {
+                    $sessionId = DB::table('bank_reconciliation_sessions')->insertGetId([
+                        'tenant_id' => $tenant->id,
+                        'cash_bank_account_id' => $bcaId,
+                        'session_number' => $sessionNum,
+                        'statement_end_date' => $mDate->endOfMonth()->toDateString(),
+                        'statement_ending_balance' => $runningBal,
+                        'book_ending_balance' => $runningBal,
+                        'unreconciled_difference' => 0.00,
+                        'status' => 'COMPLETED',
+                        'started_by_user_id' => $userId,
+                        'completed_by_user_id' => $userId,
+                        'completed_at' => $mDate->endOfMonth()->addHours(15)->toDateTimeString(),
+                        'notes' => 'Rekonsiliasi otomatis 100% kliring settlement POS',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+
+                DB::table('bank_reconciliation_matches')->insert([
+                    'tenant_id' => $tenant->id,
+                    'reconciliation_session_id' => $sessionId,
+                    'bank_statement_line_id' => $stmtLineId,
+                    'cash_bank_transaction_id' => $txId,
+                    'match_type' => 'EXACT_AUTO',
+                    'matched_amount' => $amountIn,
+                    'matched_by_user_id' => $userId,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
             }
         }
 
@@ -830,13 +840,13 @@ class PopulateEnterpriseDatasetCommand extends Command
 
         $cat1 = DB::table('fixed_asset_categories')
             ->where('tenant_id', $tenant->id)
-            ->where('category_code', 'EQ-KITCHEN-' . $tenant->id)
+            ->where('category_code', 'EQ-KITCHEN-'.$tenant->id)
             ->value('id');
 
-        if (!$cat1) {
+        if (! $cat1) {
             $cat1 = DB::table('fixed_asset_categories')->insertGetId([
                 'tenant_id' => $tenant->id,
-                'category_code' => 'EQ-KITCHEN-' . $tenant->id,
+                'category_code' => 'EQ-KITCHEN-'.$tenant->id,
                 'category_name' => 'Peralatan Espresso & Mesin Dapur Komersial',
                 'asset_gl_account_id' => $assetAccId,
                 'accum_depr_gl_account_id' => $deprAccId,
@@ -851,13 +861,13 @@ class PopulateEnterpriseDatasetCommand extends Command
 
         $cat2 = DB::table('fixed_asset_categories')
             ->where('tenant_id', $tenant->id)
-            ->where('category_code', 'IT-POS-' . $tenant->id)
+            ->where('category_code', 'IT-POS-'.$tenant->id)
             ->value('id');
 
-        if (!$cat2) {
+        if (! $cat2) {
             $cat2 = DB::table('fixed_asset_categories')->insertGetId([
                 'tenant_id' => $tenant->id,
-                'category_code' => 'IT-POS-' . $tenant->id,
+                'category_code' => 'IT-POS-'.$tenant->id,
                 'category_name' => 'Perangkat POS Terminal & Hardware IT',
                 'asset_gl_account_id' => $assetAccId,
                 'accum_depr_gl_account_id' => $deprAccId,
@@ -891,7 +901,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'tenant_id' => $tenant->id,
                 'store_id' => $mainStore?->id,
                 'category_id' => $a['cat'],
-                'asset_code' => 'AST-' . $tenant->id . '-' . Str::upper(Str::random(5)),
+                'asset_code' => 'AST-'.$tenant->id.'-'.Str::upper(Str::random(5)),
                 'asset_name' => $a['name'],
                 'acquisition_date' => '2026-08-01',
                 'acquisition_cost' => $a['cost'],
@@ -922,7 +932,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                     'accumulated_depreciation_after' => $accum,
                     'net_book_value_after' => $currBal,
                     'status' => $p->is_closed ? 'POSTED' : 'PENDING',
-                    'posted_at' => $p->is_closed ? $p->end_date . ' 23:00:00' : null,
+                    'posted_at' => $p->is_closed ? $p->end_date.' 23:00:00' : null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -934,7 +944,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             'tenant_id' => $tenant->id,
             'store_id' => $mainStore?->id,
             'category_id' => $cat1,
-            'asset_code' => 'AST-OLD-' . $tenant->id . '-DISP',
+            'asset_code' => 'AST-OLD-'.$tenant->id.'-DISP',
             'asset_name' => 'Mesin Blender Lama / Grinder Portable Ex-Demo',
             'acquisition_date' => '2024-01-10',
             'acquisition_cost' => 12000000.00,
@@ -972,9 +982,9 @@ class PopulateEnterpriseDatasetCommand extends Command
         $maintAccId = $coaMap['6500'] ?? array_values($coaMap)[0];
 
         $categories = [
-            ['code' => 'RENT-' . $tenant->id, 'name' => 'Sewa Bangunan & Outlet', 'acc' => $rentAccId],
-            ['code' => 'UTILITY-' . $tenant->id, 'name' => 'Listrik PLN, Air PAM & Gas', 'acc' => $utilAccId],
-            ['code' => 'MAINT-' . $tenant->id, 'name' => 'Perawatan & Servis Mesin Berkala', 'acc' => $maintAccId],
+            ['code' => 'RENT-'.$tenant->id, 'name' => 'Sewa Bangunan & Outlet', 'acc' => $rentAccId],
+            ['code' => 'UTILITY-'.$tenant->id, 'name' => 'Listrik PLN, Air PAM & Gas', 'acc' => $utilAccId],
+            ['code' => 'MAINT-'.$tenant->id, 'name' => 'Perawatan & Servis Mesin Berkala', 'acc' => $maintAccId],
         ];
 
         $catIds = [];
@@ -984,7 +994,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 ->where('category_code', $cat['code'])
                 ->value('id');
 
-            if (!$catIds[$cat['code']]) {
+            if (! $catIds[$cat['code']]) {
                 $catIds[$cat['code']] = DB::table('expense_categories')->insertGetId([
                     'tenant_id' => $tenant->id,
                     'category_code' => $cat['code'],
@@ -1009,8 +1019,8 @@ class PopulateEnterpriseDatasetCommand extends Command
             $expId = DB::table('expenses')->insertGetId([
                 'tenant_id' => $tenant->id,
                 'store_id' => $store->id,
-                'category_id' => $catIds['UTILITY-' . $tenant->id],
-                'expense_number' => 'EXP-' . str_replace('-', '', $dt) . '-' . Str::upper(Str::random(4)),
+                'category_id' => $catIds['UTILITY-'.$tenant->id],
+                'expense_number' => 'EXP-'.str_replace('-', '', $dt).'-'.Str::upper(Str::random(4)),
                 'expense_date' => $dt,
                 'subtotal_amount' => $amount,
                 'tax_amount' => 0.00,
@@ -1018,13 +1028,13 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'description' => "Pembayaran Tagihan Listrik PLN & Air PAM Cabang {$store->name}",
                 'status' => 'APPROVED',
                 'submitted_by_user_id' => $userId,
-                'submitted_at' => $dt . ' 09:00:00',
+                'submitted_at' => $dt.' 09:00:00',
                 'approved_by_user_id' => $userId,
-                'approved_at' => $dt . ' 09:45:00',
+                'approved_at' => $dt.' 09:45:00',
                 'cash_bank_account_id' => $cashBankMap['bca'],
-                'paid_at' => $dt . ' 10:00:00',
-                'created_at' => $dt . ' 09:00:00',
-                'updated_at' => $dt . ' 10:00:00',
+                'paid_at' => $dt.' 10:00:00',
+                'created_at' => $dt.' 09:00:00',
+                'updated_at' => $dt.' 10:00:00',
             ]);
 
             DB::table('expense_lines')->insert([
@@ -1035,8 +1045,8 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'amount' => $amount,
                 'tax_code_id' => null,
                 'tax_amount' => 0.00,
-                'created_at' => $dt . ' 09:00:00',
-                'updated_at' => $dt . ' 09:00:00',
+                'created_at' => $dt.' 09:00:00',
+                'updated_at' => $dt.' 09:00:00',
             ]);
 
             DB::table('expense_approvals')->insert([
@@ -1045,8 +1055,8 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'approver_user_id' => $userId,
                 'action' => 'APPROVED',
                 'notes' => 'Tagihan utilitas bulanan valid sesuai meteran PLN.',
-                'created_at' => $dt . ' 09:45:00',
-                'updated_at' => $dt . ' 09:45:00',
+                'created_at' => $dt.' 09:45:00',
+                'updated_at' => $dt.' 09:45:00',
             ]);
 
             DB::table('expense_attachments')->insert([
@@ -1056,8 +1066,8 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'file_path' => "attachments/expenses/{$tenant->id}/pln_{$dt}.pdf",
                 'file_size' => 142850,
                 'mime_type' => 'application/pdf',
-                'created_at' => $dt . ' 09:00:00',
-                'updated_at' => $dt . ' 09:00:00',
+                'created_at' => $dt.' 09:00:00',
+                'updated_at' => $dt.' 09:00:00',
             ]);
         }
     }
@@ -1087,6 +1097,8 @@ class PopulateEnterpriseDatasetCommand extends Command
 
         $mainStore = $stores->first();
         $cumBalances = [];
+        $je1Id = 0;
+        $totalDebit = 0.0;
 
         foreach ($periods as $pCode => $p) {
             $monthDate = Carbon::parse($p->start_date);
@@ -1103,7 +1115,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             $actualReturns = (float) DB::table('order_returns')
                 ->where('tenant_id', $tenant->id)
                 ->where('status', 'completed')
-                ->whereBetween('completed_at', [$p->start_date . ' 00:00:00', $p->end_date . ' 23:59:59'])
+                ->whereBetween('completed_at', [$p->start_date.' 00:00:00', $p->end_date.' 23:59:59'])
                 ->sum('subtotal_returned');
 
             $salesAmount = ((float) ($actualOrders->actual_sales ?? 0)) - $actualReturns;
@@ -1121,23 +1133,23 @@ class PopulateEnterpriseDatasetCommand extends Command
             $je1Id = DB::table('journal_entries')->insertGetId([
                 'tenant_id' => $tenant->id,
                 'store_id' => $mainStore?->id,
-                'journal_number' => 'JE-' . str_replace('-', '', $txDate) . '-SALES-' . $tenant->id,
+                'journal_number' => 'JE-'.str_replace('-', '', $txDate).'-SALES-'.$tenant->id,
                 'accounting_period_id' => $p->id,
                 'posting_date' => $txDate,
                 'journal_type' => 'SYSTEM_AUTO',
                 'status' => 'POSTED',
                 'source_module' => 'SALES',
                 'source_type' => 'POS_SALES',
-                'source_number' => 'POS-BATCH-' . $pCode,
-                'idempotency_key' => 'je-pos-sales-' . $tenant->id . '-' . $pCode,
+                'source_number' => 'POS-BATCH-'.$pCode,
+                'idempotency_key' => 'je-pos-sales-'.$tenant->id.'-'.$pCode,
                 'total_debit' => $totalDebit,
                 'total_credit' => $totalDebit,
                 'notes' => "Pengakuan Penjualan Kasir POS Periode {$pCode}",
                 'created_by_user_id' => $userId,
                 'posted_by_user_id' => $userId,
-                'posted_at' => $txDate . ' 23:59:00',
-                'created_at' => $txDate . ' 23:59:00',
-                'updated_at' => $txDate . ' 23:59:00',
+                'posted_at' => $txDate.' 23:59:00',
+                'created_at' => $txDate.' 23:59:00',
+                'updated_at' => $txDate.' 23:59:00',
             ]);
 
             // Lines: Debit Bank, Credit Sales, Credit Pajak PB1, Credit Service
@@ -1204,7 +1216,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                     'tax_rate_id' => $taxRateRow->id,
                     'journal_entry_id' => $je1Id,
                     'journal_line_id' => $jl3,
-                    'entry_number' => 'TAX-' . str_replace('-', '', $txDate) . '-' . Str::upper(Str::random(4)),
+                    'entry_number' => 'TAX-'.str_replace('-', '', $txDate).'-'.Str::upper(Str::random(4)),
                     'transaction_date' => $txDate,
                     'tax_direction' => 'OUTPUT_TAX',
                     'tax_base_amount' => $salesAmount,
@@ -1233,23 +1245,23 @@ class PopulateEnterpriseDatasetCommand extends Command
             $je2Id = DB::table('journal_entries')->insertGetId([
                 'tenant_id' => $tenant->id,
                 'store_id' => $mainStore?->id,
-                'journal_number' => 'JE-' . str_replace('-', '', $txDate) . '-HPP-' . $tenant->id,
+                'journal_number' => 'JE-'.str_replace('-', '', $txDate).'-HPP-'.$tenant->id,
                 'accounting_period_id' => $p->id,
                 'posting_date' => $txDate,
                 'journal_type' => 'SYSTEM_AUTO',
                 'status' => 'POSTED',
                 'source_module' => 'INVENTORY',
                 'source_type' => 'COGS_RECOGNITION',
-                'source_number' => 'COGS-BATCH-' . $pCode,
-                'idempotency_key' => 'je-cogs-' . $tenant->id . '-' . $pCode,
+                'source_number' => 'COGS-BATCH-'.$pCode,
+                'idempotency_key' => 'je-cogs-'.$tenant->id.'-'.$pCode,
                 'total_debit' => $cogsAmount,
                 'total_credit' => $cogsAmount,
                 'notes' => "Pengakuan Beban Pokok Penjualan (HPP) {$pCode}",
                 'created_by_user_id' => $userId,
                 'posted_by_user_id' => $userId,
-                'posted_at' => $txDate . ' 23:59:00',
-                'created_at' => $txDate . ' 23:59:00',
-                'updated_at' => $txDate . ' 23:59:00',
+                'posted_at' => $txDate.' 23:59:00',
+                'created_at' => $txDate.' 23:59:00',
+                'updated_at' => $txDate.' 23:59:00',
             ]);
 
             DB::table('journal_lines')->insert([
@@ -1316,8 +1328,8 @@ class PopulateEnterpriseDatasetCommand extends Command
                     ->selectRaw('COALESCE(SUM(debit_amount), 0) as dr, COALESCE(SUM(credit_amount), 0) as cr')
                     ->first();
 
-                $periodDr = (float) ($lines?->dr ?? 0);
-                $periodCr = (float) ($lines?->cr ?? 0);
+                $periodDr = (float) ($lines->dr ?? 0);
+                $periodCr = (float) ($lines->cr ?? 0);
                 $openingDr = $cumBalances[$accId]['dr'] ?? 0.0;
                 $openingCr = $cumBalances[$accId]['cr'] ?? 0.0;
                 $closingDr = $openingDr + $periodDr;
@@ -1353,7 +1365,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             'source_type' => 'JOURNAL_ENTRY',
             'source_id' => $je1Id,
             'source_number' => 'JE-202611-BATCH',
-            'idempotency_key' => 'fe-outbox-' . $tenant->id . '-202611',
+            'idempotency_key' => 'fe-outbox-'.$tenant->id.'-202611',
             'payload' => json_encode(['amount' => $totalDebit, 'status' => 'POSTED']),
             'status' => 'PROCESSED',
             'occurred_at' => now(),
@@ -1367,7 +1379,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             'tenant_id' => $tenant->id,
             'store_id' => $mainStore?->id,
             'event_type' => 'AR_INVOICE_SYNCHRONIZED',
-            'idempotency_key' => 'ar-outbox-' . $tenant->id . '-202611',
+            'idempotency_key' => 'ar-outbox-'.$tenant->id.'-202611',
             'source_document_type' => 'CUSTOMER_INVOICE',
             'source_document_id' => 1,
             'source_document_number' => 'INV-202611-001',
@@ -1394,9 +1406,9 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'tenant_id' => $tenant->id,
                 'store_id' => $store->id,
                 'supplier_id' => $supplier->id,
-                'internal_invoice_number' => 'SI-GR-' . ($store->code ?? 'STORE') . '-261025-0001',
-                'supplier_invoice_number' => 'INV-SUP-' . $tenant->id . '-20261025',
-                'normalized_supplier_invoice_number' => 'INV-SUP-' . $tenant->id . '-20261025',
+                'internal_invoice_number' => 'SI-GR-'.($store->code ?? 'STORE').'-261025-0001',
+                'supplier_invoice_number' => 'INV-SUP-'.$tenant->id.'-20261025',
+                'normalized_supplier_invoice_number' => 'INV-SUP-'.$tenant->id.'-20261025',
                 'invoice_date' => '2026-10-25',
                 'due_date' => '2026-11-24',
                 'currency_code' => 'IDR',
@@ -1426,7 +1438,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                     'store_id' => $store->id,
                     'supplier_id' => $supplier->id,
                     'cash_bank_account_id' => $cashBankMap['bca'],
-                    'payment_number' => 'APPAY-' . $tenant->id . '-' . date('Ymd') . '-' . Str::upper(Str::random(4)),
+                    'payment_number' => 'APPAY-'.$tenant->id.'-'.date('Ymd').'-'.Str::upper(Str::random(4)),
                     'payment_date' => '2026-11-02',
                     'payment_method' => 'BANK_TRANSFER',
                     'currency_code' => 'IDR',
@@ -1435,7 +1447,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                     'allocated_amount' => $amount,
                     'status' => 'POSTED',
                     'notes' => 'Pelunasan faktur supplier bahan baku via BCA',
-                    'idempotency_key' => 'appay-' . $tenant->id . '-' . $supplierInvoice->id,
+                    'idempotency_key' => 'appay-'.$tenant->id.'-'.$supplierInvoice->id,
                     'created_by_user_id' => $userId,
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -1451,7 +1463,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                     'allocated_amount' => $amount,
                     'discount_taken_amount' => 0.00,
                     'status' => 'POSTED',
-                    'idempotency_key' => 'ap-alloc-' . $tenant->id . '-' . $supplierInvoice->id,
+                    'idempotency_key' => 'ap-alloc-'.$tenant->id.'-'.$supplierInvoice->id,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -1463,13 +1475,13 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'supplier_id' => $supplier->id,
                 'supplier_invoice_id' => $supplierInvoice->id,
                 'ap_payment_id' => null,
-                'entry_number' => 'APL-INV-' . $tenant->id . '-' . $supplierInvoice->id,
+                'entry_number' => 'APL-INV-'.$tenant->id.'-'.$supplierInvoice->id,
                 'effective_date' => '2026-10-28',
                 'entry_type' => 'INVOICE_CREDIT',
                 'debit_amount' => 0.00,
                 'credit_amount' => $amount,
                 'running_balance' => $amount,
-                'idempotency_key' => 'apl-inv-' . $tenant->id . '-' . $supplierInvoice->id,
+                'idempotency_key' => 'apl-inv-'.$tenant->id.'-'.$supplierInvoice->id,
                 'description' => 'Faktur Pembelian Supplier',
                 'created_by_user_id' => $userId,
                 'created_at' => now(),
@@ -1482,13 +1494,13 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'supplier_id' => $supplier->id,
                 'supplier_invoice_id' => null,
                 'ap_payment_id' => $paymentId,
-                'entry_number' => 'APL-PAY-' . $tenant->id . '-' . $paymentId,
+                'entry_number' => 'APL-PAY-'.$tenant->id.'-'.$paymentId,
                 'effective_date' => '2026-11-02',
                 'entry_type' => 'PAYMENT_DEBIT',
                 'debit_amount' => $amount,
                 'credit_amount' => 0.00,
                 'running_balance' => 0.00,
-                'idempotency_key' => 'apl-pay-' . $tenant->id . '-' . $paymentId,
+                'idempotency_key' => 'apl-pay-'.$tenant->id.'-'.$paymentId,
                 'description' => 'Pelunasan Faktur Supplier',
                 'created_by_user_id' => $userId,
                 'created_at' => now(),
@@ -1511,10 +1523,10 @@ class PopulateEnterpriseDatasetCommand extends Command
 
         // 1. Customer Groups
         $groups = [
-            ['code' => 'RETAIL-' . $tenant->id, 'name' => 'Pelanggan Walk-In Retail', 'disc' => 0.00],
-            ['code' => 'CORP-' . $tenant->id, 'name' => 'Corporate Catering & Event B2B', 'disc' => 10.00],
-            ['code' => 'RESELLER-' . $tenant->id, 'name' => 'Wholesale Cafe Partner / Reseller', 'disc' => 15.00],
-            ['code' => 'VIP-' . $tenant->id, 'name' => 'VIP Apeiron Gold Members', 'disc' => 5.00],
+            ['code' => 'RETAIL-'.$tenant->id, 'name' => 'Pelanggan Walk-In Retail', 'disc' => 0.00],
+            ['code' => 'CORP-'.$tenant->id, 'name' => 'Corporate Catering & Event B2B', 'disc' => 10.00],
+            ['code' => 'RESELLER-'.$tenant->id, 'name' => 'Wholesale Cafe Partner / Reseller', 'disc' => 15.00],
+            ['code' => 'VIP-'.$tenant->id, 'name' => 'VIP Apeiron Gold Members', 'disc' => 5.00],
         ];
         foreach ($groups as $g) {
             DB::table('customer_groups')->insert([
@@ -1611,7 +1623,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             $quoteId = DB::table('quotations')->insertGetId([
                 'tenant_id' => $tenant->id,
                 'store_id' => $store->id,
-                'quotation_number' => 'QUO-202610-' . $tenant->id . '-001',
+                'quotation_number' => 'QUO-202610-'.$tenant->id.'-001',
                 'customer_id' => $targetCust->id,
                 'customer_address_id' => $addrId,
                 'issue_date' => '2026-10-10',
@@ -1631,7 +1643,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'tenant_id' => $tenant->id,
                 'quotation_id' => $quoteId,
                 'line_number' => 1,
-                'product_id' => $p1?->id ?? 1,
+                'product_id' => $p1->id ?? 1,
                 'quantity' => 250.0000,
                 'base_unit_price' => 50000.00,
                 'unit_price' => 50000.00,
@@ -1644,7 +1656,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             $soId = DB::table('sales_orders')->insertGetId([
                 'tenant_id' => $tenant->id,
                 'store_id' => $store->id,
-                'so_number' => 'SO-202610-' . $tenant->id . '-001',
+                'so_number' => 'SO-202610-'.$tenant->id.'-001',
                 'quotation_id' => $quoteId,
                 'customer_id' => $targetCust->id,
                 'billing_address_id' => $addrId,
@@ -1666,7 +1678,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'tenant_id' => $tenant->id,
                 'sales_order_id' => $soId,
                 'line_number' => 1,
-                'product_id' => $p1?->id ?? 1,
+                'product_id' => $p1->id ?? 1,
                 'ordered_qty' => 250.0000,
                 'base_unit_price' => 50000.00,
                 'unit_price' => 50000.00,
@@ -1681,8 +1693,8 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'store_id' => $store->id,
                 'sales_order_id' => $soId,
                 'customer_id' => $targetCust->id,
-                'invoice_number' => 'INV-B2B-' . $tenant->id . '-202610-001',
-                'tax_invoice_serial_number' => '010.002-26.' . $tenant->id . '9201928',
+                'invoice_number' => 'INV-B2B-'.$tenant->id.'-202610-001',
+                'tax_invoice_serial_number' => '010.002-26.'.$tenant->id.'9201928',
                 'invoice_date' => '2026-10-15',
                 'due_date' => '2026-11-14',
                 'status' => 'PARTIALLY_PAID',
@@ -1702,7 +1714,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'tenant_id' => $tenant->id,
                 'customer_invoice_id' => $invId,
                 'sales_order_line_id' => $soLineId,
-                'product_id' => $p1?->id ?? 1,
+                'product_id' => $p1->id ?? 1,
                 'line_number' => 1,
                 'description' => 'Catering Coffee & Pastry Package B2B',
                 'quantity' => 250.0000,
@@ -1719,7 +1731,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'tenant_id' => $tenant->id,
                 'store_id' => $store->id,
                 'customer_id' => $targetCust->id,
-                'credit_note_number' => 'SCN-' . $tenant->id . '-202610-001',
+                'credit_note_number' => 'SCN-'.$tenant->id.'-202610-001',
                 'origin_customer_invoice_id' => $invId,
                 'issue_date' => '2026-10-18',
                 'reason_code' => 'DISCOUNT_ADJUSTMENT',
@@ -1741,7 +1753,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'applied_amount' => 555000.00,
                 'applied_by_user_id' => $userId,
                 'applied_at' => '2026-10-18 11:00:00',
-                'idempotency_key' => 'scna-' . $tenant->id . '-1',
+                'idempotency_key' => 'scna-'.$tenant->id.'-1',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -1751,7 +1763,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'tenant_id' => $tenant->id,
                 'store_id' => $store->id,
                 'customer_id' => $targetCust->id,
-                'receipt_number' => 'ARR-' . $tenant->id . '-202611-001',
+                'receipt_number' => 'ARR-'.$tenant->id.'-202611-001',
                 'receipt_date' => '2026-11-01',
                 'total_received_amount' => 10000000.00,
                 'total_allocated_amount' => 10000000.00,
@@ -1771,7 +1783,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'allocated_amount' => 10000000.00,
                 'allocated_at' => '2026-11-01 10:00:00',
                 'allocated_by_user_id' => $userId,
-                'idempotency_key' => 'arpa-' . $tenant->id . '-1',
+                'idempotency_key' => 'arpa-'.$tenant->id.'-1',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -1847,13 +1859,13 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'amount' => 250000.00,
                 'balance_after' => 250000.00,
                 'reference_type' => 'MANUAL_GRANT',
-                'idempotency_key' => 'scl-grant-' . $tenant->id . '-' . $customer->id,
+                'idempotency_key' => 'scl-grant-'.$tenant->id.'-'.$customer->id,
                 'actor_user_id' => $userId,
                 'created_at' => now(),
             ]);
 
             // 2. Gift Cards & Ledgers (Compliant with chk_gcl_entry_type: ISSUE, REDEEM)
-            $gcCardNum = 'GC-' . $tenant->id . '-2026-' . Str::upper(Str::random(6));
+            $gcCardNum = 'GC-'.$tenant->id.'-2026-'.Str::upper(Str::random(6));
             $gcId = DB::table('gift_cards')->insertGetId([
                 'tenant_id' => $tenant->id,
                 'issued_store_id' => $store->id,
@@ -1876,7 +1888,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                     'entry_type' => 'ISSUE',
                     'amount' => 500000.00,
                     'balance_after' => 500000.00,
-                    'idempotency_key' => 'gcl-act-' . $gcId,
+                    'idempotency_key' => 'gcl-act-'.$gcId,
                     'actor_user_id' => $userId,
                     'created_at' => '2026-09-01 10:00:00',
                 ],
@@ -1887,7 +1899,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                     'entry_type' => 'REDEEM',
                     'amount' => 150000.00,
                     'balance_after' => 350000.00,
-                    'idempotency_key' => 'gcl-red-' . $gcId,
+                    'idempotency_key' => 'gcl-red-'.$gcId,
                     'actor_user_id' => $userId,
                     'created_at' => '2026-10-20 15:30:00',
                 ],
@@ -2027,7 +2039,7 @@ class PopulateEnterpriseDatasetCommand extends Command
         if ($sampleProducts->isNotEmpty()) {
             $lots = [
                 [
-                    'lot_number' => '#LOT-' . $tenantId . '-CAN-202611',
+                    'lot_number' => '#LOT-'.$tenantId.'-CAN-202611',
                     'expiry_date' => '2026-11-25',
                     'received_date' => '2026-08-15',
                     'initial_qty' => 100,
@@ -2037,7 +2049,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                     'notes' => 'Near Expiry H-14 FEFO Alert Test Lot',
                 ],
                 [
-                    'lot_number' => '#LOT-' . $tenantId . '-BAT-202612',
+                    'lot_number' => '#LOT-'.$tenantId.'-BAT-202612',
                     'expiry_date' => '2026-12-31',
                     'received_date' => '2026-09-01',
                     'initial_qty' => 250,
@@ -2047,7 +2059,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                     'notes' => 'Regular Batch 2026-Q4',
                 ],
                 [
-                    'lot_number' => '#LOT-' . $tenantId . '-BAT-202703',
+                    'lot_number' => '#LOT-'.$tenantId.'-BAT-202703',
                     'expiry_date' => '2027-03-31',
                     'received_date' => '2026-10-01',
                     'initial_qty' => 500,
@@ -2057,7 +2069,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                     'notes' => 'Fresh Stock Q1-2027',
                 ],
                 [
-                    'lot_number' => '#LOT-' . $tenantId . '-BAT-202706',
+                    'lot_number' => '#LOT-'.$tenantId.'-BAT-202706',
                     'expiry_date' => '2027-06-30',
                     'received_date' => '2026-10-20',
                     'initial_qty' => 400,
@@ -2067,7 +2079,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                     'notes' => 'Warehouse Buffer Stock',
                 ],
                 [
-                    'lot_number' => '#LOT-' . $tenantId . '-EXP-202610',
+                    'lot_number' => '#LOT-'.$tenantId.'-EXP-202610',
                     'expiry_date' => '2026-10-15',
                     'received_date' => '2026-07-01',
                     'initial_qty' => 50,
@@ -2104,12 +2116,12 @@ class PopulateEnterpriseDatasetCommand extends Command
 
         // 5. Ingredient Recipes (Kitchen Prep Items BOM)
         $ingDefs = [
-            ['code' => 'ING-COFFEE-BEAN-' . $tenantId, 'name' => 'Biji Kopi Arabica Gayo', 'unit' => 'gram', 'cost' => 250.00],
-            ['code' => 'ING-PREP-ESPRESSO-' . $tenantId, 'name' => 'Espresso Base Prep Batch', 'unit' => 'shot', 'cost' => 4500.00],
-            ['code' => 'ING-SUGAR-AREN-' . $tenantId, 'name' => 'Gula Aren Organik Cair', 'unit' => 'ml', 'cost' => 50.00],
-            ['code' => 'ING-PREP-SYRUP-' . $tenantId, 'name' => 'Sugar Syrup Prep Batch', 'unit' => 'bottle', 'cost' => 15000.00],
-            ['code' => 'ING-WAGYU-RAW-' . $tenantId, 'name' => 'Daging Wagyu Raw Cut', 'unit' => 'gram', 'cost' => 600.00],
-            ['code' => 'ING-PREP-WAGYU-' . $tenantId, 'name' => 'Marinated Wagyu Prep Batch', 'unit' => 'portion', 'cost' => 75000.00],
+            ['code' => 'ING-COFFEE-BEAN-'.$tenantId, 'name' => 'Biji Kopi Arabica Gayo', 'unit' => 'gram', 'cost' => 250.00],
+            ['code' => 'ING-PREP-ESPRESSO-'.$tenantId, 'name' => 'Espresso Base Prep Batch', 'unit' => 'shot', 'cost' => 4500.00],
+            ['code' => 'ING-SUGAR-AREN-'.$tenantId, 'name' => 'Gula Aren Organik Cair', 'unit' => 'ml', 'cost' => 50.00],
+            ['code' => 'ING-PREP-SYRUP-'.$tenantId, 'name' => 'Sugar Syrup Prep Batch', 'unit' => 'bottle', 'cost' => 15000.00],
+            ['code' => 'ING-WAGYU-RAW-'.$tenantId, 'name' => 'Daging Wagyu Raw Cut', 'unit' => 'gram', 'cost' => 600.00],
+            ['code' => 'ING-PREP-WAGYU-'.$tenantId, 'name' => 'Marinated Wagyu Prep Batch', 'unit' => 'portion', 'cost' => 75000.00],
         ];
 
         $ingMap = [];
@@ -2135,22 +2147,22 @@ class PopulateEnterpriseDatasetCommand extends Command
 
         $recipes = [
             [
-                'parent' => 'ING-PREP-ESPRESSO-' . $tenantId,
-                'comp' => 'ING-COFFEE-BEAN-' . $tenantId,
+                'parent' => 'ING-PREP-ESPRESSO-'.$tenantId,
+                'comp' => 'ING-COFFEE-BEAN-'.$tenantId,
                 'qty' => 18.0000,
                 'unit' => 'gram',
                 'notes' => '18g biji kopi per shot espresso base',
             ],
             [
-                'parent' => 'ING-PREP-SYRUP-' . $tenantId,
-                'comp' => 'ING-SUGAR-AREN-' . $tenantId,
+                'parent' => 'ING-PREP-SYRUP-'.$tenantId,
+                'comp' => 'ING-SUGAR-AREN-'.$tenantId,
                 'qty' => 500.0000,
                 'unit' => 'ml',
                 'notes' => '500ml gula aren organik per botol sirup',
             ],
             [
-                'parent' => 'ING-PREP-WAGYU-' . $tenantId,
-                'comp' => 'ING-WAGYU-RAW-' . $tenantId,
+                'parent' => 'ING-PREP-WAGYU-'.$tenantId,
+                'comp' => 'ING-WAGYU-RAW-'.$tenantId,
                 'qty' => 200.0000,
                 'unit' => 'gram',
                 'notes' => '200g potongan wagyu per porsi marinate',
@@ -2193,8 +2205,8 @@ class PopulateEnterpriseDatasetCommand extends Command
         ];
 
         foreach ($taxPeriods as $tp) {
-            $idempotencyKey = "tax-sub-{$tenantId}-{$tp['type']}-" . str_replace('-', '', $tp['period']);
-            $subRef = "DJP-CORETAX-{$tenantId}-{$tp['type']}-" . str_replace('-', '', $tp['period']);
+            $idempotencyKey = "tax-sub-{$tenantId}-{$tp['type']}-".str_replace('-', '', $tp['period']);
+            $subRef = "DJP-CORETAX-{$tenantId}-{$tp['type']}-".str_replace('-', '', $tp['period']);
 
             DB::table('tax_submissions')->updateOrInsert(
                 ['tenant_id' => $tenantId, 'idempotency_key' => $idempotencyKey],
@@ -2208,7 +2220,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                     'status' => 'SUCCESS',
                     'raw_payload_hash' => hash('sha256', $idempotencyKey),
                     'request_payload_masked' => json_encode(['period' => $tp['period'], 'tax_type' => $tp['tax_type'], 'tenant_id' => $tenantId]),
-                    'response_payload_masked' => json_encode(['status' => 'ACCEPTED', 'bpe_number' => 'BPE-' . strtoupper(Str::random(12)), 'submitted_at' => $tp['sub_date']]),
+                    'response_payload_masked' => json_encode(['status' => 'ACCEPTED', 'bpe_number' => 'BPE-'.strtoupper(Str::random(12)), 'submitted_at' => $tp['sub_date']]),
                     'retry_count' => 0,
                     'submitted_at' => $tp['sub_date'],
                     'created_at' => $tp['sub_date'],
@@ -2253,7 +2265,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 DB::table('webhook_delivery_logs')->insert([
                     'tenant_id' => $tenantId,
                     'subscription_id' => $webhookId,
-                    'delivery_id' => 'DLV-' . $tenantId . '-' . str_replace(['-', ' ', ':'], '', $delivDate) . '-' . sprintf('%03d', $idx + 1),
+                    'delivery_id' => 'DLV-'.$tenantId.'-'.str_replace(['-', ' ', ':'], '', $delivDate).'-'.sprintf('%03d', $idx + 1),
                     'event' => $evt,
                     'payload' => json_encode(['event' => $evt, 'tenant_id' => $tenantId, 'timestamp' => $delivDate]),
                     'response_status' => 200,
@@ -2278,9 +2290,9 @@ class PopulateEnterpriseDatasetCommand extends Command
 
         // 1. Shift Templates
         $shifts = [
-            ['code' => 'PAGI-' . $tenant->id, 'name' => 'Shift Pagi Operasional Bar & Kasir', 'start' => '06:30:00', 'end' => '15:00:00'],
-            ['code' => 'MIDDLE-' . $tenant->id, 'name' => 'Shift Middle Peak Hour', 'start' => '10:00:00', 'end' => '18:30:00'],
-            ['code' => 'MALAM-' . $tenant->id, 'name' => 'Shift Sore/Malam Closing', 'start' => '14:30:00', 'end' => '23:00:00'],
+            ['code' => 'PAGI-'.$tenant->id, 'name' => 'Shift Pagi Operasional Bar & Kasir', 'start' => '06:30:00', 'end' => '15:00:00'],
+            ['code' => 'MIDDLE-'.$tenant->id, 'name' => 'Shift Middle Peak Hour', 'start' => '10:00:00', 'end' => '18:30:00'],
+            ['code' => 'MALAM-'.$tenant->id, 'name' => 'Shift Sore/Malam Closing', 'start' => '14:30:00', 'end' => '23:00:00'],
         ];
         $shiftIds = [];
         foreach ($shifts as $s) {
@@ -2302,13 +2314,13 @@ class PopulateEnterpriseDatasetCommand extends Command
 
         // 2. Salary Components
         $components = [
-            ['code' => 'BASIC-' . $tenant->id, 'name' => 'Gaji Pokok Karyawan', 'type' => 'EARNING', 'tax' => 1],
-            ['code' => 'TUNJ_JABATAN-' . $tenant->id, 'name' => 'Tunjangan Posisi & Jabatan', 'type' => 'EARNING', 'tax' => 1],
-            ['code' => 'TUNJ_MAKAN-' . $tenant->id, 'name' => 'Uang Makan & Transportasi', 'type' => 'EARNING', 'tax' => 0],
-            ['code' => 'OVERTIME-' . $tenant->id, 'name' => 'Upah Lembur PP 35/2021', 'type' => 'EARNING', 'tax' => 1],
-            ['code' => 'BPJS_TK-' . $tenant->id, 'name' => 'Iuran BPJS Ketenagakerjaan Karyawan', 'type' => 'DEDUCTION', 'tax' => 0],
-            ['code' => 'BPJS_KS-' . $tenant->id, 'name' => 'Iuran BPJS Kesehatan Karyawan', 'type' => 'DEDUCTION', 'tax' => 0],
-            ['code' => 'PPH21_TER-' . $tenant->id, 'name' => 'Pemotongan PPh 21 TER 2024', 'type' => 'DEDUCTION', 'tax' => 0],
+            ['code' => 'BASIC-'.$tenant->id, 'name' => 'Gaji Pokok Karyawan', 'type' => 'EARNING', 'tax' => 1],
+            ['code' => 'TUNJ_JABATAN-'.$tenant->id, 'name' => 'Tunjangan Posisi & Jabatan', 'type' => 'EARNING', 'tax' => 1],
+            ['code' => 'TUNJ_MAKAN-'.$tenant->id, 'name' => 'Uang Makan & Transportasi', 'type' => 'EARNING', 'tax' => 0],
+            ['code' => 'OVERTIME-'.$tenant->id, 'name' => 'Upah Lembur PP 35/2021', 'type' => 'EARNING', 'tax' => 1],
+            ['code' => 'BPJS_TK-'.$tenant->id, 'name' => 'Iuran BPJS Ketenagakerjaan Karyawan', 'type' => 'DEDUCTION', 'tax' => 0],
+            ['code' => 'BPJS_KS-'.$tenant->id, 'name' => 'Iuran BPJS Kesehatan Karyawan', 'type' => 'DEDUCTION', 'tax' => 0],
+            ['code' => 'PPH21_TER-'.$tenant->id, 'name' => 'Pemotongan PPh 21 TER 2024', 'type' => 'DEDUCTION', 'tax' => 0],
         ];
         $compIds = [];
         foreach ($components as $c) {
@@ -2329,9 +2341,9 @@ class PopulateEnterpriseDatasetCommand extends Command
 
         // 3. Leave Policies
         $leavePolicies = [
-            ['code' => 'ANNUAL-' . $tenant->id, 'name' => 'Cuti Tahunan Karyawan (12 Hari)', 'days' => 12],
-            ['code' => 'SICK-' . $tenant->id, 'name' => 'Cuti Sakit dengan Surat Dokter', 'days' => 14],
-            ['code' => 'MARRIAGE-' . $tenant->id, 'name' => 'Cuti Menikah Karyawan', 'days' => 3],
+            ['code' => 'ANNUAL-'.$tenant->id, 'name' => 'Cuti Tahunan Karyawan (12 Hari)', 'days' => 12],
+            ['code' => 'SICK-'.$tenant->id, 'name' => 'Cuti Sakit dengan Surat Dokter', 'days' => 14],
+            ['code' => 'MARRIAGE-'.$tenant->id, 'name' => 'Cuti Menikah Karyawan', 'days' => 3],
         ];
         $leavePolicyIds = [];
         foreach ($leavePolicies as $lp) {
@@ -2378,7 +2390,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'employee_id' => $emp->id,
                 'bank_name' => 'Bank Central Asia (BCA)',
                 'bank_code' => '014',
-                'account_number' => '542019' . str_pad((string) $emp->id, 4, '0', STR_PAD_LEFT),
+                'account_number' => '542019'.str_pad((string) $emp->id, 4, '0', STR_PAD_LEFT),
                 'account_holder_name' => $emp->full_name,
                 'is_primary' => 1,
                 'is_active' => 1,
@@ -2402,7 +2414,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 [
                     'tenant_id' => $tenant->id,
                     'employee_id' => $emp->id,
-                    'salary_component_id' => $compIds['BASIC-' . $tenant->id],
+                    'salary_component_id' => $compIds['BASIC-'.$tenant->id],
                     'amount' => 5200000.00,
                     'effective_date' => '2025-10-01',
                     'is_active' => 1,
@@ -2412,7 +2424,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 [
                     'tenant_id' => $tenant->id,
                     'employee_id' => $emp->id,
-                    'salary_component_id' => $compIds['TUNJ_MAKAN-' . $tenant->id],
+                    'salary_component_id' => $compIds['TUNJ_MAKAN-'.$tenant->id],
                     'amount' => 800000.00,
                     'effective_date' => '2025-10-01',
                     'is_active' => 1,
@@ -2425,8 +2437,8 @@ class PopulateEnterpriseDatasetCommand extends Command
             DB::table('employee_bpjs_profiles')->insert([
                 'tenant_id' => $tenant->id,
                 'employee_id' => $emp->id,
-                'bpjs_ketenagakerjaan_number' => '2109' . str_pad((string) $emp->id, 7, '0', STR_PAD_LEFT),
-                'bpjs_kesehatan_number' => '000189' . str_pad((string) $emp->id, 7, '0', STR_PAD_LEFT),
+                'bpjs_ketenagakerjaan_number' => '2109'.str_pad((string) $emp->id, 7, '0', STR_PAD_LEFT),
+                'bpjs_kesehatan_number' => '000189'.str_pad((string) $emp->id, 7, '0', STR_PAD_LEFT),
                 'jkk_risk_grade' => 2,
                 'is_bpjs_tk_active' => 1,
                 'is_bpjs_ks_active' => 1,
@@ -2441,7 +2453,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'from_status' => 'PROBATION',
                 'to_status' => 'PERMANENT',
                 'effective_date' => '2026-01-01',
-                'reference_number' => 'SK-TETAP-' . $emp->employee_number,
+                'reference_number' => 'SK-TETAP-'.$emp->employee_number,
                 'reason' => 'Lulus evaluasi masa percobaan 3 bulan dengan predikat sangat baik',
                 'actor_user_id' => $userId,
                 'created_at' => now(),
@@ -2452,7 +2464,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             DB::table('leave_balances')->insert([
                 'tenant_id' => $tenant->id,
                 'employee_id' => $emp->id,
-                'leave_policy_id' => $leavePolicyIds['ANNUAL-' . $tenant->id],
+                'leave_policy_id' => $leavePolicyIds['ANNUAL-'.$tenant->id],
                 'year' => 2026,
                 'allocated_days' => 12.00,
                 'used_days' => 2.00,
@@ -2467,7 +2479,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'tenant_id' => $tenant->id,
                 'store_id' => $store->id,
                 'employee_id' => $emp->id,
-                'shift_template_id' => $shiftIds['PAGI-' . $tenant->id],
+                'shift_template_id' => $shiftIds['PAGI-'.$tenant->id],
                 'schedule_date' => '2026-11-05',
                 'status' => 'SCHEDULED',
                 'created_at' => now(),
@@ -2512,7 +2524,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             $lrId = DB::table('leave_requests')->insertGetId([
                 'tenant_id' => $tenant->id,
                 'employee_id' => $firstEmp->id,
-                'leave_policy_id' => $leavePolicyIds['ANNUAL-' . $tenant->id],
+                'leave_policy_id' => $leavePolicyIds['ANNUAL-'.$tenant->id],
                 'approval_id' => $hrmApprovalId,
                 'start_date' => '2026-08-14',
                 'end_date' => '2026-08-15',
@@ -2526,7 +2538,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             DB::table('leave_transactions')->insert([
                 'tenant_id' => $tenant->id,
                 'employee_id' => $firstEmp->id,
-                'leave_policy_id' => $leavePolicyIds['ANNUAL-' . $tenant->id],
+                'leave_policy_id' => $leavePolicyIds['ANNUAL-'.$tenant->id],
                 'transaction_type' => 'USAGE',
                 'days_delta' => -2.00,
                 'leave_request_id' => $lrId,
@@ -2562,7 +2574,7 @@ class PopulateEnterpriseDatasetCommand extends Command
         $payrollMonths = [
             [
                 'code' => '2026-08',
-                'name' => 'Payroll Periode Agustus ' . $tenant->id . '-2026',
+                'name' => 'Payroll Periode Agustus '.$tenant->id.'-2026',
                 'start' => '2026-08-01',
                 'end' => '2026-08-31',
                 'cutoff' => '2026-08-25',
@@ -2570,7 +2582,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             ],
             [
                 'code' => '2026-09',
-                'name' => 'Payroll Periode September ' . $tenant->id . '-2026',
+                'name' => 'Payroll Periode September '.$tenant->id.'-2026',
                 'start' => '2026-09-01',
                 'end' => '2026-09-30',
                 'cutoff' => '2026-09-25',
@@ -2578,7 +2590,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             ],
             [
                 'code' => '2026-10',
-                'name' => 'Payroll Periode Oktober ' . $tenant->id . '-2026',
+                'name' => 'Payroll Periode Oktober '.$tenant->id.'-2026',
                 'start' => '2026-10-01',
                 'end' => '2026-10-31',
                 'cutoff' => '2026-10-25',
@@ -2598,13 +2610,13 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'cutoff_date' => $pm['cutoff'],
                 'payment_date' => $pm['pay_date'],
                 'is_closed' => 1,
-                'created_at' => $pm['pay_date'] . ' 10:00:00',
-                'updated_at' => $pm['pay_date'] . ' 10:00:00',
+                'created_at' => $pm['pay_date'].' 10:00:00',
+                'updated_at' => $pm['pay_date'].' 10:00:00',
             ]);
 
             $batchId = DB::table('payroll_batches')->insertGetId([
                 'tenant_id' => $tenant->id,
-                'batch_number' => 'PAYBATCH-' . $tenant->id . '-' . str_replace('-', '', $pm['code']),
+                'batch_number' => 'PAYBATCH-'.$tenant->id.'-'.str_replace('-', '', $pm['code']),
                 'payroll_period_id' => $pPeriodId,
                 'period_start_date' => $pm['start'],
                 'period_end_date' => $pm['end'],
@@ -2618,10 +2630,10 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'total_bpjs_employee' => $empCount * 300000.00,
                 'total_net_amount' => $empCount * 9450000.00,
                 'created_by_user_id' => $userId,
-                'finalized_at' => $pm['pay_date'] . ' 17:00:00',
-                'paid_at' => $pm['pay_date'] . ' 18:00:00',
-                'created_at' => $pm['pay_date'] . ' 10:00:00',
-                'updated_at' => $pm['pay_date'] . ' 18:00:00',
+                'finalized_at' => $pm['pay_date'].' 17:00:00',
+                'paid_at' => $pm['pay_date'].' 18:00:00',
+                'created_at' => $pm['pay_date'].' 10:00:00',
+                'updated_at' => $pm['pay_date'].' 18:00:00',
             ]);
             $lastBatchId = $batchId;
 
@@ -2639,7 +2651,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                     'ptkp_status_snapshot' => 'TK/0',
                     'tax_calculation_method_snapshot' => 'TER_2024',
                     'bank_name_snapshot' => 'Bank Central Asia (BCA)',
-                    'bank_account_number_snapshot' => '542019' . str_pad((string) $emp->id, 4, '0', STR_PAD_LEFT),
+                    'bank_account_number_snapshot' => '542019'.str_pad((string) $emp->id, 4, '0', STR_PAD_LEFT),
                     'basic_salary_amount' => 7500000.00,
                     'fixed_allowances_amount' => 1500000.00,
                     'variable_allowances_amount' => 0.00,
@@ -2656,8 +2668,8 @@ class PopulateEnterpriseDatasetCommand extends Command
                     'other_deductions_amount' => 0.00,
                     'net_pay_amount' => 9450000.00,
                     'payslip_token' => Str::random(32),
-                    'created_at' => $pm['pay_date'] . ' 10:00:00',
-                    'updated_at' => $pm['pay_date'] . ' 18:00:00',
+                    'created_at' => $pm['pay_date'].' 10:00:00',
+                    'updated_at' => $pm['pay_date'].' 18:00:00',
                 ]);
 
                 DB::table('payroll_items')->insert([
@@ -2669,8 +2681,8 @@ class PopulateEnterpriseDatasetCommand extends Command
                         'type' => 'EARNING',
                         'amount' => 7500000.00,
                         'is_taxable' => 1,
-                        'created_at' => $pm['pay_date'] . ' 10:00:00',
-                        'updated_at' => $pm['pay_date'] . ' 10:00:00',
+                        'created_at' => $pm['pay_date'].' 10:00:00',
+                        'updated_at' => $pm['pay_date'].' 10:00:00',
                     ],
                     [
                         'tenant_id' => $tenant->id,
@@ -2680,8 +2692,8 @@ class PopulateEnterpriseDatasetCommand extends Command
                         'type' => 'EARNING',
                         'amount' => 1500000.00,
                         'is_taxable' => 1,
-                        'created_at' => $pm['pay_date'] . ' 10:00:00',
-                        'updated_at' => $pm['pay_date'] . ' 10:00:00',
+                        'created_at' => $pm['pay_date'].' 10:00:00',
+                        'updated_at' => $pm['pay_date'].' 10:00:00',
                     ],
                     [
                         'tenant_id' => $tenant->id,
@@ -2691,8 +2703,8 @@ class PopulateEnterpriseDatasetCommand extends Command
                         'type' => 'EARNING',
                         'amount' => 500000.00,
                         'is_taxable' => 1,
-                        'created_at' => $pm['pay_date'] . ' 10:00:00',
-                        'updated_at' => $pm['pay_date'] . ' 10:00:00',
+                        'created_at' => $pm['pay_date'].' 10:00:00',
+                        'updated_at' => $pm['pay_date'].' 10:00:00',
                     ],
                     [
                         'tenant_id' => $tenant->id,
@@ -2702,8 +2714,8 @@ class PopulateEnterpriseDatasetCommand extends Command
                         'type' => 'DEDUCTION',
                         'amount' => 250000.00,
                         'is_taxable' => 0,
-                        'created_at' => $pm['pay_date'] . ' 10:00:00',
-                        'updated_at' => $pm['pay_date'] . ' 10:00:00',
+                        'created_at' => $pm['pay_date'].' 10:00:00',
+                        'updated_at' => $pm['pay_date'].' 10:00:00',
                     ],
                 ]);
             }
@@ -2729,7 +2741,7 @@ class PopulateEnterpriseDatasetCommand extends Command
         $ruleId = DB::table('commission_rules')->insertGetId([
             'tenant_id' => $tenant->id,
             'store_id' => $mainStore->id,
-            'rule_name' => 'Insentif Barista Signature Beverages ' . $tenant->id,
+            'rule_name' => 'Insentif Barista Signature Beverages '.$tenant->id,
             'basis_type' => 'FIXED_PER_ITEM',
             'rate_amount' => 2500.00,
             'product_id' => $p1?->id,
@@ -2772,7 +2784,7 @@ class PopulateEnterpriseDatasetCommand extends Command
         $campId = DB::table('promotion_campaigns')->insertGetId([
             'tenant_id' => $tenant->id,
             'store_id' => $mainStore->id,
-            'campaign_code' => 'PAYDAY-25-' . $tenant->id,
+            'campaign_code' => 'PAYDAY-25-'.$tenant->id,
             'name' => 'Promo Payday Festival Diskon 25%',
             'description' => 'Diskon 25% spesial akhir bulan untuk seluruh menu makanan & minuman',
             'type' => 'PERCENTAGE_DISCOUNT',
@@ -2850,7 +2862,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 [
                     'tenant_id' => $tenant->id,
                     'store_id' => $mainStore->id,
-                    'product_id' => $p2?->id ?? $p1->id,
+                    'product_id' => $p2->id ?? $p1->id,
                     'old_price' => 28000.00,
                     'new_price' => 30000.00,
                     'status' => 'SHELF_LABEL_PRINTED',
@@ -2896,7 +2908,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 ]),
                 'status' => 'sent',
                 'sent_at' => '2026-11-05 18:45:00',
-                'provider_message_id' => 'wamid.HBgMOTEyODk4NzY1NDMyFQIAEhgWM0VFRDI5QjE5' . $tenant->id,
+                'provider_message_id' => 'wamid.HBgMOTEyODk4NzY1NDMyFQIAEhgWM0VFRDI5QjE5'.$tenant->id,
                 'created_at' => '2026-11-05 18:44:50',
                 'updated_at' => '2026-11-05 18:45:00',
             ],
@@ -2912,7 +2924,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 ]),
                 'status' => 'sent',
                 'sent_at' => '2025-10-31 18:30:00',
-                'provider_message_id' => 'wamid.HBgMOTEzOTk4ODc3NjYFQIAEhgWM0VFRDI5QjE4' . $tenant->id,
+                'provider_message_id' => 'wamid.HBgMOTEzOTk4ODc3NjYFQIAEhgWM0VFRDI5QjE4'.$tenant->id,
                 'created_at' => '2025-10-31 18:29:50',
                 'updated_at' => '2025-10-31 18:30:00',
             ],
@@ -2924,7 +2936,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             DB::table('vouchers')->insert([
                 [
                     'tenant_id' => $tenant->id,
-                    'code' => 'VOUCHER-NEWYEAR-' . $tenant->id,
+                    'code' => 'VOUCHER-NEWYEAR-'.$tenant->id,
                     'name' => 'Voucher Promo Tahun Baru 2025',
                     'discount_id' => $disc->id,
                     'customer_id' => null,
@@ -2944,7 +2956,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 ],
                 [
                     'tenant_id' => $tenant->id,
-                    'code' => 'VOUCHER-VIP-' . $tenant->id,
+                    'code' => 'VOUCHER-VIP-'.$tenant->id,
                     'name' => 'Voucher Spesial Pelanggan Setia 20%',
                     'discount_id' => $disc->id,
                     'customer_id' => null,
@@ -2972,7 +2984,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 [
                     'tenant_id' => $tenant->id,
                     'store_id' => $mainStore->id,
-                    'order_number' => 'MO-202506-' . sprintf('%03d', $tenant->id) . '-001',
+                    'order_number' => 'MO-202506-'.sprintf('%03d', $tenant->id).'-001',
                     'product_id' => $prod->id,
                     'planned_quantity' => 150.0000,
                     'produced_quantity' => 150.0000,
@@ -2987,7 +2999,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 [
                     'tenant_id' => $tenant->id,
                     'store_id' => $mainStore->id,
-                    'order_number' => 'MO-202511-' . sprintf('%03d', $tenant->id) . '-002',
+                    'order_number' => 'MO-202511-'.sprintf('%03d', $tenant->id).'-002',
                     'product_id' => $prod->id,
                     'planned_quantity' => 200.0000,
                     'produced_quantity' => 200.0000,
@@ -3013,7 +3025,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 [
                     'tenant_id' => $tenant->id,
                     'provider' => 'midtrans',
-                    'idempotency_key' => 'midtrans-hook-' . $tenant->id . '-20250615-01',
+                    'idempotency_key' => 'midtrans-hook-'.$tenant->id.'-20250615-01',
                     'event_type' => 'payment.capture',
                     'payload' => json_encode([
                         'transaction_status' => 'settlement',
@@ -3032,11 +3044,11 @@ class PopulateEnterpriseDatasetCommand extends Command
                 [
                     'tenant_id' => $tenant->id,
                     'provider' => 'midtrans',
-                    'idempotency_key' => 'midtrans-hook-' . $tenant->id . '-20251120-02',
+                    'idempotency_key' => 'midtrans-hook-'.$tenant->id.'-20251120-02',
                     'event_type' => 'payment.capture',
                     'payload' => json_encode([
                         'transaction_status' => 'settlement',
-                        'order_id' => $orderCode . '-2',
+                        'order_id' => $orderCode.'-2',
                         'gross_amount' => (string) ($payAmount * 2),
                         'payment_type' => 'qris',
                         'transaction_time' => '2025-11-20 19:20:00',
@@ -3068,7 +3080,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             $rows[] = $row;
         }
 
-        if (!empty($rows)) {
+        if (! empty($rows)) {
             DB::table('order_items_partitioned')->insertOrIgnore($rows);
         }
 
@@ -3084,7 +3096,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             $mRows[] = (array) $mov;
         }
 
-        if (!empty($mRows)) {
+        if (! empty($mRows)) {
             DB::table('stock_movements_partitioned')->insertOrIgnore($mRows);
         }
     }
@@ -3098,10 +3110,10 @@ class PopulateEnterpriseDatasetCommand extends Command
         $users = DB::table('users')->limit(10)->get();
         foreach ($users as $user) {
             DB::table('personal_access_tokens')->insert([
-                'tokenable_type' => 'App\Models\User',
+                'tokenable_type' => User::class,
                 'tokenable_id' => $user->id,
-                'name' => 'POS Terminal Tablet #' . $user->id,
-                'token' => hash('sha256', 'token_' . $user->id . '_' . Str::random(40)),
+                'name' => 'POS Terminal Tablet #'.$user->id,
+                'token' => hash('sha256', 'token_'.$user->id.'_'.Str::random(40)),
                 'abilities' => json_encode(['pos:checkout', 'orders:read', 'orders:create']),
                 'last_used_at' => '2025-12-30 14:30:00',
                 'created_at' => now(),

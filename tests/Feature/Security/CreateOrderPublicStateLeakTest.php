@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Security;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Kasir\CreateOrder;
-use App\Models\Device;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Device;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use ReflectionClass;

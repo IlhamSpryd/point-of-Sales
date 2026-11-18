@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Enums\StockOpnameStatusEnum;
-use App\Models\User;
 use App\Modules\Inventory\Models\StockOpname;
+use App\Modules\Organization\Models\User;
 
 class StockOpnamePolicy
 {

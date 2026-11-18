@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Manufacturing\Services;
 
-use App\Modules\Manufacturing\Models\Ingredient;
-use App\Modules\Manufacturing\Models\IngredientStockBalance;
-use App\Modules\Manufacturing\Models\ModifierIngredient;
-use App\Modules\Manufacturing\Models\ProductIngredient;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Inventory\Models\IngredientStockBalance;
+use App\Modules\Inventory\Models\ModifierIngredient;
+use App\Modules\Inventory\Models\ProductIngredient;
 
 /**
  * RecipeCostingService — Layanan kalkulasi HPP resep makanan & minuman (BOM Costing)

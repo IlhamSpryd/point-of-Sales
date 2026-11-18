@@ -9,14 +9,14 @@ use App\Enums\PaymentAttemptStatus;
 use App\Enums\PaymentMethod;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTransactionRequest;
-use App\Models\Order;
-use App\Models\PaymentAttempt;
-use App\Services\CashierPinService;
-use App\Services\DatabaseErrorClassifier;
-use App\Services\Printing\KitchenPrinterService;
-use App\Services\Printing\ReceiptPrinterService;
-use App\Services\ReturnRefundService;
-use App\Services\TransactionService;
+use App\Modules\Organization\Services\CashierPinService;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\PaymentAttempt;
+use App\Modules\Sales\Services\Printing\KitchenPrinterService;
+use App\Modules\Sales\Services\Printing\ReceiptPrinterService;
+use App\Modules\Sales\Services\ReturnRefundService;
+use App\Modules\Sales\Services\TransactionService;
+use App\Platform\Database\DatabaseErrorClassifier;
 use App\Support\Traits\RequiresActiveStoreContext;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Database\QueryException;
@@ -29,8 +29,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
-use Midtrans\Config;
-use Midtrans\Transaction;
 
 class TransactionController extends Controller
 {

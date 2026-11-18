@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Livewire\Subscription;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Device;
-use App\Models\Plan;
-use App\Models\Store;
-use App\Models\TenantSubscription;
-use App\Models\User;
-use App\Modules\Settings\Models\ProvisioningRequest;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\User;
+use App\Modules\Subscription\Models\Plan;
+use App\Modules\Subscription\Models\ProvisioningRequest;
+use App\Modules\Subscription\Models\TenantSubscription;
 use App\Modules\Subscription\Services\EntitlementEnforcementService;
-use App\Services\Context\TenantContext;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
 use Livewire\Component;
@@ -36,12 +36,12 @@ class SubscriptionPortal extends Component
         $user = auth()->user();
 
         $idempotencyKey = 'upgrade:'.$tenantId.':'.$plan->id.':'.now()->timestamp.':'.Str::random(6);
-        $fingerprint = hash('sha256', 'upgrade|'.$tenantId.'|'.$plan->id.'|'.($user?->email ?? 'unknown'));
+        $fingerprint = hash('sha256', 'upgrade|'.$tenantId.'|'.$plan->id.'|'.($user->email ?? 'unknown'));
 
         ProvisioningRequest::create([
             'idempotency_key' => $idempotencyKey,
             'request_fingerprint' => $fingerprint,
-            'owner_email' => $user?->email ?? "tenant-{$tenantId}@domain.internal",
+            'owner_email' => $user->email ?? "tenant-{$tenantId}@domain.internal",
             'status' => 'pending',
             'result_tenant_id' => $tenantId,
             'result_user_id' => $user?->id,

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Pricing;
 
-use App\Models\Approval;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Approval;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use App\Modules\Pricing\Models\PromotionCampaign;
 use App\Modules\Pricing\Models\PromotionReservation;
 use App\Modules\Pricing\Models\PromotionReward;
 use App\Modules\Pricing\Models\PromotionRule;
 use App\Modules\Pricing\Models\PromotionStoreMapping;
-use App\Services\Context\TenantContext;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;

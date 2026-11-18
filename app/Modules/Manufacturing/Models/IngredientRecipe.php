@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace App\Modules\Manufacturing\Models;
 
+use App\Core\Scopes\TenantScope;
 use App\Core\Traits\AssignsStore;
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\BelongsToCompany;
-use App\Models\Ingredient;
-use App\Models\Scopes\TenantScope;
-use App\Models\Store;
-use App\Models\Tenant;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * Model Resep Bahan Olahan Dapur / Kitchen Prep Item (Multi-Level BOM).
@@ -28,8 +29,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property numeric-string $quantity_required
  * @property string|null $unit
  * @property string|null $notes
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read Ingredient $parentIngredient
  * @property-read Ingredient $componentIngredient
  * @property-read Store|null $store

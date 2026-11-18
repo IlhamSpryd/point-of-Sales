@@ -4,20 +4,24 @@ declare(strict_types=1);
 
 namespace App\Livewire\HR;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\InteractsWithToast;
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Livewire\Concerns\WithBulkActions;
-use App\Modules\HR\Enums\EmploymentStatusEnum;
-use App\Modules\HR\Enums\EmploymentTypeEnum;
-use App\Modules\HR\Enums\GenderEnum;
-use App\Modules\HR\Enums\MaritalStatusEnum;
-use App\Modules\HR\Enums\ReligionEnum;
-use App\Modules\HR\Models\Department;
-use App\Modules\HR\Models\Employee;
-use App\Modules\HR\Models\JobTitle;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\User;
+use App\Modules\Workforce\Enums\EmploymentStatusEnum;
+use App\Modules\Workforce\Enums\EmploymentTypeEnum;
+use App\Modules\Workforce\Enums\GenderEnum;
+use App\Modules\Workforce\Enums\MaritalStatusEnum;
+use App\Modules\Workforce\Enums\ReligionEnum;
+use App\Modules\Workforce\Models\Department;
+use App\Modules\Workforce\Models\Employee;
+use App\Modules\Workforce\Models\JobTitle;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -255,10 +259,10 @@ class EmployeeManager extends Component
             ]);
         }
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($tenantId) {
+        DB::transaction(function () use ($tenantId) {
             $userId = null;
             if ($this->createSystemAccount) {
-                $user = \App\Models\User::create([
+                $user = User::create([
                     'tenant_id' => $tenantId,
                     'name' => $this->fullName,
                     'email' => $this->email,
@@ -271,7 +275,7 @@ class EmployeeManager extends Component
                 ]);
                 $userId = $user->id;
 
-                $defaultStore = \App\Models\Store::withoutGlobalScopes()
+                $defaultStore = Store::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
                     ->first();
                 if ($defaultStore) {
@@ -321,15 +325,16 @@ class EmployeeManager extends Component
 
             // Cascade status to linked user account if exists
             if ($employee->user_id) {
-                $linkedUser = \App\Models\User::withoutGlobalScopes()->find($employee->user_id);
+                $linkedUser = User::withoutGlobalScopes()->find($employee->user_id);
                 if ($linkedUser) {
                     $linkedUser->is_active = ($employee->employment_status === EmploymentStatusEnum::ACTIVE);
                     $linkedUser->save();
 
                     if (! $linkedUser->is_active) {
                         try {
-                            \Illuminate\Support\Facades\DB::table('sessions')->where('user_id', $linkedUser->id)->delete();
-                        } catch (\Throwable) {}
+                            DB::table('sessions')->where('user_id', $linkedUser->id)->delete();
+                        } catch (\Throwable) {
+                        }
                     }
                 }
             }
@@ -384,7 +389,7 @@ class EmployeeManager extends Component
             ->orderBy('name')
             ->get();
 
-        $roles = \App\Models\Role::withoutTenantScope()
+        $roles = Role::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->orderBy('name')
             ->get();

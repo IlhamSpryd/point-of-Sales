@@ -2,20 +2,20 @@
 
 namespace Tests\Feature\Domain1;
 
+use App\Core\Context\TenantContext;
 use App\Jobs\ProcessProvisioningOutboxJob;
-use App\Models\Category;
-use App\Models\EmailOutbox;
-use App\Models\Ingredient;
-use App\Models\OwnerOnboardingToken;
-use App\Models\Product;
-use App\Models\ProvisioningRequest;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
-use App\Services\ProvisioningService;
-use App\Services\TenantProvisioningService;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Organization\Models\EmailOutbox;
+use App\Modules\Organization\Models\OwnerOnboardingToken;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\TenantProvisioningService;
+use App\Modules\Subscription\Models\ProvisioningRequest;
+use App\Modules\Subscription\Services\ProvisioningService;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -138,7 +138,7 @@ class ProvisioningDomainTest extends TestCase
             + DB::table('ingredient_stock_balances')->where('store_id', $store->id)->count()
         );
         $this->assertSame('ready', $tenant->readiness_status);
-        $this->assertSame(8, DB::table('roles')->where('tenant_id', $tenant->id)->count());
+        $this->assertSame(11, DB::table('roles')->where('tenant_id', $tenant->id)->count());
         app(TenantContext::class)->runAs($tenant->id, null, function () use ($tenant): void {
             $provisioning = app(TenantProvisioningService::class);
             $this->assertSame(2, User::where('tenant_id', $tenant->id)->whereIn('email', [

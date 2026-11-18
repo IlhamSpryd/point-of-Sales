@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Purchasing;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Modules\Purchasing\Models\GoodsReceivedNote;
 use App\Modules\Purchasing\Models\PurchaseDebitNote;
@@ -11,7 +12,6 @@ use App\Modules\Purchasing\Models\PurchaseReturn;
 use App\Modules\Purchasing\Models\Supplier;
 use App\Modules\Purchasing\Models\SupplierInvoice;
 use App\Modules\Purchasing\Services\PurchaseReturnService;
-use App\Services\Context\TenantContext;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;

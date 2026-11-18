@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Integration\Models;
 
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Tenant;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToTenant;
+use App\Modules\Organization\Models\Tenant;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -24,10 +25,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $attempts
  * @property string|null $last_error
  * @property string|null $provider_message_id
- * @property \Carbon\Carbon|null $lease_expires_at
- * @property \Carbon\Carbon|null $sent_at
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
+ * @property Carbon|null $lease_expires_at
+ * @property Carbon|null $sent_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class WhatsAppMessageOutbox extends Model
 {
@@ -35,8 +36,11 @@ class WhatsAppMessageOutbox extends Model
     use ScopedToTenant;
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_PROCESSING = 'processing';
+
     public const STATUS_SENT = 'sent';
+
     public const STATUS_FAILED = 'failed';
 
     protected $table = 'whatsapp_message_outbox';
@@ -71,4 +75,3 @@ class WhatsAppMessageOutbox extends Model
         return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 }
-

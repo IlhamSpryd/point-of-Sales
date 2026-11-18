@@ -7,7 +7,7 @@ namespace App\Modules\Integration\Logistics\DTOs;
 class ShippingRateRequestDto
 {
     /**
-     * @param array{length?: int, width?: int, height?: int}|null $dimensionsCm
+     * @param  array{length?: int, width?: int, height?: int}|null  $dimensionsCm
      */
     public function __construct(
         public string $originPostalCode,

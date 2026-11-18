@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Payment;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderFulfillmentStatus;
 use App\Enums\OrderLifecycleStatus;
 use App\Enums\OrderPaymentStatus;
 use App\Enums\OrderStatus;
-use App\Models\Order;
-use App\Models\PaymentAttempt;
-use App\Models\PaymentInbox;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Services\Context\TenantContext;
-use App\Services\Payment\PaymentInboxDispatcher;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\PaymentInbox;
+use App\Modules\Sales\Services\Payment\PaymentInboxDispatcher;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class PaymentInboxReliabilityTest extends TestCase
@@ -25,7 +26,9 @@ class PaymentInboxReliabilityTest extends TestCase
     protected bool $optOutFromDefaultTenant = true;
 
     private Tenant $tenant;
+
     private Store $store;
+
     private PaymentInboxDispatcher $inboxDispatcher;
 
     protected function afterSubclassSetUp(): void
@@ -115,7 +118,7 @@ class PaymentInboxReliabilityTest extends TestCase
      */
     public function test_bounded_state_machines_update_synchronously_with_order(): void
     {
-        $user = \App\Models\User::withoutTenantScope()->create([
+        $user = User::withoutTenantScope()->create([
             'tenant_id' => $this->tenant->id,
             'name' => 'Cashier State Machine',
             'email' => 'csm.'.uniqid().'@apeiron.test',
@@ -127,7 +130,7 @@ class PaymentInboxReliabilityTest extends TestCase
             'store_id' => $this->store->id,
             'user_id' => $user->id,
             'order_code' => 'ORD-SM-'.uniqid(),
-            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
+            'idempotency_key' => (string) Str::uuid(),
             'order_date' => now()->toDateString(),
             'subtotal_amount' => 50000,
             'order_amount' => 50000,

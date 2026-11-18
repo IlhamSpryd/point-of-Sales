@@ -7,7 +7,7 @@ namespace App\Modules\Finance\DTOs;
 class TaxInvoiceDocumentDto
 {
     /**
-     * @param list<TaxInvoiceItemDto> $items
+     * @param  list<TaxInvoiceItemDto>  $items
      */
     public function __construct(
         public int $tenantId,
@@ -29,4 +29,3 @@ class TaxInvoiceDocumentDto
         public array $items = []
     ) {}
 }
-

@@ -2,8 +2,9 @@
 
 namespace App\Http\Middleware;
 
-use App\Services\Context\StoreResolver;
-use App\Services\Context\TenantContext;
+use App\Core\Context\StoreResolver;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Company;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,7 +35,7 @@ class SetTenantContext
         // 2. Validate user is active and not soft-deleted
         // Note: soft-deleted models might be excluded by default global scope,
         // but we explicitly check trashed() if applicable, and is_active.
-        if ((method_exists($user, 'trashed') && $user->trashed()) || ! $user->is_active || ($user->status ?? 'active') === 'suspended') {
+        if ($user->trashed() || ! $user->is_active || ($user->status ?? 'active') === 'suspended') {
             try {
                 DB::table('sessions')->where('user_id', $user->id)->delete();
             } catch (\Throwable) {
@@ -95,14 +96,14 @@ class SetTenantContext
         $sessionCompanyId = $request->hasSession() ? $request->session()->get('active_company_id') : null;
         $activeCompany = null;
         if ($sessionCompanyId !== null) {
-            $activeCompany = \App\Modules\Core\Models\Company::withoutGlobalScopes()
+            $activeCompany = Company::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->where('is_active', true)
                 ->find($sessionCompanyId);
         }
         if (! $activeCompany) {
-            $activeCompany = \App\Modules\Core\Models\Company::getDefaultCompanyForTenant($tenantId)
-                ?? \App\Modules\Core\Models\Company::withoutGlobalScopes()
+            $activeCompany = Company::getDefaultCompanyForTenant($tenantId)
+                ?? Company::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
                     ->where('is_active', true)
                     ->orderByDesc('is_default')

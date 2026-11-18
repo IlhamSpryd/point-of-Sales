@@ -4,21 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Inventory;
 
+use App\Core\Context\TenantContext;
 use App\Enums\StockMovementType;
 use App\Enums\StockTransferDiscrepancyResolutionEnum;
 use App\Enums\StockTransferStatusEnum;
-use App\Models\Product;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Modules\Core\Models\Company;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
 use App\Modules\Inventory\Models\StockMovement;
-use App\Modules\Inventory\Models\StockTransfer;
-use App\Modules\Inventory\Models\Warehouse;
 use App\Modules\Inventory\Services\InventoryLedgerService;
 use App\Modules\Inventory\Services\StockTransferService;
-use App\Modules\Products\Models\Category;
-use App\Modules\Settings\Models\Store;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Company;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Models\Warehouse;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
@@ -30,13 +29,21 @@ class WarehouseStockIntegrationTest extends TestCase
     protected bool $optOutFromDefaultTenant = true;
 
     private Tenant $tenant;
+
     private Company $company;
+
     private Warehouse $centralWarehouse;
+
     private Store $outletStore;
+
     private Store $originStore;
+
     private User $operatorUser;
+
     private Product $product;
+
     private InventoryLedgerService $ledgerService;
+
     private StockTransferService $transferService;
 
     protected function afterSubclassSetUp(): void

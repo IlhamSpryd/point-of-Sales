@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Security;
 
-use App\Models\Role;
-use App\Models\Shift;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Shift;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Blade;
 use Tests\TestCase;
@@ -21,11 +21,17 @@ class BranchSwitchingRbacTest extends TestCase
     protected bool $optOutFromDefaultTenant = true;
 
     private Tenant $tenant;
+
     private Store $store1;
+
     private Store $store2;
+
     private Store $store3;
+
     private User $owner;
+
     private User $supervisor;
+
     private User $cashier;
 
     protected function afterSubclassSetUp(): void

@@ -5,33 +5,25 @@ declare(strict_types=1);
 namespace App\Modules\Sales\Models;
 
 use App\Casts\OrderTypeCast;
+use App\Core\Traits\AssignsStore;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToStore;
+use App\Core\Traits\ScopedToTenant;
 use App\Enums\OrderFulfillmentStatus;
 use App\Enums\OrderLifecycleStatus;
 use App\Enums\OrderPaymentStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatusEnum;
-use App\Models\Concerns\AssignsStore;
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToStore;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Customer;
-use App\Models\Device;
-use App\Models\Discount;
-use App\Models\DiscountRedemption;
-use App\Models\OperationalUnit;
-use App\Models\OrderItem;
-use App\Models\OrderReturn;
-use App\Models\ParkedCart;
-use App\Models\Payment;
-use App\Models\PaymentAttempt;
-use App\Models\PaymentRefund;
-use App\Models\ReceiptPrintLog;
-use App\Models\Shift;
-use App\Models\Store;
-use App\Models\Table;
-use App\Models\User;
-use App\Services\TransactionService;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Models\OperationalUnit;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\User;
+use App\Modules\Pricing\Models\Discount;
+use App\Modules\Pricing\Models\DiscountRedemption;
+use App\Modules\Sales\Contracts\PosOrderReaderInterface;
+use App\Modules\Sales\Services\TransactionService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -61,6 +53,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $sales_order_id
  * @property int|null $table_id
  * @property int|null $created_by_device_id
+ * @property int|null $device_id
  * @property int $subtotal_amount
  * @property int $discount_amount
  * @property int $tax_amount
@@ -71,8 +64,53 @@ use Illuminate\Support\Carbon;
  * @property int $print_count
  * @property int|null $voided_by
  */
-class Order extends Model
+class Order extends Model implements PosOrderReaderInterface
 {
+    public function getId(): int
+    {
+        return (int) $this->id;
+    }
+
+    public function getTenantId(): int
+    {
+        return (int) $this->tenant_id;
+    }
+
+    public function getStoreId(): ?int
+    {
+        return $this->store_id !== null ? (int) $this->store_id : null;
+    }
+
+    public function getOrderNumber(): string
+    {
+        return (string) ($this->order_number ?? $this->order_code);
+    }
+
+    public function getTotalAmount(): float|string
+    {
+        return (string) ($this->total_amount ?? $this->order_amount ?? '0.00');
+    }
+
+    public function getTaxAmount(): float|string
+    {
+        return (string) ($this->tax_amount ?? '0.00');
+    }
+
+    public function getDiscountAmount(): float|string
+    {
+        return (string) ($this->discount_amount ?? '0.00');
+    }
+
+    public function getSubtotal(): float|string
+    {
+        return (string) ($this->subtotal ?? $this->subtotal_amount ?? '0.00');
+    }
+
+    public function getCreatedAt(): mixed
+    {
+        return $this->created_at;
+    }
+
     use AssignsStore, AssignsTenant;
     use ScopedToStore;
     use ScopedToTenant;

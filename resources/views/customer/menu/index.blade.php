@@ -215,8 +215,8 @@
 
         {{-- Floating Cart Button --}}
         <div x-data="{
-            count: window.customerCartCount ?? {{ app(\App\Services\CartService::class)->getTotalQty() }},
-            subtotal: {{ app(\App\Services\CartService::class)->getSubtotal() }}
+            count: window.customerCartCount ?? {{ app(\App\Modules\Sales\Services\CartService::class)->getTotalQty() }},
+            subtotal: {{ app(\App\Modules\Sales\Services\CartService::class)->getSubtotal() }}
         }"
             x-on:cart-updated.window="count = $event.detail.total_qty; subtotal = $event.detail.subtotal;"
             x-show="count > 0" x-cloak x-transition:enter="transition ease-[cubic-bezier(0.16,1,0.3,1)] duration-400"

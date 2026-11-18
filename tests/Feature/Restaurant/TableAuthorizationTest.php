@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Restaurant;
 
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Table;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
-use Illuminate\Auth\Access\AuthorizationException;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Table;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Gate;
@@ -24,12 +23,19 @@ class TableAuthorizationTest extends TestCase
     protected bool $optOutFromDefaultTenant = true;
 
     protected Tenant $tenant;
+
     protected Store $store1;
+
     protected Store $store2;
+
     protected User $owner;
+
     protected User $managerStore1;
+
     protected User $barista;
+
     protected Table $tableStore1;
+
     protected Table $tableStore2;
 
     protected function afterSubclassSetUp(): void

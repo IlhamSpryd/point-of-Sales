@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Modules\Pricing\Services;
 
-use App\Modules\Customers\Models\Voucher;
-use App\Modules\Products\Models\PriceListItem;
-use App\Modules\Products\Models\Product;
-use App\Modules\Products\Models\ProductVariant;
-use App\Modules\Products\Models\TaxClass;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\ProductVariant;
+use App\Modules\Catalog\Models\TaxClass;
+use App\Modules\Pricing\Models\PriceListItem;
+use App\Modules\Pricing\Models\Voucher;
 use Illuminate\Support\Carbon;
 use RuntimeException;
 

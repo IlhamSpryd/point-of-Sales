@@ -1,5 +1,6 @@
 {{-- MODAL PARK / HOLD CART --}}
-<x-ui.modal wire:model="isParkModalOpen" maxWidth="md">
+@if ($isParkModalOpen)
+<x-ui.modal :open="true" id="pos-park-modal" maxWidth="md" onClose="$wire.set('isParkModalOpen', false)">
     <x-slot:header>
         <div>
             <h3 class="text-base font-semibold text-foreground">Park Order</h3>
@@ -46,3 +47,4 @@
         </div>
     </x-slot:footer>
 </x-ui.modal>
+@endif

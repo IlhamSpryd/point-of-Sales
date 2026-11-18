@@ -6,7 +6,6 @@ namespace App\Modules\Finance\Services;
 
 use App\Modules\Finance\DTOs\TaxInvoiceDocumentDto;
 use DomainException;
-use InvalidArgumentException;
 
 class CoreTaxSchemaValidator
 {

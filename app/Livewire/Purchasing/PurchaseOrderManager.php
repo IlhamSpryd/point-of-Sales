@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Livewire\Purchasing;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Livewire\Concerns\WithSorting;
-use App\Models\Ingredient;
-use App\Models\Product;
-use App\Models\Store;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Organization\Models\Store;
 use App\Modules\Purchasing\Models\PurchaseOrder;
 use App\Modules\Purchasing\Models\Supplier;
 use App\Modules\Purchasing\Models\SupplierProduct;
 use App\Modules\Purchasing\Services\PurchaseOrderService;
-use App\Services\Context\TenantContext;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;

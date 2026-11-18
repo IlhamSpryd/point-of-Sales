@@ -13,7 +13,6 @@ use App\Modules\Finance\Models\TaxSubmission;
 use App\Modules\Finance\Services\TaxAdapters\CoreTaxPjapAdapter;
 use App\Modules\Finance\Services\TaxAdapters\InternalTaxWorkflowAdapter;
 use DomainException;
-use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Throwable;
 
@@ -28,9 +27,9 @@ class TaxIntegrationService implements TaxIntegrationServiceInterface
         protected TaxCalculationServiceInterface $calculationService,
         ?TaxProviderAdapterInterface $defaultAdapter = null
     ) {
-        $internal = $defaultAdapter ?? new InternalTaxWorkflowAdapter();
+        $internal = $defaultAdapter ?? new InternalTaxWorkflowAdapter;
         $this->registerAdapter($internal);
-        $this->registerAdapter(new CoreTaxPjapAdapter());
+        $this->registerAdapter(new CoreTaxPjapAdapter);
     }
 
     public function calculateTax(
@@ -60,7 +59,7 @@ class TaxIntegrationService implements TaxIntegrationServiceInterface
     /**
      * Submit tax document with provider resolution, idempotency protection, and sensitive data masking.
      *
-     * @param array<string, mixed> $options
+     * @param  array<string, mixed>  $options
      */
     public function submitTaxInvoice(
         TaxInvoiceDocumentDto $document,
@@ -241,7 +240,7 @@ class TaxIntegrationService implements TaxIntegrationServiceInterface
     /**
      * Sensor data sensitif (NPWP, NIK, kunci rahasia) sebelum disimpan ke log / database.
      *
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
     public function maskSensitivePayload(array $payload): array

@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Services;
 
-use App\Models\CashDrawerMovement;
-use App\Models\Device;
-use App\Models\Payment;
-use App\Models\Shift;
-use App\Models\ShiftHandover;
-use App\Models\User;
+use App\Core\Context\TenantContext;
+use App\Enums\OrderStatus;
 use App\Modules\Finance\Services\FinancialOutboxDispatcherService;
-use App\Services\AuditTrailService;
-use App\Services\CashierPinService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\AuditTrailService;
+use App\Modules\Organization\Services\CashierPinService;
+use App\Modules\Sales\Models\CashDrawerMovement;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\Payment;
+use App\Modules\Sales\Models\Shift;
+use App\Modules\Sales\Models\ShiftHandover;
 use DomainException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -654,6 +656,20 @@ class ShiftService
                 throw new DomainException('Register shift has already been closed.');
             }
 
+            // FINDING-CON-01 / R-002: Guard order in-flight. Lock baris order
+            // aktif di bawah shift ini agar checkout yang sedang berjalan
+            // selalu selesai (commit/rollback) SEBELUM rekap kas dihitung,
+            // sehingga expected_cash tidak pernah melewatkan transaksi yang
+            // baru saja di-finalisasi oleh terminal lain saat shift ditutup.
+            Order::withoutGlobalScopes()
+                ->where('tenant_id', $shift->tenant_id)
+                ->where('store_id', $shift->store_id)
+                ->where('shift_id', $shift->id)
+                ->whereIn('order_status', [OrderStatus::Pending->value])
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
+
             $actor = User::withoutGlobalScopes()->find($actorUserId);
             if (! $actor) {
                 throw new DomainException('User not found.');
@@ -709,7 +725,7 @@ class ShiftService
 
             if ($cashDifference !== 0 && $isForceClose) {
                 $updatePayload['variance_approved_by'] = $actorUserId;
-                $updatePayload['variance_reason'] = $forceCloseReason ?: 'Force closed with discrepancy by supervisor';
+                $updatePayload['variance_reason'] = filled($forceCloseReason) ? $forceCloseReason : 'Force closed with discrepancy by supervisor';
             }
 
             $shift->update($updatePayload);
@@ -798,7 +814,7 @@ class ShiftService
         }
 
         // Owner & Admin memiliki wewenang atas seluruh cabang milik tenant-nya
-        if (in_array($roleName, ['Owner', 'Admin'], true) || (bool) $user->role?->is_admin) {
+        if (in_array($roleName, ['Owner', 'Admin'], true) || (bool) $user->role->is_admin) {
             return true;
         }
 

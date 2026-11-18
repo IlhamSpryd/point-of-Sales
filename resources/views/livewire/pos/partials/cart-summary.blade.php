@@ -27,7 +27,7 @@
                     <span class="material-symbols-rounded text-[14px] text-muted-foreground">confirmation_number</span>
                     Voucher: {{ $voucherCode }}
                 </span>
-                <button type="button" wire:click="removeVoucher" class="text-muted-foreground hover:text-rose-600 font-bold p-1 text-sm leading-none cursor-pointer" title="Remove Voucher">&times;</button>
+                <button type="button" wire:click.prevent="removeVoucher" class="text-muted-foreground hover:text-rose-600 font-bold p-1 text-sm leading-none cursor-pointer" title="Remove Voucher">&times;</button>
             </div>
         @elseif (!$pendingOrderId)
             <div x-show="!openPromo" class="flex items-center justify-between text-xs px-0.5">
@@ -41,7 +41,7 @@
                     <input type="text" wire:model="voucherInput" wire:keydown.enter.prevent="applyVoucher"
                         placeholder="Coupon / voucher code..."
                         class="flex-1 h-7 px-2 text-xs bg-white border border-border rounded-md text-foreground placeholder-muted-foreground focus:border-foreground focus:outline-none uppercase tabular-nums transition-colors" />
-                    <button type="button" wire:click="applyVoucher"
+                    <button type="button" wire:click.prevent="applyVoucher"
                         class="h-7 px-2.5 text-xs font-medium text-white bg-primary hover:bg-primary/90 rounded-md transition-colors shadow-2xs cursor-pointer">
                         Apply
                     </button>
@@ -78,7 +78,7 @@
                 <span class="font-semibold text-foreground">Manual Discount: Rp {{ number_format($appliedManualDiscount, 0, ',', '.') }}</span>
                 <span class="text-xs text-muted-foreground block truncate">{{ $appliedManualDiscountReason }}</span>
             </div>
-            <button type="button" wire:click="removeManualDiscount" class="text-muted-foreground hover:text-rose-600 font-bold p-1 text-sm leading-none cursor-pointer" title="Remove Manual Discount">&times;</button>
+            <button type="button" wire:click.prevent="removeManualDiscount" class="text-muted-foreground hover:text-rose-600 font-bold p-1 text-sm leading-none cursor-pointer" title="Remove Manual Discount">&times;</button>
         </div>
     @endif
 
@@ -91,7 +91,7 @@
 
         {{-- Member Discount / Override Discount --}}
         <div class="flex justify-between items-center text-muted-foreground cursor-pointer hover:bg-muted p-0.5 rounded-md transition-colors"
-            wire:click="$set('isManualDiscountModalOpen', true)" title="Configure discount or supervisor authorization">
+            wire:click.prevent="$set('isManualDiscountModalOpen', true)" title="Configure discount or supervisor authorization">
             <div class="flex items-center gap-1.5">
                 <span class="material-symbols-rounded text-[14px] text-muted-foreground">sell</span>
                 <span>Discount / Promo</span>
@@ -133,16 +133,16 @@
                     <span class="text-xs font-sans text-muted-foreground tabular-nums">F5 Exact</span>
                 </div>
                 <div class="grid grid-cols-3 gap-1.5">
-                    <button type="button" wire:click="fastCashPay(0)" wire:loading.attr="disabled"
+                    <button type="button" wire:click.prevent="fastCashPay(0)" wire:loading.attr="disabled"
                         class="h-8 px-2 rounded-lg bg-primary hover:bg-primary/90 text-white text-xs font-semibold flex items-center justify-center transition-all disabled:opacity-50 cursor-pointer">
                         Exact Cash
                     </button>
-                    <button type="button" wire:click="fastCashPay(50000)" wire:loading.attr="disabled"
+                    <button type="button" wire:click.prevent="fastCashPay(50000)" wire:loading.attr="disabled"
                         @disabled($this->totalAmount > 50000)
                         class="h-8 px-1.5 rounded-lg bg-white border border-border hover:border-foreground text-foreground text-xs font-medium flex items-center justify-center tabular-nums transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
                         Rp 50,000
                     </button>
-                    <button type="button" wire:click="fastCashPay(100000)" wire:loading.attr="disabled"
+                    <button type="button" wire:click.prevent="fastCashPay(100000)" wire:loading.attr="disabled"
                         @disabled($this->totalAmount > 100000)
                         class="h-8 px-1.5 rounded-lg bg-white border border-border hover:border-foreground text-foreground text-xs font-medium flex items-center justify-center tabular-nums transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
                         Rp 100,000
@@ -199,8 +199,10 @@
     {{-- Primary Checkout Button --}}
     <div class="pt-1 flex flex-col gap-1.5">
         @if ($pendingOrderId)
-            <button wire:click="submitOrder" id="btn-bayar"
+            <button wire:click.prevent="submitOrder" id="btn-bayar"
                 wire:loading.attr="disabled" wire:target="submitOrder"
+                wire:loading.class.add="pointer-events-none"
+                aria-label="Pay pending QR order (F4)"
                 class="w-full h-11 px-4 rounded-lg bg-primary hover:bg-primary/90 text-white transition-all flex items-center justify-between shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
                 <div class="flex items-center gap-2">
@@ -216,6 +218,7 @@
         @else
             <button type="button" id="btn-proses-bayar"
                 wire:loading.attr="disabled" wire:target="submitOrder"
+                aria-haspopup="dialog" aria-controls="checkout-payment"
                 class="w-full h-11 px-4 rounded-lg bg-primary hover:bg-primary/90 text-white transition-all flex items-center justify-between shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }} }); $dispatch('open-modal', 'checkout-payment')"
                 @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
@@ -231,7 +234,8 @@
 
         <div class="flex items-center justify-between px-1 text-muted-foreground text-xs pt-0.5">
             <button type="button"
-                wire:click="openSplitBillModal"
+                wire:click.prevent="openSplitBillModal"
+                aria-haspopup="dialog"
                 class="flex items-center gap-1 hover:text-foreground text-primary font-semibold transition-colors cursor-pointer">
                 <span class="material-symbols-rounded text-[14px]">call_split</span>
                 <span>Split Bill (Pisah Tagihan)</span>

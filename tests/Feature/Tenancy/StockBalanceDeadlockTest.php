@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Tenancy;
 
-use App\Models\Category;
-use App\Models\Ingredient;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;

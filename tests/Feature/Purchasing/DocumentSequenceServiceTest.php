@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Purchasing;
 
-use App\Models\DocumentSequence;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Services\Context\TenantContext;
-use App\Services\Purchasing\DocumentSequenceService;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Platform\Documents\DocumentSequence;
+use App\Platform\Documents\DocumentSequenceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Services;
 
-use App\Models\CashDrawerMovement;
-use App\Models\Order;
-use App\Models\Payment;
-use App\Models\Role;
-use App\Models\Shift;
-use App\Models\User;
-use App\Services\Context\TenantContext;
-use App\Services\ShiftService;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\CashDrawerMovement;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\Payment;
+use App\Modules\Sales\Models\Shift;
+use App\Modules\Sales\Services\ShiftService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\Support\TwoTenantFixture;

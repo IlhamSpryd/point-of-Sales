@@ -1,5 +1,5 @@
 @php
-    $canManage = auth()->user()?->can('create', \App\Models\Product::class) ?? false;
+    $canManage = auth()->user()?->can('create', \App\Modules\Catalog\Models\Product::class) ?? false;
 @endphp
 
 <x-app-layout>

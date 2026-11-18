@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Reports;
 
-use App\Models\Role;
-use App\Models\User;
-use App\Modules\Reports\Services\DashboardService;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
+use App\Modules\Reporting\Services\DashboardService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

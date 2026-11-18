@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Livewire\Inventory;
 
+use App\Core\Context\TenantContext;
 use App\Enums\StockOpnameStatusEnum;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Ingredient;
-use App\Models\Product;
-use App\Models\StockOpname;
+use App\Modules\Catalog\Models\Product;
 use App\Modules\Inventory\Exceptions\StockOpnameDriftException;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Inventory\Models\StockOpname;
 use App\Modules\Inventory\Services\StockOpnameService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\User;
 use DomainException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;
@@ -421,7 +422,7 @@ class StockOpnameManager extends Component
     public function canViewExpectedStock(): bool
     {
         $user = auth()->user();
-        if (! $user instanceof \App\Models\User) {
+        if (! $user instanceof User) {
             return false;
         }
 

@@ -4,15 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Audit;
 
-use App\Models\Category;
-use App\Models\Company;
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Shift;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Core\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
 use App\Modules\Finance\DTOs\TaxInvoiceDocumentDto;
 use App\Modules\Finance\DTOs\TaxInvoiceItemDto;
 use App\Modules\Finance\Services\CoreTaxDjpGateway;
@@ -23,7 +17,13 @@ use App\Modules\Integration\Models\WebhookSubscription;
 use App\Modules\Integration\Models\WhatsAppMessageOutbox;
 use App\Modules\Integration\Services\OutboundWebhookDispatcherService;
 use App\Modules\Integration\Services\WhatsAppNotificationService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Company;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\Shift;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -37,10 +37,15 @@ class BusinessAutomationFase3Test extends TestCase
     use DatabaseTransactions;
 
     protected Tenant $tenant;
+
     protected Company $company;
+
     protected Store $store;
+
     protected User $apiUser;
+
     protected Category $category;
+
     protected Product $product;
 
     protected function afterSubclassSetUp(): void
@@ -478,7 +483,7 @@ class BusinessAutomationFase3Test extends TestCase
      */
     public function test_coretax_djp_invoice_xml_json_payload_and_nsfp(): void
     {
-        $validator = new CoreTaxSchemaValidator();
+        $validator = new CoreTaxSchemaValidator;
         $xmlGen = new CoreTaxXmlGenerator($validator);
         $jsonGen = new CoreTaxJsonGenerator($validator);
         $gateway = new CoreTaxDjpGateway($validator, $xmlGen, $jsonGen);

@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace Tests\Feature\Retail;
 
 use App\Enums\OrderStatus;
-use App\Models\Category;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Product;
-use App\Models\ProductVariant;
-use App\Models\Role;
-use App\Models\Shift;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Modules\Retail\Services\RetailExchangeService;
-use App\Services\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\ProductVariant;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\OrderItem;
+use App\Modules\Sales\Models\Shift;
+use App\Modules\Sales\Services\RetailExchangeService;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -26,14 +26,23 @@ class RetailExchangeFinancialSettlementTest extends TestCase
     use DatabaseTransactions;
 
     private Tenant $tenant;
+
     private Store $store;
+
     private User $user;
+
     private Shift $shift;
+
     private Product $product;
+
     private ProductVariant $variantSmall;
+
     private ProductVariant $variantLarge;
+
     private Order $order;
+
     private OrderItem $orderItem;
+
     private RetailExchangeService $service;
 
     protected function afterSubclassSetUp(): void
@@ -101,7 +110,7 @@ class RetailExchangeFinancialSettlementTest extends TestCase
         $this->order->save();
 
         // Initial payment untuk order 1
-        \Illuminate\Support\Facades\DB::table('payments')->insert([
+        DB::table('payments')->insert([
             'tenant_id' => $this->tenant->id,
             'store_id' => $this->store->id,
             'order_id' => $this->order->id,
@@ -216,7 +225,7 @@ class RetailExchangeFinancialSettlementTest extends TestCase
         $order2->save();
 
         // Initial payment untuk order 2
-        \Illuminate\Support\Facades\DB::table('payments')->insert([
+        DB::table('payments')->insert([
             'tenant_id' => $this->tenant->id,
             'store_id' => $this->store->id,
             'order_id' => $order2->id,
@@ -310,10 +319,10 @@ class RetailExchangeFinancialSettlementTest extends TestCase
     public function test_standard_order_still_blocks_overpayment_via_mariadb_trigger(): void
     {
         // Pastikan trigger overpayment guard tetap aktif dan memblokir overpayment non-exchange
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
         $this->expectExceptionMessage('Total pembayaran captured melebihi order_amount');
 
-        \Illuminate\Support\Facades\DB::table('payments')->insert([
+        DB::table('payments')->insert([
             'tenant_id' => $this->tenant->id,
             'store_id' => $this->store->id,
             'order_id' => $this->order->id, // Order amount 200rb, sudah ada payment 200rb

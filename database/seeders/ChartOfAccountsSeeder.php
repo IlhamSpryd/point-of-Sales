@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Models\Tenant;
 use App\Modules\Finance\Enums\AccountSubtypeEnum;
 use App\Modules\Finance\Enums\AccountTypeEnum;
 use App\Modules\Finance\Enums\NormalBalanceEnum;
 use App\Modules\Finance\Models\ChartOfAccount;
+use App\Modules\Organization\Models\Tenant;
 use Illuminate\Database\Seeder;
 
 class ChartOfAccountsSeeder extends Seeder

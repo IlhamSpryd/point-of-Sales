@@ -7,6 +7,6 @@ namespace App\Http\Controllers;
 /**
  * Backward compatibility wrapper for modular architecture.
  *
- * @see \App\Modules\Settings\Controllers\HomeController
+ * @see \App\Modules\Organization\Controllers\HomeController
  */
-class HomeController extends \App\Modules\Settings\Controllers\HomeController {}
+class HomeController extends \App\Modules\Organization\Controllers\HomeController {}

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Retail;
 
+use App\Core\Context\TenantContext;
 use App\Http\Controllers\Controller;
-use App\Modules\Retail\Models\ShelfLabel;
-use App\Modules\Retail\Services\BarcodeSvgGenerator;
-use App\Modules\Settings\Models\Store;
-use App\Services\AuditTrailService;
-use App\Services\Context\TenantContext;
+use App\Modules\Catalog\Models\ShelfLabel;
+use App\Modules\Catalog\Services\BarcodeSvgGenerator;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Services\AuditTrailService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

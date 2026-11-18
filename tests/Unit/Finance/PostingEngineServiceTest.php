@@ -2,14 +2,6 @@
 
 namespace Tests\Unit\Finance;
 
-use App\Models\AccountingPeriod;
-use App\Models\AccountPeriodBalance;
-use App\Models\ChartOfAccount;
-use App\Models\JournalEntry;
-use App\Models\PostingRule;
-use App\Models\PostingRuleLine;
-use App\Models\PostingRuleVersion;
-use App\Models\User;
 use App\Modules\Finance\Contracts\PostingEngineContract;
 use App\Modules\Finance\DataTransferObjects\JournalLineDto;
 use App\Modules\Finance\DataTransferObjects\ManualJournalDto;
@@ -21,9 +13,17 @@ use App\Modules\Finance\Enums\JournalTypeEnum;
 use App\Modules\Finance\Enums\NormalBalanceEnum;
 use App\Modules\Finance\Exceptions\ClosedAccountingPeriodException;
 use App\Modules\Finance\Exceptions\UnbalancedJournalException;
+use App\Modules\Finance\Models\AccountingPeriod;
+use App\Modules\Finance\Models\AccountPeriodBalance;
+use App\Modules\Finance\Models\ChartOfAccount;
 use App\Modules\Finance\Models\FinancialEventOutbox;
+use App\Modules\Finance\Models\JournalEntry;
+use App\Modules\Finance\Models\PostingRule;
+use App\Modules\Finance\Models\PostingRuleLine;
+use App\Modules\Finance\Models\PostingRuleVersion;
 use App\Modules\Finance\Services\JournalEntryService;
 use App\Modules\Finance\Services\PostingEngineService;
+use App\Modules\Organization\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;

@@ -4,25 +4,21 @@ declare(strict_types=1);
 
 namespace App\Modules\Customers\Services;
 
+use App\Core\Context\TenantContext;
 use App\Core\Support\EmailNormalizer;
-use App\Models\Customer;
-use App\Models\CustomerAddress;
-use App\Models\CustomerContact;
-use App\Models\CustomerLoyaltyAccount;
-use App\Models\CustomerMergeLog;
-use App\Models\DiscountRedemption;
-use App\Models\LoyaltyLedger;
-use App\Models\Order;
-use App\Models\ParkedCart;
-use App\Models\User;
-use App\Modules\Purchasing\Services\DocumentSequenceService;
-use App\Modules\Settings\Services\AuditTrailService;
-use App\Services\Context\TenantContext;
+use App\Modules\Customers\Contracts\CustomerSegmentReaderInterface;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Customers\Models\CustomerAddress;
+use App\Modules\Customers\Models\CustomerContact;
+use App\Modules\Customers\Models\CustomerMergeLog;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\AuditTrailService;
+use App\Platform\Documents\DocumentSequenceService;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-class CustomerService
+class CustomerService implements CustomerSegmentReaderInterface
 {
     public function __construct(
         protected DocumentSequenceService $sequenceService,
@@ -150,7 +146,7 @@ class CustomerService
 
             // Inisialisasi CustomerLoyaltyAccount jika pelanggan eligible
             if ($customer->is_loyalty_eligible) {
-                CustomerLoyaltyAccount::withoutGlobalScopes()->firstOrCreate(
+                \App\Modules\Pricing\Models\CustomerLoyaltyAccount::withoutGlobalScopes()->firstOrCreate(
                     [
                         'tenant_id' => $tenantId,
                         'customer_id' => $customer->id,
@@ -409,7 +405,7 @@ class CustomerService
             $reassigned = [];
 
             // 2. Reassign Orders
-            $ordersReassigned = Order::withoutGlobalScopes()
+            $ordersReassigned = DB::table('orders')
                 ->where('tenant_id', $tenantId)
                 ->where('customer_id', $lockedSource->id)
                 ->update(['customer_id' => $lockedTarget->id]);
@@ -438,7 +434,7 @@ class CustomerService
 
             // 5. Reassign Discount Redemptions
             if (DB::getSchemaBuilder()->hasTable('discount_redemptions')) {
-                $discountsReassigned = DiscountRedemption::withoutGlobalScopes()
+                $discountsReassigned = DB::table('discount_redemptions')
                     ->where('tenant_id', $tenantId)
                     ->where('customer_id', $lockedSource->id)
                     ->update(['customer_id' => $lockedTarget->id]);
@@ -447,7 +443,7 @@ class CustomerService
 
             // 6. Reassign Parked Carts
             if (DB::getSchemaBuilder()->hasTable('parked_carts')) {
-                $parkedCartsReassigned = ParkedCart::withoutGlobalScopes()
+                $parkedCartsReassigned = DB::table('parked_carts')
                     ->where('tenant_id', $tenantId)
                     ->where('customer_id', $lockedSource->id)
                     ->update(['customer_id' => $lockedTarget->id]);
@@ -456,7 +452,7 @@ class CustomerService
 
             // 7. Reassign Loyalty Ledgers
             if (DB::getSchemaBuilder()->hasTable('loyalty_ledger')) {
-                $loyaltyReassigned = LoyaltyLedger::withoutGlobalScopes()
+                $loyaltyReassigned = DB::table('loyalty_ledger')
                     ->where('tenant_id', $tenantId)
                     ->where('customer_id', $lockedSource->id)
                     ->update(['customer_id' => $lockedTarget->id]);
@@ -699,5 +695,23 @@ class CustomerService
     public function deleteContact(CustomerContact $contact): bool
     {
         return (bool) $contact->delete();
+    }
+
+    public function getCustomerGroupId(int $tenantId, int $customerId): ?int
+    {
+        $groupId = DB::table('customers')
+            ->where('tenant_id', $tenantId)
+            ->where('id', $customerId)
+            ->value('customer_group_id');
+
+        return $groupId !== null ? (int) $groupId : null;
+    }
+
+    public function isLoyaltyEligible(int $tenantId, int $customerId): bool
+    {
+        return (bool) DB::table('customers')
+            ->where('tenant_id', $tenantId)
+            ->where('id', $customerId)
+            ->value('is_loyalty_eligible');
     }
 }

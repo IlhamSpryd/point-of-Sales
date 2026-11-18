@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Modules\Finance\Enums\ExpenseStatusEnum;
 use App\Modules\Finance\Models\Expense;
+use App\Modules\Organization\Models\User;
 
 class ExpensePolicy
 {

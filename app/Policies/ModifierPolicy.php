@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\Modifier;
-use App\Models\User;
+use App\Modules\Inventory\Models\Modifier;
+use App\Modules\Organization\Models\User;
 
 class ModifierPolicy
 {

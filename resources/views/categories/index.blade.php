@@ -1,6 +1,6 @@
 @php
     // Izin kelola katalog (tambah/ubah/hapus) melalui CategoryPolicy (mendukung is_admin & RBAC).
-    $canManage = auth()->user()?->can('create', \App\Models\Category::class) ?? false;
+    $canManage = auth()->user()?->can('create', \App\Modules\Catalog\Models\Category::class) ?? false;
 @endphp
 <x-app-layout>
     <div x-data="{

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Core\Context\TenantContext;
 use App\Enums\ExportTaskStatus;
-use App\Models\ExportTask;
-use App\Modules\Reports\Services\Analytics\CustomerAnalyticsService;
-use App\Modules\Reports\Services\Analytics\FinancialBiService;
-use App\Modules\Reports\Services\Analytics\InventoryAnalyticsService;
-use App\Modules\Reports\Services\Analytics\SalesAnalyticsService;
-use App\Services\Context\TenantContext;
+use App\Modules\Reporting\Models\ExportTask;
+use App\Modules\Reporting\Services\Analytics\CustomerAnalyticsService;
+use App\Modules\Reporting\Services\Analytics\FinancialBiService;
+use App\Modules\Reporting\Services\Analytics\InventoryAnalyticsService;
+use App\Modules\Reporting\Services\Analytics\SalesAnalyticsService;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

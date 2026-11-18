@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Pricing\Services;
 
-use App\Modules\Customers\Enums\VoucherStatusEnum;
-use App\Modules\Customers\Models\Voucher;
+use App\Modules\Pricing\Enums\VoucherStatusEnum;
 use App\Modules\Pricing\Models\PromotionReservation;
+use App\Modules\Pricing\Models\Voucher;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;

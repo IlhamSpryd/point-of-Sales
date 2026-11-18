@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Livewire\Inventory;
 
+use App\Core\Context\TenantContext;
 use App\Enums\StockAdjustmentReasonEnum;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Ingredient;
-use App\Models\Product;
-use App\Models\StockAdjustment;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Inventory\Models\StockAdjustment;
 use App\Modules\Inventory\Services\StockAdjustmentService;
-use App\Services\Context\TenantContext;
 use DomainException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;

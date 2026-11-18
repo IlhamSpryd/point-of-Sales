@@ -1,0 +1,189 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Modules\Organization\Models;
+
+use App\Core\Scopes\StoreScope;
+use App\Core\Traits\AssignsStore;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToStore;
+use App\Core\Traits\ScopedToTenant;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
+
+/**
+ * Model Device: Merepresentasikan satu terminal fisik perangkat kasir (POS),
+ * KDS, atau tablet pelayan yang terikat mutlak ke satu Store fisik.
+ *
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $store_id
+ * @property string $device_code
+ * @property string $device_name
+ * @property string $device_type
+ * @property string|null $pairing_token
+ * @property Carbon|null $pairing_token_expires_at
+ * @property string|null $device_fingerprint
+ * @property bool $is_active
+ * @property string $status
+ * @property Carbon|null $last_seen_at
+ * @property string|null $ip_address
+ * @property array<string, mixed>|null $metadata
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ */
+class Device extends Model
+{
+    use AssignsStore;
+    use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
+    use HasFactory;
+
+    use ScopedToStore;
+    use ScopedToTenant;
+    use SoftDeletes;
+
+    public const TYPE_POS_TERMINAL = 'pos_terminal';
+
+    public const TYPE_KDS_DISPLAY = 'kds_display';
+
+    public const TYPE_WAITER_TABLET = 'waiter_tablet';
+
+    public const STATUS_PENDING = 'pending';
+
+    public const STATUS_PAIRED = 'paired';
+
+    public const STATUS_REVOKED = 'revoked';
+
+    protected $fillable = [
+        'tenant_id',
+        'store_id',
+        'operational_unit_id',
+        'device_code',
+        'device_name',
+        'device_type',
+        'pairing_token',
+        'pairing_token_expires_at',
+        'device_fingerprint',
+        'is_active',
+        'status',
+        'last_seen_at',
+        'ip_address',
+        'metadata',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+            'pairing_token_expires_at' => 'datetime',
+            'last_seen_at' => 'datetime',
+            'metadata' => 'array',
+        ];
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (Device $device) {
+            if (empty($device->device_code)) {
+                $latest = static::withTrashed()->withoutGlobalScopes()->latest('id')->first();
+                $nextId = $latest ? $latest->id + 1 : 1;
+                $device->device_code = 'DEV-'.str_pad((string) $nextId, 3, '0', STR_PAD_LEFT);
+            }
+        });
+    }
+
+    /**
+     * @return BelongsTo<Store, $this>
+     */
+    public function store(): BelongsTo
+    {
+        return $this->belongsTo(Store::class);
+    }
+
+    /**
+     * @return BelongsTo<OperationalUnit, $this>
+     */
+    public function operationalUnit(): BelongsTo
+    {
+        return $this->belongsTo(OperationalUnit::class);
+    }
+
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    /**
+     * @return HasMany<\App\Modules\Sales\Models\Shift, $this>
+     */
+    public function shifts(): HasMany
+    {
+        return $this->hasMany(\App\Modules\Sales\Models\Shift::class);
+    }
+
+    /**
+     * @return HasMany<\App\Modules\Sales\Models\Order, $this>
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(\App\Modules\Sales\Models\Order::class, 'created_by_device_id');
+    }
+
+    /**
+     * @return HasMany<\App\Modules\Sales\Models\Payment, $this>
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(\App\Modules\Sales\Models\Payment::class);
+    }
+
+    /**
+     * @return HasMany<\App\Modules\Sales\Models\CashDrawerMovement, $this>
+     */
+    public function cashDrawerMovements(): HasMany
+    {
+        return $this->hasMany(\App\Modules\Sales\Models\CashDrawerMovement::class);
+    }
+
+    /**
+     * @return HasMany<\App\Modules\Sales\Models\ShiftHandover, $this>
+     */
+    public function handovers(): HasMany
+    {
+        return $this->hasMany(\App\Modules\Sales\Models\ShiftHandover::class);
+    }
+
+    public function isPaired(): bool
+    {
+        return $this->status === self::STATUS_PAIRED && ! empty($this->device_fingerprint);
+    }
+
+    /**
+     * Resolusi implicit route model binding untuk Device.
+     * Mengabaikan StoreScope agar resource dapat ditemukan untuk evaluasi
+     * hak akses lintas-cabang oleh DevicePolicy, namun tetap mempertahankan TenantScope.
+     *
+     * @param  Builder<static>  $query
+     * @param  mixed  $value
+     * @param  string|null  $field
+     * @return Builder<static>
+     */
+    public function resolveRouteBindingQuery($query, $value, $field = null)
+    {
+        return $query->withoutGlobalScope(StoreScope::class)
+            ->where($field ?? $this->getRouteKeyName(), $value);
+    }
+}

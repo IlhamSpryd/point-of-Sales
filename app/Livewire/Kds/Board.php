@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Livewire\Kds;
 
+use App\Core\Context\TenantContext;
 use App\Enums\KitchenStation;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentAttemptStatus;
 use App\Enums\PreparationStatus;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\OrderItem;
-use App\Services\KdsService;
+use App\Modules\Sales\Models\OrderItem;
+use App\Modules\Sales\Services\KdsService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
@@ -40,7 +42,7 @@ class Board extends Component
             abort(403, 'Anda tidak memiliki hak akses KDS.');
         }
 
-        $context = app(\App\Services\Context\TenantContext::class);
+        $context = app(TenantContext::class);
         $user = Auth::user();
         $this->tenantId = $context->getTenantId() ?? (int) $user->tenant_id;
         $this->storeId = $context->getStoreId();
@@ -181,8 +183,11 @@ class Board extends Component
      */
     private function baseQuery(): Builder
     {
+        // R-008: Eager-load rantai resep (product.ingredients) SEKALI di sini
+        // untuk menghilangkan N+1 saat kartu KDS menampilkan komposisi BOM,
+        // sehingga 1 refresh board tetap O(jumlah order), bukan O(jumlah item).
         $query = OrderItem::query()
-            ->with(['product.category', 'order.table'])
+            ->with(['product.category', 'product.ingredients', 'order.table'])
             ->whereHas('order', function (Builder $q) {
                 $q->whereIn('order_status', [OrderStatus::Paid->value, OrderStatus::Completed->value])
                     ->orWhere(function (Builder $sub) {
@@ -190,7 +195,7 @@ class Board extends Component
                             ->whereIn('order_status', [OrderStatus::Pending->value, 'open', 'pending'])
                             ->whereNull('snap_token')
                             ->whereDoesntHave('paymentAttempts', function (Builder $pa) {
-                                $pa->where('status', \App\Enums\PaymentAttemptStatus::PendingProvider);
+                                $pa->where('status', PaymentAttemptStatus::PendingProvider);
                             });
                     });
             });

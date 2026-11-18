@@ -8,6 +8,9 @@
          failOnWarning="false"
 >
     <testsuites>
+        <testsuite name="Arch">
+            <directory>tests/Arch</directory>
+        </testsuite>
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
         </testsuite>
@@ -37,7 +40,7 @@
         <env name="DB_PORT" value="3306" force="true"/>
         <env name="DB_DATABASE" value="yovel_pos_test" force="true"/>
         <env name="DB_USERNAME" value="laravel_pos" force="true"/>
-        <env name="DB_PASSWORD" value="Ilhamsepriyadi08092003" force="true"/>
+        <env name="DB_PASSWORD" value="${DB_PASSWORD}"/>
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>

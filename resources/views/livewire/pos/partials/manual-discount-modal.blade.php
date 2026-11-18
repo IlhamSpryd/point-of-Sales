@@ -1,5 +1,6 @@
 {{-- MODAL MANUAL DISCOUNT OVERRIDE (SUPERVISOR PIN) --}}
-<x-ui.modal wire:model="isManualDiscountModalOpen" maxWidth="md">
+@if ($isManualDiscountModalOpen)
+<x-ui.modal :open="true" id="pos-manual-discount-modal" maxWidth="md" onClose="$wire.set('isManualDiscountModalOpen', false)">
     <x-slot:header>
         <div class="text-foreground">
             <h3 class="text-base font-semibold">Configure Discount & Authorization</h3>
@@ -95,3 +96,4 @@
         </div>
     </x-slot:footer>
 </x-ui.modal>
+@endif

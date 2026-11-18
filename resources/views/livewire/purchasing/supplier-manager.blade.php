@@ -6,7 +6,7 @@
         title="Suppliers"
         description="Manage vendor profiles, contact persons, and item pricing catalogs for raw materials and retail products.">
         <x-slot:actions>
-            @can('create', \App\Models\Supplier::class)
+            @can('create', \App\Modules\Purchasing\Models\Supplier::class)
             <x-ui.button wire:click="create" wire:loading.attr="disabled" icon="add_business" variant="primary">
                 Add Supplier
             </x-ui.button>

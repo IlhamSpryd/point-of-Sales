@@ -2,16 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
-use App\Models\Category;
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Table;
-use App\Models\User;
-use App\Services\CartService;
-use App\Services\Context\TenantContext;
-use App\Services\SystemUserResolver;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\SystemUserResolver;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\Table;
+use App\Modules\Sales\Services\CartService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;

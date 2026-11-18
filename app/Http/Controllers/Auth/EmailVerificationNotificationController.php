@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Services\EmailVerificationOtpService;
+use App\Modules\Organization\Services\EmailVerificationOtpService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 

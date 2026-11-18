@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Finance\Services;
 
 use App\Modules\Finance\Contracts\TaxIntegrationGatewayInterface;
-use App\Modules\Sales\Models\CustomerInvoice;
+use App\Modules\Sales\Contracts\InvoiceReaderInterface;
 
 class TaxReportService
 {
@@ -24,7 +24,7 @@ class TaxReportService
     /**
      * Mengalokasikan dan menetapkan NSFP resmi pada CustomerInvoice.
      */
-    public function assignTaxInvoiceSerial(CustomerInvoice $invoice): string
+    public function assignTaxInvoiceSerial(InvoiceReaderInterface $invoice): string
     {
         $doc = $this->gateway->buildDocumentFromCustomerInvoice($invoice);
 
@@ -52,11 +52,10 @@ class TaxReportService
      *
      * @return array<string, mixed>
      */
-    public function prepareCoreTaxPayload(CustomerInvoice $invoice): array
+    public function prepareCoreTaxPayload(InvoiceReaderInterface $invoice): array
     {
         $doc = $this->gateway->buildDocumentFromCustomerInvoice($invoice);
 
         return $this->gateway->syncWithCoreTax($doc);
     }
 }
-

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reports;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
-use App\Models\Customer;
-use App\Models\Order;
+use App\Modules\Customers\Models\Customer;
 use App\Modules\Finance\Enums\AccountSubtypeEnum;
 use App\Modules\Finance\Enums\AccountTypeEnum;
 use App\Modules\Finance\Enums\JournalStatusEnum;
@@ -16,9 +16,9 @@ use App\Modules\Finance\Models\AccountingPeriod;
 use App\Modules\Finance\Models\ChartOfAccount;
 use App\Modules\Finance\Models\JournalEntry;
 use App\Modules\Finance\Models\JournalLine;
-use App\Modules\Reports\Services\Analytics\CustomerAnalyticsService;
-use App\Modules\Reports\Services\Analytics\FinancialBiService;
-use App\Services\Context\TenantContext;
+use App\Modules\Reporting\Services\Analytics\CustomerAnalyticsService;
+use App\Modules\Reporting\Services\Analytics\FinancialBiService;
+use App\Modules\Sales\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;

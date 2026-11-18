@@ -2,8 +2,8 @@
 
 namespace Database\Seeders\Pos;
 
-use App\Models\Tenant;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Tenant;
 use App\Support\EmailNormalizer;
 use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;

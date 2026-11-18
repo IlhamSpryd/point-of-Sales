@@ -80,6 +80,13 @@ Schedule::command('finance:process-outbox')
     ->onOneServer()
     ->runInBackground();
 
+// OPS-04 & ADR-107: Pemulihan otomatis rekaman outbox finansial yang macet dalam status PROCESSING
+Schedule::command('outbox:reap-stuck')
+    ->everyFiveMinutes()
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
+
 // TR-008: Pemeliharaan partisi bulanan bergulir otomatis pada tanggal 25 setiap bulan
 Schedule::command('database:create-monthly-partitions')
     ->monthlyOn(25, '00:00')

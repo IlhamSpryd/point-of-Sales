@@ -1,0 +1,38 @@
+{
+    "name": "Manufacturing",
+    "tier": 3,
+    "owner": "@ilhamsepriyadi",
+    "description": "BOM recipes, ingredient inventory, kitchen deductions, manufacturing orders and food waste (ADR-102).",
+    "ownsTables": [
+        "ingredients",
+        "product_ingredients",
+        "modifier_ingredients",
+        "ingredient_recipes",
+        "manufacturing_orders",
+        "manufacturing_order_items",
+        "ingredient_restock_forecasts",
+        "ingredient_stock_balances",
+        "ingredient_stock_movements"
+    ],
+    "allowedDependencies": [
+        "Organization",
+        "Catalog",
+        "Inventory",
+        "Finance",
+        "Sales"
+    ],
+    "publishesEvents": [
+        "manufacturing.mo.completed.v1",
+        "manufacturing.recipe.updated.v1"
+    ],
+    "consumesEvents": [
+        "sales.order.completed.v1"
+    ],
+    "dependsOn": [
+        "Organization",
+        "Catalog",
+        "Inventory",
+        "Finance",
+        "Sales"
+    ]
+}

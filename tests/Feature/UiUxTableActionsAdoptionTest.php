@@ -95,7 +95,7 @@ class UiUxTableActionsAdoptionTest extends TestCase
         $missingAdoption = [];
 
         foreach ($targetViews as $view) {
-            $path = resource_path('views/' . $view);
+            $path = resource_path('views/'.$view);
             $this->assertFileExists($path, "Target view {$view} does not exist.");
 
             $content = File::get($path);
@@ -104,7 +104,7 @@ class UiUxTableActionsAdoptionTest extends TestCase
             }
         }
 
-        $this->assertSame([], $missingAdoption, 'The following views are missing <x-ui.table-actions>: ' . implode(', ', $missingAdoption));
+        $this->assertSame([], $missingAdoption, 'The following views are missing <x-ui.table-actions>: '.implode(', ', $missingAdoption));
     }
 
     /**
@@ -116,7 +116,7 @@ class UiUxTableActionsAdoptionTest extends TestCase
         $missingItems = [];
 
         foreach ($targetViews as $view) {
-            $path = resource_path('views/' . $view);
+            $path = resource_path('views/'.$view);
             $content = File::get($path);
 
             if (! str_contains($content, '<x-ui.table-action-item')) {
@@ -124,7 +124,7 @@ class UiUxTableActionsAdoptionTest extends TestCase
             }
         }
 
-        $this->assertSame([], $missingItems, 'The following views use table-actions but lack <x-ui.table-action-item>: ' . implode(', ', $missingItems));
+        $this->assertSame([], $missingItems, 'The following views use table-actions but lack <x-ui.table-action-item>: '.implode(', ', $missingItems));
     }
 
     /**
@@ -136,7 +136,7 @@ class UiUxTableActionsAdoptionTest extends TestCase
         $legacyViolations = [];
 
         foreach ($targetViews as $view) {
-            $path = resource_path('views/' . $view);
+            $path = resource_path('views/'.$view);
             $content = File::get($path);
 
             // Extract all <td> cells and check for size="icon"
@@ -149,7 +149,7 @@ class UiUxTableActionsAdoptionTest extends TestCase
             }
         }
 
-        $this->assertSame([], $legacyViolations, 'Views with legacy size="icon" in <td>: ' . implode(', ', $legacyViolations));
+        $this->assertSame([], $legacyViolations, 'Views with legacy size="icon" in <td>: '.implode(', ', $legacyViolations));
     }
 
     /**
@@ -158,8 +158,8 @@ class UiUxTableActionsAdoptionTest extends TestCase
     public function test_table_actions_primitive_renders_accessible_markup(): void
     {
         $html = Blade::render(
-            '<x-ui.table-actions label="Test Actions">' .
-                '<x-ui.table-action-item href="/sample" icon="visibility">View</x-ui.table-action-item>' .
+            '<x-ui.table-actions label="Test Actions">'.
+                '<x-ui.table-action-item href="/sample" icon="visibility">View</x-ui.table-action-item>'.
             '</x-ui.table-actions>'
         );
 
@@ -206,4 +206,3 @@ class UiUxTableActionsAdoptionTest extends TestCase
         $this->assertStringContainsString('Submit Form', $submitHtml);
     }
 }
-

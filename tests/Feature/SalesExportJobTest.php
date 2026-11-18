@@ -2,13 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Core\Context\TenantContext;
 use App\Enums\ExportTaskStatus;
 use App\Jobs\ProcessSalesReportExportJob;
-use App\Models\ExportTask;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Reporting\Models\ExportTask;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

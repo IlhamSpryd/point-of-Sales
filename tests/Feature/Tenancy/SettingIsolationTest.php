@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Tenancy;
 
-use App\Models\Setting;
-use App\Models\Tenant;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Setting;
+use App\Modules\Organization\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use RuntimeException;

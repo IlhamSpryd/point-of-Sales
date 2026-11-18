@@ -1,0 +1,44 @@
+{
+    "name": "Purchasing",
+    "tier": 4,
+    "owner": "@ilhamsepriyadi",
+    "description": "Suppliers, purchase requests, purchase orders, goods receipts (GRN), 3-way matching and landed costs (ADR-102).",
+    "ownsTables": [
+        "suppliers",
+        "supplier_contacts",
+        "supplier_banks",
+        "purchase_requests",
+        "purchase_request_items",
+        "purchase_orders",
+        "purchase_order_items",
+        "goods_received_notes",
+        "goods_received_note_items",
+        "purchase_returns",
+        "purchase_return_items",
+        "purchase_debit_notes",
+        "supplier_invoices",
+        "supplier_invoice_items",
+        "supplier_invoice_payable_outbox",
+        "landed_cost_documents",
+        "landed_cost_allocations"
+    ],
+    "allowedDependencies": [
+        "Organization",
+        "Catalog",
+        "Inventory",
+        "Finance",
+        "Integration"
+    ],
+    "publishesEvents": [
+        "purchasing.po.approved.v1",
+        "purchasing.grn.received.v1"
+    ],
+    "consumesEvents": [],
+    "dependsOn": [
+        "Organization",
+        "Catalog",
+        "Inventory",
+        "Finance",
+        "Integration"
+    ]
+}

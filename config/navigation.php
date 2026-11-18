@@ -203,6 +203,9 @@ return [
                     'icon' => 'lock_clock',
                     'roles' => ['Owner', 'Manager', 'Kasir', 'Supervisor'],
                     'permission' => 'shifts.own',
+                    // R-009 / FINDING-NAV-01: kasir biasa tidak diberi tautan
+                    // riwayat shift penuh (mencegah 403 navigation dead-end).
+                    'can' => 'viewAny',
                 ],
                 [
                     'label' => 'Table & QR Management',

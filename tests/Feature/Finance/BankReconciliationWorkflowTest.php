@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Finance;
 
-use App\Models\AccountingPeriod;
-use App\Models\Role;
-use App\Models\User;
+use App\Core\Context\TenantContext;
 use App\Modules\Finance\Enums\AccountingPeriodStatusEnum;
 use App\Modules\Finance\Enums\BankReconciliationMatchTypeEnum;
 use App\Modules\Finance\Enums\BankReconciliationSessionStatusEnum;
 use App\Modules\Finance\Enums\BankStatementLineMatchStatusEnum;
 use App\Modules\Finance\Enums\CashBankAccountTypeEnum;
 use App\Modules\Finance\Enums\CashBankTransactionTypeEnum;
+use App\Modules\Finance\Models\AccountingPeriod;
 use App\Modules\Finance\Models\BankReconciliationMatch;
 use App\Modules\Finance\Models\BankStatementLine;
 use App\Modules\Finance\Models\CashBankAccount;
@@ -20,7 +19,8 @@ use App\Modules\Finance\Services\BankReconciliationService;
 use App\Modules\Finance\Services\CashBankAccountService;
 use App\Modules\Finance\Services\CashBankTransactionService;
 use App\Modules\Finance\Services\ChartOfAccountService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
 use Database\Seeders\ChartOfAccountsSeeder;
 use Database\Seeders\DefaultPostingRulesSeeder;
 use DomainException;

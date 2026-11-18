@@ -7,6 +7,6 @@ namespace App\Http\Controllers;
 /**
  * Backward compatibility wrapper for modular architecture.
  *
- * @see \App\Modules\Users\Controllers\RoleController
+ * @see \App\Modules\Organization\Controllers\RoleController
  */
-class RoleController extends \App\Modules\Users\Controllers\RoleController {}
+class RoleController extends \App\Modules\Organization\Controllers\RoleController {}

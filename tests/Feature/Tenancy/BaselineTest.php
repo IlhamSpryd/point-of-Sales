@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\Tenancy;
 
+use App\Core\Context\TenantContext;
 use App\Enums\PreparationStatus;
 use App\Livewire\Kasir\OrderHistory;
 use App\Livewire\Kds\Board;
-use App\Models\OrderItem;
-use App\Models\Payment;
-use App\Services\Context\TenantContext;
-use App\Services\DashboardService;
+use App\Modules\Reporting\Services\DashboardService;
+use App\Modules\Sales\Models\OrderItem;
+use App\Modules\Sales\Models\Payment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;

@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Navigation;
 
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
@@ -77,14 +78,14 @@ class Tier1NavigationTest extends TestCase
     public function test_standalone_app_launcher_component_filters_restricted_modules_by_role(): void
     {
         $this->actingAs($this->ownerUser);
-        $ownerHtml = \Illuminate\Support\Facades\Blade::render('<x-erp.app-launcher />');
+        $ownerHtml = Blade::render('<x-erp.app-launcher />');
 
         $this->assertStringContainsString('Cashier &amp; Operations', $ownerHtml);
         $this->assertStringContainsString('Finance &amp; Accounting', $ownerHtml);
         $this->assertStringContainsString('Human Resources &amp; Payroll', $ownerHtml);
 
         $this->actingAs($this->kasirUser);
-        $kasirHtml = \Illuminate\Support\Facades\Blade::render('<x-erp.app-launcher />');
+        $kasirHtml = Blade::render('<x-erp.app-launcher />');
 
         $this->assertStringContainsString('Cashier &amp; Operations', $kasirHtml);
         $this->assertStringNotContainsString('Finance &amp; Accounting', $kasirHtml);
@@ -118,4 +119,3 @@ class Tier1NavigationTest extends TestCase
         $response->assertSee('Raw Materials &amp; Stock', false);
     }
 }
-

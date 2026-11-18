@@ -7,11 +7,10 @@ namespace App\Modules\Finance\Services;
 use App\Modules\Finance\Contracts\TaxIntegrationGatewayInterface;
 use App\Modules\Finance\DTOs\TaxInvoiceDocumentDto;
 use App\Modules\Finance\DTOs\TaxInvoiceItemDto;
-use App\Modules\Sales\Models\CustomerInvoice;
+use App\Modules\Sales\Contracts\InvoiceReaderInterface;
 use Carbon\Carbon;
-use DomainException;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class CoreTaxDjpGateway implements TaxIntegrationGatewayInterface
 {
@@ -30,6 +29,7 @@ class CoreTaxDjpGateway implements TaxIntegrationGatewayInterface
         $this->xmlGenerator = $xmlGenerator ?? app(CoreTaxXmlGenerator::class);
         $this->jsonGenerator = $jsonGenerator ?? app(CoreTaxJsonGenerator::class);
     }
+
     /**
      * Memvalidasi format NPWP Indonesia (15 digit format lama atau 16 digit format NIK/CoreTax).
      */
@@ -92,7 +92,7 @@ class CoreTaxDjpGateway implements TaxIntegrationGatewayInterface
         $prefix = "{$transactionType}{$replacementCode}.000-{$year2Digits}.";
 
         // Cari nomor urut terakhir pada tenant dan tahun berjalan
-        $lastSerial = CustomerInvoice::withoutGlobalScopes()
+        $lastSerial = DB::table('customer_invoices')
             ->where('tenant_id', $tenantId)
             ->where('tax_invoice_serial_number', 'LIKE', "{$prefix}%")
             ->orderByDesc('tax_invoice_serial_number')
@@ -111,32 +111,33 @@ class CoreTaxDjpGateway implements TaxIntegrationGatewayInterface
     /**
      * Mengonversi entitas CustomerInvoice menjadi DTO faktur pajak standar.
      */
-    public function buildDocumentFromCustomerInvoice(CustomerInvoice $invoice): TaxInvoiceDocumentDto
+    public function buildDocumentFromCustomerInvoice(InvoiceReaderInterface $invoice): TaxInvoiceDocumentDto
     {
-        $invoice->loadMissing(['customer', 'lines']);
+        if ($invoice instanceof Model) {
+            $invoice->loadMissing(['customer', 'lines']);
+        }
 
-        $customer = $invoice->customer;
-        $date = Carbon::parse($invoice->invoice_date);
+        $date = Carbon::parse($invoice->getInvoiceDate());
         $year = (int) $date->format('Y');
         $month = (int) $date->format('m');
 
-        $taxId = $customer?->tax_id;
+        $taxId = $invoice->getCustomerTaxId();
         $cleanTaxId = $taxId ? preg_replace('/\D/', '', $taxId) : '0000000000000000';
         if (! $this->validateTaxId((string) $cleanTaxId)) {
             $cleanTaxId = '0000000000000000'; // Default NIK/NPWP Konsumen Akhir
         }
 
-        $serialNumber = $invoice->tax_invoice_serial_number;
+        $serialNumber = $invoice->getTaxInvoiceSerialNumber();
         if (empty($serialNumber)) {
-            $serialNumber = $this->generateTaxInvoiceSerialNumber((int) $invoice->tenant_id, $year);
-            $invoice->update([
-                'tax_invoice_serial_number' => $serialNumber,
-                'tax_invoice_status' => 'generated',
-            ]);
+            $serialNumber = $this->generateTaxInvoiceSerialNumber((int) $invoice->getTenantId(), $year);
+            $invoice->setTaxInvoiceSerialNumber($serialNumber);
         }
 
         $items = [];
-        foreach ($invoice->lines as $line) {
+        $lines = ($invoice instanceof Model && method_exists($invoice, 'getAttribute'))
+            ? ($invoice->getAttribute('lines') ?? [])
+            : [];
+        foreach ($lines as $line) {
             $unitPrice = (string) $line->unit_price;
             $qty = (string) $line->quantity;
             $total = bcmul($unitPrice, $qty, 2);
@@ -160,17 +161,17 @@ class CoreTaxDjpGateway implements TaxIntegrationGatewayInterface
 
         // Jika tidak ada lines, gunakan subtotal dan tax_amount invoice
         if (empty($items)) {
-            $headerDiscount = (string) ($invoice->discount_amount ?? '0.00');
-            $headerDpp = bcsub((string) $invoice->subtotal, $headerDiscount, 2);
+            $headerDiscount = '0.00';
+            $headerDpp = bcsub((string) $invoice->getSubtotal(), $headerDiscount, 2);
             $items[] = new TaxInvoiceItemDto(
                 code: 'GEN-01',
                 name: 'Penjualan Barang / Jasa',
-                unitPrice: (string) $invoice->subtotal,
+                unitPrice: (string) $invoice->getSubtotal(),
                 quantity: '1',
-                totalPrice: (string) $invoice->subtotal,
+                totalPrice: (string) $invoice->getSubtotal(),
                 discountAmount: $headerDiscount,
                 dpp: $headerDpp,
-                ppn: (string) $invoice->tax_amount,
+                ppn: (string) $invoice->getTaxAmount(),
                 ppnbmTariff: '0.00',
                 ppnbm: '0.00'
             );
@@ -187,22 +188,22 @@ class CoreTaxDjpGateway implements TaxIntegrationGatewayInterface
         $ppnAmount = $calcPpnTotal;
 
         return new TaxInvoiceDocumentDto(
-            tenantId: (int) $invoice->tenant_id,
-            invoiceId: (int) $invoice->id,
-            invoiceNumber: (string) $invoice->invoice_number,
+            tenantId: (int) $invoice->getTenantId(),
+            invoiceId: (int) $invoice->getId(),
+            invoiceNumber: (string) $invoice->getInvoiceNumber(),
             taxInvoiceSerialNumber: $serialNumber,
             invoiceDate: $date->format('d/m/Y'),
             taxPeriodMonth: $month,
             taxPeriodYear: $year,
             transactionType: '01',
             isReplacement: false,
-            counterpartyName: (string) ($customer?->name ?: 'Konsumen Akhir'),
+            counterpartyName: (string) ($invoice->getCustomerName() ?: 'Konsumen Akhir'),
             counterpartyTaxId: $cleanTaxId,
-            counterpartyAddress: (string) ($customer?->company_name ?: 'Indonesia'),
+            counterpartyAddress: (string) ($invoice->getCustomerAddress() ?: 'Indonesia'),
             dppAmount: $dppAmount,
             ppnAmount: $ppnAmount,
             ppnbmAmount: '0.00',
-            reference: (string) $invoice->invoice_number,
+            reference: (string) $invoice->getInvoiceNumber(),
             items: $items
         );
     }
@@ -216,7 +217,7 @@ class CoreTaxDjpGateway implements TaxIntegrationGatewayInterface
         int $taxPeriodYear,
         string $direction = 'outbound'
     ): string {
-        $invoices = CustomerInvoice::withoutGlobalScopes()
+        $invoices = \App\Modules\Sales\Models\CustomerInvoice::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereYear('invoice_date', $taxPeriodYear)
             ->whereMonth('invoice_date', $taxPeriodMonth)
@@ -280,7 +281,7 @@ class CoreTaxDjpGateway implements TaxIntegrationGatewayInterface
     /**
      * Menghasilkan dokumen XML e-Faktur resmi DJP.
      *
-     * @param array<string, string>|null $sellerInfo
+     * @param  array<string, string>|null  $sellerInfo
      */
     public function generateXml(TaxInvoiceDocumentDto $document, ?array $sellerInfo = null): string
     {
@@ -290,7 +291,7 @@ class CoreTaxDjpGateway implements TaxIntegrationGatewayInterface
     /**
      * Menghasilkan dokumen JSON CoreTax REST API resmi DJP.
      *
-     * @param array<string, string>|null $sellerInfo
+     * @param  array<string, string>|null  $sellerInfo
      * @return array<string, mixed>
      */
     public function generateJson(TaxInvoiceDocumentDto $document, ?array $sellerInfo = null): array
@@ -307,7 +308,7 @@ class CoreTaxDjpGateway implements TaxIntegrationGatewayInterface
         int $taxPeriodYear,
         ?array $sellerInfo = null
     ): string {
-        $invoices = CustomerInvoice::withoutGlobalScopes()
+        $invoices = \App\Modules\Sales\Models\CustomerInvoice::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereYear('invoice_date', $taxPeriodYear)
             ->whereMonth('invoice_date', $taxPeriodMonth)
@@ -334,7 +335,7 @@ class CoreTaxDjpGateway implements TaxIntegrationGatewayInterface
         int $taxPeriodYear,
         ?array $sellerInfo = null
     ): array {
-        $invoices = CustomerInvoice::withoutGlobalScopes()
+        $invoices = \App\Modules\Sales\Models\CustomerInvoice::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereYear('invoice_date', $taxPeriodYear)
             ->whereMonth('invoice_date', $taxPeriodMonth)
@@ -382,4 +383,3 @@ class CoreTaxDjpGateway implements TaxIntegrationGatewayInterface
         return str_replace([';', "\n", "\r"], [' ', ' ', ' '], $value);
     }
 }
-

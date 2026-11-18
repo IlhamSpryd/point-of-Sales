@@ -24,6 +24,7 @@ class SendWhatsAppReceiptJob implements ShouldQueue
     use SerializesModels;
 
     public int $tries = 3;
+
     public int $timeout = 15;
 
     public function __construct(
@@ -41,4 +42,3 @@ class SendWhatsAppReceiptJob implements ShouldQueue
         }
     }
 }
-

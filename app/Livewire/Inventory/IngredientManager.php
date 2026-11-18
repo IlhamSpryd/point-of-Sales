@@ -2,12 +2,12 @@
 
 namespace App\Livewire\Inventory;
 
+use App\Core\Context\TenantContext;
 use App\Enums\StockAdjustmentReasonEnum;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Ingredient;
-use App\Models\Store;
+use App\Modules\Inventory\Models\Ingredient;
 use App\Modules\Inventory\Services\StockAdjustmentService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Store;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;

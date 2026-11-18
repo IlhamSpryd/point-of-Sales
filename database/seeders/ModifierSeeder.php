@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Models\ModifierGroup;
-use App\Models\Tenant;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Inventory\Models\ModifierGroup;
+use App\Modules\Organization\Models\Tenant;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 

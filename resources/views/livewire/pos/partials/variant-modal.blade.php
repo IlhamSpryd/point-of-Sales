@@ -11,6 +11,8 @@
                 @if ($selectingVariantProduct->photo_url)
                     <img src="{{ $selectingVariantProduct->photo_url }}"
                         alt="{{ $selectingVariantProduct->product_name }}"
+                        loading="lazy"
+                        decoding="async"
                         class="w-12 h-12 rounded-lg object-cover bg-muted border border-border">
                 @else
                     <div class="w-12 h-12 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground">

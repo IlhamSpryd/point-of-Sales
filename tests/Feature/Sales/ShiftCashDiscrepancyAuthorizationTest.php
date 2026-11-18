@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sales;
 
-use App\Models\Device;
-use App\Models\Role;
-use App\Models\Shift;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\CashierPinService;
+use App\Modules\Sales\Models\Shift;
 use App\Modules\Sales\Services\ShiftManagementService;
 use App\Modules\Sales\Services\ShiftService;
-use App\Services\CashierPinService;
-use App\Services\Context\TenantContext;
 use DomainException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;

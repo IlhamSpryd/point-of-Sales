@@ -4,28 +4,28 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Services;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
 use App\Enums\StockMovementType;
-use App\Models\Customer;
-use App\Models\CustomerAddress;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Product;
-use App\Models\Store;
-use App\Models\User;
+use App\Modules\Catalog\DataTransferObjects\PriceResolutionContextDto;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Customers\Models\CustomerAddress;
 use App\Modules\Customers\Services\CustomerCreditService;
 use App\Modules\Inventory\Services\InventoryLedgerService;
-use App\Modules\Products\DataTransferObjects\PriceResolutionContextDto;
-use App\Modules\Products\Services\CatalogPriceResolverService;
-use App\Modules\Purchasing\Services\DocumentSequenceService;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\AuditTrailService;
+use App\Modules\Pricing\Services\CatalogPriceResolverService;
 use App\Modules\Sales\Enums\SalesOrderFulfillmentStatusEnum;
 use App\Modules\Sales\Enums\SalesOrderInvoicingStatusEnum;
 use App\Modules\Sales\Enums\SalesOrderStatusEnum;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\OrderItem;
 use App\Modules\Sales\Models\Quotation;
 use App\Modules\Sales\Models\SalesOrder;
 use App\Modules\Sales\Models\SalesOrderLine;
-use App\Modules\Settings\Services\AuditTrailService;
-use App\Services\Context\TenantContext;
+use App\Platform\Documents\DocumentSequenceService;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Support\Facades\DB;
@@ -54,8 +54,7 @@ class SalesOrderService
 
         return DB::transaction(function () use ($payload, $actor, $tenantId, $idempotencyKey) {
             if ($idempotencyKey !== null && $idempotencyKey !== '') {
-                $existing = SalesOrder::withoutGlobalScopes()
-                    ->where('tenant_id', $tenantId)
+                $existing = SalesOrder::allBranchesInTenant()
                     ->where('idempotency_key', $idempotencyKey)
                     ->first();
 
@@ -313,8 +312,7 @@ class SalesOrderService
         return DB::transaction(function () use ($quotation, $actor, $tenantId, $idempotencyKey) {
             $key = $idempotencyKey ?: "qtn_convert_{$quotation->id}_{$quotation->version_number}";
 
-            $existing = SalesOrder::withoutGlobalScopes()
-                ->where('tenant_id', $tenantId)
+            $existing = SalesOrder::allBranchesInTenant()
                 ->where('idempotency_key', $key)
                 ->first();
 
@@ -404,8 +402,7 @@ class SalesOrderService
         ?string $overrideReason = null
     ): SalesOrder {
         return DB::transaction(function () use ($salesOrder, $actor, $allowOverride, $overrideReason) {
-            $locked = SalesOrder::withoutGlobalScopes()
-                ->where('tenant_id', $salesOrder->tenant_id)
+            $locked = SalesOrder::allBranchesInTenant()
                 ->where('id', $salesOrder->id)
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -459,7 +456,7 @@ class SalesOrderService
      */
     public function fulfillOrder(SalesOrder $salesOrder, array $fulfillmentLines, User $actor, ?string $idempotencyKey = null): Order
     {
-        return DB::transaction(function () use ($salesOrder, $fulfillmentLines, $actor, $idempotencyKey) {
+        return DB::transaction(function () use ($salesOrder, $fulfillmentLines, $actor, $idempotencyKey): Order {
             $tenantId = (int) $salesOrder->tenant_id;
             $storeId = (int) $salesOrder->store_id;
 
@@ -676,8 +673,7 @@ class SalesOrderService
     public function cancelOrder(SalesOrder $salesOrder, User $actor, string $reason): SalesOrder
     {
         return DB::transaction(function () use ($salesOrder, $actor, $reason) {
-            $locked = SalesOrder::withoutGlobalScopes()
-                ->where('tenant_id', $salesOrder->tenant_id)
+            $locked = SalesOrder::allBranchesInTenant()
                 ->where('id', $salesOrder->id)
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -746,8 +742,7 @@ class SalesOrderService
         return DB::transaction(function () use ($sourceOrder, $actor, $tenantId) {
             $source = $sourceOrder instanceof SalesOrder
                 ? $sourceOrder
-                : SalesOrder::withoutGlobalScopes()
-                    ->where('tenant_id', $tenantId)
+                : SalesOrder::allBranchesInTenant()
                     ->findOrFail($sourceOrder);
 
             $source->loadMissing(['lines', 'customer']);

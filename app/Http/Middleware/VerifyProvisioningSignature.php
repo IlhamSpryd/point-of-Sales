@@ -2,8 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\ProvisioningNonce;
-use App\Services\DatabaseErrorClassifier;
+use App\Modules\Subscription\Models\ProvisioningNonce;
+use App\Platform\Database\DatabaseErrorClassifier;
 use Closure;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;

@@ -2,14 +2,14 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\ActivityLog;
-use App\Models\EmailOutbox;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Models\UserOAuthIdentity;
-use App\Services\OAuthService;
+use App\Modules\Organization\Models\ActivityLog;
+use App\Modules\Organization\Models\EmailOutbox;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Models\UserOAuthIdentity;
+use App\Modules\Organization\Services\OAuthService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;

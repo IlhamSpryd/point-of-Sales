@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\ChannelProductMapping;
-use App\Models\Product;
-use App\Services\Context\TenantContext;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Sales\Models\ChannelProductMapping;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;

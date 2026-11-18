@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Services;
 
-use App\Models\User;
 use App\Modules\Finance\Enums\TaxCalculationTypeEnum;
 use App\Modules\Finance\Enums\TaxTypeEnum;
 use App\Modules\Finance\Models\ChartOfAccount;
 use App\Modules\Finance\Models\TaxAccountMapping;
 use App\Modules\Finance\Models\TaxCode;
 use App\Modules\Finance\Models\TaxRate;
+use App\Modules\Organization\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use DomainException;

@@ -7,6 +7,6 @@ namespace App\Http\Controllers;
 /**
  * Backward compatibility wrapper for modular architecture.
  *
- * @see \App\Modules\Reports\Controllers\DashboardController
+ * @see \App\Modules\Reporting\Controllers\DashboardController
  */
-class DashboardController extends \App\Modules\Reports\Controllers\DashboardController {}
+class DashboardController extends \App\Modules\Reporting\Controllers\DashboardController {}

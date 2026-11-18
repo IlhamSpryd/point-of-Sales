@@ -2,16 +2,16 @@
 
 namespace Tests\Feature\Finance;
 
-use App\Models\AccountingPeriod;
-use App\Models\Device;
-use App\Models\Role;
-use App\Models\Shift;
-use App\Models\User;
 use App\Modules\Finance\Enums\AccountingPeriodStatusEnum;
 use App\Modules\Finance\Enums\JournalStatusEnum;
+use App\Modules\Finance\Models\AccountingPeriod;
 use App\Modules\Finance\Models\FinancialEventOutbox;
 use App\Modules\Finance\Models\JournalEntry;
 use App\Modules\Finance\Services\PostingEngineService;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Shift;
 use App\Modules\Sales\Services\ShiftService;
 use Database\Seeders\ChartOfAccountsSeeder;
 use Database\Seeders\DefaultPostingRulesSeeder;

@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Casts;
 
-use App\Modules\HR\Models\AttendanceRecord;
-use App\Modules\HR\Models\CommissionRecord;
-use App\Modules\HR\Models\CommissionRule;
-use App\Modules\HR\Models\EmployeeCompensation;
-use App\Modules\HR\Models\LeaveBalance;
-use App\Modules\HR\Models\LeavePolicy;
-use App\Modules\HR\Models\LeaveRequest;
-use App\Modules\HR\Models\LeaveTransaction;
-use App\Modules\HR\Models\OvertimeRecord;
-use App\Modules\HR\Models\PayrollAdjustment;
-use App\Modules\HR\Models\PayrollBatch;
-use App\Modules\HR\Models\PayrollItem;
-use App\Modules\HR\Models\PayrollRecord;
-use App\Modules\Products\Models\PriceListItem;
-use App\Modules\Products\Models\ProductBundleItem;
-use App\Modules\Products\Models\ProductVariant;
+use App\Modules\Catalog\Models\ProductBundleItem;
+use App\Modules\Catalog\Models\ProductVariant;
+use App\Modules\Pricing\Models\PriceListItem;
+use App\Modules\Workforce\Models\AttendanceRecord;
+use App\Modules\Workforce\Models\CommissionRecord;
+use App\Modules\Workforce\Models\CommissionRule;
+use App\Modules\Workforce\Models\EmployeeCompensation;
+use App\Modules\Workforce\Models\LeaveBalance;
+use App\Modules\Workforce\Models\LeavePolicy;
+use App\Modules\Workforce\Models\LeaveRequest;
+use App\Modules\Workforce\Models\LeaveTransaction;
+use App\Modules\Workforce\Models\OvertimeRecord;
+use App\Modules\Workforce\Models\PayrollAdjustment;
+use App\Modules\Workforce\Models\PayrollBatch;
+use App\Modules\Workforce\Models\PayrollItem;
+use App\Modules\Workforce\Models\PayrollRecord;
 use Tests\TestCase;
 
 class DecimalPrecisionCastsTest extends TestCase
@@ -112,7 +112,7 @@ class DecimalPrecisionCastsTest extends TestCase
 
         $totalChecked = 0;
         foreach ($expectedCasts as $modelClass => $attributes) {
-            $model = new $modelClass();
+            $model = new $modelClass;
             $casts = $model->getCasts();
 
             foreach ($attributes as $attr => $expectedCast) {

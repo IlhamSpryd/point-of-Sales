@@ -80,7 +80,7 @@
                 <span class="text-xs font-bold text-muted-foreground uppercase tracking-wider">Request Status:</span>
                 <x-ui.select wire:model.live="statusFilter" class="w-auto text-xs sm:text-sm">
                     <option value="ALL">All Statuses</option>
-                    @foreach (\App\Modules\HR\Enums\LeaveRequestStatusEnum::cases() as $case)
+                    @foreach (\App\Modules\Workforce\Enums\LeaveRequestStatusEnum::cases() as $case)
                         <option value="{{ $case->value }}">{{ $case->label() }}</option>
                     @endforeach
                 </x-ui.select>
@@ -121,9 +121,9 @@
                                 <td class="px-6 py-4">
                                     @php
                                         $leaveDot = match($req->status) {
-                                            \App\Modules\HR\Enums\LeaveRequestStatusEnum::APPROVED => 'bg-success',
-                                            \App\Modules\HR\Enums\LeaveRequestStatusEnum::PENDING => 'bg-warning',
-                                            \App\Modules\HR\Enums\LeaveRequestStatusEnum::REJECTED => 'bg-destructive',
+                                            \App\Modules\Workforce\Enums\LeaveRequestStatusEnum::APPROVED => 'bg-success',
+                                            \App\Modules\Workforce\Enums\LeaveRequestStatusEnum::PENDING => 'bg-warning',
+                                            \App\Modules\Workforce\Enums\LeaveRequestStatusEnum::REJECTED => 'bg-destructive',
                                             default => 'bg-neutral',
                                         };
                                     @endphp
@@ -133,7 +133,7 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right whitespace-nowrap">
-                                    @if ($req->status === \App\Modules\HR\Enums\LeaveRequestStatusEnum::PENDING)
+                                    @if ($req->status === \App\Modules\Workforce\Enums\LeaveRequestStatusEnum::PENDING)
                                         <x-ui.table-actions>
                                             <x-ui.table-action-item icon="check" wire:click="approve({{ $req->id }})" aria-label="Approve Leave Request">
                                                 Approve Request

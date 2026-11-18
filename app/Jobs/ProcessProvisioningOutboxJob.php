@@ -2,11 +2,11 @@
 
 namespace App\Jobs;
 
-use App\Models\EmailOutbox;
-use App\Models\EmailVerificationOtp;
-use App\Models\OwnerOnboardingToken;
-use App\Services\Context\TenantContext;
-use App\Services\ProvisioningService;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\EmailOutbox;
+use App\Modules\Organization\Models\EmailVerificationOtp;
+use App\Modules\Organization\Models\OwnerOnboardingToken;
+use App\Modules\Subscription\Services\ProvisioningService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;

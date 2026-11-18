@@ -13,7 +13,7 @@
         </x-slot:breadcrumbs>
 
         <x-slot:actions>
-            @can('create', \App\Modules\HR\Models\Employee::class)
+            @can('create', \App\Modules\Workforce\Models\Employee::class)
             <x-ui.button variant="primary" wire:click="openCreateModal" class="gap-2">
                 <span class="material-symbols-rounded text-base">person_add</span>
                 <span>Add New Employee</span>
@@ -164,7 +164,7 @@
                     </span>
                 </td>
                 <td class="px-6 py-4 text-center">
-                    @if ($emp->employment_status === \App\Modules\HR\Enums\EmploymentStatusEnum::ACTIVE)
+                    @if ($emp->employment_status === \App\Modules\Workforce\Enums\EmploymentStatusEnum::ACTIVE)
                         <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
                             <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
                             Active
@@ -186,11 +186,11 @@
                             Edit Employee
                         </x-ui.table-action-item>
                         <x-ui.table-action-item
-                            icon="{{ $emp->employment_status === \App\Modules\HR\Enums\EmploymentStatusEnum::ACTIVE ? 'person_off' : 'check_circle' }}"
-                            variant="{{ $emp->employment_status === \App\Modules\HR\Enums\EmploymentStatusEnum::ACTIVE ? 'destructive' : 'default' }}"
+                            icon="{{ $emp->employment_status === \App\Modules\Workforce\Enums\EmploymentStatusEnum::ACTIVE ? 'person_off' : 'check_circle' }}"
+                            variant="{{ $emp->employment_status === \App\Modules\Workforce\Enums\EmploymentStatusEnum::ACTIVE ? 'destructive' : 'default' }}"
                             wire:click="toggleActiveStatus({{ $emp->id }})"
                         >
-                            {{ $emp->employment_status === \App\Modules\HR\Enums\EmploymentStatusEnum::ACTIVE ? 'Deactivate' : 'Activate' }}
+                            {{ $emp->employment_status === \App\Modules\Workforce\Enums\EmploymentStatusEnum::ACTIVE ? 'Deactivate' : 'Activate' }}
                         </x-ui.table-action-item>
                     </x-ui.table-actions>
                     @endcan

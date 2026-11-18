@@ -16,7 +16,7 @@
                 <span class="material-symbols-rounded text-base">folder_shared</span>
                 Customer Groups
             </x-ui.button>
-            @can('create', \App\Models\Customer::class)
+            @can('create', \App\Modules\Customers\Models\Customer::class)
             <x-ui.button variant="primary" wire:click="create" wire:loading.attr="disabled" class="gap-2">
                 <span class="material-symbols-rounded text-base">person_add</span>
                 Add Customer

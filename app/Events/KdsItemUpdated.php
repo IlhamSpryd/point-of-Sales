@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Models\OrderItem;
+use App\Enums\KitchenStation;
+use App\Modules\Sales\Models\OrderItem;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
@@ -51,7 +52,7 @@ class KdsItemUpdated implements ShouldBroadcast, ShouldDispatchAfterCommit
         $this->preparationStatus = $item->preparation_status->value;
 
         $stationEnum = $item->product?->kitchen_station;
-        if (! $stationEnum || $stationEnum === \App\Enums\KitchenStation::None) {
+        if (! $stationEnum || $stationEnum === KitchenStation::None) {
             $stationEnum = $item->product?->category?->kitchen_station;
         }
 

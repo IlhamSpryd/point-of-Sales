@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Core\Context\TenantContext;
 use App\Http\Middleware\SetTenantContext;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use RuntimeException;

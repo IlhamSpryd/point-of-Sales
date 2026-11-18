@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderType;
 use App\Enums\PaymentMethod;
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\ProductVariant;
-use App\Services\Context\TenantContext;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\ProductVariant;
+use App\Modules\Sales\Models\Order;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

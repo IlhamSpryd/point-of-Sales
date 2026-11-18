@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use App\Enums\OrderType;
-use App\Models\Order;
+use App\Modules\Sales\Models\Order;
 use PHPUnit\Framework\TestCase;
 
 class OrderTypeNormalizationTest extends TestCase

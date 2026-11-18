@@ -4,6 +4,28 @@ declare(strict_types=1);
 
 namespace App\Modules\Pricing\Models;
 
-use App\Modules\Customers\Models\LoyaltyTier as BaseLoyaltyTier;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToTenant;
+use Illuminate\Database\Eloquent\Model;
 
-class LoyaltyTier extends BaseLoyaltyTier {}
+/**
+ * @property numeric-string $points_multiplier
+ * @property int $id
+ * @property int $min_points
+ * @property int $tenant_id
+ */
+class LoyaltyTier extends Model
+{
+    use AssignsTenant;
+    use ScopedToTenant;
+
+    protected $fillable = [
+        'tier_code',
+        'name',
+        'min_points',
+        'points_multiplier',
+        'benefits',
+        'is_active',
+        'tenant_id',
+    ];
+}

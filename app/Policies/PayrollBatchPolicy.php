@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\User;
-use App\Modules\HR\Models\PayrollBatch;
+use App\Modules\Organization\Models\User;
+use App\Modules\Workforce\Models\PayrollBatch;
 
 class PayrollBatchPolicy
 {

@@ -2,17 +2,17 @@
 
 namespace Tests\Feature\Domain1;
 
+use App\Core\Context\TenantContext;
 use App\Exceptions\StaleWorkerException;
 use App\Jobs\ProcessProvisioningOutboxJob;
-use App\Models\EmailOutbox;
-use App\Models\OwnerOnboardingToken;
-use App\Models\ProvisioningNonce;
-use App\Models\ProvisioningRequest;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
-use App\Services\DatabaseErrorClassifier;
-use App\Services\ProvisioningService;
+use App\Modules\Organization\Models\EmailOutbox;
+use App\Modules\Organization\Models\OwnerOnboardingToken;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Subscription\Models\ProvisioningNonce;
+use App\Modules\Subscription\Models\ProvisioningRequest;
+use App\Modules\Subscription\Services\ProvisioningService;
+use App\Platform\Database\DatabaseErrorClassifier;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;

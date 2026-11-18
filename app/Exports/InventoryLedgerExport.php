@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Exports;
 
+use App\Core\Context\TenantContext;
 use App\Enums\StockMovementType;
-use App\Models\IngredientStockMovement;
-use App\Models\StockMovement;
-use App\Services\Context\TenantContext;
+use App\Modules\Inventory\Models\IngredientStockMovement;
+use App\Modules\Inventory\Models\StockMovement;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;

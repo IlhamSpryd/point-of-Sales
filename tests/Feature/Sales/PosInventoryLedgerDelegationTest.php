@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sales;
 
+use App\Core\Context\TenantContext;
 use App\Enums\IngredientStockMovementTypeEnum;
 use App\Enums\OrderStatus;
 use App\Enums\StockMovementType;
-use App\Models\Category;
-use App\Models\Ingredient;
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Services\TransactionService;
-use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;

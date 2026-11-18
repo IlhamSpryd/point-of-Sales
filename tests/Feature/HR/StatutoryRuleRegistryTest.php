@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\HR;
 
-use App\Modules\HR\Services\StatutoryRuleRegistryService;
+use App\Modules\Workforce\Services\StatutoryRuleRegistryService;
 use Database\Seeders\StatutoryRuleVersionsSeeder;
 use DomainException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;

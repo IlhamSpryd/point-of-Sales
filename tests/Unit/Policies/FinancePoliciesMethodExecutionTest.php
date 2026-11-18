@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Policies;
 
-use App\Models\User;
-use App\Modules\Customers\Models\GiftCard;
-use App\Modules\Customers\Models\StoreCreditAccount;
-use App\Modules\Customers\Models\Voucher;
 use App\Modules\Finance\Enums\ApPaymentStatusEnum;
 use App\Modules\Finance\Enums\ExpenseStatusEnum;
 use App\Modules\Finance\Enums\FixedAssetStatusEnum;
@@ -18,6 +14,10 @@ use App\Modules\Finance\Models\ChartOfAccount;
 use App\Modules\Finance\Models\Expense;
 use App\Modules\Finance\Models\FixedAsset;
 use App\Modules\Finance\Models\JournalEntry;
+use App\Modules\Organization\Models\User;
+use App\Modules\Pricing\Models\GiftCard;
+use App\Modules\Pricing\Models\StoreCreditAccount;
+use App\Modules\Pricing\Models\Voucher;
 use App\Policies\AccountingPeriodPolicy;
 use App\Policies\ApPaymentPolicy;
 use App\Policies\CashBankAccountPolicy;

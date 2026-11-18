@@ -6,8 +6,8 @@ namespace App\Livewire;
 
 use App\Enums\ExportTaskStatus;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\ExportTask;
-use App\Services\ReportService;
+use App\Modules\Reporting\Models\ExportTask;
+use App\Modules\Reporting\Services\ReportService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;

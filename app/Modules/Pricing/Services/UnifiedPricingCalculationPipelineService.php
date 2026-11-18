@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace App\Modules\Pricing\Services;
 
-use App\Models\Customer;
-use App\Models\Discount;
-use App\Models\Modifier;
-use App\Models\Product;
-use App\Models\ProductVariant;
-use App\Models\Setting;
-use App\Modules\Customers\Services\VoucherService;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\ProductVariant;
+use App\Modules\Customers\Models\Customer;
+use App\Modules\Inventory\Models\Modifier;
+use App\Modules\Organization\Models\Setting;
 use App\Modules\Pricing\DataTransferObjects\CartEvaluationContextDto;
 use App\Modules\Pricing\DataTransferObjects\CheckoutCalculationBreakdownDto;
 use App\Modules\Pricing\DataTransferObjects\CheckoutCalculationInputDto;
-use App\Services\CatalogPriceResolverService;
+use App\Modules\Pricing\Models\Discount;
 use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
 

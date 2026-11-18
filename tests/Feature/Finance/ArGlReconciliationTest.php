@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Finance;
 
-use App\Models\AccountingPeriod;
-use App\Models\Customer;
-use App\Models\Role;
-use App\Models\User;
+use App\Core\Context\TenantContext;
+use App\Modules\Customers\Models\Customer;
 use App\Modules\Customers\Models\CustomerCreditAccount;
 use App\Modules\Finance\Enums\AccountingPeriodStatusEnum;
 use App\Modules\Finance\Enums\CashBankAccountTypeEnum;
+use App\Modules\Finance\Models\AccountingPeriod;
 use App\Modules\Finance\Models\CashBankAccount;
 use App\Modules\Finance\Models\ChartOfAccount;
 use App\Modules\Finance\Services\ArGlReconciliationService;
 use App\Modules\Finance\Services\ArOutboxConsumerService;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
 use App\Modules\Sales\Enums\CustomerInvoiceStatusEnum;
 use App\Modules\Sales\Models\CustomerInvoice;
 use App\Modules\Sales\Services\AccountsReceivableService;
-use App\Services\Context\TenantContext;
 use Database\Seeders\ChartOfAccountsSeeder;
 use Database\Seeders\DefaultPostingRulesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

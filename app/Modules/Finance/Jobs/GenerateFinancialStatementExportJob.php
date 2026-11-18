@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Jobs;
 
+use App\Core\Context\TenantContext;
 use App\Enums\ExportTaskStatus;
 use App\Exports\FinancialStatementExport;
-use App\Models\ExportTask;
 use App\Modules\Finance\Services\FinancialStatementService;
-use App\Services\Context\TenantContext;
+use App\Modules\Reporting\Models\ExportTask;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;

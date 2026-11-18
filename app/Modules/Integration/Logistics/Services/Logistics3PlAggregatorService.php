@@ -29,10 +29,10 @@ class Logistics3PlAggregatorService
         ?PosIndonesiaCourierAdapter $pos = null,
         ?JntCourierAdapter $jnt = null
     ) {
-        $this->registerAdapter($jne ?? new JneCourierAdapter());
-        $this->registerAdapter($sicepat ?? new SiCepatCourierAdapter());
-        $this->registerAdapter($pos ?? new PosIndonesiaCourierAdapter());
-        $this->registerAdapter($jnt ?? new JntCourierAdapter());
+        $this->registerAdapter($jne ?? new JneCourierAdapter);
+        $this->registerAdapter($sicepat ?? new SiCepatCourierAdapter);
+        $this->registerAdapter($pos ?? new PosIndonesiaCourierAdapter);
+        $this->registerAdapter($jnt ?? new JntCourierAdapter);
     }
 
     public function registerAdapter(CourierAdapterInterface $adapter): void

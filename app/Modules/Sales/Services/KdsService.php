@@ -7,8 +7,7 @@ namespace App\Modules\Sales\Services;
 use App\Enums\OrderStatus;
 use App\Enums\PreparationStatus;
 use App\Events\KdsItemUpdated;
-use App\Models\OrderItem;
-use App\Services\TransactionService;
+use App\Modules\Sales\Models\OrderItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 

@@ -7,6 +7,6 @@ namespace App\Http\Controllers;
 /**
  * Backward compatibility wrapper for modular architecture.
  *
- * @see \App\Modules\Products\Controllers\PriceListController
+ * @see \App\Modules\Pricing\Controllers\PriceListController
  */
-class PriceListController extends \App\Modules\Products\Controllers\PriceListController {}
+class PriceListController extends \App\Modules\Pricing\Controllers\PriceListController {}

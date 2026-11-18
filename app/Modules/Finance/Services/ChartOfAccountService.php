@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Services;
 
-use App\Models\User;
+use App\Core\Context\TenantContext;
 use App\Modules\Finance\Enums\AccountSubtypeEnum;
 use App\Modules\Finance\Enums\AccountTypeEnum;
 use App\Modules\Finance\Enums\NormalBalanceEnum;
 use App\Modules\Finance\Exceptions\UnresolvableAccountMappingException;
 use App\Modules\Finance\Models\ChartOfAccount;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\User;
 use DomainException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;

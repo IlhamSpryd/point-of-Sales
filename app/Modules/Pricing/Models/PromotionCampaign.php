@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\Pricing\Models;
 
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToStoreForDiscount;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToStoreForDiscount;
+use App\Core\Traits\ScopedToTenant;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 /** @use HasFactory<Factory<static>> */
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

@@ -11,6 +11,7 @@
     'zIndex' => 50,
     'onClose' => null,
     'role' => 'dialog',
+    'instant' => false,
 ])
 
 @php
@@ -88,12 +89,22 @@
         >
             <div
                 x-show="modalOpen"
-                x-transition:enter="ease-out duration-200"
-                x-transition:enter-start="opacity-0"
-                x-transition:enter-end="opacity-100"
-                x-transition:leave="ease-in duration-150"
-                x-transition:leave-start="opacity-100"
-                x-transition:leave-end="opacity-0"
+                @if ($instant)
+                    {{-- R-007 / WCAG AAA: mode kasir — tanpa animasi agar tidak menghambat alur transaksi. --}}
+                    x-transition:enter=""
+                    x-transition:enter-start="opacity-100"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave=""
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-100"
+                @else
+                    x-transition:enter="ease-out duration-200"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="ease-in duration-150"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                @endif
                 class="absolute inset-0 h-full w-full bg-black/60 backdrop-blur-[2px]"
                 @click="{!! $closeAction !!}"
                 aria-hidden="true"
@@ -103,13 +114,22 @@
                 x-show="modalOpen"
                 x-trap.inert.noscroll="modalOpen"
                 x-gsap-modal="modalOpen"
-                x-transition:enter="ease-out duration-200"
-                x-transition:enter-start="opacity-0 translate-y-2 sm:scale-95"
-                x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                x-transition:leave="ease-in duration-150"
-                x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                x-transition:leave-end="opacity-0 translate-y-2 sm:scale-95"
-                class="flex h-full w-full overflow-y-auto {{ $alignClasses }}"
+                @if ($instant)
+                    x-transition:enter=""
+                    x-transition:enter-start="opacity-100"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave=""
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-100"
+                @else
+                    x-transition:enter="ease-out duration-200"
+                    x-transition:enter-start="opacity-0 translate-y-2 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-150"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-2 sm:scale-95"
+                @endif
+                class="relative z-10 flex h-full w-full overflow-y-auto {{ $alignClasses }}"
             >
                 <div
                     role="{{ $role }}"
@@ -129,7 +149,7 @@
                         </div>
                     @endif
 
-                    <div>
+                    <div class="min-h-0 flex-1">
                         {{ $content ?? $slot }}
                     </div>
 

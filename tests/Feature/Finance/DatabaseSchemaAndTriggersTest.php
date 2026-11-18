@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Finance;
 
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;

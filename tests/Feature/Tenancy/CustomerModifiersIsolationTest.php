@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Tenancy;
 
-use App\Models\Category;
-use App\Models\Product;
-use App\Models\Store;
-use App\Models\Table;
-use App\Models\Tenant;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Sales\Models\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Services\Analytics\RestockPredictionService;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Reporting\Services\Analytics\RestockPredictionService;
 use Illuminate\Console\Command;
 
 class RecomputeRestockForecasts extends Command

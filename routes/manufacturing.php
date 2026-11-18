@@ -19,4 +19,3 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
         Route::get('/orders', ManufacturingOrderManager::class)->name('orders.index');
     });
 });
-

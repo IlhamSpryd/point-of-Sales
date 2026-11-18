@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domain2;
 
+use App\Core\Context\TenantContext;
 use App\Jobs\ProcessProvisioningOutboxJob;
-use App\Models\EmailOutbox;
-use App\Models\Ingredient;
-use App\Models\Tenant;
-use App\Services\Context\TenantContext;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Organization\Models\EmailOutbox;
+use App\Modules\Organization\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Queue;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\User;
-use App\Modules\Products\Models\Product;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Organization\Models\User;
 
 class ProductPolicy
 {

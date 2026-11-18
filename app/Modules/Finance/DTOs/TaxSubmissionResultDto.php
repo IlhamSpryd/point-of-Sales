@@ -7,8 +7,8 @@ namespace App\Modules\Finance\DTOs;
 class TaxSubmissionResultDto
 {
     /**
-     * @param array<string, mixed> $requestLog
-     * @param array<string, mixed> $responseLog
+     * @param  array<string, mixed>  $requestLog
+     * @param  array<string, mixed>  $responseLog
      */
     public function __construct(
         public string $providerName,

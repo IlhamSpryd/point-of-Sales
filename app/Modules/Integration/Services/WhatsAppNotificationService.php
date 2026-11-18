@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Modules\Integration\Services;
 
+use App\Core\Context\TenantContext;
 use App\Jobs\SendWhatsAppReceiptJob;
 use App\Modules\Integration\Contracts\WhatsAppGatewayInterface;
 use App\Modules\Integration\Models\WhatsAppMessageOutbox;
 use App\Modules\Sales\Models\Order;
-use App\Services\Context\TenantContext;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -61,8 +61,8 @@ class WhatsAppNotificationService
             $payload = [
                 'order_id' => $order->id,
                 'order_code' => $order->order_code,
-                'customer_name' => $order->customer?->name ?? 'Pelanggan Setia',
-                'store_name' => $order->store?->name ?? 'Apeiron POS',
+                'customer_name' => $order->customer->name ?? 'Pelanggan Setia',
+                'store_name' => $order->store->name ?? 'Apeiron POS',
                 'total_amount' => (string) ($order->order_amount ?? $order->total_amount ?? '0.00'),
                 'items_count' => $order->orderItems()->count(),
                 'receipt_url' => $receiptUrl ?? url('/pos/receipt/'.$order->order_code),

@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Core\Context\TenantContext;
 use App\Http\Controllers\Controller;
-use App\Models\EmailOutbox;
-use App\Models\Role;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Models\UserOAuthIdentity;
-use App\Services\AuditTrailService;
-use App\Services\Context\TenantContext;
-use App\Services\OAuthService;
-use App\Services\UserInvitationService;
+use App\Modules\Organization\Models\EmailOutbox;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Models\UserOAuthIdentity;
+use App\Modules\Organization\Services\AuditTrailService;
+use App\Modules\Organization\Services\OAuthService;
+use App\Modules\Organization\Services\UserInvitationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

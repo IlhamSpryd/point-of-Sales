@@ -52,4 +52,3 @@ return new class extends Migration
         Schema::dropIfExists('manufacturing_orders');
     }
 };
-

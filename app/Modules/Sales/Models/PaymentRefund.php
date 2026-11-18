@@ -4,19 +4,15 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Models;
 
-use App\Models\CashDrawerMovement;
-use App\Models\Concerns\AssignsStore;
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToStore;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Device;
-use App\Models\Order;
-use App\Models\OrderReturn;
-use App\Models\Payment;
-use App\Models\Shift;
-use App\Models\User;
+use App\Core\Traits\AssignsStore;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToStore;
+use App\Core\Traits\ScopedToTenant;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property numeric-string $amount
@@ -31,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $cash_drawer_movement_id
  * @property int $requested_by_user_id
  * @property int $approved_by_user_id
+ * @property Carbon|string|null $settled_at
  */
 class PaymentRefund extends Model
 {

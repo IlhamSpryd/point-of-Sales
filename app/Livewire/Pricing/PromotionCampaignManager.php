@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Livewire\Pricing;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Modules\Pricing\Models\PromotionCampaign;
 use App\Modules\Pricing\Models\PromotionReward;
 use App\Modules\Pricing\Models\PromotionRule;
-use App\Services\Context\TenantContext;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;

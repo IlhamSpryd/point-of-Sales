@@ -2,10 +2,10 @@
 
 namespace App\Livewire;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Discount;
-use App\Models\DiscountRedemption;
-use App\Services\Context\TenantContext;
+use App\Modules\Pricing\Models\Discount;
+use App\Modules\Pricing\Models\DiscountRedemption;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;

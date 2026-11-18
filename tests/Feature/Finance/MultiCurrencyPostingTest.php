@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Finance;
 
-use App\Models\Tenant;
-use App\Models\User;
+use App\Core\Context\TenantContext;
 use App\Modules\Finance\DataTransferObjects\JournalLineDto;
 use App\Modules\Finance\Enums\AccountSubtypeEnum;
 use App\Modules\Finance\Enums\AccountTypeEnum;
@@ -18,7 +17,8 @@ use App\Modules\Finance\Models\ExchangeRate;
 use App\Modules\Finance\Models\JournalEntry;
 use App\Modules\Finance\Services\CurrencyExchangeService;
 use App\Modules\Finance\Services\JournalEntryService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -27,10 +27,15 @@ class MultiCurrencyPostingTest extends TestCase
     protected bool $optOutFromDefaultTenant = true;
 
     protected Tenant $tenantA;
+
     protected Tenant $tenantB;
+
     protected User $userA;
+
     protected AccountingPeriod $periodA;
+
     protected ChartOfAccount $accountCash;
+
     protected ChartOfAccount $accountSales;
 
     protected function afterSubclassSetUp(): void

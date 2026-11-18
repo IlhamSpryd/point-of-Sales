@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Organization;
 
-use App\Models\Device;
-use App\Models\OperationalUnit;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Models\OperationalUnit;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class OperationalUnitHierarchyTest extends TestCase
@@ -20,8 +21,11 @@ class OperationalUnitHierarchyTest extends TestCase
     protected bool $optOutFromDefaultTenant = true;
 
     private Tenant $tenantA;
+
     private Tenant $tenantB;
+
     private Store $storeA;
+
     private Store $storeB;
 
     protected function afterSubclassSetUp(): void
@@ -109,7 +113,7 @@ class OperationalUnitHierarchyTest extends TestCase
         // Direct DB::table insert bypasses Eloquent traits to test MySQL InnoDB foreign key constraint directly
         $this->expectException(QueryException::class);
 
-        \Illuminate\Support\Facades\DB::table('operational_units')->insert([
+        DB::table('operational_units')->insert([
             'tenant_id' => $this->tenantA->id,
             'store_id' => $this->storeB->id, // Cross-tenant store from Tenant B!
             'name' => 'Hacked Cross-Tenant Unit',

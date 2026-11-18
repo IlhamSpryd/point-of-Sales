@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Inventory\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\IngredientRestockForecast;
-use App\Services\RestockPredictionService;
+use App\Modules\Inventory\Models\IngredientRestockForecast;
 use Illuminate\Http\JsonResponse;
 
 class RestockForecastController extends Controller

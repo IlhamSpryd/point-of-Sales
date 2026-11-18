@@ -7,6 +7,6 @@ namespace App\Http\Controllers;
 /**
  * Backward compatibility wrapper for modular architecture.
  *
- * @see \App\Modules\Auth\Controllers\OwnerOnboardingController
+ * @see \App\Modules\Organization\Controllers\OwnerOnboardingController
  */
-class OwnerOnboardingController extends \App\Modules\Auth\Controllers\OwnerOnboardingController {}
+class OwnerOnboardingController extends \App\Modules\Organization\Controllers\OwnerOnboardingController {}

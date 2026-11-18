@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Core;
 
-use App\Models\Tenant;
-use App\Models\User;
-use App\Modules\Core\Models\Company;
-use App\Modules\Finance\Models\JournalEntry;
-use App\Modules\HR\Models\Employee;
-use App\Modules\HR\Models\PayrollBatch;
-use App\Modules\Purchasing\Models\SupplierInvoice;
-use App\Modules\Sales\Models\CustomerInvoice;
-use App\Modules\Settings\Models\Store;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Company;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Workforce\Enums\EmploymentStatusEnum;
+use App\Modules\Workforce\Enums\EmploymentTypeEnum;
+use App\Modules\Workforce\Enums\GenderEnum;
+use App\Modules\Workforce\Enums\MaritalStatusEnum;
+use App\Modules\Workforce\Enums\PayrollBatchStatusEnum;
+use App\Modules\Workforce\Models\Department;
+use App\Modules\Workforce\Models\Employee;
+use App\Modules\Workforce\Models\JobTitle;
+use App\Modules\Workforce\Models\PayrollBatch;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
@@ -23,8 +27,11 @@ class MultiCompanySchemaIntegrityTest extends TestCase
     use DatabaseTransactions;
 
     private Tenant $tenantA;
+
     private Tenant $tenantB;
+
     private Company $companyA;
+
     private Company $companyB;
 
     protected bool $optOutFromDefaultTenant = true;
@@ -100,12 +107,12 @@ class MultiCompanySchemaIntegrityTest extends TestCase
         app(TenantContext::class)->setTenantId($this->tenantA->id);
 
         // 1. Employee
-        $dept = \App\Modules\HR\Models\Department::create([
+        $dept = Department::create([
             'tenant_id' => $this->tenantA->id,
             'name' => 'Finance Department',
             'department_code' => 'FIN-01',
         ]);
-        $title = \App\Modules\HR\Models\JobTitle::create([
+        $title = JobTitle::create([
             'tenant_id' => $this->tenantA->id,
             'department_id' => $dept->id,
             'name' => 'Staff Accounting',
@@ -120,10 +127,10 @@ class MultiCompanySchemaIntegrityTest extends TestCase
             'phone_number' => '081234567890',
             'department_id' => $dept->id,
             'job_title_id' => $title->id,
-            'gender' => \App\Modules\HR\Enums\GenderEnum::FEMALE,
-            'marital_status' => \App\Modules\HR\Enums\MaritalStatusEnum::SINGLE,
-            'employment_type' => \App\Modules\HR\Enums\EmploymentTypeEnum::PERMANENT,
-            'employment_status' => \App\Modules\HR\Enums\EmploymentStatusEnum::ACTIVE,
+            'gender' => GenderEnum::FEMALE,
+            'marital_status' => MaritalStatusEnum::SINGLE,
+            'employment_type' => EmploymentTypeEnum::PERMANENT,
+            'employment_status' => EmploymentStatusEnum::ACTIVE,
             'hire_date' => now(),
         ]);
 
@@ -146,7 +153,7 @@ class MultiCompanySchemaIntegrityTest extends TestCase
             'period_end_date' => now()->endOfMonth(),
             'cutoff_date' => now(),
             'payment_scheduled_date' => now()->addDays(5),
-            'status' => \App\Modules\HR\Enums\PayrollBatchStatusEnum::DRAFT,
+            'status' => PayrollBatchStatusEnum::DRAFT,
             'total_employees' => 1,
             'total_gross_amount' => '10000000.00',
             'total_tax_amount' => '500000.00',

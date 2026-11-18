@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
-use App\Services\AuditTrailService;
-use App\Services\Inventory\InventoryLedgerService;
-use App\Services\MenuCacheService;
+use App\Modules\Catalog\Services\MenuCacheService;
+use App\Modules\Inventory\Services\InventoryLedgerService;
+use App\Modules\Organization\Services\AuditTrailService;
 use Mockery;
 use PHPUnit\Framework\TestCase;
 

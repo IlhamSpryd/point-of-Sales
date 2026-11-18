@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
-use App\Models\OwnerOnboardingToken;
-use App\Models\ProvisioningRequest;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Services\Context\TenantContext;
+use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\OwnerOnboardingToken;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
+use App\Modules\Subscription\Models\ProvisioningRequest;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

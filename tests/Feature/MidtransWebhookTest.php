@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
-use App\Models\Order;
-use App\Models\Role;
-use App\Models\User;
-use App\Services\Context\TenantContext;
-use App\Services\SystemUserResolver;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\SystemUserResolver;
+use App\Modules\Sales\Models\Order;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;

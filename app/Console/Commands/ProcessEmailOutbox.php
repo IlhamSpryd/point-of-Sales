@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Core\Context\TenantContext;
 use App\Jobs\ProcessProvisioningOutboxJob;
-use App\Models\EmailOutbox;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\EmailOutbox;
 use Illuminate\Console\Command;
 
 /**

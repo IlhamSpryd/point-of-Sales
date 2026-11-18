@@ -82,7 +82,7 @@
                 <span class="text-xs font-bold text-muted-foreground uppercase tracking-wider">Status:</span>
                 <x-ui.select wire:model.live="statusFilter" class="w-auto text-xs sm:text-sm">
                     <option value="ALL">All Statuses</option>
-                    @foreach (\App\Modules\HR\Enums\AttendanceStatusEnum::cases() as $case)
+                    @foreach (\App\Modules\Workforce\Enums\AttendanceStatusEnum::cases() as $case)
                         <option value="{{ $case->value }}">{{ $case->label() }}</option>
                     @endforeach
                 </x-ui.select>
@@ -125,10 +125,10 @@
                             <td class="px-6 py-4">
                                 @php
                                     $attDot = match($rec->status) {
-                                        \App\Modules\HR\Enums\AttendanceStatusEnum::PRESENT => 'bg-success',
-                                        \App\Modules\HR\Enums\AttendanceStatusEnum::LATE, \App\Modules\HR\Enums\AttendanceStatusEnum::EARLY_LEAVE => 'bg-warning',
-                                        \App\Modules\HR\Enums\AttendanceStatusEnum::CORRECTED => 'bg-info',
-                                        \App\Modules\HR\Enums\AttendanceStatusEnum::ABSENT, \App\Modules\HR\Enums\AttendanceStatusEnum::SICK => 'bg-destructive',
+                                        \App\Modules\Workforce\Enums\AttendanceStatusEnum::PRESENT => 'bg-success',
+                                        \App\Modules\Workforce\Enums\AttendanceStatusEnum::LATE, \App\Modules\Workforce\Enums\AttendanceStatusEnum::EARLY_LEAVE => 'bg-warning',
+                                        \App\Modules\Workforce\Enums\AttendanceStatusEnum::CORRECTED => 'bg-info',
+                                        \App\Modules\Workforce\Enums\AttendanceStatusEnum::ABSENT, \App\Modules\Workforce\Enums\AttendanceStatusEnum::SICK => 'bg-destructive',
                                         default => 'bg-neutral',
                                     };
                                 @endphp

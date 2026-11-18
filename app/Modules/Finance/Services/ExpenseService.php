@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Services;
 
-use App\Models\User;
 use App\Modules\Finance\DataTransferObjects\FinancialEventDto;
 use App\Modules\Finance\Enums\CashBankTransactionStatusEnum;
 use App\Modules\Finance\Enums\CashBankTransactionTypeEnum;
@@ -18,6 +17,7 @@ use App\Modules\Finance\Models\ExpenseAttachment;
 use App\Modules\Finance\Models\ExpenseCategory;
 use App\Modules\Finance\Models\ExpenseLine;
 use App\Modules\Finance\Models\TaxCode;
+use App\Modules\Organization\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use DomainException;

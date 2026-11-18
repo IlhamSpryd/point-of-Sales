@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Manufacturing\Services;
 
-use App\Modules\Manufacturing\Models\IngredientStockBalance;
-use App\Modules\Manufacturing\Models\IngredientStockMovement;
+use App\Modules\Inventory\Models\IngredientStockBalance;
+use App\Modules\Inventory\Models\IngredientStockMovement;
 use App\Modules\Manufacturing\Models\KitchenWasteLog;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -58,7 +58,7 @@ class KitchenWasteService
 
             $rawCost = $balance && (float) $balance->average_unit_cost > 0
                 ? (string) $balance->average_unit_cost
-                : (string) (DB::table('ingredients')->where('id', $ingredientId)->value('cost_per_unit') ?? '0.0000');
+                : (string) (DB::table('ingredients')->where('tenant_id', $tenantId)->where('id', $ingredientId)->value('cost_per_unit') ?? '0.0000');
 
             /** @var numeric-string $unitCost */
             $unitCost = is_numeric($rawCost) ? $rawCost : '0.0000';
@@ -99,7 +99,7 @@ class KitchenWasteService
                         'last_movement_id' => $movement->id,
                         'updated_at' => now(),
                     ]);
-                $balance->quantity = (float) $newQuantity;
+                $balance->quantity = (string) $newQuantity;
                 $balance->last_movement_id = $movement->id;
             }
 

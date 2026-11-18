@@ -83,7 +83,7 @@ class LotFefoAllocationService
             $query->where('product_variant_id', $variantId);
         }
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, ProductLot> $lots */
+        /** @var Collection<int, ProductLot> $lots */
         $lots = $query->lockForUpdate()->get();
 
         $remainingToAllocate = $neededStr;
@@ -131,7 +131,7 @@ class LotFefoAllocationService
     /**
      * Eksekusi pemotongan saldo lot berdasarkan hasil alokasi FEFO secara transaksional.
      *
-     * @param list<array{lot_id: int, allocated_qty: numeric-string}> $allocations
+     * @param  list<array{lot_id: int, allocated_qty: numeric-string}>  $allocations
      */
     public function deductAllocatedLots(array $allocations): void
     {

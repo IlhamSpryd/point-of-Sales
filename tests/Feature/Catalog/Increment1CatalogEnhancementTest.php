@@ -2,18 +2,18 @@
 
 namespace Tests\Feature\Catalog;
 
+use App\Core\Context\TenantContext;
 use App\Http\Requests\StoreProductRequest;
-use App\Models\Brand;
-use App\Models\Category;
-use App\Models\Product;
-use App\Models\ProductUnitConversion;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Models\UnitOfMeasure;
-use App\Models\User;
-use App\Services\CategoryService;
-use App\Services\Context\TenantContext;
-use App\Services\ProductService;
+use App\Modules\Catalog\Models\Brand;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\ProductUnitConversion;
+use App\Modules\Catalog\Models\UnitOfMeasure;
+use App\Modules\Catalog\Services\CategoryService;
+use App\Modules\Catalog\Services\ProductService;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Validator;

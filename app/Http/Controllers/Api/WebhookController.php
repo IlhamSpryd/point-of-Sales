@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Core\Context\TenantContext;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessWebhookOrderJob;
-use App\Models\ChannelOrderLog;
-use App\Models\Store;
-use App\Models\Tenant;
-use App\Services\Context\TenantContext;
-use App\Services\DatabaseErrorClassifier;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Sales\Models\ChannelOrderLog;
+use App\Platform\Database\DatabaseErrorClassifier;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;

@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Inventory;
 
+use App\Core\Context\TenantContext;
 use App\Enums\GoodsReceiptStatusEnum;
 use App\Enums\IngredientStockMovementTypeEnum;
 use App\Enums\StockMovementType;
-use App\Models\GoodsReceipt;
-use App\Models\Ingredient;
-use App\Models\IngredientStockBalance;
-use App\Models\IngredientStockMovement;
-use App\Models\Product;
-use App\Models\ProductStockBalance;
-use App\Models\StockMovement;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Inventory\Models\GoodsReceipt;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Inventory\Models\IngredientStockBalance;
+use App\Modules\Inventory\Models\IngredientStockMovement;
+use App\Modules\Inventory\Models\ProductStockBalance;
+use App\Modules\Inventory\Models\StockMovement;
 use App\Modules\Inventory\Services\GoodsReceiptService;
 use App\Modules\Inventory\Services\InventoryLedgerService;
-use App\Services\Context\TenantContext;
 use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\TwoTenantFixture;

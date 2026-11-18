@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Services;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
-use App\Models\Order;
-use App\Models\Payment;
-use App\Models\Shift;
-use App\Models\User;
 use App\Modules\Finance\Services\FinancialOutboxDispatcherService;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Sales\Exceptions\ShiftClosedException;
-use App\Services\AuditTrailService;
-use App\Services\Context\TenantContext;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\Payment;
+use App\Modules\Sales\Models\Shift;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;

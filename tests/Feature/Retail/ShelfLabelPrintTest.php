@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Retail;
 
-use App\Models\Product;
-use App\Models\Role;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Modules\Retail\Models\ShelfLabel;
-use App\Modules\Retail\Services\BarcodeSvgGenerator;
-use App\Modules\Settings\Models\Store;
-use App\Services\Context\TenantContext;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\ShelfLabel;
+use App\Modules\Catalog\Services\BarcodeSvgGenerator;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
@@ -20,8 +20,11 @@ class ShelfLabelPrintTest extends TestCase
     use DatabaseTransactions;
 
     private Tenant $tenant;
+
     private Store $store;
+
     private User $managerUser;
+
     private Product $product;
 
     protected function afterSubclassSetUp(): void
@@ -41,7 +44,7 @@ class ShelfLabelPrintTest extends TestCase
             'onboarding_completed' => true,
         ]);
 
-        $category = \App\Modules\Products\Models\Category::create([
+        $category = Category::create([
             'tenant_id' => $this->tenant->id,
             'category_name' => 'Fashion',
         ]);

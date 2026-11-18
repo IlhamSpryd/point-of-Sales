@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Infrastructure;
 
-use App\Modules\HR\Models\StatutoryRuleVersion;
 use App\Modules\Inventory\Models\IngredientStockBalance;
 use App\Modules\Inventory\Models\ModifierIngredient;
 use App\Modules\Inventory\Models\ProductIngredient;
 use App\Modules\Inventory\Models\StockBalance;
 use App\Modules\Sales\Models\OrderItemModifier;
+use App\Modules\Workforce\Models\StatutoryRuleVersion;
 use Database\Seeders\StatutoryRuleVersionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -167,5 +167,23 @@ class HealthCheckTest extends TestCase
             $this->assertArrayNotHasKey('is_admin', $instance->getAttributes());
             $this->assertArrayNotHasKey('role_id', $instance->getAttributes());
         }
+    }
+
+    public function test_readiness_probe_supports_deep_check(): void
+    {
+        $response = $this->getJson('/health/ready?deep=1');
+
+        $response->assertOk();
+        $response->assertJson([
+            'status' => 'UP',
+            'checks' => [
+                'outbox' => [
+                    'status' => 'UP',
+                ],
+            ],
+        ]);
+        $this->assertArrayHasKey('pending_count', $response->json('checks.outbox'));
+        $this->assertArrayHasKey('dead_letter_count', $response->json('checks.outbox'));
+        $this->assertArrayHasKey('oldest_pending_age_seconds', $response->json('checks.outbox'));
     }
 }

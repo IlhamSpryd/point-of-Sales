@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Livewire\HR;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Approval;
-use App\Models\Store;
-use App\Modules\HR\Enums\LeaveRequestStatusEnum;
-use App\Modules\HR\Models\LeaveBalance;
-use App\Modules\HR\Models\LeaveRequest;
-use App\Modules\HR\Services\LeaveService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Approval;
+use App\Modules\Organization\Models\Store;
+use App\Modules\Workforce\Enums\LeaveRequestStatusEnum;
+use App\Modules\Workforce\Models\LeaveBalance;
+use App\Modules\Workforce\Models\LeaveRequest;
+use App\Modules\Workforce\Services\LeaveService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Device;
-use App\Models\Shift;
-use App\Models\ShiftHandover;
-use App\Models\User;
-use App\Services\CashierPinService;
-use App\Services\Context\TenantContext;
-use App\Services\ShiftService;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\CashierPinService;
+use App\Modules\Sales\Models\Shift;
+use App\Modules\Sales\Models\ShiftHandover;
+use App\Modules\Sales\Services\ShiftService;
 use App\Support\Traits\RequiresActiveStoreContext;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

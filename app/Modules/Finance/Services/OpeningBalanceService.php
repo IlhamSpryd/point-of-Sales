@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Services;
 
-use App\Models\User;
+use App\Core\Context\TenantContext;
 use App\Modules\Finance\DataTransferObjects\JournalLineDto;
 use App\Modules\Finance\DataTransferObjects\ManualJournalDto;
 use App\Modules\Finance\Models\ChartOfAccount;
 use App\Modules\Finance\Models\JournalEntry;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\User;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 

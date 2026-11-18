@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\AccountingPeriod;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Core\Context\TenantContext;
+use App\Modules\Finance\Models\AccountingPeriod;
 use App\Modules\Finance\Services\AccountingPeriodService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use Illuminate\Console\Command;
 
 class ReconcileFinancialLedgersCommand extends Command

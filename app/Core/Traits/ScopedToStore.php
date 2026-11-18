@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Core\Traits;
 
-use App\Models\Scopes\StoreScope;
+use App\Core\Scopes\StoreScope;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * Global scope: batasi query ke store aktif (branch) dari TenantContext.
+ * Global scope: batasi query ke store aktif (branch) dari TenantContext (ADR-113).
  */
 trait ScopedToStore
 {
@@ -24,5 +24,27 @@ trait ScopedToStore
     public static function allStores(): Builder
     {
         return static::withoutGlobalScope(StoreScope::class);
+    }
+
+    /**
+     * Explicitly allows querying all branches within the active tenant without bypassing tenant_id.
+     *
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
+    public function scopeAllBranchesInTenant(Builder $query): Builder
+    {
+        return $query->withoutGlobalScope(StoreScope::class);
+    }
+
+    /**
+     * Explicitly scopes query to a specified branch within the active tenant.
+     *
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
+    public function scopeForBranch(Builder $query, int $storeId): Builder
+    {
+        return $query->withoutGlobalScope(StoreScope::class)->where($this->qualifyColumn('store_id'), $storeId);
     }
 }

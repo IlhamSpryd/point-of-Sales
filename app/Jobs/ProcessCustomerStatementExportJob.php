@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Core\Context\TenantContext;
 use App\Enums\ExportTaskStatus;
 use App\Exports\CustomerStatementExport;
-use App\Models\ExportTask;
-use App\Services\Context\TenantContext;
+use App\Modules\Reporting\Models\ExportTask;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;

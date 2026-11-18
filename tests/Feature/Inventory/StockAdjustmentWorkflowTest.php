@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Inventory;
 
+use App\Core\Context\TenantContext;
 use App\Enums\IngredientStockMovementTypeEnum;
 use App\Enums\StockAdjustmentReasonEnum;
 use App\Enums\StockAdjustmentStatusEnum;
 use App\Enums\StockMovementType;
-use App\Models\Ingredient;
-use App\Models\IngredientStockBalance;
-use App\Models\IngredientStockMovement;
-use App\Models\ProductStockBalance;
-use App\Models\StockAdjustment;
-use App\Models\StockMovement;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Inventory\Models\IngredientStockBalance;
+use App\Modules\Inventory\Models\IngredientStockMovement;
+use App\Modules\Inventory\Models\ProductStockBalance;
+use App\Modules\Inventory\Models\StockAdjustment;
+use App\Modules\Inventory\Models\StockMovement;
 use App\Modules\Inventory\Services\InventoryLedgerService;
 use App\Modules\Inventory\Services\StockAdjustmentService;
-use App\Services\Context\TenantContext;
 use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\TwoTenantFixture;

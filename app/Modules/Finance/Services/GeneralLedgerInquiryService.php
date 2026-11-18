@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Services;
 
+use App\Core\Context\TenantContext;
 use App\Modules\Finance\Enums\NormalBalanceEnum;
 use App\Modules\Finance\Models\ChartOfAccount;
 use App\Modules\Finance\Models\JournalLine;
-use App\Services\Context\TenantContext;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Support\Collection;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Core\Context\TenantContext;
 use App\Modules\Finance\Models\FinancialEventOutbox;
 use App\Modules\Finance\Services\PostingEngineService;
-use App\Services\Context\TenantContext;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 

@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Core\Context\TenantContext;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\AddToCartRequest;
-use App\Models\Product;
-use App\Models\Setting;
-use App\Models\Table;
-use App\Services\CartService;
-use App\Services\Context\TenantContext;
-use App\Services\TransactionService;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Organization\Models\Setting;
+use App\Modules\Sales\Models\Table;
+use App\Modules\Sales\Services\CartService;
+use App\Modules\Sales\Services\TransactionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;

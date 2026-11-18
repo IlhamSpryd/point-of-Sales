@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace App\Modules\Purchasing\Services;
 
+use App\Core\Context\TenantContext;
 use App\Core\Support\EmailNormalizer;
 use App\Enums\SupplierStatusEnum;
-use App\Models\Ingredient;
-use App\Models\Product;
-use App\Models\Supplier;
-use App\Models\SupplierContact;
-use App\Models\SupplierProduct;
-use App\Models\User;
-use App\Modules\Settings\Services\AuditTrailService;
-use App\Services\Context\TenantContext;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Organization\Models\User;
+use App\Modules\Organization\Services\AuditTrailService;
+use App\Modules\Purchasing\Models\Supplier;
+use App\Modules\Purchasing\Models\SupplierContact;
+use App\Modules\Purchasing\Models\SupplierProduct;
+use App\Platform\Documents\DocumentSequenceService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Livewire\Retail;
 
+use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Product;
-use App\Modules\Retail\Models\ShelfLabel;
-use App\Modules\Retail\Services\ShelfLabelBatchService;
-use App\Services\Context\TenantContext;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\ShelfLabel;
 use Illuminate\Contracts\View\View;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -32,13 +32,18 @@ class ShelfLabelManager extends Component
 
     public function createLabel(): void
     {
+        $tenantId = (int) app(TenantContext::class)->getTenantId();
+        $storeId = (int) (app(TenantContext::class)->getStoreId() ?? 1);
+
         $this->validate([
-            'selectedProductId' => 'required|integer|exists:products,id',
+            'selectedProductId' => [
+                'required',
+                'integer',
+                Rule::exists('products', 'id')->where('tenant_id', $tenantId),
+            ],
             'quantity' => 'required|integer|min:1|max:100',
         ]);
 
-        $tenantId = (int) app(TenantContext::class)->getTenantId();
-        $storeId = (int) (app(TenantContext::class)->getStoreId() ?? 1);
         $product = Product::findOrFail($this->selectedProductId);
         $price = (string) ($product->product_price ?? $product->price ?? $product->selling_price ?? 0);
 

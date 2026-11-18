@@ -4,20 +4,18 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Models;
 
+use App\Core\Traits\AssignsStore;
+use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\ScopedToStore;
+use App\Core\Traits\ScopedToTenant;
 use App\Enums\PaymentAttemptStatus;
-use App\Models\Concerns\AssignsStore;
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToStore;
-use App\Models\Concerns\ScopedToTenant;
-use App\Models\Device;
-use App\Models\Order;
-use App\Models\Payment;
-use App\Models\Shift;
-use App\Models\User;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -28,8 +26,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $device_id
  * @property int|null $shift_id
  * @property int $amount
+ * @property PaymentAttemptStatus|string $status
  * @property int|null $initiated_by_user_id
  * @property array<int|string, mixed>|string|null $raw_response_meta
+ * @property Carbon|string|null $settled_at
+ * @property Carbon|string|null $expired_at
  */
 class PaymentAttempt extends Model
 {

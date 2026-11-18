@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Pricing\Services;
 
-use App\Modules\Customers\Models\LoyaltyLedger;
+use App\Modules\Pricing\Models\LoyaltyLedger;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 

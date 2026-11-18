@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Services;
 
+use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
-use App\Models\Device;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\OrderReturn;
-use App\Models\Payment;
-use App\Models\Shift;
-use App\Services\AuditTrailService;
-use App\Services\Context\TenantContext;
+use App\Modules\Organization\Models\Device;
+use App\Modules\Organization\Services\AuditTrailService;
+use App\Modules\Sales\Models\Order;
+use App\Modules\Sales\Models\OrderItem;
+use App\Modules\Sales\Models\OrderReturn;
+use App\Modules\Sales\Models\Payment;
+use App\Modules\Sales\Models\Shift;
 use DomainException;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;

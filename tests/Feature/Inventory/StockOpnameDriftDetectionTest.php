@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Inventory;
 
+use App\Core\Context\TenantContext;
 use App\Enums\StockMovementType;
 use App\Enums\StockOpnameDriftResolutionEnum;
 use App\Enums\StockOpnameStatusEnum;
 use App\Modules\Inventory\Exceptions\StockOpnameDriftException;
 use App\Modules\Inventory\Services\InventoryLedgerService;
 use App\Modules\Inventory\Services\StockOpnameService;
-use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\TwoTenantFixture;
 use Tests\TestCase;
