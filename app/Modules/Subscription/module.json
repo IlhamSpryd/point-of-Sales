@@ -9,7 +9,8 @@
         "tenant_subscriptions",
         "tenant_entitlement_overrides",
         "provisioning_requests",
-        "provisioning_nonces"
+        "provisioning_nonces",
+        "provisioning_steps"
     ],
     "allowedDependencies": [
         "Organization"

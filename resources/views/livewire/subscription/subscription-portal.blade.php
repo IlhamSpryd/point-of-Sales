@@ -20,8 +20,8 @@
     </div>
 
     @if (session()->has('message'))
-        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 text-emerald-800 text-sm font-medium">
-            <span class="material-symbols-rounded text-emerald-600 text-[20px]">check_circle</span>
+        <div class="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center gap-3 text-emerald-700 dark:text-emerald-300 text-sm font-medium">
+            <span class="material-symbols-rounded text-emerald-600 dark:text-emerald-400 text-[20px]">check_circle</span>
             {{ session('message') }}
         </div>
     @endif
@@ -135,13 +135,18 @@
             </div>
 
             <x-slot:footer>
-                <div class="flex justify-end gap-2 w-full">
-                    <button type="button" wire:click="$set('isUpgradeModalOpen', false)" class="px-4 py-2 text-muted-foreground hover:text-foreground rounded-xl text-sm font-medium transition-colors">
-                        Cancel
-                    </button>
-                    <button type="button" wire:click="requestPlanUpgrade" class="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-xs">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-3 w-full">
+                    <button type="button" wire:click="requestPlanUpgrade" class="text-xs text-muted-foreground hover:text-foreground underline transition-colors">
                         Request Upgrade
                     </button>
+                    <div class="flex items-center gap-2">
+                        <button type="button" wire:click="$set('isUpgradeModalOpen', false)" class="px-4 py-2 text-muted-foreground hover:text-foreground rounded-xl text-sm font-medium transition-colors">
+                            Cancel
+                        </button>
+                        <button type="button" wire:click="confirmInstantUpgrade" class="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-xs">
+                            Aktivasi Instan (Self-Serve)
+                        </button>
+                    </div>
                 </div>
             </x-slot:footer>
         </x-ui.modal>

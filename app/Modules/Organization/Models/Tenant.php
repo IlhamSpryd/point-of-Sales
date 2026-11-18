@@ -40,6 +40,14 @@ class Tenant extends Model
 
     public const ACCESS_OFFBOARDED = 'offboarded';
 
+    public const STATUS_ARCHIVED = 'archived';
+
+    public const STATUS_PURGED = 'purged';
+
+    public const ACCESS_ARCHIVED = 'archived';
+
+    public const ACCESS_PURGED = 'purged';
+
     public const SUBSCRIPTION_TRIAL = 'trialing';
 
     public const SUBSCRIPTION_TRIALING = 'trialing';
@@ -97,6 +105,18 @@ class Tenant extends Model
     {
         return in_array($this->access_status, [self::ACCESS_SUSPENDED, self::ACCESS_SUSPENDED_ADMIN, self::ACCESS_SUSPENDED_BILLING], true)
             || $this->status === 'suspended';
+    }
+
+    public function isArchived(): bool
+    {
+        return strtolower((string) ($this->status ?? '')) === self::STATUS_ARCHIVED
+            || strtolower((string) ($this->access_status ?? '')) === self::ACCESS_ARCHIVED;
+    }
+
+    public function isPurged(): bool
+    {
+        return strtolower((string) ($this->status ?? '')) === self::STATUS_PURGED
+            || strtolower((string) ($this->access_status ?? '')) === self::ACCESS_PURGED;
     }
 
     /**

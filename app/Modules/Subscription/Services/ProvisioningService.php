@@ -1,55 +1,43 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Modules\Subscription\Services;
 
 use App\Core\Context\TenantContext;
 use App\Exceptions\StaleWorkerException;
 use App\Jobs\ProcessProvisioningOutboxJob;
-use App\Modules\Organization\Models\ActivityLog;
-use App\Modules\Organization\Models\EmailOutbox;
-use App\Modules\Organization\Models\OwnerOnboardingToken;
-use App\Modules\Organization\Models\Role;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
-use App\Modules\Organization\Models\User;
 use App\Modules\Organization\Services\TenantProvisioningService;
+use App\Modules\Subscription\Application\Services\ProvisioningResponseHelper;
+use App\Modules\Subscription\Application\Services\ProvisioningStepExecutor;
+use App\Modules\Subscription\Domain\Events\TenantProvisionedV1;
 use App\Modules\Subscription\Models\ProvisioningRequest;
 use App\Platform\Database\DatabaseErrorClassifier;
 use App\Support\EmailNormalizer;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
  * Domain 1 — Provisioning tenant baru dari website marketing.
- *
- * Urutan WAJIB (keputusan D2):
- *   validasi, Tenant, runAs(tenant), Role Owner, Store (+hook balances),
- *   User Owner, audit record, commit.
- *
- * Idempotency (D3) — DUA penulisan yang berbeda tujuan:
- *  1. KLAIM atas baris ledger (di luar transaksi bisnis), menyimpan siapa
- *     yang sedang mengerjakan. Berkas transisi klaim ada di {@see claim()}.
- *  2. FINALISASI (post-commit): satu conditional UPDATE menulis status
- *     terminal + hasil + penanda idempotency tenant.
- *
- * Fencing token: setiap klaim menaikkan `attempt_count`, dan setiap penulisan
- * terminal menyertakannya. Worker lambat tidak dapat menimpa klaim yang lebih
- * baru maupun baris yang sudah `completed` (DB-006).
- *
- * Concurrency: dua request paralel dengan key sama — yang kedua gagal INSERT
- * ledger (unique duplikat) atau kalah klaim: dijawab sesuai semantik
- * idempotency (bukan provisioning kedua). Database constraint adalah
- * pertahanan terakhir; cache/lock apa pun hanya optimasi (D6/F6).
+ * Step-tracked, decomposed, and idempotent SaaS tenant onboarding (EXT-03, ADR-104, R-19).
  */
 class ProvisioningService
 {
+    private ProvisioningStepExecutor $stepExecutor;
+
+    private ProvisioningResponseHelper $responseHelper;
+
     public function __construct(
         private TenantContext $tenantContext,
         private TenantProvisioningService $tenantProvisioning,
-    ) {}
+        ?ProvisioningStepExecutor $stepExecutor = null,
+        ?ProvisioningResponseHelper $responseHelper = null,
+    ) {
+        $this->stepExecutor = $stepExecutor ?? app(ProvisioningStepExecutor::class);
+        $this->responseHelper = $responseHelper ?? app(ProvisioningResponseHelper::class);
+    }
 
     /**
      * Entry point provisioning. Mengembalikan array response contract.
@@ -59,11 +47,11 @@ class ProvisioningService
      */
     public function provision(array $data, string $idempotencyKey, string $fingerprint): array
     {
-        // --- 1. Idempotency pre-check & klaim (DI LUAR transaksi bisnis) ---
+        // 1. Idempotency pre-check & klaim
         $existing = ProvisioningRequest::where('idempotency_key', $idempotencyKey)->first();
 
         if ($existing !== null) {
-            $response = $this->responseForExisting($existing, $fingerprint);
+            $response = $this->responseHelper->responseForExisting($existing, $fingerprint);
             if ($response !== null) {
                 return $response;
             }
@@ -78,38 +66,29 @@ class ProvisioningService
                     'attempt_count' => 0,
                 ]);
             } catch (QueryException $e) {
-                if (! $this->isUniqueViolation($e)) {
+                if (! DatabaseErrorClassifier::isDuplicateEntry($e)) {
                     throw $e;
                 }
 
-                // Race dengan request paralel: baca ulang dan jawab sesuai
-                // semantik idempotency (bukan provisioning kedua).
                 $existing = ProvisioningRequest::where('idempotency_key', $idempotencyKey)->first();
                 if ($existing === null) {
                     throw $e;
                 }
 
-                $response = $this->responseForExisting($existing, $fingerprint);
+                $response = $this->responseHelper->responseForExisting($existing, $fingerprint);
                 if ($response !== null) {
                     return $response;
                 }
             }
         }
 
-        // Klaim atomik. Hanya satu worker yang berhasil menaikkan
-        // attempt_count dari nilai yang dibacanya; yang kalah langsung
-        // dijawab 200/pending (bukan provisioning kedua).
         $claim = $this->claim($idempotencyKey, $fingerprint);
         if ($claim === null) {
-            return $this->pendingResponse();
+            return $this->responseHelper->pendingResponse();
         }
         $fencingToken = $claim->attempt_count;
 
-        // A previous worker may have committed the business transaction and
-        // crashed before ledger finalization. Detect its in-transaction marker
-        // before the duplicate-email guard can misclassify that owner as a
-        // conflicting registration.
-        $committed = $this->committedProvisioning($idempotencyKey);
+        $committed = $this->responseHelper->committedProvisioning($idempotencyKey, $this->tenantContext);
         if ($committed !== null) {
             $this->finaliseLedger($idempotencyKey, $fencingToken, [
                 'status' => ProvisioningRequest::STATUS_COMPLETED,
@@ -118,6 +97,7 @@ class ProvisioningService
                 'completed_at' => now(),
                 'error_message' => null,
             ]);
+
             $this->tenantProvisioning->refreshReadiness($committed['tenant']);
 
             return [
@@ -132,13 +112,10 @@ class ProvisioningService
             ];
         }
 
-        // --- 2. D1: email aktif sudah dipakai -> 409 permanen ---
-        // User TIDAK memakai ScopedToTenant global (BD-7: login by email),
-        // tetapi query tetap dijalankan tanpa konteks agar tidak bergantung
-        // pada scope model.
+        // 2. Email duplication check -> 409
         $normalizedEmail = EmailNormalizer::normalize($data['owner_email']);
         $emailOwner = $this->tenantContext->runWithoutTenant(function () use ($normalizedEmail) {
-            return User::withoutGlobalScopes()
+            return DB::table('users')
                 ->where('email_normalized', $normalizedEmail)
                 ->whereNull('deleted_at')
                 ->first();
@@ -150,10 +127,10 @@ class ProvisioningService
                 'completed_at' => now(),
             ]);
 
-            return $this->emailConflictResponse();
+            return $this->responseHelper->emailConflictResponse();
         }
 
-        // --- 3. Transaksi bisnis atomik (maks. 2 percobaan) ---
+        // 3. Atomic business transaction
         $result = null;
         $attempts = 0;
         $maxBusinessAttempts = 2;
@@ -174,23 +151,19 @@ class ProvisioningService
                     'reason' => $e->getMessage(),
                 ]);
 
-                // Worker stale (TX-001): transaksi bisnis dibatalkan total.
-                // Worker ini tidak boleh mengubah ledger attempt terbaru, tidak boleh
-                // mendispatch email outbox, dan tidak boleh mengembalikan 201.
                 $currentLedger = ProvisioningRequest::where('idempotency_key', $idempotencyKey)->first();
                 if ($currentLedger !== null) {
-                    $existingResponse = $this->responseForExisting($currentLedger, $fingerprint);
+                    $existingResponse = $this->responseHelper->responseForExisting($currentLedger, $fingerprint);
                     if ($existingResponse !== null) {
                         return $existingResponse;
                     }
                 }
 
-                return $this->pendingResponse();
+                return $this->responseHelper->pendingResponse();
             } catch (\Throwable $e) {
                 if ($e instanceof QueryException && DatabaseErrorClassifier::isDuplicateEntry($e)) {
-                    // Cek apakah email benturan dengan user yang sudah ada
                     $emailConflict = $this->tenantContext->runWithoutTenant(
-                        fn () => User::withoutGlobalScopes()
+                        fn () => DB::table('users')
                             ->where('email_normalized', $normalizedEmail)
                             ->whereNull('deleted_at')
                             ->first()
@@ -203,22 +176,19 @@ class ProvisioningService
                             'completed_at' => now(),
                         ]);
 
-                        return $this->emailConflictResponse();
+                        return $this->responseHelper->emailConflictResponse();
                     }
                 }
 
-                // Retry transien untuk deadlock atau lock wait timeout InnoDB (TX-010)
                 if ($e instanceof QueryException && DatabaseErrorClassifier::isLockConflict($e) && $attempts < $maxBusinessAttempts) {
                     usleep(random_int(20_000, 80_000));
 
                     continue;
                 }
 
-                // Rollback total: tidak ada partial state. Ledger ditandai
-                // failed (transient) bila worker masih memegang fencing token (TX-012).
                 $this->finaliseLedger($idempotencyKey, $fencingToken, [
                     'status' => ProvisioningRequest::STATUS_FAILED,
-                    'error_message' => $this->safeErrorMessage($e),
+                    'error_message' => $this->responseHelper->safeErrorMessage($e),
                     'completed_at' => now(),
                 ]);
 
@@ -258,8 +228,7 @@ class ProvisioningService
             ];
         }
 
-        // Ledger telah difinalisasi menjadi STATUS_COMPLETED di DALAM transaksi bisnis (TX-001).
-        // Refresh readiness fail-closed pasca commit
+        // 4. Post-commit operations
         try {
             $this->tenantProvisioning->refreshReadiness($result['tenant']);
         } catch (\Throwable $e) {
@@ -269,12 +238,30 @@ class ProvisioningService
             ]);
         }
 
-        // Outbox baris sudah di-commit di dalam transaksi; dispatch job AFTER commit (TX-001)
         try {
             ProcessProvisioningOutboxJob::dispatch($result['outbox_id'], $result['onboarding_token'] ?? null);
         } catch (\Throwable $e) {
             Log::warning('Outbox dispatch failed; scheduled processor will pick it up.', [
                 'outbox_id' => $result['outbox_id'],
+            ]);
+        }
+
+        // Emit TenantProvisionedV1 event only when all provisioning steps succeed (Task 1.2)
+        try {
+            event(new TenantProvisionedV1(
+                eventId: (string) Str::uuid(),
+                tenantId: (int) $result['tenant']->id,
+                companyId: $result['company']?->id,
+                branchId: (int) $result['store']->id,
+                tenantName: (string) $result['tenant']->name,
+                planCode: (string) ($result['tenant']->subscription_plan ?? 'standard_trial'),
+                ownerEmail: (string) $data['owner_email'],
+                occurredAt: now()->toIso8601String(),
+            ));
+        } catch (\Throwable $e) {
+            Log::warning('Failed to dispatch TenantProvisionedV1 event.', [
+                'tenant_id' => $result['tenant']->id,
+                'error' => $e->getMessage(),
             ]);
         }
 
@@ -299,21 +286,6 @@ class ProvisioningService
         ];
     }
 
-    /**
-     * Ambil klaim atas baris ledger. Mengembalikan baris yang SUDAH terklaim
-     * (dengan attempt_count baru), atau null bila worker lain menang atau
-     * baris tidak layak diklaim.
-     *
-     * Transisi status yang diizinkan (eksplisit):
-     *  - pending    -> processing : bila belum ada pemilik aktif, atau lease
-     *                              pemilik sebelumnya sudah lewat.
-     *  - processing -> processing : HANYA bila lease-nya kedaluwarsa (worker
-     *                              pemegang klaim dianggap mati).
-     *  - failed     -> processing : HANYA bila kegagalannya transient.
-     *                              'email_already_in_use' permanen, tidak
-     *                              pernah diklaim ulang.
-     *  - completed  -> (tidak pernah) terminal.
-     */
     private function claim(string $idempotencyKey, string $fingerprint): ?ProvisioningRequest
     {
         for ($i = 0; $i < 5; $i++) {
@@ -322,7 +294,6 @@ class ProvisioningService
                 return null;
             }
 
-            // Fingerprint berbeda = key dipakai ulang untuk payload lain.
             if ($row->request_fingerprint !== $fingerprint) {
                 return null;
             }
@@ -371,8 +342,6 @@ class ProvisioningService
         }
 
         if ($row->status === ProvisioningRequest::STATUS_PROCESSING) {
-            // Konservatif: klaim lama hanya boleh diambil alih bila leasenya
-            // benar-benar kedaluwarsa.
             return $row->lease_expires_at !== null && $row->lease_expires_at->isPast();
         }
 
@@ -380,31 +349,16 @@ class ProvisioningService
     }
 
     /**
-     * Penulisan terminal. Menggabungkan status + hasil + penanda idempotency
-     * tenant dalam SATU penulisan, sehingga tidak ada jendela di mana tenant
-     * sudah ada tetapi ledger belum lengkap.
-     *
-     * Idempoten & tahan retry: hasil yang sudah tercatat tidak pernah ditimpa
-     * (fakta commit), dan baris yang sudah `completed` tidak pernah diturunkan
-     * statusnya.
-     */
-    /**
-     * Penulisan terminal (TX-012: return bool hasil conditional update).
-     *
-     * Idempoten & tahan retry: hasil yang sudah tercatat tidak pernah ditimpa
-     * (fakta commit), dan baris yang sudah `completed` tidak pernah diturunkan
-     * statusnya.
+     * Penulisan terminal (TX-012).
      *
      * @param  array<string, mixed>  $attributes
      */
-    private function finaliseLedger(string $idempotencyKey, int $fencingToken, array $attributes): bool
+    protected function finaliseLedger(string $idempotencyKey, int $fencingToken, array $attributes): bool
     {
         if ($fencingToken < 1) {
             return false;
         }
 
-        // Single conditional UPDATE is the fencing point. A stale worker cannot
-        // pass a read/check then race a newer claim or terminal transition.
         $affected = ProvisioningRequest::query()
             ->where('idempotency_key', $idempotencyKey)
             ->where('status', ProvisioningRequest::STATUS_PROCESSING)
@@ -422,15 +376,13 @@ class ProvisioningService
     }
 
     /**
-     * Transaksi utama (TX-001): Validasi fencing token, business writes, dan finalisasi
-     * ledger disatukan ke dalam SATU batas transaksi InnoDB atomik.
+     * Transaksi utama (TX-001): Step-tracked and modularized.
      *
      * @param  array<string, mixed>  $data
-     * @return array{tenant: Tenant, owner: User, store: Store, outbox_id: int, onboarding_token: string}
+     * @return array{tenant: \App\Modules\Organization\Models\Tenant, owner: \App\Modules\Organization\Models\User, store: \App\Modules\Organization\Models\Store, company: \App\Modules\Organization\Models\Company|null, outbox_id: int, onboarding_token: string}
      */
     private function provisionWithinTransaction(array $data, string $idempotencyKey, int $fencingToken): array
     {
-        // 1. Kunci baris ledger dan verifikasi hak eksklusif worker (TX-001)
         $ledger = ProvisioningRequest::where('idempotency_key', $idempotencyKey)
             ->lockForUpdate()
             ->first();
@@ -451,97 +403,49 @@ class ProvisioningService
             throw new StaleWorkerException("Lease worker sudah kedaluwarsa ({$ledger->lease_expires_at})", $idempotencyKey, $fencingToken);
         }
 
-        // 3a. Tenant — dibuat di platform context
-        $tenant = Tenant::create([
-            'name' => $data['tenant_name'],
-            'provisioning_idempotency_key' => $idempotencyKey,
-            'readiness_status' => TenantProvisioningService::READINESS_PENDING,
-        ]);
+        // Step 1: Create Tenant
+        $tenant = $this->stepExecutor->executeCreateTenant($ledger->id, $data, $idempotencyKey);
 
-        // 3b. Masuk konteks tenant baru untuk entitas tenant-scoped.
-        $result = $this->tenantContext->runAs($tenant->id, null, function () use ($tenant, $data) {
-            // 3c. Role Owner (deterministik role_code ROL-OWNER — TX-008).
-            $ownerRole = Role::firstOrCreate(
-                ['name' => 'Owner', 'tenant_id' => $tenant->id],
-                [
-                    'role_code' => 'ROL-OWNER',
-                    'description' => 'Pemilik bisnis — akses penuh',
-                    'permissions' => ['*'],
-                    'is_active' => true,
-                ]
+        // Steps 2-6 within tenant context
+        $result = $this->tenantContext->runAs($tenant->id, null, function () use ($tenant, $data, $ledger) {
+            // Step 2: Company & Store
+            $branchInfo = $this->stepExecutor->executeCreateCompanyAndBranch($ledger->id, $tenant, $data);
+            $store = $branchInfo['store'];
+            $company = $branchInfo['company'];
+
+            // Step 3: Role & Owner
+            $ownerInfo = $this->stepExecutor->executeSeedRolesAndOwner($ledger->id, $tenant, $data);
+            $owner = $ownerInfo['owner'];
+            $plaintextToken = $ownerInfo['onboarding_token'];
+
+            // Step 4: Baseline & Chart of Accounts
+            $this->stepExecutor->executeSeedChartOfAccounts($ledger->id, $tenant, $owner);
+
+            // Step 5: Subscription Plan
+            $this->stepExecutor->executeActivateSubscriptionPlan($ledger->id, $tenant, $ledger->plan_id);
+
+            // Step 6: Welcome Notification
+            $emailBody = $this->responseHelper->onboardingEmailBody($owner->name, $tenant->name, $plaintextToken);
+            $outboxId = $this->stepExecutor->executeDispatchWelcomeNotification(
+                $ledger->id,
+                $tenant,
+                $owner,
+                $plaintextToken,
+                $emailBody
             );
 
-            // 3d. Store pertama
-            $store = Store::create([
-                'tenant_id' => $tenant->id,
-                'name' => $data['tenant_name'],
-            ]);
-
-            // 3e. User Owner
-            $owner = User::create([
-                'name' => $data['owner_name'],
-                'email' => $data['owner_email'],
-                'phone_number' => $data['owner_phone'] ?? null,
-                'password' => null,
-                'role_id' => $ownerRole->id,
-                'is_active' => true,
-                'email_verified_at' => null,
-                'join_date' => now()->toDateString(),
-            ]);
-
-            // 3f. Token magic link onboarding (hash SHA-256 tersimpan di database).
-            $plaintextToken = Str::random(48);
-            $tokenHash = hash('sha256', $plaintextToken);
-            OwnerOnboardingToken::create([
-                'tenant_id' => $tenant->id,
-                'user_id' => $owner->id,
-                'token_hash' => $tokenHash,
-                'expires_at' => now()->addHours((int) config('pos.provisioning.onboarding_token_ttl_hours', 48)),
-                'send_attempts' => 1,
-            ]);
-
-            // 3g. Outbox email — IKUT transaksi (D8).
-            //     Tautan onboarding memuat plaintext token yang terenkripsi at-rest
-            //     di kolom body_text (TX-005, TX-011) sehingga retry tidak merotasi token.
-            $outbox = EmailOutbox::create([
-                'event_type' => 'owner_onboarding',
-                'recipient_email' => $data['owner_email'],
-                'subject' => 'Aktivasi akun Apeiron System — '.$tenant->name,
-                'body_text' => $this->onboardingEmailBody($owner->name, $tenant->name, $plaintextToken),
-                'tenant_id' => $tenant->id,
-                'user_id' => $owner->id,
-                'status' => EmailOutbox::STATUS_PENDING,
-                'attempts' => 0,
-                'next_attempt_at' => now(),
-            ]);
-
-            // 3h. Baseline kesiapan tenant
-            $this->tenantProvisioning->provisionBaseline($tenant, $owner);
-
-            // 3i. Audit record dalam transaksi yang sama.
-            ActivityLog::create([
-                'tenant_id' => $tenant->id,
-                'store_id' => $store->id,
-                'user_id' => $owner->id,
-                'action' => 'provisioning.completed',
-                'subject_type' => 'tenant',
-                'subject_id' => $tenant->id,
-                'description' => 'Tenant provisioned via marketing website',
-                'metadata' => [
-                    'store_id' => $store->id,
-                    'idempotent_flow' => true,
-                ],
-            ]);
+            // Audit
+            $this->stepExecutor->recordAudit($tenant, $store, $owner);
 
             return [
                 'owner' => $owner,
                 'store' => $store,
-                'outbox_id' => $outbox->id,
+                'company' => $company,
+                'outbox_id' => $outboxId,
                 'onboarding_token' => $plaintextToken,
             ];
         });
 
-        // TX-001 & TX-012: Finalisasi ledger di DALAM batas transaksi yang sama SEBELUM commit!
         $finalized = ProvisioningRequest::whereKey($ledger->id)
             ->where('status', ProvisioningRequest::STATUS_PROCESSING)
             ->where('attempt_count', $fencingToken)
@@ -565,180 +469,12 @@ class ProvisioningService
             'tenant' => $tenant,
             'owner' => $result['owner'],
             'store' => $result['store'],
+            'company' => $result['company'],
             'outbox_id' => $result['outbox_id'],
             'onboarding_token' => $result['onboarding_token'],
         ];
     }
 
-    /**
-     * Semantik idempotency untuk key yang sudah ada di ledger.
-     * Mengembalikan array response, ATAU null bila request boleh diklaim
-     * (retry) lewat {@see claim()}.
-     *
-     * @return array{status: int, body: array<string, mixed>}|null
-     */
-    private function responseForExisting(ProvisioningRequest $existing, string $fingerprint): ?array
-    {
-        // Key sama, payload berbeda: 409 (D3).
-        if ($existing->request_fingerprint !== $fingerprint) {
-            return [
-                'status' => 409,
-                'body' => [
-                    'success' => false,
-                    'error' => 'idempotency_key_conflict',
-                    'message' => 'Idempotency key sudah digunakan dengan payload berbeda.',
-                ],
-            ];
-        }
-
-        if ($existing->status === ProvisioningRequest::STATUS_COMPLETED) {
-            // Baris selesai tetapi hasil belum tercatat (crash tepat di antara
-            // dua penulisan): jangan jawab 200 dengan tenant_id null — minta
-            // pemanggil retry, yang akan direkonsiliasi/dilengkapi.
-            if (! $existing->result_tenant_id) {
-                return $this->pendingResponse();
-            }
-
-            return [
-                'status' => 200,
-                'body' => [
-                    'success' => true,
-                    'message' => 'Provisioning sudah selesai sebelumnya (idempotent).',
-                    'tenant_id' => $existing->result_tenant_id,
-                    'owner_user_id' => $existing->result_user_id,
-                    'idempotent_replay' => true,
-                ],
-            ];
-        }
-
-        if ($existing->status === ProvisioningRequest::STATUS_FAILED) {
-            // Kegagalan bisnis PERMANEN (email sudah dipakai): retry dengan
-            // key yang sama tidak akan pernah berhasil — jawab 409.
-            if ($existing->isPermanentlyFailed()) {
-                return $this->emailConflictResponse();
-            }
-
-            // Transient error (mis. database): boleh diretry dengan key yang
-            // sama: serahkan ke claim().
-            return null;
-        }
-
-        // pending / processing: bila masih ada pemilik klaim aktif, jawab
-        // 200/pending agar pemanggil menunggu, bukan membuat provisioning
-        // kedua. Klaim yang leasenya sudah lewat akan dikembalikan null,
-        // sehingga bisa diambil alih lewat claim().
-        if ($existing->status === ProvisioningRequest::STATUS_PROCESSING
-            && $existing->lease_expires_at !== null
-            && $existing->lease_expires_at->isFuture()) {
-            return $this->pendingResponse();
-        }
-
-        return null;
-    }
-
-    /**
-     * Return committed tenant/owner facts written atomically with business data.
-     * OwnerOnboardingToken is the primary owner reference; the tenant-scoped
-     * query is a defensive fallback for partial legacy records.
-     *
-     * @return array{tenant: Tenant, owner: User}|null
-     */
-    private function committedProvisioning(string $idempotencyKey): ?array
-    {
-        $tenant = Tenant::query()->where('provisioning_idempotency_key', $idempotencyKey)->first();
-        if ($tenant === null) {
-            return null;
-        }
-
-        $ownerId = OwnerOnboardingToken::query()->where('tenant_id', $tenant->id)->value('user_id');
-        $owner = $ownerId !== null
-            ? $this->tenantContext->runWithoutTenant(fn () => User::query()->where('tenant_id', $tenant->id)->find($ownerId))
-            : null;
-
-        if ($owner === null) {
-            return null;
-        }
-
-        return ['tenant' => $tenant, 'owner' => $owner];
-    }
-
-    /**
-     * @return array{status: int, body: array<string, mixed>}
-     */
-    private function pendingResponse(): array
-    {
-        return [
-            'status' => 200,
-            'body' => [
-                'success' => true,
-                'message' => 'Provisioning sedang diproses.',
-                'status' => 'pending',
-                'retryable' => true,
-            ],
-        ];
-    }
-
-    /**
-     * @return array{status: int, body: array<string, mixed>}
-     */
-    private function emailConflictResponse(): array
-    {
-        return [
-            'status' => 409,
-            'body' => [
-                'success' => false,
-                'error' => ProvisioningRequest::ERROR_EMAIL_ALREADY_IN_USE,
-                'message' => 'Email tersebut sudah terdaftar sebagai akun aktif.',
-            ],
-        ];
-    }
-
-    /**
-     * Hanya benturan unique yang ditangani di sini (TX-010). Exception lain (koneksi
-     * mati, FK, disk penuh, dsb) TIDAK boleh disamarkan sebagai benturan duplicate key.
-     */
-    private function isUniqueViolation(QueryException $e): bool
-    {
-        return DatabaseErrorClassifier::isDuplicateEntry($e);
-    }
-
-    private function safeErrorMessage(\Throwable $e): string
-    {
-        // Pesan aman untuk disimpan & dibalikkan — tanpa SQL, tanpa path, tanpa secret.
-        return match (true) {
-            $e instanceof QueryException => 'database_error',
-            default => 'internal_error',
-        };
-    }
-
-    /**
-     * Body email onboarding.
-     *
-     * PENTING (DB-003): parameter `$tokenHash` adalah HASH token, bukan
-     * plaintext. Link yang TERSIMPAN karena itu tidak dapat dipakai untuk
-     * menukar password — dump database tidak pernah memuat token yang bisa
-     * dipakai ulang. Plaintext hanya ada di memori selama transaksi dan
-     * disuntikkan tepat sebelum pengiriman oleh ProcessProvisioningOutboxJob.
-     */
-    private function onboardingEmailBody(string $ownerName, string $tenantName, string $tokenHash): string
-    {
-        $baseUrl = rtrim((string) config('app.url', 'http://localhost'), '/');
-        $relative = route('onboarding.set-password', ['token' => $tokenHash], false);
-        $link = $baseUrl.$relative;
-
-        return "Halo {$ownerName},\n\n"
-            ."Akun Apeiron System untuk bisnis \"{$tenantName}\" telah dibuat.\n"
-            ."Silakan atur password Anda melalui tautan berikut (berlaku 48 jam, sekali pakai):\n\n"
-            ."{$link}\n\n"
-            ."Jika Anda tidak merasa mendaftar, abaikan email ini.\n\n"
-            .'— Tim Apeiron System';
-    }
-
-    /**
-     * Dipakai ProcessProvisioningOutboxJob: sisipkan plaintext token ke body
-     * yang tersimpan. Disediakan sebagai satu titik agar format tautan hanya
-     * didefinisikan sekali.
-     */
     public static function injectOnboardingToken(string $body, string $tokenHash, string $plaintextToken): string
     {
         return str_replace(

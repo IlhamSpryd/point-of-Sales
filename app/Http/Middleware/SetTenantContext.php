@@ -89,6 +89,42 @@ class SetTenantContext
             abort(403, 'Your business workspace is currently suspended. Please contact customer support.');
         }
 
+        // 5c. Block operational access when tenant is purged (EXT-06, UU PDP)
+        if ($tenant->isPurged()) {
+            if ($request->expectsJson() || $request->is('api/*') || $request->wantsJson()) {
+                return response()->json([
+                    'error' => 'TENANT_PURGED',
+                    'message' => 'Tenant has been permanently purged and anonymized.',
+                ], 403);
+            }
+
+            if ($request->hasSession()) {
+                Auth::guard('web')->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            }
+            abort(403, 'Tenant has been permanently purged and anonymized.');
+        }
+
+        // 5d. Enforce Read-Only mode for ARCHIVED tenants (EXT-06, MULTI_TENANT_ARCHITECTURE_STRATEGY §5)
+        if ($tenant->isArchived()) {
+            $method = strtoupper($request->method());
+            $isSafeMethod = in_array($method, ['GET', 'HEAD', 'OPTIONS'], true);
+            $isAllowedMutatingRoute = $request->is('logout') || $request->is('*/logout') || $request->is('*export*');
+
+            if (! $isSafeMethod && ! $isAllowedMutatingRoute) {
+                $message = 'Tenant berstatus ARCHIVED (Read-Only). Mutasi data dinonaktifkan.';
+                if ($request->expectsJson() || $request->is('api/*') || $request->wantsJson()) {
+                    return response()->json([
+                        'error' => 'TENANT_ARCHIVED',
+                        'message' => $message,
+                    ], 403);
+                }
+
+                abort(403, $message);
+            }
+        }
+
         // 6. Set TenantContext
         $this->tenantContext->setTenantId($tenantId);
 

@@ -26,6 +26,18 @@ class ProvisioningStepTracker
 
     public const STEP_EVENT_EMIT = 'event_emit';
 
+    public const STEP_CREATE_TENANT = 'create_tenant';
+
+    public const STEP_CREATE_COMPANY_AND_BRANCH = 'create_company_and_branch';
+
+    public const STEP_SEED_ROLES_AND_OWNER = 'seed_roles_and_owner';
+
+    public const STEP_SEED_CHART_OF_ACCOUNTS = 'seed_chart_of_accounts';
+
+    public const STEP_ACTIVATE_SUBSCRIPTION_PLAN = 'activate_subscription_plan';
+
+    public const STEP_DISPATCH_WELCOME_NOTIFICATION = 'dispatch_welcome_notification';
+
     public const STATUS_PENDING = 'PENDING';
 
     public const STATUS_RUNNING = 'RUNNING';

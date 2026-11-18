@@ -9,6 +9,8 @@ use App\Livewire\Concerns\RequiresTenantContext;
 use App\Modules\Organization\Models\Device;
 use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\User;
+use App\Modules\Subscription\Application\Services\SubscriptionBillingOrchestrator;
+use App\Modules\Subscription\Contracts\EntitlementGateInterface;
 use App\Modules\Subscription\Models\Plan;
 use App\Modules\Subscription\Models\ProvisioningRequest;
 use App\Modules\Subscription\Models\TenantSubscription;
@@ -25,6 +27,11 @@ class SubscriptionPortal extends Component
 
     public ?int $selectedPlanId = null;
 
+    public string $billingCycle = 'monthly';
+
+    /**
+     * Legacy manual sales contact request handler (preserved for backward compatibility).
+     */
     public function requestPlanUpgrade(): void
     {
         $this->validate([
@@ -57,12 +64,32 @@ class SubscriptionPortal extends Component
         session()->flash('message', "Permintaan upgrade ke paket {$plan->name} telah dicatat. Tim representatif kami akan menghubungi Anda untuk konfirmasi penagihan.");
     }
 
+    /**
+     * Self-serve automated plan upgrade with immediate entitlement activation (EXT-01, ADR-113).
+     */
+    public function confirmInstantUpgrade(SubscriptionBillingOrchestrator $orchestrator): void
+    {
+        $this->validate([
+            'selectedPlanId' => 'required|integer|exists:plans,id',
+        ]);
+
+        $tenantId = (int) app(TenantContext::class)->getTenantId();
+        $targetPlan = Plan::findOrFail($this->selectedPlanId);
+
+        $upgradeOrder = $orchestrator->initiateUpgrade($tenantId, (int) $targetPlan->id, $this->billingCycle);
+        $orchestrator->activatePaidSubscription($tenantId, (int) $targetPlan->id, $upgradeOrder['order_id']);
+
+        $this->isUpgradeModalOpen = false;
+
+        session()->flash('message', "Paket berhasil diupgrade ke {$targetPlan->name}! Entitas limit dan kuota telah diperbarui seketika.");
+    }
+
     public function render(): View
     {
         $tenantId = (int) app(TenantContext::class)->getTenantId();
-        $service = app(EntitlementEnforcementService::class);
+        $gate = app(EntitlementGateInterface::class);
 
-        $activePlan = $service->resolveActivePlanForTenant($tenantId);
+        $activePlan = $gate->resolveActivePlanForTenant($tenantId);
         $subscription = TenantSubscription::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->latest('id')
@@ -76,13 +103,13 @@ class SubscriptionPortal extends Component
             ->first();
 
         // Quotas & Current Usages
-        $maxStores = $service->getQuota($tenantId, EntitlementEnforcementService::QUOTA_MAX_STORES);
+        $maxStores = $gate->getQuota($tenantId, EntitlementEnforcementService::QUOTA_MAX_STORES);
         $currentStores = Store::withoutGlobalScopes()->where('tenant_id', $tenantId)->count();
 
-        $maxDevices = $service->getQuota($tenantId, EntitlementEnforcementService::QUOTA_MAX_DEVICES);
+        $maxDevices = $gate->getQuota($tenantId, EntitlementEnforcementService::QUOTA_MAX_DEVICES);
         $currentDevices = Device::withoutGlobalScopes()->where('tenant_id', $tenantId)->count();
 
-        $maxUsers = $service->getQuota($tenantId, EntitlementEnforcementService::QUOTA_MAX_USERS);
+        $maxUsers = $gate->getQuota($tenantId, EntitlementEnforcementService::QUOTA_MAX_USERS);
         $currentUsers = User::withoutGlobalScopes()->where('tenant_id', $tenantId)->count();
 
         $allPlans = Plan::where('is_active', true)->orderBy('price')->get();
