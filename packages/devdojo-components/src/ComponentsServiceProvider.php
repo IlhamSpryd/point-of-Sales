@@ -110,6 +110,10 @@ class ComponentsServiceProvider extends ServiceProvider
      */
     protected function registerStudio(): void
     {
+        if (! $this->studioActive() && ! config('components.preview_route.enabled', false)) {
+            return;
+        }
+
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'devdojo-components');
 
         if (! $this->studioActive()) {
