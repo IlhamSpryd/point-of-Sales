@@ -83,7 +83,7 @@ COPY . .
 COPY --from=frontend-builder /app/public/build ./public/build
 
 # Finish autoloader optimization
-RUN composer dump-autoload --optimize --no-dev
+RUN APP_ENV=local composer dump-autoload --optimize --no-dev
 
 # Setup directory structure & permissions
 RUN mkdir -p \
