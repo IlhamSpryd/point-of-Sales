@@ -19,4 +19,9 @@ interface EntitlementGateInterface
      * Determines whether the given usage count is within the tenant's plan quota.
      */
     public function withinQuota(int $tenantId, string $quotaKey, int $currentUsage): bool;
+
+    /**
+     * Determines whether table management feature is enabled for the tenant and branch.
+     */
+    public function isTablesEnabled(int $tenantId, ?int $storeId = null): bool;
 }

@@ -56,6 +56,20 @@ class ImmutableAuditWriter
     ): ?int {
         $sanitizedPayload = $payload !== null ? $this->redactSensitiveData($payload) : null;
 
+        // Ensure store_id satisfies non-null schema constraint
+        if ($storeId === null && class_exists(\App\Core\Context\TenantContext::class)) {
+            $storeId = app(\App\Core\Context\TenantContext::class)->getStoreId();
+        }
+
+        if ($storeId === null && class_exists(DB::class)) {
+            $storeId = (int) (DB::table('stores')
+                ->where('tenant_id', $tenantId)
+                ->where('is_active', 1)
+                ->value('id')
+                ?? DB::table('stores')->where('tenant_id', $tenantId)->value('id')
+                ?? 1);
+        }
+
         try {
             if (class_exists(DB::class)) {
                 $id = DB::table('activity_logs')->insertGetId([

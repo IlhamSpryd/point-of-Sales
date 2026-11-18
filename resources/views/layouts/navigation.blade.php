@@ -12,8 +12,9 @@
 
     $tenantId = app(\App\Core\Context\TenantContext::class)->getTenantId();
     $storeId = app(\App\Core\Context\TenantContext::class)->getStoreId();
+    $entitlementGate = app(\App\Modules\Subscription\Contracts\EntitlementGateInterface::class);
     $tablesEnabled = ($tenantId && $storeId)
-        ? app(\App\Modules\Subscription\Services\EntitlementService::class)->isTablesEnabled((int) $tenantId, (int) $storeId)
+        ? $entitlementGate->isTablesEnabled((int) $tenantId, (int) $storeId)
         : true;
 
     $menu = config('navigation.sections', []);

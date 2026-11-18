@@ -1084,6 +1084,15 @@ return [
                 'scope' => 'tenant',
                 'permission' => 'audit_logs.view',
             ],
+            [
+                'label' => 'Approval Inbox',
+                'icon' => 'fact_check',
+                'route' => 'erp.workflow.approvals',
+                'active' => 'erp.workflow.*',
+                'roles' => ['Owner', 'Manager'],
+                'scope' => 'tenant',
+                'permission' => 'workflow.approvals.view',
+            ],
         ],
     ],
 ];

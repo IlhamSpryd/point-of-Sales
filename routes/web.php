@@ -148,6 +148,13 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
 Route::get('/health/live', [HealthCheckController::class, 'live'])->name('health.live');
 Route::get('/health/ready', [HealthCheckController::class, 'ready'])->name('health.ready');
 
+// Enterprise Workflow & Governance Approvals (EXT-04, ADR-110)
+Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensure.onboarding.completed'])->group(function () {
+    Route::middleware('role:Owner,Manager')->group(function () {
+        Route::get('/workflow/approvals', \App\Livewire\Workflow\UnifiedApprovalInbox::class)->name('erp.workflow.approvals');
+    });
+});
+
 /*
 |--------------------------------------------------------------------------
 | Modular Feature Route Registrations
