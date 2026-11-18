@@ -71,6 +71,7 @@ WORKDIR /var/www/html
 
 # Copy dependency definition files first (Docker layer caching)
 COPY composer.json composer.lock ./
+COPY packages ./packages
 
 # Install vendor dependencies without running scripts
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
