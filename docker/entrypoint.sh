@@ -6,6 +6,12 @@ ROLE="${1:-app}"
 if [ "$ROLE" = "app" ]; then
     echo "=== Starting Apeiron Enterprise Application (PHP-FPM) ==="
     
+    # Sync built frontend assets into public/build if present
+    if [ -d /var/www/html/public_dist_build ]; then
+        mkdir -p /var/www/html/public/build
+        cp -rf /var/www/html/public_dist_build/* /var/www/html/public/build/ 2>/dev/null || true
+    fi
+
     # Ensure storage permissions for www-data
     chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache 2>/dev/null || true
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache 2>/dev/null || true

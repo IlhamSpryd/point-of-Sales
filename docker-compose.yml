@@ -30,7 +30,6 @@ services:
     volumes:
       - storage_data:/var/www/html/storage
       - storage_public:/var/www/html/storage/app/public
-      - ./public:/var/www/html/public
     env_file:
       - .env
     depends_on:

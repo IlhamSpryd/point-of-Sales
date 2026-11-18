@@ -52,20 +52,25 @@ fi
 echo "[+] Starting application, queue worker, scheduler, and web gateway..."
 $COMPOSE up -d app worker scheduler web
 
-# 4. Run database migrations
-echo "[+] Step 2/5: Executing database migrations..."
+# 4. Sync compiled frontend assets to host public directory
+echo "[+] Step 2/5: Syncing compiled frontend assets from app container to host..."
+mkdir -p ./public/build
+$COMPOSE cp app:/var/www/html/public/build/. ./public/build/
+
+# 5. Run database migrations
+echo "[+] Step 3/5: Executing database migrations..."
 $COMPOSE exec -T app php artisan migrate --force --no-interaction
 
-# 5. Clear and re-warm production caches
-echo "[+] Step 3/5: Re-warming application caches..."
+# 6. Clear and re-warm production caches
+echo "[+] Step 4/5: Re-warming application caches..."
 $COMPOSE exec -T app php artisan optimize:clear
 $COMPOSE exec -T app php artisan config:cache
 $COMPOSE exec -T app php artisan route:cache
 $COMPOSE exec -T app php artisan view:cache
 $COMPOSE exec -T app php artisan event:cache
 
-# 6. Graceful worker restart
-echo "[+] Step 4/5: Broadcasting queue worker reload signal..."
+# 7. Graceful worker restart
+echo "[+] Step 5/5: Broadcasting queue worker reload signal..."
 $COMPOSE exec -T app php artisan queue:restart
 
 # 7. Final status verification
