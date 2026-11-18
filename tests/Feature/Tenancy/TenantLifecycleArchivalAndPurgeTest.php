@@ -173,7 +173,35 @@ class TenantLifecycleArchivalAndPurgeTest extends TestCase
             'phone' => '081234567890',
             'email' => 'budi.santoso@example.com',
             'tax_id' => '01.234.567.8-999.000',
+            'date_of_birth' => '1990-05-20',
             'is_active' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $custAddress = DB::table('customer_addresses')->insertGetId([
+            'tenant_id' => $this->archivedTenant->id,
+            'customer_id' => $customer,
+            'address_type' => 'BILLING',
+            'label' => 'Kantor',
+            'recipient_name' => 'Budi Santoso',
+            'phone' => '081234567890',
+            'address_line1' => 'Jl. Thamrin No. 5',
+            'city' => 'Jakarta Pusat',
+            'province' => 'DKI Jakarta',
+            'postal_code' => '10350',
+            'country_code' => 'ID',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $custContact = DB::table('customer_contacts')->insertGetId([
+            'tenant_id' => $this->archivedTenant->id,
+            'customer_id' => $customer,
+            'name' => 'Siti Contact',
+            'email' => 'siti@example.com',
+            'phone' => '081299998888',
+            'is_primary' => 1,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -217,6 +245,18 @@ class TenantLifecycleArchivalAndPurgeTest extends TestCase
             'updated_at' => now(),
         ]);
 
+        DB::table('employee_bpjs_profiles')->insert([
+            'tenant_id' => $this->archivedTenant->id,
+            'employee_id' => $employee,
+            'bpjs_ketenagakerjaan_number' => '12345678901',
+            'bpjs_kesehatan_number' => '0001234567890',
+            'jkk_risk_grade' => 1,
+            'is_bpjs_tk_active' => 1,
+            'is_bpjs_ks_active' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         // Execute purge
         $purgedTenant = $this->purgeService->purgeTenant($this->archivedTenant->id);
 
@@ -239,8 +279,23 @@ class TenantLifecycleArchivalAndPurgeTest extends TestCase
         $this->assertStringStartsWith('Anonymized Customer', (string) $custRow->name);
         $this->assertNull($custRow->phone);
         $this->assertNull($custRow->tax_id);
+        $this->assertNull($custRow->date_of_birth);
         $this->assertStringContainsString('@anonymized.internal', (string) $custRow->email);
         $this->assertEquals(0, $custRow->is_active);
+
+        $addrRow = DB::table('customer_addresses')->where('id', $custAddress)->first();
+        $this->assertNotNull($addrRow);
+        $this->assertSame('Anonymized Recipient', $addrRow->recipient_name);
+        $this->assertNull($addrRow->phone);
+        $this->assertSame('Anonymized Address', $addrRow->address_line1);
+        $this->assertNull($addrRow->address_line2);
+        $this->assertNotNull($addrRow->deleted_at);
+
+        $contactRow = DB::table('customer_contacts')->where('id', $custContact)->first();
+        $this->assertNotNull($contactRow);
+        $this->assertStringStartsWith('Anonymized Contact', (string) $contactRow->name);
+        $this->assertNull($contactRow->phone);
+        $this->assertNotNull($contactRow->deleted_at);
 
         // Verify Employee PII anonymization
         $empRow = DB::table('employees')->where('id', $employee)->first();
@@ -251,6 +306,11 @@ class TenantLifecycleArchivalAndPurgeTest extends TestCase
         $this->assertNull($empRow->emergency_contact_name);
         $this->assertSame('TERMINATED', $empRow->employment_status);
         $this->assertNotNull($empRow->deleted_at);
+
+        $bpjsRow = DB::table('employee_bpjs_profiles')->where('tenant_id', $this->archivedTenant->id)->first();
+        $this->assertNotNull($bpjsRow);
+        $this->assertSame('ANON-BPJS-TK', $bpjsRow->bpjs_ketenagakerjaan_number);
+        $this->assertSame('ANON-BPJS-KS', $bpjsRow->bpjs_kesehatan_number);
 
         // Verify Immutable Audit Writer log
         $this->assertDatabaseHas('activity_logs', [
@@ -271,5 +331,13 @@ class TenantLifecycleArchivalAndPurgeTest extends TestCase
             ->assertExitCode(0);
 
         $this->assertSame(Tenant::STATUS_PURGED, $this->archivedTenant->fresh()->status);
+    }
+
+    public function test_cannot_purge_already_purged_tenant(): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Hanya tenant berstatus ARCHIVED yang dapat di-purge');
+
+        $this->purgeService->purgeTenant($this->purgedTenant->id);
     }
 }

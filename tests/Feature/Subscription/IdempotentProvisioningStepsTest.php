@@ -189,4 +189,57 @@ class IdempotentProvisioningStepsTest extends TestCase
             'status' => ProvisioningStep::STATUS_COMPLETED,
         ]);
     }
+
+    public function test_step_executor_returns_valid_aggregates_on_idempotent_replay(): void
+    {
+        $executor = app(\App\Modules\Subscription\Application\Services\ProvisioningStepExecutor::class);
+        $context = app(\App\Core\Context\TenantContext::class);
+
+        $idempotencyKey = 'replay-executor-'.Str::random(10);
+        $req = ProvisioningRequest::create([
+            'idempotency_key' => $idempotencyKey,
+            'request_fingerprint' => hash('sha256', 'replay-executor'),
+            'owner_email' => 'replay.'.Str::random(6).'@example.com',
+            'status' => ProvisioningRequest::STATUS_PENDING,
+            'started_at' => now(),
+            'attempt_count' => 1,
+        ]);
+
+        $payload = [
+            'tenant_name' => 'Replay Test Tenant',
+            'owner_name' => 'Replay Owner',
+            'owner_email' => $req->owner_email,
+            'owner_phone' => '081234567890',
+        ];
+
+        // First execution
+        $tenant1 = $executor->executeCreateTenant($req->id, $payload, $idempotencyKey);
+        $result1 = $context->runAs($tenant1->id, null, function () use ($executor, $req, $tenant1, $payload) {
+            $branch = $executor->executeCreateCompanyAndBranch($req->id, $tenant1, $payload);
+            $owner = $executor->executeSeedRolesAndOwner($req->id, $tenant1, $payload);
+            $outbox = $executor->executeDispatchWelcomeNotification($req->id, $tenant1, $owner['owner'], $owner['onboarding_token'], 'Welcome text');
+
+            return ['branch' => $branch, 'owner' => $owner, 'outbox' => $outbox];
+        });
+
+        $this->assertInstanceOf(\App\Modules\Organization\Models\Tenant::class, $tenant1);
+        $this->assertIsArray($result1['branch']);
+        $this->assertIsArray($result1['owner']);
+        $this->assertIsInt($result1['outbox']);
+
+        // Idempotent replay: all steps already marked COMPLETED
+        $tenant2 = $executor->executeCreateTenant($req->id, $payload, $idempotencyKey);
+        $result2 = $context->runAs($tenant2->id, null, function () use ($executor, $req, $tenant2, $payload) {
+            $branch = $executor->executeCreateCompanyAndBranch($req->id, $tenant2, $payload);
+            $owner = $executor->executeSeedRolesAndOwner($req->id, $tenant2, $payload);
+            $outbox = $executor->executeDispatchWelcomeNotification($req->id, $tenant2, $owner['owner'], $owner['onboarding_token'], 'Welcome text');
+
+            return ['branch' => $branch, 'owner' => $owner, 'outbox' => $outbox];
+        });
+
+        $this->assertSame($tenant1->id, $tenant2->id);
+        $this->assertSame($result1['branch']['store']->id, $result2['branch']['store']->id);
+        $this->assertSame($result1['owner']['owner']->id, $result2['owner']['owner']->id);
+        $this->assertSame($result1['outbox'], $result2['outbox']);
+    }
 }

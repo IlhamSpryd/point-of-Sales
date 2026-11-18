@@ -27,19 +27,17 @@ class TenantLifecyclePurgeService
      */
     public function purgeTenant(int $tenantId): Tenant
     {
-        /** @var Tenant|null $tenant */
-        $tenant = Tenant::find($tenantId);
+        return DB::transaction(function () use ($tenantId) {
+            /** @var Tenant|null $tenant */
+            $tenant = Tenant::where('id', $tenantId)->lockForUpdate()->first();
 
-        if ($tenant === null) {
-            throw new DomainException("Tenant dengan ID {$tenantId} tidak ditemukan.");
-        }
+            if ($tenant === null) {
+                throw new DomainException("Tenant dengan ID {$tenantId} tidak ditemukan.");
+            }
 
-        if (! $tenant->isArchived()) {
-            throw new DomainException("Hanya tenant berstatus ARCHIVED yang dapat di-purge. Status tenant saat ini: '{$tenant->status}'.");
-        }
-
-        return DB::transaction(function () use ($tenant) {
-            $tenantId = (int) $tenant->id;
+            if (! $tenant->isArchived()) {
+                throw new DomainException("Hanya tenant berstatus ARCHIVED yang dapat di-purge. Status tenant saat ini: '{$tenant->status}'.");
+            }
 
             // 1. Anonymize users belonging to tenant
             $this->anonymizeUsers($tenantId);
@@ -114,10 +112,35 @@ class TenantLifecyclePurgeService
                 'phone' => null,
                 'email' => "purged-cust-{$customer->id}@anonymized.internal",
                 'tax_id' => null,
+                'date_of_birth' => null,
                 'business_registration_no' => null,
                 'is_active' => false,
                 'deleted_at' => now(),
             ]);
+        }
+
+        if (Schema::hasTable('customer_addresses')) {
+            DB::table('customer_addresses')
+                ->where('tenant_id', $tenantId)
+                ->update([
+                    'recipient_name' => 'Anonymized Recipient',
+                    'phone' => null,
+                    'address_line1' => 'Anonymized Address',
+                    'address_line2' => null,
+                    'deleted_at' => now(),
+                ]);
+        }
+
+        if (Schema::hasTable('customer_contacts')) {
+            $contacts = DB::table('customer_contacts')->where('tenant_id', $tenantId)->get(['id']);
+            foreach ($contacts as $contact) {
+                DB::table('customer_contacts')->where('id', $contact->id)->update([
+                    'name' => 'Anonymized Contact '.$contact->id,
+                    'email' => "purged-contact-{$contact->id}@anonymized.internal",
+                    'phone' => null,
+                    'deleted_at' => now(),
+                ]);
+            }
         }
     }
 
@@ -162,6 +185,15 @@ class TenantLifecyclePurgeService
                 ->where('tenant_id', $tenantId)
                 ->update([
                     'tax_identification_number' => 'ANON-NPWP',
+                ]);
+        }
+
+        if (Schema::hasTable('employee_bpjs_profiles')) {
+            DB::table('employee_bpjs_profiles')
+                ->where('tenant_id', $tenantId)
+                ->update([
+                    'bpjs_ketenagakerjaan_number' => 'ANON-BPJS-TK',
+                    'bpjs_kesehatan_number' => 'ANON-BPJS-KS',
                 ]);
         }
     }

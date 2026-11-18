@@ -26,7 +26,7 @@ class ProvisioningStepExecutor
      */
     public function executeCreateTenant(int $requestId, array $data, string $idempotencyKey): \App\Modules\Organization\Models\Tenant
     {
-        return $this->stepTracker->runStep($requestId, ProvisioningStep::STEP_CREATE_TENANT, null, function () use ($data, $idempotencyKey) {
+        $result = $this->stepTracker->runStep($requestId, ProvisioningStep::STEP_CREATE_TENANT, null, function () use ($data, $idempotencyKey) {
             return \App\Modules\Organization\Models\Tenant::firstOrCreate(
                 ['provisioning_idempotency_key' => $idempotencyKey],
                 [
@@ -35,6 +35,12 @@ class ProvisioningStepExecutor
                 ]
             );
         });
+
+        if ($result instanceof \App\Modules\Organization\Models\Tenant) {
+            return $result;
+        }
+
+        return \App\Modules\Organization\Models\Tenant::where('provisioning_idempotency_key', $idempotencyKey)->firstOrFail();
     }
 
     /**
@@ -45,7 +51,7 @@ class ProvisioningStepExecutor
      */
     public function executeCreateCompanyAndBranch(int $requestId, \App\Modules\Organization\Models\Tenant $tenant, array $data): array
     {
-        return $this->stepTracker->runStep($requestId, ProvisioningStep::STEP_CREATE_COMPANY_AND_BRANCH, $tenant->id, function () use ($tenant, $data) {
+        $result = $this->stepTracker->runStep($requestId, ProvisioningStep::STEP_CREATE_COMPANY_AND_BRANCH, $tenant->id, function () use ($tenant, $data) {
             $company = \App\Modules\Organization\Models\Company::where('tenant_id', $tenant->id)
                 ->where('is_default', true)
                 ->first();
@@ -73,6 +79,18 @@ class ProvisioningStepExecutor
 
             return ['company' => $company, 'store' => $store];
         });
+
+        if (is_array($result)) {
+            return $result;
+        }
+
+        $company = \App\Modules\Organization\Models\Company::where('tenant_id', $tenant->id)
+            ->where('is_default', true)
+            ->first();
+
+        $store = \App\Modules\Organization\Models\Store::where('tenant_id', $tenant->id)->firstOrFail();
+
+        return ['company' => $company, 'store' => $store];
     }
 
     /**
@@ -83,7 +101,7 @@ class ProvisioningStepExecutor
      */
     public function executeSeedRolesAndOwner(int $requestId, \App\Modules\Organization\Models\Tenant $tenant, array $data): array
     {
-        return $this->stepTracker->runStep($requestId, ProvisioningStep::STEP_SEED_ROLES_AND_OWNER, $tenant->id, function () use ($tenant, $data) {
+        $result = $this->stepTracker->runStep($requestId, ProvisioningStep::STEP_SEED_ROLES_AND_OWNER, $tenant->id, function () use ($tenant, $data) {
             $ownerRole = \App\Modules\Organization\Models\Role::firstOrCreate(
                 ['name' => 'Owner', 'tenant_id' => $tenant->id],
                 [
@@ -128,6 +146,41 @@ class ProvisioningStepExecutor
                 'onboarding_token' => $plaintextToken,
             ];
         });
+
+        if (is_array($result)) {
+            return $result;
+        }
+
+        $owner = \App\Modules\Organization\Models\User::where('tenant_id', $tenant->id)
+            ->where('email', $data['owner_email'])
+            ->firstOrFail();
+
+        $tokenRecord = \App\Modules\Organization\Models\OwnerOnboardingToken::where('tenant_id', $tenant->id)
+            ->where('user_id', $owner->id)
+            ->first();
+
+        $plaintextToken = Str::random(48);
+        $tokenHash = hash('sha256', $plaintextToken);
+
+        if ($tokenRecord !== null) {
+            $tokenRecord->update([
+                'token_hash' => $tokenHash,
+                'expires_at' => now()->addHours((int) config('pos.provisioning.onboarding_token_ttl_hours', 48)),
+            ]);
+        } else {
+            \App\Modules\Organization\Models\OwnerOnboardingToken::create([
+                'tenant_id' => $tenant->id,
+                'user_id' => $owner->id,
+                'token_hash' => $tokenHash,
+                'expires_at' => now()->addHours((int) config('pos.provisioning.onboarding_token_ttl_hours', 48)),
+                'send_attempts' => 1,
+            ]);
+        }
+
+        return [
+            'owner' => $owner,
+            'onboarding_token' => $plaintextToken,
+        ];
     }
 
     /**
@@ -183,7 +236,7 @@ class ProvisioningStepExecutor
         string $onboardingToken,
         string $emailBody
     ): int {
-        return $this->stepTracker->runStep($requestId, ProvisioningStep::STEP_DISPATCH_WELCOME_NOTIFICATION, $tenant->id, function () use ($tenant, $owner, $emailBody) {
+        $result = $this->stepTracker->runStep($requestId, ProvisioningStep::STEP_DISPATCH_WELCOME_NOTIFICATION, $tenant->id, function () use ($tenant, $owner, $emailBody) {
             $outbox = \App\Modules\Organization\Models\EmailOutbox::create([
                 'event_type' => 'owner_onboarding',
                 'recipient_email' => $owner->email,
@@ -198,6 +251,15 @@ class ProvisioningStepExecutor
 
             return $outbox->id;
         });
+
+        if (is_int($result)) {
+            return $result;
+        }
+
+        return (int) (\App\Modules\Organization\Models\EmailOutbox::where('tenant_id', $tenant->id)
+            ->where('user_id', $owner->id)
+            ->latest('id')
+            ->value('id') ?? 0);
     }
 
     /**
