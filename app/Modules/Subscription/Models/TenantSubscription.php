@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $tenant_id
  * @property int $plan_id
+ * @property array<string, mixed>|null $metadata
  */
 class TenantSubscription extends Model
 {

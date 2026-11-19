@@ -261,7 +261,7 @@ class SubscriptionBillingOrchestrator implements SubscriptionPaymentSettlementIn
         // Strict Idempotency Check 2: TenantSubscription already activated with this payment reference
         $existingSub = TenantSubscription::where('tenant_id', $tenantId)->latest('id')->first();
         if ($existingSub !== null) {
-            $metadata = json_decode((string) $existingSub->metadata, true) ?: [];
+            $metadata = $existingSub->metadata ?? [];
 
             if (($metadata['payment_reference'] ?? null) === $orderId) {
                 Log::info("[SUBSCRIPTION WEBHOOK] Tenant {$tenantId} subscription already activated for reference {$orderId}. Idempotent skip.");

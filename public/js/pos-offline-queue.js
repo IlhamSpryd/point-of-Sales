@@ -156,7 +156,7 @@
                 const results = data.data?.results || [];
 
                 for (const res of results) {
-                    if (res.status === 'synced' || res.status === 'already_synced' || res.status === 'duplicate_skipped') {
+                    if (res.status === 'synced' || res.status === 'already_synced' || res.status === 'duplicate_skipped' || res.sync_status === 'duplicate_skipped') {
                         await this.removeOrder(res.offline_client_uuid);
                     }
                 }

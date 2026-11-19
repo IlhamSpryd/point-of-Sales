@@ -39,6 +39,8 @@ class OfflineOrderSyncService
                     'index' => $index,
                     'offline_client_uuid' => null,
                     'status' => 'rejected',
+                    'sync_status' => 'failed',
+                    'failed' => true,
                     'error' => 'offline_client_uuid is required for offline order synchronization.',
                 ];
 
@@ -52,6 +54,8 @@ class OfflineOrderSyncService
                     'index' => $index,
                     'offline_client_uuid' => $uuid,
                     'status' => 'rejected',
+                    'sync_status' => 'failed',
+                    'failed' => true,
                     'error' => 'Offline transactions strictly restrict payment method to CASH only (DEC-006).',
                 ];
 
