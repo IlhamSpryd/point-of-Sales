@@ -1,15 +1,21 @@
+{{--
+    NOTIFICATION CENTER
+
+    The bell intentionally starts EMPTY. The previous implementation shipped three
+    hard-coded fake notifications ("Active Cashier Shift", "Cloud Synchronization",
+    "Inventory Levels Verified") to every role, which erodes operator trust in the
+    whole notification surface. Until a real notification source is wired in, the
+    honest state is an empty state — never fabricated activity.
+--}}
 @props([
     'unreadCount' => 0,
+    'notifications' => [],
 ])
 
 <div x-data="{
         open: false,
         activeTab: 'all',
-        notifications: [
-            { id: 1, title: 'Active Cashier Shift', desc: 'Cashier shift operating normally on Terminal 01', time: '10m ago', icon: 'point_of_sale', variant: 'emerald', unread: true },
-            { id: 2, title: 'Cloud Synchronization', desc: 'Transaction batch synchronized successfully', time: '35m ago', icon: 'cloud_done', variant: 'blue', unread: true },
-            { id: 3, title: 'Inventory Levels Verified', desc: 'Automated stock-on-hand audit completed', time: '2h ago', icon: 'inventory_2', variant: 'amber', unread: false }
-        ],
+        notifications: @js(array_values($notifications)),
         markAllRead() {
             this.notifications.forEach(n => n.unread = false);
         },
@@ -140,7 +146,7 @@
             <div class="p-2 border-t border-shell-border bg-shell text-center">
                 <a href="{{ route('activity-logs.index') }}" wire:navigate
                     @click="open = false"
-    goal teamwork learn boost automation verification-before-completion testing-best-practices test-driven-development systematic-debugging tailwindcss-development spec-driven-development sharp-edges security-and-hardening retrieving-developer-knowledge impeccable frontend-ui-engineering laravel-best-practices modern-web-guidance generative_ui engineering-tools-usage-policy oke sekarang implementasikan mulai dari fase 0 dan 1secara bertahap, gunakan seluruh keahlian anda pastikan pekerjaan anda menhasil kualitas yang sangat sangat tinggi jangang menyelesaikan fase jika belum anda test dan pastikan professional                class="block py-1 text-[11px] font-medium text-shell-foreground hover:text-shell-foreground-active transition-colors">
+                    class="block py-1 text-[11px] font-medium text-shell-foreground hover:text-shell-foreground-active transition-colors">
                     View Complete Activity Log
                 </a>
             </div>

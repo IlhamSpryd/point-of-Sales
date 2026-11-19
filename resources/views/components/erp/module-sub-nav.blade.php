@@ -1,49 +1,71 @@
+{{--
+    L2 CONTEXTUAL MODULE SUB-NAVIGATION (ADR-NAV-013)
+
+    Renders the horizontal pill bar for the hub that owns the CURRENT route.
+    Suppressed automatically when the hub has zero or one visible page for the
+    user (Governance Law R-5), so single-page hubs never show a one-item bar.
+
+    Usage:
+      <x-erp.module-sub-nav />                          -- auto-detects the hub
+      <x-erp.module-sub-nav hub="nav.finance.gl" />     -- explicit hub id
+      <x-erp.module-sub-nav hub="nav.finance.gl" aria-label="Finance Navigation" />
+
+    Replaces the seven per-module partials and the legacy `module` string key.
+--}}
 @props([
-    'module',
+    'hub' => null,
+    'module' => null,
     'ariaLabel' => null,
 ])
 
 @php
+    /** @var \App\Platform\Navigation\NavigationRegistry $navRegistry */
+    $navRegistry = app(\App\Platform\Navigation\NavigationRegistry::class);
+    /** @var \App\Platform\Navigation\NavigationVisibilityResolver $navResolver */
+    $navResolver = app(\App\Platform\Navigation\NavigationVisibilityResolver::class);
+
     $user = auth()->user();
-    $roleName = $user?->role?->name;
-    $canonicalRoles = ['Owner', 'Admin', 'Manager', 'Finance', 'Sales', 'Kasir', 'Waiter', 'Barista', 'Inventory', 'Supervisor', 'Cook'];
-    $isCustomRole = $roleName !== null && ! in_array($roleName, $canonicalRoles, true);
+    $currentRouteName = request()->route()?->getName();
 
-    $moduleConfig = config("navigation.sub_nav.{$module}", []);
-    $resolvedAriaLabel = $ariaLabel
-        ?? ($moduleConfig['aria_label'] ?? (($moduleConfig['label'] ?? ucfirst((string) $module)).' Navigation'));
+    $hubId = $hub;
 
-    $allTabs = $moduleConfig['items'] ?? [];
+    // Legacy callers pass a `module` key (pos-ops, catalog, ...). Map them onto
+    // the registry so existing page includes keep working during the migration.
+    if ($hubId === null && $module !== null) {
+        $hubId = match ((string) $module) {
+            'pos-ops' => 'nav.frontline.desk',
+            'catalog' => 'nav.catalog.master',
+            'pricing' => 'nav.catalog.pricing',
+            'inventory' => 'nav.supply.inventory',
+            'purchasing' => 'nav.supply.procurement',
+            'sales' => 'nav.sales.orders',
+            'customers' => 'nav.sales.customers',
+            'finance' => 'nav.finance.gl',
+            'hr' => 'nav.workforce.people',
+            'reports' => 'nav.analytics.bi',
+            'organization' => 'nav.admin.org',
+            'governance' => 'nav.admin.access',
+            default => null,
+        };
+    }
 
-    $visibleTabs = array_values(array_filter($allTabs, function (array $tab) use ($user, $roleName, $isCustomRole): bool {
-        if (empty($tab['route']) || ! \Illuminate\Support\Facades\Route::has($tab['route'])) {
-            return false;
-        }
+    if ($hubId === null && $currentRouteName !== null) {
+        $currentNode = $navRegistry->primaryForRoute($currentRouteName);
+        $hubId = $navRegistry->hubFor($currentNode)?->id;
+    }
 
-        if ($roleName === null) {
-            return false;
-        }
+    $hubNode = $hubId !== null ? $navRegistry->find($hubId) : null;
+    $pages = ($hubNode !== null && $hubNode->isHub())
+        ? $navResolver->visiblePagesFor($hubNode, $user)
+        : [];
 
-        // R-009 / FINDING-NAV-01: gate tambahan berbasis policy (@can) agar
-        // kasir biasa tidak melihat tautan yang akan berujung 403.
-        if (! empty($tab['can']) && ! \Illuminate\Support\Facades\Gate::allows($tab['can'])) {
-            return false;
-        }
+    // R-5: a single visible page needs no pill bar.
+    $pages = count($pages) > 1 ? $pages : [];
 
-        $allowedRoles = $tab['roles'] ?? [];
-        if (in_array($roleName, $allowedRoles, true)) {
-            return true;
-        }
-
-        if ($isCustomRole && ! empty($tab['permission']) && $user !== null) {
-            return $user->hasPermission((string) $tab['permission']);
-        }
-
-        return false;
-    }));
+    $resolvedAriaLabel = $ariaLabel ?? (($hubNode?->label ?? 'Module').' Navigation');
 @endphp
 
-@if (count($visibleTabs) > 0)
+@if ($hubNode !== null && $pages !== [])
     <div class="w-full pb-3 mb-6 border-b border-border">
         <nav aria-label="{{ $resolvedAriaLabel }}"
             x-data
@@ -55,19 +77,22 @@
                 }
             })"
             class="flex items-center gap-1.5 md:gap-2 overflow-x-auto scrollbar-hide py-1">
-            @foreach ($visibleTabs as $tab)
+            @foreach ($pages as $page)
                 @php
-                    $activePatterns = (array) ($tab['active'] ?? $tab['route']);
-                    $isActive = request()->routeIs(...$activePatterns);
+                    /** @var \App\Platform\Navigation\NavigationNode $page */
+                    $isActive = request()->routeIs(...$page->active);
+                    $pageUrl = \Illuminate\Support\Facades\Route::has((string) $page->route)
+                        ? route((string) $page->route)
+                        : '#';
                 @endphp
-                <a href="{{ route($tab['route']) }}" wire:navigate
-                    @click="if (window.apeironPosCartDirty && !confirm('You have an active order in the POS terminal. Navigating away will discard the active cart. Continue?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; }"
-                    @if ($isActive) aria-current="page" @endif
-                    class="inline-flex items-center px-3.5 py-2 min-h-[40px] rounded-lg text-xs font-medium whitespace-nowrap transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring {{ $isActive ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground hover:bg-muted' }}">
-                    <span>{{ $tab['label'] }}</span>
-                </a>
+                <x-erp.nav-link
+                    :href="$pageUrl"
+                    :active="$isActive"
+                    :close-mobile="false"
+                    class="px-3.5 py-2 min-h-[44px] md:min-h-[40px] rounded-[var(--radius-pill)] text-xs font-medium motion-reduce:transition-none {{ $isActive ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground hover:bg-muted' }}">
+                    <span>{{ $page->label }}</span>
+                </x-erp.nav-link>
             @endforeach
         </nav>
     </div>
 @endif
-

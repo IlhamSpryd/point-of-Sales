@@ -4,7 +4,7 @@
             title="Edit Store Branch: {{ $store->name }}"
             description="Update branch information, operational timezone, and active status settings.">
             <x-slot:breadcrumbs>
-                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('stores.index') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item href="{{ route('stores.index') }}">Stores & Branches</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Edit</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>

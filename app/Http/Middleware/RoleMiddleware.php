@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Modules\Organization\Models\User;
+use App\Platform\Navigation\NavigationRegistry;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -66,31 +67,37 @@ class RoleMiddleware
     }
 
     /**
-     * Evaluasi apakah Custom Role memiliki permission kanonikal yang terhubung dengan route aktif.
+     * Evaluate whether a Custom Role holds a canonical permission for the active route.
+     *
+     * ADR-NAV-006 / Governance Law G-3: authorization must not read the navigation
+     * config. Resolution now comes from the NavigationRegistry's per-route
+     * permission manifest, which is a pure lookup — not a menu scan. Navigation
+     * stays advisory; this middleware stays authoritative.
      */
     private function customRoleHasRoutePermission(User $user, string $routeName): bool
     {
-        foreach (config('navigation.sections', []) as $items) {
-            foreach ($items as $item) {
-                $itemRoute = (string) ($item['route'] ?? '');
-                $permission = (string) ($item['permission'] ?? '');
-                if ($permission !== '' && ($itemRoute === $routeName || $this->matchesRoutePattern($item['active'] ?? null, $routeName))) {
-                    if ($user->hasPermission($permission)) {
-                        return true;
+        /** @var NavigationRegistry $registry */
+        $registry = app(NavigationRegistry::class);
+
+        $candidates = $registry->permissionsForRoute($routeName);
+
+        // Resolve wildcard route names too (e.g. a route matched by `orders.*`).
+        if ($candidates === []) {
+            foreach ($registry->pages() as $node) {
+                if ($node->route === null) {
+                    continue;
+                }
+                if ($this->matchesRoutePattern($node->active, $routeName)) {
+                    foreach ($node->abilities as $ability) {
+                        $candidates[] = $ability;
                     }
                 }
             }
         }
 
-        foreach (config('navigation.sub_nav', []) as $moduleConfig) {
-            foreach ($moduleConfig['items'] ?? [] as $subItem) {
-                $subRoute = (string) ($subItem['route'] ?? '');
-                $permission = (string) ($subItem['permission'] ?? '');
-                if ($permission !== '' && ($subRoute === $routeName || $this->matchesRoutePattern($subItem['active'] ?? null, $routeName))) {
-                    if ($user->hasPermission($permission)) {
-                        return true;
-                    }
-                }
+        foreach (array_unique($candidates) as $permission) {
+            if ($user->hasPermission($permission)) {
+                return true;
             }
         }
 

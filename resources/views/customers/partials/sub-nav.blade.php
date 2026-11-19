@@ -1,1 +1,1 @@
-<x-erp.module-sub-nav module="customers" aria-label="Customer & Loyalty Navigation" />
+<x-erp.module-sub-nav module="customers" />

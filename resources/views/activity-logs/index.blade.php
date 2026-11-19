@@ -6,7 +6,7 @@
             title="Activity Logs &amp; Security Audit"
             description="Track and monitor all user activity, authentication events, and data changes across your enterprise system.">
             <x-slot:breadcrumbs>
-                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('erp.workflow.approvals') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Audit Logs</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>
         </x-erp.page-header>

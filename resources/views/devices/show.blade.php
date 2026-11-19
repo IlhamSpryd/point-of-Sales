@@ -4,7 +4,7 @@
             title="{{ $device->device_name }}"
             description="Code: {{ $device->device_code }} &bull; Branch: {{ $device->store?->name }}">
             <x-slot:breadcrumbs>
-                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('stores.index') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item href="{{ route('devices.index') }}">Devices</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>{{ $device->device_name }}</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>

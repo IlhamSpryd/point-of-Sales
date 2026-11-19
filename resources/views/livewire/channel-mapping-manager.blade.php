@@ -6,7 +6,7 @@
         title="Channel Integration (Channel Mapping)"
         description="Map external delivery platform SKUs (GrabFood, GoFood) to internal product inventory.">
         <x-slot:breadcrumbs>
-            <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item href="{{ route('stores.index') }}">Dashboard</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item href="{{ route('products.index') }}">Catalog</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item active>Channel Integrations</x-ui.breadcrumbs.item>
         </x-slot:breadcrumbs>

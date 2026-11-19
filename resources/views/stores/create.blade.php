@@ -4,7 +4,7 @@
             title="Add New Store Branch"
             description="Register a new outlet branch under your multi-tenant enterprise account.">
             <x-slot:breadcrumbs>
-                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('stores.index') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item href="{{ route('stores.index') }}">Stores & Branches</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Add New</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>

@@ -4,7 +4,7 @@
             title="Add Table"
             description="Add a new dining table and generate a self-ordering QR Code for the active branch.">
             <x-slot:breadcrumbs>
-                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('orders.index') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item href="{{ route('tables.index') }}">Tables</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Add New</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>

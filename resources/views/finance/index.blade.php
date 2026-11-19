@@ -3,7 +3,7 @@
         <x-erp.page-header
             title="Finance & Accounting (General Ledger)"
             description="Dual-entry accounting hub, chart of accounts (COA), cash & bank flow monitoring, and multi-branch general ledger audit trail."
-            :breadcrumbs="[['label' => 'Dashboard', 'href' => route('dashboard')], ['label' => 'Finance & Accounting']]"
+            :breadcrumbs="[['label' => 'Finance & Accounting', 'href' => route('finance.index')], ['label' => 'Overview']]"
         />
     </x-slot:header>
 

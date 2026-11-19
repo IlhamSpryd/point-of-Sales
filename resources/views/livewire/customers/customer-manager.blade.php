@@ -6,7 +6,7 @@
         title="Customer Directory (CRM)"
         description="Manage individual (B2C) and corporate (B2B) customers, shipping addresses, and contact persons.">
         <x-slot:breadcrumbs>
-            <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item href="{{ route('customers.index') }}">Dashboard</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item href="{{ route('customers.index') }}">Customers</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item active>Customer Directory</x-ui.breadcrumbs.item>
         </x-slot:breadcrumbs>

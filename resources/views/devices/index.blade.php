@@ -7,7 +7,7 @@
             title="POS Terminals &amp; Cashier Devices"
             description="Registration and authorization for physical POS terminals, kitchen display systems (KDS), and server tablets.">
             <x-slot:breadcrumbs>
-                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('stores.index') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Devices</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>
 

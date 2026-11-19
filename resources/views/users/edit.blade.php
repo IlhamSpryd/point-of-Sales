@@ -4,7 +4,7 @@
             title="Edit User: {{ $user->name }}"
             description="Update profile details, role assignments, and system credentials.">
             <x-slot:breadcrumbs>
-                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('users.index') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item href="{{ route('users.index') }}">Users</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Edit</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>

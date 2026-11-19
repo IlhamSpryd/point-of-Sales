@@ -1,60 +1,31 @@
 @php
+    /**
+     * REGISTRY-DRIVEN COMMAND PALETTE (ADR-NAV-008)
+     *
+     * The palette indexes exactly what the sidebar would show — no second list,
+     * no first-writer-wins deduplication, no gated pages leaking into results.
+     * Visibility is projected by NavigationVisibilityResolver, so an item can
+     * never route the user to a 403.
+     *
+     * Aliases are bilingual (English + Indonesian) because Apeiron's labels are
+     * English while operators search in Indonesian: "opname", "grn", "aset tetap".
+     * Icons are injected as NAMES, not HTML, to keep the payload small.
+     */
+    /** @var \App\Platform\Navigation\NavigationVisibilityResolver $navResolver */
+    $navResolver = app(\App\Platform\Navigation\NavigationVisibilityResolver::class);
+
     $paletteItems = [];
-    $seenRoutes = [];
-    $authUser = auth()->user();
-    $userRole = $authUser?->role?->name;
-    $canonicalRoles = ['Owner', 'Admin', 'Manager', 'Finance', 'Sales', 'Kasir', 'Waiter', 'Barista', 'Inventory', 'Supervisor', 'Cook'];
-    $isCustomRole = $userRole !== null && ! in_array($userRole, $canonicalRoles, true);
 
-    foreach (config('navigation.sections', []) as $groupName => $items) {
-        foreach ($items as $item) {
-            $route = (string) ($item['route'] ?? '');
-            if ($route === '' || isset($seenRoutes[$route]) || ! \Illuminate\Support\Facades\Route::has($route)) {
-                continue;
-            }
-
-            $allowed = ($userRole && in_array($userRole, $item['roles'] ?? [], true))
-                || ($isCustomRole && ! empty($item['permission']) && $authUser?->hasPermission((string) $item['permission']));
-
-            if (! $allowed) {
-                continue;
-            }
-
-            $seenRoutes[$route] = true;
-            $paletteItems[] = [
-                'title' => $item['label'],
-                'value' => $route,
-                'url' => route($route),
-                'group' => $groupName,
-                'icon' => '<span class="material-symbols-rounded text-base">' . ($item['icon'] ?? 'chevron_right') . '</span>',
-            ];
-        }
-    }
-
-    foreach (config('navigation.sub_nav', []) as $moduleKey => $moduleConfig) {
-        $groupLabel = (string) ($moduleConfig['label'] ?? ucfirst((string) $moduleKey));
-        foreach ($moduleConfig['items'] ?? [] as $subItem) {
-            $route = (string) ($subItem['route'] ?? '');
-            if ($route === '' || isset($seenRoutes[$route]) || ! \Illuminate\Support\Facades\Route::has($route)) {
-                continue;
-            }
-
-            $allowed = ($userRole && in_array($userRole, $subItem['roles'] ?? [], true))
-                || ($isCustomRole && ! empty($subItem['permission']) && $authUser?->hasPermission((string) $subItem['permission']));
-
-            if (! $allowed) {
-                continue;
-            }
-
-            $seenRoutes[$route] = true;
-            $paletteItems[] = [
-                'title' => $subItem['label'],
-                'value' => $route,
-                'url' => route($route),
-                'group' => $groupLabel,
-                'icon' => '<span class="material-symbols-rounded text-base">' . ($subItem['icon'] ?? 'chevron_right') . '</span>',
-            ];
-        }
+    foreach ($navResolver->commandPaletteItems(auth()->user()) as $item) {
+        $paletteItems[] = [
+            'title' => $item['label'],
+            'value' => $item['id'],
+            'url' => $item['url'],
+            'group' => $item['group'],
+            'icon' => $item['icon'],
+            'haystack' => $item['haystack'],
+            'kind' => $item['kind'],
+        ];
     }
 @endphp
 

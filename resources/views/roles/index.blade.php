@@ -7,7 +7,7 @@
             title="Roles & Permissions"
             description="Define role authorities, staff access privileges, and feature permissions across your multi-tenant organization.">
             <x-slot:breadcrumbs>
-                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('users.index') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Roles</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>
 

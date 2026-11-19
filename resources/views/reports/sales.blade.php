@@ -7,7 +7,7 @@
             :title="$title"
             description="Transaction summary, revenue parity reconciliation, and daily End-of-Day cash closing.">
             <x-slot:breadcrumbs>
-                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('reports.sales') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Sales Report</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>
 

@@ -7,7 +7,7 @@
             title="Staff Invitations"
             description="Manage and monitor expiration status of digital branch staff invitations.">
             <x-slot:breadcrumbs>
-                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('users.index') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item href="{{ route('users.index') }}">Users</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Invitations</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>

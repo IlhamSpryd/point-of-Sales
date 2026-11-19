@@ -4,7 +4,7 @@
             title="Add New Role"
             description="Define a new operational role and configure module access permissions.">
             <x-slot:breadcrumbs>
-                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('users.index') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item href="{{ route('roles.index') }}">Roles</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Add New</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>

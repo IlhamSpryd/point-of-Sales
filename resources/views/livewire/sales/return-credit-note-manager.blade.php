@@ -6,7 +6,7 @@
         title="Sales Returns & Credit Notes"
         description="Manage item returns, customer credit notes, and receivable reconciliation.">
         <x-slot:breadcrumbs>
-            <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item href="{{ route('sales.orders.index') }}">Dashboard</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item href="{{ route('sales.orders.index') }}">Sales</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item active>Returns & Credit Notes</x-ui.breadcrumbs.item>
         </x-slot:breadcrumbs>

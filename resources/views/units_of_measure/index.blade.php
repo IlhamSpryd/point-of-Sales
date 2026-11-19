@@ -41,7 +41,7 @@
             title="Units of Measure"
             description="Manage product quantity units (Pcs, Kg, Liter, Box, etc.) and decimal precision for inventory tracking.">
             <x-slot:breadcrumbs>
-                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('products.index') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item href="{{ route('products.index') }}">Catalog</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Units of Measure</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>

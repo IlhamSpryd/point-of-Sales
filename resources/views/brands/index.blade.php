@@ -41,7 +41,7 @@
             title="Product Brands"
             description="Manage product brands and manufacturers for catalog classification and reporting.">
             <x-slot:breadcrumbs>
-                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('products.index') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item href="{{ route('products.index') }}">Catalog</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Brands</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>

@@ -4,7 +4,7 @@
             title="Edit Role: {{ $role->name }}"
             description="Update access permissions and authority settings for this role.">
             <x-slot:breadcrumbs>
-                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('users.index') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item href="{{ route('roles.index') }}">Roles</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Edit</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>

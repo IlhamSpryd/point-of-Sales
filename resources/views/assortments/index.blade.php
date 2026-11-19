@@ -11,7 +11,7 @@
             title="Branch Assortments & Price Overrides"
             description="Configure branch-level product availability and branch-specific pricing without duplicating master catalog records.">
             <x-slot:breadcrumbs>
-                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('products.index') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item href="{{ route('products.index') }}">Catalog</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Branch Assortments</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>

@@ -7,7 +7,7 @@
             title="Store & Branch Management"
             description="Manage stores, operating timezones, and outlet operational statuses across your business.">
             <x-slot:breadcrumbs>
-                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('stores.index') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Stores</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>
 

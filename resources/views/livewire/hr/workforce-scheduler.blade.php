@@ -7,7 +7,7 @@
         title="Workforce Schedules & Shift Roster"
         description="Weekly workforce scheduling, shift rosters, and outlet staff assignments.">
         <x-slot:breadcrumbs>
-            <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item href="{{ route('hr.employees.index') }}">Dashboard</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item href="{{ route('hr.employees.index') }}">HR & Payroll</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item active>Schedules & Shifts</x-ui.breadcrumbs.item>
         </x-slot:breadcrumbs>

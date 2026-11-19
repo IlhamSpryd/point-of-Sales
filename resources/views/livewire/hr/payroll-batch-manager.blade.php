@@ -7,7 +7,7 @@
         title="Employee Payroll (Payroll Engine)"
         description="Deterministic payroll calculation pipeline, statutory tax (PPh 21 TER PMK 168/2023), BPJS contributions, and GL journal posting.">
         <x-slot:breadcrumbs>
-            <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item href="{{ route('hr.employees.index') }}">Dashboard</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item href="{{ route('hr.employees.index') }}">HR & Payroll</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item active>Payroll</x-ui.breadcrumbs.item>
         </x-slot:breadcrumbs>

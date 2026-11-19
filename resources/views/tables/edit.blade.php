@@ -4,7 +4,7 @@
             title="Edit Table: {{ $table->table_name }}"
             description="Update table specifications, seating capacity, and self-order operational status.">
             <x-slot:breadcrumbs>
-                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('orders.index') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item href="{{ route('tables.index') }}">Tables</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Edit</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>

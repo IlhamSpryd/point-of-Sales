@@ -40,7 +40,18 @@ return [
             'landing' => true,
             'aliases' => ['stok', 'gudang', 'inventori', 'inventory', 'bahan'],
             'pages' => [
-                                [
+                [
+                    'id' => 'nav.supply.inventory.stock',
+                    'label' => 'Raw Materials & Stock',
+                    'route' => 'inventory.ingredients',
+                    'active' => ['inventory.ingredients*'],
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'abilities' => ['inventory.view'],
+                    'scope' => 'store',
+                    'order' => 71,
+                    'aliases' => ['bahan baku', 'ingredient', 'stok gudang', 'raw material'],
+                ],
+                [
                     'id' => 'nav.supply.inventory.direct_receipts',
                     'label' => 'Direct Receipts',
                     'route' => 'inventory.goods-receipts',

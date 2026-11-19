@@ -6,7 +6,7 @@
         title="Loyalty & Value Instruments"
         description="Manage promotional campaign vouchers, PIN-encrypted gift cards, and customer store credit balances.">
         <x-slot:breadcrumbs>
-            <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item href="{{ route('customers.index') }}">Dashboard</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item href="{{ route('customers.index') }}">Customers</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item active>Loyalty & Value Instruments</x-ui.breadcrumbs.item>
         </x-slot:breadcrumbs>

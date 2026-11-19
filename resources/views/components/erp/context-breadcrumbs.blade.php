@@ -1,78 +1,57 @@
+{{--
+    SHELL BREADCRUMB — registry derived (Breadcrumb Architecture, §14)
+
+    Answers "where am I in the Domain -> Hub -> Page hierarchy". It is generated
+    from App\Platform\Navigation\NavigationVisibilityResolver::breadcrumbsForRoute()
+    and can therefore never disagree with the sidebar or the L2 pills.
+
+    Critically, it never hardcodes route('dashboard'): that route is guarded by
+    `role:Owner,Manager`, so a Kasir/Finance/Sales breadcrumb root previously
+    produced a guaranteed 403 dead-end (INT-06).
+
+    Semantic markup: <nav><ol> with aria-current on the terminal crumb (B-10).
+    Maximum four fragments; a one-fragment trail is hidden (B-4).
+--}}
 @php
-    $modules = config('navigation.modules', []);
-    $sections = config('navigation.sections', []);
-    $subNavs = config('navigation.sub_nav', []);
+    /** @var \App\Platform\Navigation\NavigationVisibilityResolver $navResolver */
+    $navResolver = app(\App\Platform\Navigation\NavigationVisibilityResolver::class);
 
-    $activeModule = null;
-    $activeItem = null;
-    $activeSubItem = null;
+    $currentRouteName = request()->route()?->getName();
+    $trail = $currentRouteName !== null
+        ? $navResolver->breadcrumbsForRoute($currentRouteName, auth()->user())
+        : [];
 
-    // Detect active module and active menu item
-    foreach ($modules as $mod) {
-        $patterns = (array) ($mod['active_pattern'] ?? []);
-        if (!empty($patterns) && request()->routeIs(...$patterns)) {
-            $activeModule = $mod;
-            break;
-        }
-    }
-
-    foreach ($sections as $sectionName => $items) {
-        foreach ($items as $item) {
-            if (\Illuminate\Support\Facades\Route::has($item['route']) && request()->routeIs(...(array) $item['active'])) {
-                $activeItem = $item;
-                break 2;
-            }
-        }
-    }
-
-    foreach ($subNavs as $subModuleKey => $subModuleConfig) {
-        foreach ($subModuleConfig['items'] ?? [] as $subItem) {
-            if (!empty($subItem['route']) && \Illuminate\Support\Facades\Route::has($subItem['route']) && request()->routeIs(...(array) ($subItem['active'] ?? $subItem['route']))) {
-                $activeSubItem = $subItem;
-                break 2;
-            }
-        }
-    }
+    $homeUrl = \Illuminate\Support\Facades\Route::has('home') ? route('home') : url('/');
 @endphp
 
-@if ($activeModule || $activeItem || $activeSubItem)
-    <nav aria-label="Context Breadcrumb" class="hidden md:flex items-center gap-1.5 text-xs select-none">
-        <a href="{{ route('home') }}" wire:navigate
-            class="text-shell-foreground hover:text-shell-foreground-active transition-colors flex items-center">
-            <span class="material-symbols-rounded text-[16px]">home</span>
-        </a>
-
-        @if ($activeModule)
-            <span class="text-shell-foreground/40 font-sans text-[11px] select-none">•</span>
-            @if (\Illuminate\Support\Facades\Route::has($activeModule['route']))
-                <a href="{{ route($activeModule['route']) }}" wire:navigate
-                    class="text-shell-foreground hover:text-shell-foreground-active transition-colors font-medium">
-                    {{ $activeModule['short_name'] ?? $activeModule['name'] }}
+@if (count($trail) > 0)
+    <nav aria-label="Breadcrumb" class="hidden md:flex items-center gap-1.5 text-xs select-none min-w-0">
+        <ol class="flex items-center gap-1.5 min-w-0">
+            <li class="flex items-center">
+                <a href="{{ $homeUrl }}" wire:navigate
+                    aria-label="Home"
+                    class="text-shell-foreground hover:text-shell-foreground-active transition-colors flex items-center motion-reduce:transition-none">
+                    <span class="material-symbols-rounded text-[16px]" aria-hidden="true">home</span>
                 </a>
-            @else
-                <span class="text-shell-foreground">{{ $activeModule['short_name'] ?? $activeModule['name'] }}</span>
-            @endif
-        @endif
+            </li>
 
-        @if ($activeItem && (!$activeModule || $activeItem['label'] !== ($activeModule['short_name'] ?? $activeModule['name'])))
-            <span class="text-shell-foreground/40 font-sans text-[11px] select-none">/</span>
-            @if ($activeSubItem && $activeSubItem['route'] !== $activeItem['route'] && $activeSubItem['label'] !== $activeItem['label'])
-                <a href="{{ route($activeItem['route']) }}" wire:navigate
-                    class="text-shell-foreground hover:text-shell-foreground-active transition-colors font-medium truncate max-w-[120px] lg:max-w-[180px]">
-                    {{ $activeItem['label'] }}
-                </a>
-            @else
-                <span class="text-shell-foreground-active font-semibold truncate max-w-[120px] md:max-w-[180px] lg:max-w-[240px]">
-                    {{ $activeItem['label'] }}
-                </span>
-            @endif
-        @endif
+            @foreach ($trail as $crumb)
+                <li class="flex items-center gap-1.5 min-w-0">
+                    <span class="text-shell-foreground/40 font-sans text-[11px] select-none" aria-hidden="true">/</span>
 
-        @if ($activeSubItem && (!$activeItem || ($activeSubItem['route'] !== $activeItem['route'] && $activeSubItem['label'] !== $activeItem['label'])))
-            <span class="text-shell-foreground/40 font-sans text-[11px] select-none">/</span>
-            <span class="text-shell-foreground-active font-semibold truncate max-w-[120px] md:max-w-[180px] lg:max-w-[240px]">
-                {{ $activeSubItem['label'] }}
-            </span>
-        @endif
+                    @if ($loop->last)
+                        <span class="text-shell-foreground-active font-semibold truncate max-w-[120px] md:max-w-[180px] lg:max-w-[240px]"
+                            aria-current="page">{{ $crumb['label'] }}</span>
+                    @elseif (! empty($crumb['url']))
+                        <a href="{{ $crumb['url'] }}" wire:navigate
+                            class="text-shell-foreground hover:text-shell-foreground-active transition-colors font-medium truncate max-w-[120px] lg:max-w-[180px] motion-reduce:transition-none">
+                            {{ $crumb['label'] }}
+                        </a>
+                    @else
+                        <span class="text-shell-foreground font-medium truncate max-w-[120px] lg:max-w-[180px]">{{ $crumb['label'] }}</span>
+                    @endif
+                </li>
+            @endforeach
+        </ol>
     </nav>
 @endif

@@ -12,20 +12,52 @@
         items: @js(array_values($items)),
         get filtered() {
             const q = this.search.trim().toLowerCase();
-            if (! q) return this.items;
+            if (! q) {
+                // Empty query = browse mode. Recently visited destinations are
+                // pinned above the full list and filtered against current
+                // visibility so a stale recents cache can never expose a page
+                // the user has since lost access to.
+                const visible = new Set(this.items.map(i => i.value));
+                const recents = this.recents
+                    .map(id => this.items.find(i => i.value === id))
+                    .filter(Boolean)
+                    .filter(i => visible.has(i.value));
+                const seen = new Set(recents.map(i => i.value));
+                const rest = this.items.filter(i => ! seen.has(i.value));
+                return [...recents.map(i => ({ ...i, group: 'Recent' })), ...rest];
+            }
             return this.items
                 .map(item => [item, this.score(item, q)])
                 .filter(([, score]) => score !== Infinity)
                 .sort((a, b) => a[1] - b[1])
                 .map(([item]) => item);
         },
+        recents: [],
+        loadRecents() {
+            try {
+                this.recents = JSON.parse(localStorage.getItem('apeiron.nav.recents') || '[]');
+            } catch (e) {
+                this.recents = [];
+            }
+        },
+        remember(item) {
+            if (! item || ! item.value) return;
+            const next = [item.value, ...this.recents.filter(id => id !== item.value)].slice(0, 5);
+            this.recents = next;
+            try { localStorage.setItem('apeiron.nav.recents', JSON.stringify(next)); } catch (e) {}
+        },
         // Fuzzy rank: prefix beats substring beats a scattered subsequence,
         // so 'dtpkr' still finds 'Date Picker'.
         score(item, q) {
             const title = (item.title || '').toLowerCase();
+            const hay = (item.haystack || title).toLowerCase();
             if (title.startsWith(q)) return 0;
             const index = title.indexOf(q);
             if (index !== -1) return 1 + index / 100;
+            // Alias / Indonesian-vocabulary match: ranked just behind a title hit
+            // so "opname" surfaces Stock Count even though its label is English.
+            const hayIndex = hay.indexOf(q);
+            if (hayIndex !== -1) return 1.5 + hayIndex / 100;
             let at = 0, gaps = 0, previous = -2;
             for (const char of q) {
                 at = title.indexOf(char, at);
@@ -57,6 +89,7 @@
         },
         select(item) {
             if (! item) return;
+            this.remember(item);
             this.$dispatch('command-select', { value: item.value, title: item.title, url: item.url });
             this.open = false;
             if (item.url) {
@@ -77,6 +110,7 @@
     @keydown.window.cmd.k.prevent="openPalette()"
     @keydown.window.ctrl.k.prevent="openPalette()"
     @command-open.window="openPalette()"
+    x-init="loadRecents()"
     {{ $attributes->twMerge('inline-block') }}
 >
     {{-- Trigger --}}
@@ -100,7 +134,7 @@
             x-show="open"
             x-cloak
             x-id="['dd-command']"
-            class="fixed inset-0 z-50 flex items-start justify-center p-4 pt-[15vh]"
+            class="fixed inset-0 z-50 flex items-start justify-center p-0 sm:p-4 pt-0 sm:pt-[15vh]"
             role="dialog"
             aria-modal="true"
             aria-label="Command palette"
@@ -120,7 +154,7 @@
                 @keydown.down.prevent="move(1)"
                 @keydown.up.prevent="move(-1)"
                 @keydown.enter.prevent="select(filtered[active])"
-                class="relative z-10 flex w-full max-w-xl flex-col overflow-hidden rounded-large border border-border bg-popover text-popover-foreground shadow-lg"
+                class="relative z-10 flex h-dvh sm:h-auto w-full max-w-none sm:max-w-xl flex-col overflow-hidden rounded-none sm:rounded-large border-0 sm:border border-border bg-popover text-popover-foreground shadow-lg"
             >
                 <div class="flex items-center gap-2 border-b border-border px-3">
                     <svg class="size-4 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
@@ -158,7 +192,7 @@
                                 class="flex cursor-pointer items-center gap-2.5 rounded-medium px-2.5 py-2 text-sm text-foreground"
                                 :class="active === index ? 'bg-secondary text-foreground' : ''"
                             >
-                                <template x-if="item.icon"><span class="flex size-4 shrink-0 items-center justify-center text-muted-foreground" x-html="item.icon"></span></template>
+                                <template x-if="item.icon"><span class="material-symbols-rounded text-base shrink-0 text-muted-foreground" x-text="item.icon"></span></template>
                                 <span x-text="item.title"></span>
                                 <template x-if="item.shortcut"><span class="ml-auto font-sans text-xs tracking-widest text-muted-foreground" x-text="item.shortcut"></span></template>
                             </div>

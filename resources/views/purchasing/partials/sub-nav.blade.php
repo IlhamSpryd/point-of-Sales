@@ -1,1 +1,1 @@
-<x-erp.module-sub-nav module="purchasing" aria-label="Purchasing Navigation" />
+<x-erp.module-sub-nav module="purchasing" />

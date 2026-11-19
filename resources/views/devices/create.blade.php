@@ -4,7 +4,7 @@
             title="Register New Device"
             description="Register a physical POS terminal, kitchen display (KDS), or order-taking tablet prior to activation.">
             <x-slot:breadcrumbs>
-                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('stores.index') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item href="{{ route('devices.index') }}">Devices</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Register</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>

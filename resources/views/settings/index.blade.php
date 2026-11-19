@@ -6,7 +6,7 @@
             title="System Settings"
             description="Configure Point of Sales preferences, enterprise tax defaults, and transaction rounding rules.">
             <x-slot:breadcrumbs>
-                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('settings.index') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Settings</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>
         </x-erp.page-header>

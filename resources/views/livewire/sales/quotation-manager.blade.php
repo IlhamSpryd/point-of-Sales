@@ -6,7 +6,7 @@
         title="Price Quotations"
         description="Manage B2B commercial quotations, discount/margin approvals, validity dates, and one-click conversion to Sales Orders.">
         <x-slot:breadcrumbs>
-            <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item href="{{ route('sales.orders.index') }}">Dashboard</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item href="{{ route('sales.orders.index') }}">Sales</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item active>Price Quotations</x-ui.breadcrumbs.item>
         </x-slot:breadcrumbs>

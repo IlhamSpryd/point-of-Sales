@@ -137,16 +137,25 @@ final class NavigationRegistry
         $pageDefinitions = $hub['pages'] ?? [];
 
         // Every hub declares exactly one landing page (registry contract). When a
-        // hub authors no explicit page list — or lists pages without marking one
-        // as the landing — the hub row itself becomes the landing page.
-        if (! $this->hasLandingFlag($pageDefinitions)) {
+        // hub authors no page on the hub's own route, derive one so the L1 row has
+        // a resolvable destination. A DERIVED landing must never duplicate an
+        // authored page: that would surface the same destination twice in the
+        // palette and the L2 bar.
+        $authoredOnHubRoute = false;
+        foreach ($pageDefinitions as $definition) {
+            if (($definition['route'] ?? null) === $hubNode->route) {
+                $authoredOnHubRoute = true;
+                break;
+            }
+        }
+
+        if (! $authoredOnHubRoute) {
             array_unshift($pageDefinitions, [
                 'id' => $hubNode->id.'.landing',
                 'label' => $hubNode->label,
                 'route' => $hubNode->route,
                 // A derived landing claims ONLY its own route. Claiming the hub's
-                // full pattern set would make it collide with every sibling tab
-                // (and would double-highlight on every page of the hub).
+                // full pattern set would make it collide with every sibling tab.
                 'active' => [$hubNode->route],
                 'roles' => $hubNode->roles,
                 'abilities' => $hubNode->abilities,
@@ -162,6 +171,11 @@ final class NavigationRegistry
         $pages = [];
 
         foreach ($pageDefinitions as $pageDefinition) {
+            // The page that owns the hub's own route IS the landing page.
+            if (($pageDefinition['route'] ?? null) === $hubNode->route) {
+                $pageDefinition['landing'] = true;
+            }
+
             $page = $this->makeNode($pageDefinition, [
                 'type' => NavigationNode::TYPE_PAGE,
                 'parent' => $hubNode->id,

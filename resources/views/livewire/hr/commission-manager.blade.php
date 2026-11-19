@@ -7,7 +7,7 @@
         title="Sales Commission Summary"
         description="Track sales staff and cashier commissions earned in real time, including automated reversals for returned items.">
         <x-slot:breadcrumbs>
-            <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item href="{{ route('hr.employees.index') }}">Dashboard</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item href="{{ route('hr.employees.index') }}">HR & Payroll</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item active>Sales Commissions</x-ui.breadcrumbs.item>
         </x-slot:breadcrumbs>

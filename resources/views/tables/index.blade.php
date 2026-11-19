@@ -28,7 +28,7 @@
             title="Table Management"
             description="Manage operational floor plans, table layouts, and self-ordering QR codes for your branches.">
             <x-slot:breadcrumbs>
-                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('orders.index') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Tables</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>
 

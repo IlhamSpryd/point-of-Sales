@@ -7,7 +7,7 @@
         title="Staff Attendance & Overtime Monitoring"
         description="Monitor employee clock-in/out times, punctuality, tardiness, and manual attendance adjustments.">
         <x-slot:breadcrumbs>
-            <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item href="{{ route('hr.employees.index') }}">Dashboard</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item href="{{ route('hr.employees.index') }}">HR & Payroll</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item active>Attendance & Overtime</x-ui.breadcrumbs.item>
         </x-slot:breadcrumbs>

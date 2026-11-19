@@ -6,7 +6,7 @@
         title="Discount & Promotion Management"
         description="Manage product discounts, promotion quotas, cashier vouchers, and discount stacking rules.">
         <x-slot:breadcrumbs>
-            <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item href="{{ route('price-lists.index') }}">Dashboard</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item href="{{ route('products.index') }}">Catalog</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item active>Discounts & Promotions</x-ui.breadcrumbs.item>
         </x-slot:breadcrumbs>

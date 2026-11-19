@@ -41,7 +41,7 @@
             title="Tax Classes"
             description="Manage tax rate classifications for product commodities (VAT 11%, Tax-Exempt, etc.) across retail and B2B transactions.">
             <x-slot:breadcrumbs>
-                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('products.index') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item href="{{ route('products.index') }}">Catalog</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Tax Classes</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>

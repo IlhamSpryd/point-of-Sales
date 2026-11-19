@@ -6,7 +6,7 @@
         title="Sales Orders"
         description="Manage B2B commercial orders, stock reservations, partial fulfillments, and repeat orders.">
         <x-slot:breadcrumbs>
-            <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item href="{{ route('sales.orders.index') }}">Dashboard</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item href="{{ route('sales.orders.index') }}">Sales</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item active>Sales Orders</x-ui.breadcrumbs.item>
         </x-slot:breadcrumbs>
