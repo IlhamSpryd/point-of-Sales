@@ -18,7 +18,7 @@ return [
     |--------------------------------------------------------------------------
     | Operational alert webhook URL and cooldown window to prevent notification storms.
     */
-    'alert_webhook_url' => env('OPS_ALERT_WEBHOOK_URL'),
+    'alert_webhook_url' => env('OPS_ALERT_WEBHOOK_URL', env('ALERT_NOTIFICATION_WEBHOOK_URL')),
     'alert_cooldown_minutes' => (int) env('OPS_ALERT_COOLDOWN_MINUTES', 15),
 
     /*

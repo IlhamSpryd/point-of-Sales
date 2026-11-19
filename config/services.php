@@ -61,7 +61,7 @@ return [
     | JANGAN pernah menggunakan APP_KEY sebagai provisioning secret.
     */
     'provisioning' => [
-        'secret_current' => env('PROVISIONING_SECRET'),
+        'secret_current' => env('PROVISIONING_HMAC_SECRET', env('PROVISIONING_SECRET')),
         'secret_previous' => env('PROVISIONING_SECRET_PREVIOUS'),
         'timestamp_window' => env('PROVISIONING_TIMESTAMP_WINDOW', 300),
         'nonce_retention' => env('PROVISIONING_NONCE_RETENTION', 1800),

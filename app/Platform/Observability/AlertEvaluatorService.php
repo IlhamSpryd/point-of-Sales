@@ -209,4 +209,44 @@ class AlertEvaluatorService
             ]);
         }
     }
+
+    /**
+     * Dispatches a safe test notification ping to verify webhook connectivity without evaluating metrics or setting cooldowns.
+     */
+    public function sendTestPing(?string $overrideWebhookUrl = null): bool
+    {
+        $webhookUrl = $overrideWebhookUrl ?? config('observability.alert_webhook_url');
+
+        if (empty($webhookUrl)) {
+            Log::warning('[Apeiron Ops Alert] Webhook test ping skipped: no webhook URL configured.');
+
+            return false;
+        }
+
+        $formattedMessage = "🧪 *[TEST] Apeiron Production SRE Alerting Active* — https://app.apeironsystem.web.id\n"
+            ."Status: Systems Operational\n"
+            .'Timestamp: '.now()->toIso8601String();
+
+        $payload = [
+            'system' => 'Apeiron SaaS POS',
+            'environment' => config('app.env', 'production'),
+            'timestamp' => now()->toIso8601String(),
+            'text' => $formattedMessage,
+            'content' => $formattedMessage,
+            'is_test' => true,
+        ];
+
+        try {
+            $response = Http::timeout(5)->post((string) $webhookUrl, $payload);
+
+            return $response->successful();
+        } catch (\Throwable $e) {
+            Log::error('[Apeiron Ops Alert] Failed to dispatch test webhook ping', [
+                'webhook_url' => $webhookUrl,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
 }

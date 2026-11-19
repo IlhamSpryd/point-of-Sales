@@ -14,7 +14,7 @@ class EvaluateOperationalAlertsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'ops:evaluate-alerts';
+    protected $signature = 'ops:evaluate-alerts {--test : Dispatches a safe test notification ping to verify webhook connectivity}';
 
     /**
      * The console command description.
@@ -28,6 +28,29 @@ class EvaluateOperationalAlertsCommand extends Command
      */
     public function handle(AlertEvaluatorService $evaluator): int
     {
+        if ($this->option('test')) {
+            $this->info('Dispatching test verification ping to configured operational webhook...');
+
+            $webhookUrl = config('observability.alert_webhook_url');
+            if (empty($webhookUrl)) {
+                $this->warn('[-] Warning: No webhook URL configured (OPS_ALERT_WEBHOOK_URL / ALERT_NOTIFICATION_WEBHOOK_URL is empty).');
+
+                return self::SUCCESS;
+            }
+
+            $success = $evaluator->sendTestPing();
+
+            if ($success) {
+                $this->info('✓ Test verification ping dispatched successfully (HTTP 200/204 delivered).');
+
+                return self::SUCCESS;
+            }
+
+            $this->error('[-] Error: Failed to dispatch test ping to configured webhook.');
+
+            return self::FAILURE;
+        }
+
         $this->info('Evaluating operational alerts against live domain metrics...');
 
         $result = $evaluator->evaluateAndDispatch();

@@ -153,4 +153,38 @@ class MetricsAndAlertingTest extends TestCase
             ->expectsOutputToContain('Evaluating operational alerts against live domain metrics')
             ->assertExitCode(0);
     }
+
+    public function test_ops_evaluate_alerts_test_flag_dispatches_clean_verification_ping(): void
+    {
+        Http::fake([
+            'https://discord.com/api/webhooks/test/*' => Http::response(null, 204),
+        ]);
+
+        Config::set('observability.alert_webhook_url', 'https://discord.com/api/webhooks/test/123');
+
+        $this->artisan('ops:evaluate-alerts --test')
+            ->expectsOutputToContain('Dispatching test verification ping')
+            ->expectsOutputToContain('Test verification ping dispatched successfully')
+            ->assertExitCode(0);
+
+        Http::assertSent(function (\Illuminate\Http\Client\Request $request) {
+            return $request->url() === 'https://discord.com/api/webhooks/test/123'
+                && ($request['is_test'] ?? false) === true
+                && str_contains($request['text'], '[TEST] Apeiron Production SRE Alerting Active')
+                && str_contains($request['content'], 'https://app.apeironsystem.web.id');
+        });
+    }
+
+    public function test_ops_evaluate_alerts_test_flag_warns_when_no_webhook_configured(): void
+    {
+        Http::fake();
+
+        Config::set('observability.alert_webhook_url', null);
+
+        $this->artisan('ops:evaluate-alerts --test')
+            ->expectsOutputToContain('Warning: No webhook URL configured')
+            ->assertExitCode(0);
+
+        Http::assertNothingSent();
+    }
 }
