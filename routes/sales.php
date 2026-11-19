@@ -29,8 +29,8 @@ Route::post('/midtrans/notification', [MidtransNotificationController::class, 'h
     ->name('midtrans.notification');
 
 Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensure.onboarding.completed'])->group(function () {
-    // Kasir POS
-    Route::middleware('role:Owner,Manager,Kasir')->group(function () {
+    // Kasir POS & Waiter Order Terminal
+    Route::middleware('role:Owner,Manager,Kasir,Waiter')->group(function () {
         Route::get('/transaction', CreateOrder::class)->name('transaction.create');
         Route::redirect('/kasir', '/transaction', 301);
         Route::post('/transaction', [TransactionController::class, 'store'])->name('transaction.store');
@@ -62,10 +62,15 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
         Route::get('/shifts/{shift}', [ShiftController::class, 'show'])->name('shifts.show');
     });
 
-    // Riwayat Pesanan
+    // Riwayat Pesanan — Waiter (Order-Only mode, OQ-09) sees history but is
+    // excluded from void/return: those are segregated duties handled by the
+    // OrderPolicy and by the dedicated role groups below.
     Route::middleware('role:Owner,Manager,Kasir,Waiter,Supervisor')->group(function () {
         Route::get('/orders', [TransactionController::class, 'index'])->name('orders.index');
         Route::get('/orders/{orderNumber}', [TransactionController::class, 'show'])->name('orders.show');
+    });
+
+    Route::middleware('role:Owner,Manager,Kasir,Supervisor')->group(function () {
         Route::post('/orders/{orderNumber}/void', [TransactionController::class, 'void'])->name('orders.void');
         Route::post('/orders/{orderNumber}/return', [TransactionController::class, 'returnAndRefund'])->name('orders.return');
     });
@@ -81,7 +86,7 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
     });
 
     // Channel Mapping Manager (Omnichannel)
-    Route::middleware(['role:Owner,Manager', 'enforce.entitlement:omnichannel'])->group(function () {
+    Route::middleware(['role:Owner,Admin,Manager', 'enforce.entitlement:omnichannel'])->group(function () {
         Route::get('/integrations/channel-mapping', ChannelMappingManager::class)->name('integrations.channel-mapping');
     });
 

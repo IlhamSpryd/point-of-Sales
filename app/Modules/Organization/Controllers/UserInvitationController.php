@@ -43,8 +43,16 @@ class UserInvitationController extends Controller
         $user = $request->user();
         abort_unless($user !== null, 401);
 
+        $validated = $request->validated();
+        if ($user->role?->name === 'Admin' && isset($validated['role_id'])) {
+            $targetRole = Role::find($validated['role_id']);
+            if ($targetRole && $targetRole->name === 'Owner') {
+                abort(403, 'Administrators cannot invite or assign the Owner role.');
+            }
+        }
+
         try {
-            $this->invitationService->issueInvitation($user, $request->validated());
+            $this->invitationService->issueInvitation($user, $validated);
 
             return redirect()->route('users.index')
                 ->with('success', 'Undangan karyawan berhasil dikirim.');
@@ -132,7 +140,7 @@ class UserInvitationController extends Controller
         $request->session()->regenerate();
         app(TenantContext::class)->setTenantId((int) $user->tenant_id);
 
-        return redirect()->route('dashboard')
+        return redirect()->route('home')
             ->with('success', 'Selamat datang! Akun karyawan Anda telah aktif.');
     }
 }

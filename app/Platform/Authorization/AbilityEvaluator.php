@@ -65,15 +65,15 @@ class AbilityEvaluator
         }
 
         // 7. Scope enforcement
-        return $this->evaluateScope($user, $ability->scope, $context);
+        return $this->evaluateScope($user, $ability->scope, $context, $ability);
     }
 
     /**
      * @param  array{tenant_id?: int|null, company_id?: int|null, store_id?: int|null, user_id?: int|null}  $context
      */
-    protected function evaluateScope(User $user, Scope $requiredScope, array $context): bool
+    protected function evaluateScope(User $user, Scope $requiredScope, array $context, ?Ability $ability = null): bool
     {
-        $userScope = $this->resolveUserScope($user);
+        $userScope = $this->resolveUserScope($user, $ability);
 
         if (! $userScope->satisfies($requiredScope)) {
             return false;
@@ -94,7 +94,7 @@ class AbilityEvaluator
         }
 
         if ($requiredScope === Scope::SELF && isset($context['user_id'])) {
-            if ($userScope === Scope::SELF && (int) $user->id !== (int) $context['user_id']) {
+            if ($userScope !== Scope::TENANT && (int) $user->id !== (int) $context['user_id']) {
                 return false;
             }
         }
@@ -102,19 +102,32 @@ class AbilityEvaluator
         return true;
     }
 
-    protected function resolveUserScope(User $user): Scope
+    public function resolveUserScope(User $user, ?Ability $ability = null): Scope
     {
         $roleName = $user->role?->name;
 
-        if ($user->role?->is_admin || in_array($roleName, ['Owner', 'Superadmin', 'Director'], true)) {
+        // 1. Tenant Scope: Owner, Admin, Finance, HR / Workforce (tenant-wide visibility/operations)
+        if ($user->role?->is_admin || in_array($roleName, ['Owner', 'Superadmin', 'Director', 'Admin', 'Administrator', 'Finance', 'Finance Manager', 'HR', 'Workforce', 'HR Manager'], true)) {
             return Scope::TENANT;
         }
 
-        if (in_array($roleName, ['General Manager', 'Finance Manager', 'HR Manager'], true)) {
+        // 2. Company Scope: Multi-branch enterprise coordinators
+        if (in_array($roleName, ['General Manager', 'Company Manager'], true)) {
             return Scope::COMPANY;
         }
 
-        if (in_array($roleName, ['Branch Manager', 'Store Manager', 'Supervisor', 'Kasir', 'Barista', 'Waiter', 'Staff'], true)) {
+        // 3. Branch Scope: Manager, Supervisor, Inventory, Purchasing, Sales (strictly scoped to assigned branch)
+        if (in_array($roleName, ['Manager', 'Branch Manager', 'Store Manager', 'Supervisor', 'Inventory', 'Purchasing', 'Sales'], true)) {
+            return Scope::BRANCH;
+        }
+
+        // 4. Frontline Roles: Kasir, Waiter, Cook, Barista, Staff
+        // Scope::BRANCH for operational abilities; Scope::SELF for personal self-service records
+        if (in_array($roleName, ['Kasir', 'Waiter', 'Cook', 'Barista', 'Staff'], true)) {
+            if ($ability !== null && ($ability->scope === Scope::SELF || str_ends_with($ability->name, '.own') || in_array($ability->name, ['hrm.leave', 'workforce.leave.apply', 'workforce.payslip.view_own'], true))) {
+                return Scope::SELF;
+            }
+
             return Scope::BRANCH;
         }
 

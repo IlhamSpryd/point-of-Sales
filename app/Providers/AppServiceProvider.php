@@ -92,6 +92,12 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singleton(\App\Platform\Authorization\AbilityRegistry::class);
         $this->app->singleton(\App\Platform\Authorization\AbilityEvaluator::class);
+
+        // Navigation (ADR-NAV-001). The registry is a pure-data singleton; the
+        // resolver is request-scoped so its per-user visibility memoisation never
+        // leaks across requests and navigation render issues zero repeat queries.
+        $this->app->singleton(\App\Platform\Navigation\NavigationRegistry::class);
+        $this->app->scoped(\App\Platform\Navigation\NavigationVisibilityResolver::class);
     }
 
     /**

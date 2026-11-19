@@ -17,7 +17,7 @@ class ActivityLogPolicy
             return false;
         }
 
-        return in_array($role->name, ['Owner', 'Manager'], true) || (bool) $role->is_admin;
+        return in_array($role->name, ['Owner', 'Admin', 'Manager'], true) || (bool) $role->is_admin;
     }
 
     public function viewAny(User $user): bool

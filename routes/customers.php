@@ -15,9 +15,12 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensure.onboarding.completed'])->group(function () {
-    Route::middleware('role:Owner,Manager')->group(function () {
-        // Pelanggan & B2B CRM (Modul 13)
+    // Pelanggan & B2B CRM (Modul 13) — Owner, Manager, Sales (OQ-19)
+    Route::middleware('role:Owner,Manager,Sales')->group(function () {
         Route::get('/customers', CustomerManager::class)->name('customers.index');
+    });
+
+    Route::middleware('role:Owner,Manager')->group(function () {
         Route::get('/customers/groups', CustomerGroupManager::class)->name('customers.groups.index');
         Route::get('/customers/instruments', LoyaltyAndValueInstrumentManager::class)->name('customers.instruments.index');
     });

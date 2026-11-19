@@ -146,4 +146,95 @@ class AbilityEvaluatorTest extends TestCase
         // Different branch rejected
         $this->assertFalse($this->evaluator->can($user, 'sales.create', ['store_id' => 20]));
     }
+
+    public function test_all_11_canonical_roles_resolve_correct_scope(): void
+    {
+        // 1. Tenant Scope Roles: Owner, Admin, Finance, HR / Workforce
+        $tenantRoles = ['Owner', 'Admin', 'Finance', 'HR', 'Workforce'];
+        foreach ($tenantRoles as $roleName) {
+            $user = new User;
+            $role = new Role;
+            $role->name = $roleName;
+            $role->is_admin = ($roleName === 'Owner');
+            $user->setRelation('role', $role);
+
+            $this->assertSame(
+                Scope::TENANT,
+                $this->evaluator->resolveUserScope($user),
+                "Role {$roleName} must resolve to Scope::TENANT"
+            );
+        }
+
+        // 2. Branch Scope Roles: Manager, Supervisor, Inventory, Purchasing, Sales
+        $branchRoles = ['Manager', 'Supervisor', 'Inventory', 'Purchasing', 'Sales'];
+        foreach ($branchRoles as $roleName) {
+            $user = new User;
+            $role = new Role;
+            $role->name = $roleName;
+            $role->is_admin = false;
+            $user->setRelation('role', $role);
+
+            $this->assertSame(
+                Scope::BRANCH,
+                $this->evaluator->resolveUserScope($user),
+                "Role {$roleName} must resolve to Scope::BRANCH"
+            );
+        }
+
+        // 3. Frontline Operational Roles: Kasir, Waiter, Cook, Barista
+        $frontlineRoles = ['Kasir', 'Waiter', 'Cook', 'Barista'];
+        $operationalAbility = $this->registry->get('sales.create');
+        $selfAbility = $this->registry->get('hrm.leave');
+
+        foreach ($frontlineRoles as $roleName) {
+            $user = new User;
+            $role = new Role;
+            $role->name = $roleName;
+            $role->is_admin = false;
+            $user->setRelation('role', $role);
+
+            // Operational ability or default -> Scope::BRANCH
+            $this->assertSame(
+                Scope::BRANCH,
+                $this->evaluator->resolveUserScope($user, $operationalAbility),
+                "Role {$roleName} must resolve to Scope::BRANCH for operational abilities"
+            );
+            $this->assertSame(
+                Scope::BRANCH,
+                $this->evaluator->resolveUserScope($user),
+                "Role {$roleName} must default to Scope::BRANCH when no ability is specified"
+            );
+
+            // Personal self-service ability -> Scope::SELF
+            $this->assertSame(
+                Scope::SELF,
+                $this->evaluator->resolveUserScope($user, $selfAbility),
+                "Role {$roleName} must resolve to Scope::SELF for personal records"
+            );
+        }
+    }
+
+    public function test_self_scope_isolation_prevents_cross_user_access_for_frontline_roles(): void
+    {
+        $role = new Role;
+        $role->name = 'Kasir';
+        $role->is_admin = false;
+        $role->permissions = ['hrm.leave'];
+
+        $user = new User;
+        $user->id = 42;
+        $user->is_active = true;
+        $user->tenant_id = 1;
+        $user->setRelation('role', $role);
+
+        // Own record is permitted
+        $this->assertTrue(
+            $this->evaluator->can($user, 'hrm.leave', ['user_id' => 42])
+        );
+
+        // Another user's record is blocked
+        $this->assertFalse(
+            $this->evaluator->can($user, 'hrm.leave', ['user_id' => 99])
+        );
+    }
 }

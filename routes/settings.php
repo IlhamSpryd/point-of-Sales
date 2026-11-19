@@ -37,8 +37,8 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
     });
 
     Route::middleware('ensure.onboarding.completed')->group(function () {
-        // Toko, Pengguna, Peran — Khusus Owner
-        Route::middleware('role:Owner')->group(function () {
+        // Toko, Pengguna, Peran, Pengaturan — Owner & Admin (ADR-NAV-009)
+        Route::middleware('role:Owner,Admin')->group(function () {
             Route::resource('stores', StoreController::class)->except(['show']);
             Route::resource('users', UserController::class)->except(['show']);
             Route::post('roles/{role}/duplicate', [RoleController::class, 'duplicate'])->name('roles.duplicate');
@@ -55,9 +55,13 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
             Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
         });
 
-        // Meja & Perangkat Kasir (Devices) & Audit Logs & Subscription Portal
+        // Subscription Portal — Khusus Owner & Manager (SoD: Admin blocked)
         Route::middleware('role:Owner,Manager')->group(function () {
             Route::get('/subscription', SubscriptionPortal::class)->name('subscription.portal');
+        });
+
+        // Meja & Perangkat Kasir (Devices) & Audit Logs — Owner, Admin, Manager
+        Route::middleware('role:Owner,Admin,Manager')->group(function () {
             Route::post('devices/{device}/revoke', [DeviceController::class, 'revoke'])->name('devices.revoke');
             Route::post('devices/{device}/regenerate-token', [DeviceController::class, 'regenerateToken'])->name('devices.regenerate-token');
             Route::resource('devices', DeviceController::class);

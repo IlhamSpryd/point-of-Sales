@@ -11,9 +11,19 @@ use Illuminate\Support\Facades\DB;
 
 class StorePolicy
 {
+    private function isOwnerOrAdmin(User $user): bool
+    {
+        $role = $user->role;
+        if (! $role instanceof Role) {
+            return false;
+        }
+
+        return in_array($role->name, ['Owner', 'Admin'], true) || (bool) $role->is_admin;
+    }
+
     private function isOwner(User $user): bool
     {
-        $role = $user->relationLoaded('role') ? $user->role : $user->role()->withoutGlobalScopes()->first();
+        $role = $user->role;
         if (! $role instanceof Role) {
             return false;
         }
@@ -23,7 +33,7 @@ class StorePolicy
 
     private function isManager(User $user): bool
     {
-        $role = $user->relationLoaded('role') ? $user->role : $user->role()->withoutGlobalScopes()->first();
+        $role = $user->role;
         if (! $role instanceof Role) {
             return false;
         }
@@ -33,7 +43,7 @@ class StorePolicy
 
     public function viewAny(User $user): bool
     {
-        return $this->isOwner($user) || $this->isManager($user);
+        return $this->isOwnerOrAdmin($user) || $this->isManager($user);
     }
 
     public function view(User $user, Store $store): bool
@@ -42,7 +52,7 @@ class StorePolicy
             return false;
         }
 
-        if ($this->isOwner($user)) {
+        if ($this->isOwnerOrAdmin($user)) {
             return true;
         }
 
@@ -55,12 +65,12 @@ class StorePolicy
 
     public function create(User $user): bool
     {
-        return $this->isOwner($user);
+        return $this->isOwnerOrAdmin($user);
     }
 
     public function update(User $user, Store $store): bool
     {
-        return $this->isOwner($user) && (int) $user->tenant_id === (int) $store->tenant_id;
+        return $this->isOwnerOrAdmin($user) && (int) $user->tenant_id === (int) $store->tenant_id;
     }
 
     public function delete(User $user, Store $store): bool
@@ -70,7 +80,7 @@ class StorePolicy
             return false;
         }
 
-        return $this->isOwner($user) && (int) $user->tenant_id === (int) $store->tenant_id;
+        return $this->isOwnerOrAdmin($user) && (int) $user->tenant_id === (int) $store->tenant_id;
     }
 
     public function switch(User $user, Store $store): bool
@@ -79,7 +89,7 @@ class StorePolicy
             return false;
         }
 
-        if ($this->isOwner($user)) {
+        if ($this->isOwnerOrAdmin($user)) {
             return true;
         }
 

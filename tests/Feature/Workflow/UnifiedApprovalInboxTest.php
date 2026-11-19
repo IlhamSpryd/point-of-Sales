@@ -267,4 +267,50 @@ class UnifiedApprovalInboxTest extends TestCase
         $foreignRequest->refresh();
         $this->assertEquals(ApprovalStatusEnum::Pending, $foreignRequest->status);
     }
+
+    public function test_supervisor_can_access_inbox_and_is_blocked_from_po_expense_approvals(): void
+    {
+        $supervisorRole = Role::firstOrCreate(
+            ['tenant_id' => $this->tenant->id, 'name' => 'Supervisor'],
+            ['permissions' => ['orders.*', 'shifts.*', 'void.approve']]
+        );
+
+        $supervisorUser = User::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'role_id' => $supervisorRole->id,
+            'name' => 'Sam Supervisor',
+            'email' => 'supervisor-'.Str::random(6).'@apeiron.test',
+            'email_verified_at' => now(),
+            'store_id' => $this->store->id,
+        ]);
+
+        DB::table('user_stores')->insert([
+            'tenant_id' => $this->tenant->id,
+            'user_id' => $supervisorUser->id,
+            'store_id' => $this->store->id,
+        ]);
+
+        // 1. Supervisor route reachability
+        $response = $this->actingAs($supervisorUser)->get(route('erp.workflow.approvals'));
+        $response->assertStatus(200);
+
+        // 2. PO Approval Request is blocked for Supervisor
+        $poRequest = PurchaseApprovalRequest::withoutGlobalScopes()->create([
+            'tenant_id' => $this->tenant->id,
+            'approvable_type' => 'PurchaseOrder',
+            'approvable_id' => 301,
+            'rule_id' => null,
+            'step_order' => 1,
+            'status' => ApprovalStatusEnum::Pending,
+            'submitted_by_user_id' => $this->makerUser->id,
+        ]);
+
+        Livewire::actingAs($supervisorUser)
+            ->test(UnifiedApprovalInbox::class)
+            ->call('approve', $poRequest->id)
+            ->assertSee('Supervisor dibatasi hanya untuk persetujuan operasional');
+
+        $poRequest->refresh();
+        $this->assertEquals(ApprovalStatusEnum::Pending, $poRequest->status);
+    }
 }

@@ -10,6 +10,16 @@ use App\Modules\Organization\Models\User;
 
 class SettingPolicy
 {
+    private function isOwnerOrAdmin(User $user): bool
+    {
+        $role = $user->relationLoaded('role') ? $user->role : $user->role()->withoutGlobalScopes()->first();
+        if (! $role instanceof Role) {
+            return false;
+        }
+
+        return in_array($role->name, ['Owner', 'Admin'], true) || (bool) $role->is_admin;
+    }
+
     private function isOwner(User $user): bool
     {
         $role = $user->relationLoaded('role') ? $user->role : $user->role()->withoutGlobalScopes()->first();
@@ -22,26 +32,26 @@ class SettingPolicy
 
     public function viewAny(User $user): bool
     {
-        return $this->isOwner($user);
+        return $this->isOwnerOrAdmin($user);
     }
 
     public function view(User $user, Setting $setting): bool
     {
-        return $this->isOwner($user) && (int) $user->tenant_id === (int) $setting->tenant_id;
+        return $this->isOwnerOrAdmin($user) && (int) $user->tenant_id === (int) $setting->tenant_id;
     }
 
     public function create(User $user): bool
     {
-        return $this->isOwner($user);
+        return $this->isOwnerOrAdmin($user);
     }
 
     public function update(User $user, Setting $setting): bool
     {
-        return $this->isOwner($user) && (int) $user->tenant_id === (int) $setting->tenant_id;
+        return $this->isOwnerOrAdmin($user) && (int) $user->tenant_id === (int) $setting->tenant_id;
     }
 
     public function delete(User $user, Setting $setting): bool
     {
-        return $this->isOwner($user) && (int) $user->tenant_id === (int) $setting->tenant_id;
+        return $this->isOwnerOrAdmin($user) && (int) $user->tenant_id === (int) $setting->tenant_id;
     }
 }

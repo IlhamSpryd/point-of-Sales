@@ -53,7 +53,7 @@ class CreateOrder extends Component
 
         $role = $authUser->role;
         $roleName = $role?->name;
-        $hasLegacyRole = (bool) ($role?->is_admin) || in_array($roleName, ['Owner', 'Manager', 'Kasir', 'Admin'], true);
+        $hasLegacyRole = (bool) ($role?->is_admin) || in_array($roleName, ['Owner', 'Manager', 'Kasir', 'Admin', 'Waiter'], true);
         $evaluator = app(\App\Platform\Authorization\AbilityEvaluator::class);
 
         if (! $hasLegacyRole && ! $evaluator->can($authUser, 'sales.create', ['store_id' => $this->activeStoreId])) {

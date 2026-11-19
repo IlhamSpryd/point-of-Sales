@@ -152,8 +152,10 @@
         @endif
     @endunless
 
+    @php($isWaiterRole = auth()->user()?->role?->name === 'Waiter')
+
     {{-- Fast Payment Method Bar (Tunai, QRIS, EDC Kartu, Transfer) --}}
-    @unless ($pendingOrderId)
+    @unless ($isWaiterRole || $pendingOrderId)
         <div class="grid grid-cols-4 gap-1.5 py-0.5">
             <button class="h-8 px-1 rounded-md bg-primary text-white text-xs text-center font-medium shadow-2xs transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none cursor-pointer"
                 type="button"
@@ -196,9 +198,22 @@
         </div>
     @endif
 
-    {{-- Primary Checkout Button --}}
+    {{-- Primary Action Button: Dispatch to Kitchen for Waiter, Checkout for Cashier --}}
     <div class="pt-1 flex flex-col gap-1.5">
-        @if ($pendingOrderId)
+        @if ($isWaiterRole)
+            <button wire:click.prevent="parkCurrentCart" id="btn-dispatch-kitchen"
+                wire:loading.attr="disabled" wire:target="parkCurrentCart"
+                class="w-full h-11 px-4 rounded-lg bg-primary hover:bg-primary/90 text-white transition-all flex items-center justify-between shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                @disabled(count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-rounded text-lg">restaurant</span>
+                    <span class="text-sm font-medium">Kirim ke Dapur (KDS)</span>
+                </div>
+                <span class="text-sm font-semibold tabular-nums">
+                    Rp {{ number_format($this->totalAmount, 0, ',', '.') }}
+                </span>
+            </button>
+        @elseif ($pendingOrderId)
             <button wire:click.prevent="submitOrder" id="btn-bayar"
                 wire:loading.attr="disabled" wire:target="submitOrder"
                 wire:loading.class.add="pointer-events-none"
@@ -232,18 +247,20 @@
             </button>
         @endif
 
-        <div class="flex items-center justify-between px-1 text-muted-foreground text-xs pt-0.5">
-            <button type="button"
-                wire:click.prevent="openSplitBillModal"
-                aria-haspopup="dialog"
-                class="flex items-center gap-1 hover:text-foreground text-primary font-semibold transition-colors cursor-pointer">
-                <span class="material-symbols-rounded text-[14px]">call_split</span>
-                <span>Split Bill (Pisah Tagihan)</span>
-            </button>
-            <a href="{{ route('shifts.index') }}" class="flex items-center gap-1 hover:text-foreground transition-colors">
-                <span class="material-symbols-rounded text-[14px]">print</span>
-                <span>Auto Receipt (USB/LAN)</span>
-            </a>
-        </div>
+        @unless ($isWaiterRole)
+            <div class="flex items-center justify-between px-1 text-muted-foreground text-xs pt-0.5">
+                <button type="button"
+                    wire:click.prevent="openSplitBillModal"
+                    aria-haspopup="dialog"
+                    class="flex items-center gap-1 hover:text-foreground text-primary font-semibold transition-colors cursor-pointer">
+                    <span class="material-symbols-rounded text-[14px]">call_split</span>
+                    <span>Split Bill (Pisah Tagihan)</span>
+                </button>
+                <a href="{{ route('shifts.index') }}" class="flex items-center gap-1 hover:text-foreground transition-colors">
+                    <span class="material-symbols-rounded text-[14px]">print</span>
+                    <span>Auto Receipt (USB/LAN)</span>
+                </a>
+            </div>
+        @endunless
     </div>
 </div>

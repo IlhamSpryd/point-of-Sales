@@ -35,6 +35,10 @@ class JournalEntryPolicy
 
     public function approve(User $user, JournalEntry $journal): bool
     {
+        if ($user->role?->name === 'Admin') {
+            return false;
+        }
+
         if ($user->tenant_id !== $journal->tenant_id) {
             return false;
         }
@@ -49,6 +53,10 @@ class JournalEntryPolicy
 
     public function post(User $user, JournalEntry $journal): bool
     {
+        if ($user->role?->name === 'Admin') {
+            return false;
+        }
+
         if ($user->tenant_id !== $journal->tenant_id) {
             return false;
         }
@@ -58,6 +66,10 @@ class JournalEntryPolicy
 
     public function reverse(User $user, JournalEntry $journal): bool
     {
+        if ($user->role?->name === 'Admin') {
+            return false;
+        }
+
         if ($user->tenant_id !== $journal->tenant_id) {
             return false;
         }

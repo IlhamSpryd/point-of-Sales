@@ -63,9 +63,14 @@ class RoleController extends Controller
     {
         $this->authorize('create', Role::class);
 
+        $validated = $request->validated();
+        if ($request->user()?->role?->name === 'Admin' && strcasecmp((string) ($validated['name'] ?? ''), 'Owner') === 0) {
+            abort(403, 'Administrators cannot create an Owner role.');
+        }
+
         // Validasi input parameter oleh file Form Request.
         // Apabila telah tervalidasi benar, oper array-nya menuju Service.
-        $this->roleService->store($request->validated());
+        $this->roleService->store($validated);
 
         // Mengalihkan URL kembali ke index yang melampirkan sesi session message.
         return redirect()->route('roles.index')->with('success', 'Role created successfully.');
@@ -88,9 +93,14 @@ class RoleController extends Controller
     {
         $this->authorize('update', $role);
 
+        $validated = $request->validated();
+        if ($request->user()?->role?->name === 'Admin' && (strcasecmp((string) ($validated['name'] ?? ''), 'Owner') === 0 || $role->name === 'Owner')) {
+            abort(403, 'Administrators cannot modify the Owner role.');
+        }
+
         // Form request menjaga pengikatan data lalu divalidasi.
         // Lanjutkan perubahan properties role menuju Service Pattern.
-        $this->roleService->update($role, $request->validated());
+        $this->roleService->update($role, $validated);
 
         return redirect()->route('roles.index')->with('success', 'Role updated successfully.');
     }
@@ -101,6 +111,10 @@ class RoleController extends Controller
     public function duplicate(Role $role): RedirectResponse
     {
         $this->authorize('create', Role::class);
+
+        if (request()->user()?->role?->name === 'Admin' && $role->name === 'Owner') {
+            abort(403, 'Administrators cannot duplicate the Owner role.');
+        }
 
         $newRole = $this->roleService->duplicate($role);
 

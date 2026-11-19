@@ -18,7 +18,7 @@ class DevicePolicy
             return false;
         }
 
-        return $role->name === 'Owner' || (bool) $role->is_admin;
+        return in_array($role->name, ['Owner', 'Admin'], true) || (bool) $role->is_admin;
     }
 
     private function isManager(User $user): bool

@@ -10,38 +10,38 @@ use App\Modules\Organization\Models\UserInvitation;
 
 class UserInvitationPolicy
 {
-    private function isOwner(User $user): bool
+    private function isOwnerOrAdmin(User $user): bool
     {
-        $role = $user->relationLoaded('role') ? $user->role : $user->role()->withoutGlobalScopes()->first();
+        $role = $user->role;
         if (! $role instanceof Role) {
             return false;
         }
 
-        return $role->name === 'Owner' || (bool) $role->is_admin;
+        return in_array($role->name, ['Owner', 'Admin'], true) || (bool) $role->is_admin;
     }
 
     public function viewAny(User $user): bool
     {
-        return $this->isOwner($user);
+        return $this->isOwnerOrAdmin($user);
     }
 
     public function view(User $user, UserInvitation $invitation): bool
     {
-        return $this->isOwner($user) && (int) $user->tenant_id === (int) $invitation->tenant_id;
+        return $this->isOwnerOrAdmin($user) && (int) $user->tenant_id === (int) $invitation->tenant_id;
     }
 
     public function create(User $user): bool
     {
-        return $this->isOwner($user);
+        return $this->isOwnerOrAdmin($user);
     }
 
     public function resend(User $user, UserInvitation $invitation): bool
     {
-        return $this->isOwner($user) && (int) $user->tenant_id === (int) $invitation->tenant_id;
+        return $this->isOwnerOrAdmin($user) && (int) $user->tenant_id === (int) $invitation->tenant_id;
     }
 
     public function revoke(User $user, UserInvitation $invitation): bool
     {
-        return $this->isOwner($user) && (int) $user->tenant_id === (int) $invitation->tenant_id;
+        return $this->isOwnerOrAdmin($user) && (int) $user->tenant_id === (int) $invitation->tenant_id;
     }
 }

@@ -34,9 +34,28 @@ class OrderPolicy
 
     public function create(User $user): bool
     {
-        return in_array($user->role?->name, ['Owner', 'Manager', 'Kasir', 'Cashier', 'Admin'], true)
+        return in_array($user->role?->name, ['Owner', 'Manager', 'Kasir', 'Cashier', 'Admin', 'Waiter'], true)
             || (bool) $user->role?->is_admin
-            || (bool) $user->role?->hasPermission('can_create_order');
+            || (bool) $user->role?->hasPermission('can_create_order')
+            || (bool) $user->role?->hasPermission('orders.create');
+    }
+
+    /**
+     * Order-only terminal mode (OQ-09).
+     *
+     * Waiters take dine-in orders and dispatch them to the kitchen, but must
+     * never capture payment, open the cash drawer, or void an order. Every
+     * cashier-capable role returns true here; the Waiter role returns false and
+     * is therefore rejected server-side by `TransactionController::store()`.
+     */
+    public function capturePayment(User $user): bool
+    {
+        $roleName = $user->role?->name;
+
+        return in_array($roleName, ['Owner', 'Manager', 'Kasir', 'Cashier', 'Admin', 'Supervisor'], true)
+            || (bool) $user->role?->is_admin
+            || (bool) $user->role?->hasPermission('payments.create')
+            || (bool) $user->role?->hasPermission('pos.payment');
     }
 
     public function viewAny(User $user): bool

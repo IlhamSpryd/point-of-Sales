@@ -46,17 +46,25 @@ class CustomerPolicy
 
     public function delete(User $user, Customer $customer): bool
     {
+        if ($user->role?->name === 'Sales') {
+            return false;
+        }
+
         return $this->sameTenant($user, $customer)
             && ($user->hasPermission('customers.delete')
-                || in_array($user->role?->name, ['Owner', 'Admin'], true)
+                || in_array($user->role?->name, ['Owner', 'Admin', 'Manager'], true)
                 || (bool) $user->role?->is_admin);
     }
 
     public function merge(User $user, Customer $customer): bool
     {
+        if ($user->role?->name === 'Sales') {
+            return false;
+        }
+
         return $this->sameTenant($user, $customer)
             && ($user->hasPermission('customers.merge')
-                || in_array($user->role?->name, ['Owner', 'Manager', 'Admin'], true)
+                || in_array($user->role?->name, ['Owner', 'Manager', 'Finance', 'Admin'], true)
                 || (bool) $user->role?->is_admin);
     }
 
@@ -84,6 +92,10 @@ class CustomerPolicy
 
     public function manageCreditLimit(User $user, Customer $customer): bool
     {
+        if ($user->role?->name === 'Sales') {
+            return false;
+        }
+
         return $this->sameTenant($user, $customer)
             && ($user->hasPermission('credit.manage_limit')
                 || in_array($user->role?->name, ['Owner', 'Manager', 'Finance'], true)
@@ -92,6 +104,10 @@ class CustomerPolicy
 
     public function manageCreditStatus(User $user, Customer $customer): bool
     {
+        if ($user->role?->name === 'Sales') {
+            return false;
+        }
+
         return $this->sameTenant($user, $customer)
             && ($user->hasPermission('credit.hold_release')
                 || in_array($user->role?->name, ['Owner', 'Manager', 'Finance'], true)

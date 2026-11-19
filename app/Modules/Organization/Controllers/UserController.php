@@ -36,6 +36,8 @@ class UserController extends Controller
      */
     public function index(Request $request): View|BinaryFileResponse
     {
+        $this->authorize('viewAny', User::class);
+
         // Cek request untuk ekspor CSV, lalu delegasikan pembuatannya ke Service.
         if ($request->has('export') && $request->export === 'csv') {
             return $this->userService->exportCsv($request);
@@ -56,6 +58,8 @@ class UserController extends Controller
      */
     public function create(): View
     {
+        $this->authorize('create', User::class);
+
         // Hanya role milik tenant pada konteks aktif (TenantScope global).
         $roles = Role::orderBy('name')->get();
         $stores = Store::where('tenant_id', app(TenantContext::class)->requireTenantId())->orderBy('name')->get();
@@ -68,9 +72,19 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request): RedirectResponse
     {
+        $this->authorize('create', User::class);
+
+        $validated = $request->validated();
+        if ($request->user()?->role?->name === 'Admin' && isset($validated['role_id'])) {
+            $targetRole = Role::find($validated['role_id']);
+            if ($targetRole && $targetRole->name === 'Owner') {
+                abort(403, 'Administrators cannot assign the Owner role.');
+            }
+        }
+
         // Nilai masukan klien tervalidasi di Form Request (StoreUserRequest).
         // Parameter tervalidasi dioper ke dalam UserService untuk proses penyimpanan aktual.
-        $this->userService->store($request->validated());
+        $this->userService->store($validated);
 
         // Melakukan Redirect ke halaman list dengan pesan sukses.
         return redirect()->route('users.index')->with('success', 'User created successfully.');
@@ -83,6 +97,7 @@ class UserController extends Controller
     {
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
         abort_if((int) $user->tenant_id !== $tenantId, 404);
+        $this->authorize('update', $user);
 
         // Hanya role milik tenant pada konteks aktif (TenantScope global).
         $roles = Role::orderBy('name')->get();
@@ -97,11 +112,21 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
-        abort_if((int) $user->tenant_id !== (int) app(TenantContext::class)->requireTenantId(), 404);
+        $tenantId = (int) app(TenantContext::class)->requireTenantId();
+        abort_if((int) $user->tenant_id !== $tenantId, 404);
+        $this->authorize('update', $user);
+
+        $validated = $request->validated();
+        if ($request->user()?->role?->name === 'Admin' && isset($validated['role_id'])) {
+            $targetRole = Role::find($validated['role_id']);
+            if ($targetRole && $targetRole->name === 'Owner') {
+                abort(403, 'Administrators cannot assign the Owner role.');
+            }
+        }
 
         // Aturan update diserahkan ke Form Request, dan validasi data disalurkan
         // kepada UserService yang akan menerapkan pembaharuan atas pengguna tersebut.
-        $this->userService->update($user, $request->validated());
+        $this->userService->update($user, $validated);
 
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
@@ -111,7 +136,9 @@ class UserController extends Controller
      */
     public function destroy(User $user): RedirectResponse
     {
-        abort_if((int) $user->tenant_id !== (int) app(TenantContext::class)->requireTenantId(), 404);
+        $tenantId = (int) app(TenantContext::class)->requireTenantId();
+        abort_if((int) $user->tenant_id !== $tenantId, 404);
+        $this->authorize('delete', $user);
 
         try {
             // Mendelegasikan operasi penghapusan ke Service.

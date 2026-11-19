@@ -74,6 +74,16 @@ class UnifiedApprovalInbox extends Component
             return;
         }
 
+        // Supervisor SoD Guard (OQ-10): Operational approvals only (Void, Discount, Stock Opname/Adjustment)
+        if ($user->role?->name === 'Supervisor') {
+            $blockedTypes = ['PurchaseOrder', 'PurchaseRequest', 'Expense', 'purchase_order', 'purchase_request', 'expense'];
+            if (in_array($request->approvable_type, $blockedTypes, true)) {
+                session()->flash('error', 'Supervisor dibatasi hanya untuk persetujuan operasional cabang (Order Void, Diskon, Opname/Penyesuaian Stok). Persetujuan PO/Pengeluaran memerlukan Manager atau Owner.');
+
+                return;
+            }
+        }
+
         try {
             // 1. Maker-Checker SoD Invariant Enforcement
             $guard->assertCanApprove((int) $request->submitted_by_user_id, (int) $user->id);
@@ -150,6 +160,17 @@ class UnifiedApprovalInbox extends Component
             return;
         }
 
+        // Supervisor SoD Guard (OQ-10): Operational approvals only
+        if ($user->role?->name === 'Supervisor') {
+            $blockedTypes = ['PurchaseOrder', 'PurchaseRequest', 'Expense', 'purchase_order', 'purchase_request', 'expense'];
+            if (in_array($request->approvable_type, $blockedTypes, true)) {
+                session()->flash('error', 'Supervisor dibatasi hanya untuk persetujuan operasional cabang.');
+                $this->closeRejectModal();
+
+                return;
+            }
+        }
+
         try {
             // 1. Maker-Checker SoD Invariant Enforcement
             $guard->assertCanApprove((int) $request->submitted_by_user_id, (int) $user->id);
@@ -203,6 +224,11 @@ class UnifiedApprovalInbox extends Component
 
         $query = PurchaseApprovalRequest::with(['rule', 'submittedByUser', 'approvedByUser'])
             ->where('tenant_id', $tenantId);
+
+        $user = auth()->user();
+        if ($user?->role?->name === 'Supervisor') {
+            $query->whereNotIn('approvable_type', ['PurchaseOrder', 'PurchaseRequest', 'Expense', 'purchase_order', 'purchase_request', 'expense']);
+        }
 
         if ($this->statusFilter !== 'ALL') {
             $enumVal = match ($this->statusFilter) {

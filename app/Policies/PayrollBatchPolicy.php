@@ -11,7 +11,11 @@ class PayrollBatchPolicy
 {
     private function canManage(User $user): bool
     {
-        return in_array($user->role?->name, ['Owner', 'Manager', 'Admin'], true)
+        if ($user->role?->name === 'Admin') {
+            return false;
+        }
+
+        return in_array($user->role?->name, ['Owner', 'Manager'], true)
             || (bool) ($user->role->is_admin ?? false)
             || $user->hasPermission('hr.payroll.manage');
     }

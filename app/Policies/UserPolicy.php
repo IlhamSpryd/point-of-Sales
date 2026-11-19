@@ -9,9 +9,19 @@ use App\Modules\Organization\Models\User;
 
 class UserPolicy
 {
+    private function isOwnerOrAdmin(User $user): bool
+    {
+        $role = $user->role;
+        if (! $role instanceof Role) {
+            return false;
+        }
+
+        return in_array($role->name, ['Owner', 'Admin'], true) || (bool) $role->is_admin;
+    }
+
     private function isOwner(User $user): bool
     {
-        $role = $user->relationLoaded('role') ? $user->role : $user->role()->withoutGlobalScopes()->first();
+        $role = $user->role;
         if (! $role instanceof Role) {
             return false;
         }
@@ -21,22 +31,32 @@ class UserPolicy
 
     public function viewAny(User $user): bool
     {
-        return $this->isOwner($user);
+        return $this->isOwnerOrAdmin($user);
     }
 
     public function view(User $user, User $model): bool
     {
-        return $this->isOwner($user) && (int) $user->tenant_id === (int) $model->tenant_id;
+        return $this->isOwnerOrAdmin($user) && (int) $user->tenant_id === (int) $model->tenant_id;
     }
 
     public function create(User $user): bool
     {
-        return $this->isOwner($user);
+        return $this->isOwnerOrAdmin($user);
     }
 
     public function update(User $user, User $model): bool
     {
-        return $this->isOwner($user) && (int) $user->tenant_id === (int) $model->tenant_id;
+        if ((int) $user->tenant_id !== (int) $model->tenant_id) {
+            return false;
+        }
+
+        // SoD Hard-block: Admin cannot edit an Owner account
+        $targetRole = $model->role;
+        if ($user->role?->name === 'Admin' && $targetRole?->name === 'Owner') {
+            return false;
+        }
+
+        return $this->isOwnerOrAdmin($user);
     }
 
     public function delete(User $user, User $model): bool
@@ -45,11 +65,21 @@ class UserPolicy
             return false;
         }
 
-        return $this->isOwner($user) && (int) $user->tenant_id === (int) $model->tenant_id;
+        if ((int) $user->tenant_id !== (int) $model->tenant_id) {
+            return false;
+        }
+
+        // SoD Hard-block: Admin cannot delete an Owner account
+        $targetRole = $model->role;
+        if ($user->role?->name === 'Admin' && $targetRole?->name === 'Owner') {
+            return false;
+        }
+
+        return $this->isOwnerOrAdmin($user);
     }
 
     public function manageInvitations(User $user): bool
     {
-        return $this->isOwner($user);
+        return $this->isOwnerOrAdmin($user);
     }
 }

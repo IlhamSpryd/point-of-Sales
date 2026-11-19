@@ -149,9 +149,9 @@ Route::get('/health/live', [HealthCheckController::class, 'live'])->name('health
 Route::get('/health/ready', [HealthCheckController::class, 'ready'])->name('health.ready');
 Route::get('/metrics', [\App\Http\Controllers\Observability\MetricsController::class, 'index'])->name('observability.metrics');
 
-// Enterprise Workflow & Governance Approvals (EXT-04, ADR-110)
+// Enterprise Workflow & Governance Approvals (EXT-04, ADR-110, OQ-10)
 Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensure.onboarding.completed'])->group(function () {
-    Route::middleware('role:Owner,Manager')->group(function () {
+    Route::middleware('role:Owner,Manager,Supervisor')->group(function () {
         Route::get('/workflow/approvals', \App\Livewire\Workflow\UnifiedApprovalInbox::class)->name('erp.workflow.approvals');
     });
 });

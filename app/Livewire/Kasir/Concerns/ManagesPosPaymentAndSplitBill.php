@@ -188,6 +188,12 @@ trait ManagesPosPaymentAndSplitBill
     public function submitOrder(array $legs = [], ?string $idempotencyKey = null, bool $useMidtransGateway = false)
     {
         $this->authorize('create', Order::class);
+
+        $authUser = Auth::user();
+        if ($authUser?->role?->name === 'Waiter') {
+            abort(403, 'Waiters operate in Order-Only mode and cannot process payments or complete checkout.');
+        }
+
         $idempotencyKey = $idempotencyKey ?? $this->idempotencyKey;
 
         $rules = [

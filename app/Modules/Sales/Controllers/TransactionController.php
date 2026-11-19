@@ -53,6 +53,12 @@ class TransactionController extends Controller
     {
         Gate::authorize('create', Order::class);
 
+        // OQ-09 / Decision 0.4 — Waiter Order-Only mode.
+        // Waiters may compose dine-in orders and dispatch them to the kitchen,
+        // but payment capture, cash-drawer operations and voids are segregated
+        // duties rejected here server-side regardless of any UI state.
+        Gate::authorize('capturePayment', Order::class);
+
         $validated = $request->validated();
         $userId = Auth::id();
 

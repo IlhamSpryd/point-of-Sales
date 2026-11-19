@@ -30,6 +30,10 @@ class AccountingPeriodPolicy
 
     public function manage(User $user, ?AccountingPeriod $period = null): bool
     {
+        if ($user->role?->name === 'Admin') {
+            return false;
+        }
+
         if ($period && $user->tenant_id !== $period->tenant_id) {
             return false;
         }
@@ -39,6 +43,10 @@ class AccountingPeriodPolicy
 
     public function close(User $user, ?AccountingPeriod $period = null): bool
     {
+        if ($user->role?->name === 'Admin') {
+            return false;
+        }
+
         if ($period && $user->tenant_id !== $period->tenant_id) {
             return false;
         }
@@ -48,6 +56,10 @@ class AccountingPeriodPolicy
 
     public function reopen(User $user, ?AccountingPeriod $period = null): bool
     {
+        if ($user->role?->name === 'Admin') {
+            return false;
+        }
+
         if ($period && $user->tenant_id !== $period->tenant_id) {
             return false;
         }
