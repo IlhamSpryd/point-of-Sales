@@ -69,6 +69,7 @@ $COMPOSE exec -T app php artisan config:cache
 $COMPOSE exec -T app php artisan route:cache
 $COMPOSE exec -T app php artisan view:cache
 $COMPOSE exec -T app php artisan event:cache
+$COMPOSE exec -T app sh -c 'kill -USR2 1' || true
 
 # 7. Graceful worker & reverb restart
 echo "[+] Step 5/5: Broadcasting queue worker reload signal and restarting reverb..."
