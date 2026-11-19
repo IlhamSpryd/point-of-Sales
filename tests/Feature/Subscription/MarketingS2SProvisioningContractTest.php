@@ -315,4 +315,73 @@ class MarketingS2SProvisioningContractTest extends TestCase
 
         putenv('PROVISIONING_HMAC_SECRET');
     }
+
+    public function test_marketing_s2s_rejects_duplicate_active_owner_email_with_409(): void
+    {
+        $unique = strtolower(Str::random(6));
+        $email = 'existing.owner.'.$unique.'@harapan.test';
+
+        // First registration succeeds
+        $payload1 = [
+            'tenant_name' => 'Kedai Pertama '.$unique,
+            'owner_name' => 'Pemilik Pertama',
+            'owner_email' => $email,
+        ];
+        $headers1 = $this->makeHeaders($payload1);
+        $res1 = $this->postJson($this->endpoint, $payload1, $headers1);
+        $res1->assertStatus(201);
+
+        // Second registration with different tenant name & new idempotency key, but identical email -> 409
+        $payload2 = [
+            'tenant_name' => 'Kedai Kedua '.$unique,
+            'owner_name' => 'Pemilik Kedua',
+            'owner_email' => $email,
+        ];
+        $headers2 = $this->makeHeaders($payload2);
+        $res2 = $this->postJson($this->endpoint, $payload2, $headers2);
+
+        $res2->assertStatus(409)
+            ->assertJson([
+                'success' => false,
+                'error' => ProvisioningRequest::ERROR_EMAIL_ALREADY_IN_USE,
+            ]);
+    }
+
+    public function test_marketing_s2s_rejects_requests_with_query_string_with_400(): void
+    {
+        $payload = [
+            'tenant_name' => 'Query String Test',
+            'owner_name' => 'Query Tester',
+            'owner_email' => 'query.tester@test.local',
+        ];
+
+        $headers = $this->makeHeaders($payload);
+        $response = $this->postJson($this->endpoint.'?extra=illegal', $payload, $headers);
+
+        $response->assertStatus(400)
+            ->assertJson([
+                'success' => false,
+                'error' => 'unauthorized_request',
+            ]);
+    }
+
+    public function test_marketing_s2s_ignores_and_strips_unauthorized_internal_payload_fields(): void
+    {
+        $unique = strtolower(Str::random(6));
+        $payload = [
+            'tenant_name' => 'Strict Allowed Fields '.$unique,
+            'owner_name' => 'Safe Owner',
+            'owner_email' => 'safe.owner.'.$unique.'@test.local',
+            'tenant_id' => 999999,
+            'role_id' => 1,
+            'is_admin' => true,
+        ];
+
+        $headers = $this->makeHeaders($payload);
+        $response = $this->postJson($this->endpoint, $payload, $headers);
+
+        $response->assertStatus(201);
+        $actualTenantId = $response->json('tenant_id');
+        $this->assertNotSame(999999, $actualTenantId);
+    }
 }
