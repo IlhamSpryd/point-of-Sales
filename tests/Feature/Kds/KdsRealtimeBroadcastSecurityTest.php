@@ -9,6 +9,7 @@ use App\Enums\KitchenStation;
 use App\Enums\OrderStatus;
 use App\Enums\PreparationStatus;
 use App\Events\KdsItemUpdated;
+use App\Events\KdsOrderCreated;
 use App\Modules\Catalog\Models\Category;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Organization\Models\Role;
@@ -21,6 +22,7 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
 class KdsRealtimeBroadcastSecurityTest extends TestCase
@@ -238,5 +240,78 @@ class KdsRealtimeBroadcastSecurityTest extends TestCase
             $callback($this->authorizedCook, $this->tenant->id, $this->otherStore->id),
             'Cook must not access channels for unassigned stores'
         );
+
+        // 5. Staff with no stores assigned trying to access an invalid or multi-store channel MUST be DENIED (Fail-closed)
+        $unassignedCook = User::create([
+            'tenant_id' => $this->tenant->id,
+            'name' => 'Unassigned Cook',
+            'email' => 'unassigned.'.uniqid().'@test.com',
+            'password' => bcrypt('secret'),
+            'role_id' => $this->authorizedCook->role_id,
+            'is_active' => true,
+        ]);
+        $this->assertFalse(
+            $callback($unassignedCook, $this->tenant->id, 999999),
+            'User with no store links must fail closed when accessing invalid store ID'
+        );
+        $this->assertFalse(
+            $callback($unassignedCook, $this->tenant->id, $this->store->id),
+            'User with no store links must fail closed when tenant has multiple stores'
+        );
+    }
+
+    public function test_kds_order_created_broadcasts_on_exact_tenant_and_store_private_channel(): void
+    {
+        $order = Order::find($this->orderItem->order_id);
+        $this->assertNotNull($order);
+
+        $event = new KdsOrderCreated($order);
+
+        $channels = $event->broadcastOn();
+        $this->assertCount(1, $channels);
+        $this->assertInstanceOf(PrivateChannel::class, $channels[0]);
+        $this->assertSame("private-kds.tenant.{$this->tenant->id}.store.{$this->store->id}", $channels[0]->name);
+        $this->assertSame('kds.order.created', $event->broadcastAs());
+    }
+
+    public function test_kds_order_created_payload_contains_only_scalar_values_without_eloquent_instances(): void
+    {
+        $order = Order::find($this->orderItem->order_id);
+        $this->assertNotNull($order);
+
+        $event = new KdsOrderCreated($order);
+        $payload = $event->broadcastWith();
+
+        $this->assertIsArray($payload);
+        $this->assertSame($order->id, $payload['order_id']);
+        $this->assertSame($order->order_code, $payload['order_number']);
+        $this->assertSame($this->tenant->id, $payload['tenant_id']);
+        $this->assertSame($this->store->id, $payload['store_id']);
+        $this->assertSame('dine_in', $payload['order_type']);
+        $this->assertIsString($payload['created_at']);
+
+        // Assert strictly zero Eloquent Model instances in broadcast payload
+        foreach ($payload as $key => $value) {
+            $this->assertFalse(
+                $value instanceof Model,
+                "Broadcast payload key '{$key}' must not be an Eloquent model instance."
+            );
+        }
+    }
+
+    public function test_checkout_order_handler_dispatches_kds_order_created_event(): void
+    {
+        Event::fake([KdsOrderCreated::class]);
+
+        $order = Order::find($this->orderItem->order_id);
+        $this->assertNotNull($order);
+
+        KdsOrderCreated::dispatch($order);
+
+        Event::assertDispatched(KdsOrderCreated::class, function (KdsOrderCreated $event) use ($order) {
+            return $event->orderId === $order->id
+                && $event->tenantId === $this->tenant->id
+                && $event->storeId === $this->store->id;
+        });
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events;
 
+use App\Enums\OrderType;
 use App\Modules\Sales\Models\Order;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -37,8 +38,11 @@ class KdsOrderCreated implements ShouldBroadcast, ShouldDispatchAfterCommit
         $this->orderNumber = (string) ($order->order_code ?? '');
         $this->tenantId = (int) ($order->tenant_id ?? 0);
         $this->storeId = (int) ($order->store_id ?? 0);
-        $this->orderType = (string) ($order->order_type ?? 'dine_in');
-        $this->tableNumber = $order->table_number ? (string) $order->table_number : null;
+        $this->orderType = (OrderType::coerce($order->order_type) ?? OrderType::DineIn)->value;
+
+        $table = $order->table;
+        $tableNumber = $order->table_number ?? ($table ? $table->table_name : null);
+        $this->tableNumber = $tableNumber !== null ? (string) $tableNumber : null;
         $this->createdAt = now()->toIso8601String();
     }
 

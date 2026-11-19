@@ -368,7 +368,12 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
             return $this->stores()->where('stores.id', (int) $storeId)->exists();
         }
 
-        return true;
+        // H-03 fail-closed fallback: if user has no assigned store, allow only if tenant has exactly 1 store
+        $allTenantStores = Store::query()
+            ->where('tenant_id', (int) $this->tenant_id)
+            ->pluck('id');
+
+        return $allTenantStores->count() === 1 && (int) $allTenantStores->first() === (int) $storeId;
     }
 
     /**

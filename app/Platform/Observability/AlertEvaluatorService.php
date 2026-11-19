@@ -190,11 +190,14 @@ class AlertEvaluatorService
                 $alerts
             );
 
+            $formattedMessage = "🚨 *Apeiron Operational Alert Notification*\n".implode("\n", $summaryLines);
+
             $payload = [
                 'system' => 'Apeiron SaaS POS',
                 'environment' => config('app.env', 'production'),
                 'timestamp' => now()->toIso8601String(),
-                'text' => "🚨 *Apeiron Operational Alert Notification*\n".implode("\n", $summaryLines),
+                'text' => $formattedMessage,
+                'content' => $formattedMessage,
                 'alerts' => $alerts,
             ];
 

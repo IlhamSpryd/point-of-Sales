@@ -79,7 +79,10 @@ class DomainMetricsCollector
                     ->min('created_at');
 
                 if ($oldestPending !== null) {
-                    $outboxOldestPendingAgeSeconds = max(0, Carbon::now()->diffInSeconds(Carbon::parse($oldestPending)));
+                    $oldestDate = Carbon::parse($oldestPending);
+                    $outboxOldestPendingAgeSeconds = Carbon::now()->isAfter($oldestDate)
+                        ? (int) Carbon::now()->diffInSeconds($oldestDate)
+                        : 0;
                 }
             }
         } catch (\Throwable) {

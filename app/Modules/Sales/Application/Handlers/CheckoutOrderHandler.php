@@ -13,6 +13,7 @@ use App\Enums\OrderType;
 use App\Enums\PaymentAttemptStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatusEnum;
+use App\Events\KdsOrderCreated;
 use App\Modules\Sales\Application\Services\PosTableAndCustomerSyncService;
 use App\Modules\Sales\Domain\Services\OrderLinePreparationService;
 use App\Modules\Sales\Domain\Services\OrderPaymentTenderService;
@@ -574,6 +575,8 @@ class CheckoutOrderHandler
                 if ($order->order_status === OrderStatus::Paid) {
                     app(\App\Modules\Finance\Services\FinancialOutboxDispatcherService::class)->dispatchPosOrderPaid($order);
                 }
+
+                KdsOrderCreated::dispatch($order);
 
                 return $order;
             }, attempts: 3);
