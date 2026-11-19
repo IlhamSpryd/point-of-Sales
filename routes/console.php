@@ -87,6 +87,13 @@ Schedule::command('outbox:reap-stuck')
     ->onOneServer()
     ->runInBackground();
 
+// OPS-03 & ENT-02: Alert-as-code operational incident detection & dispatch
+Schedule::command('ops:evaluate-alerts')
+    ->everyFiveMinutes()
+    ->withoutOverlapping(10)
+    ->onOneServer()
+    ->runInBackground();
+
 // TR-008: Pemeliharaan partisi bulanan bergulir otomatis pada tanggal 25 setiap bulan
 Schedule::command('database:create-monthly-partitions')
     ->monthlyOn(25, '00:00')

@@ -35,9 +35,10 @@ Route::post('/devices/pair', [DeviceController::class, 'pair'])
     ->middleware('throttle:10,1')
     ->name('api.devices.pair');
 
-// Health check probes
+// Health check & Prometheus metrics probes
 Route::get('/health/live', [HealthCheckController::class, 'live'])->name('api.health.live');
 Route::get('/health/ready', [HealthCheckController::class, 'ready'])->name('api.health.ready');
+Route::get('/metrics', [\App\Http\Controllers\Observability\MetricsController::class, 'index'])->name('api.observability.metrics');
 
 // Midtrans Payment Webhook Notification
 Route::post('/payment/notification', [PaymentNotificationController::class, 'handle'])

@@ -86,10 +86,57 @@ SHA256_HASH=$(cut -d' ' -f1 "${CHECKSUM_FILE}")
 echo "    SHA-256: ${SHA256_HASH}"
 
 # 7. Retention policy pruning
-echo "[+] Step 4/4: Pruning backups older than ${RETENTION_DAYS} days..."
+echo "[+] Step 4/5: Pruning backups older than ${RETENTION_DAYS} days..."
 PRUNED_COUNT=$(find "${BACKUP_DIR}" -type f \( -name "apeiron_db_*.sql.gz" -o -name "apeiron_db_*.sql.gz.sha256" \) -mtime "+${RETENTION_DAYS}" | wc -l)
 find "${BACKUP_DIR}" -type f \( -name "apeiron_db_*.sql.gz" -o -name "apeiron_db_*.sql.gz.sha256" \) -mtime "+${RETENTION_DAYS}" -delete
 echo "    Pruned ${PRUNED_COUNT} expired backup file(s)."
+
+# 8. Optional Off-Site Cloud Storage Backup Sync (OPS-06)
+echo "[+] Step 5/5: Off-site Cloud Storage Backup Sync (Cloudflare R2 / S3)..."
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+if [ -f "${APP_DIR}/.env" ]; then
+    # Safely import OFFSITE variables without evaluating executable commands
+    OFFSITE_ENABLED_VAR=$(grep -E '^OFFSITE_BACKUP_ENABLED=' "${APP_DIR}/.env" | cut -d '=' -f2- | tr -d ' "\047' || true)
+    OFFSITE_RCLONE_VAR=$(grep -E '^OFFSITE_RCLONE_REMOTE=' "${APP_DIR}/.env" | cut -d '=' -f2- | tr -d ' "\047' || true)
+    OFFSITE_S3_VAR=$(grep -E '^OFFSITE_S3_BUCKET=' "${APP_DIR}/.env" | cut -d '=' -f2- | tr -d ' "\047' || true)
+    OFFSITE_DAYS_VAR=$(grep -E '^OFFSITE_RETENTION_DAYS=' "${APP_DIR}/.env" | cut -d '=' -f2- | tr -d ' "\047' || true)
+
+    OFFSITE_BACKUP_ENABLED="${OFFSITE_BACKUP_ENABLED:-${OFFSITE_ENABLED_VAR:-false}}"
+    OFFSITE_RCLONE_REMOTE="${OFFSITE_RCLONE_REMOTE:-${OFFSITE_RCLONE_VAR:-}}"
+    OFFSITE_S3_BUCKET="${OFFSITE_S3_BUCKET:-${OFFSITE_S3_VAR:-}}"
+    OFFSITE_RETENTION_DAYS="${OFFSITE_RETENTION_DAYS:-${OFFSITE_DAYS_VAR:-30}}"
+fi
+
+OFFSITE_BACKUP_ENABLED="${OFFSITE_BACKUP_ENABLED:-false}"
+OFFSITE_RETENTION_DAYS="${OFFSITE_RETENTION_DAYS:-30}"
+
+if [ "${OFFSITE_BACKUP_ENABLED}" = "true" ]; then
+    if [ -n "${OFFSITE_RCLONE_REMOTE:-}" ]; then
+        if command -v rclone >/dev/null 2>&1; then
+            echo "    Syncing backup and checksum to rclone remote: ${OFFSITE_RCLONE_REMOTE}..."
+            rclone copyto "${BACKUP_FILE}" "${OFFSITE_RCLONE_REMOTE}/$(basename "${BACKUP_FILE}")"
+            rclone copyto "${CHECKSUM_FILE}" "${OFFSITE_RCLONE_REMOTE}/$(basename "${CHECKSUM_FILE}")"
+            echo "    Pruning remote backups older than ${OFFSITE_RETENTION_DAYS} days..."
+            rclone delete --min-age "${OFFSITE_RETENTION_DAYS}d" "${OFFSITE_RCLONE_REMOTE}" || true
+            echo "    ✓ Off-site R2/S3 upload and retention pruning completed successfully."
+        else
+            echo "    [-] Warning: OFFSITE_BACKUP_ENABLED=true but 'rclone' binary is not installed on host." >&2
+        fi
+    elif [ -n "${OFFSITE_S3_BUCKET:-}" ]; then
+        if command -v aws >/dev/null 2>&1; then
+            echo "    Syncing backup and checksum to AWS S3 bucket: ${OFFSITE_S3_BUCKET}..."
+            aws s3 cp "${BACKUP_FILE}" "s3://${OFFSITE_S3_BUCKET}/$(basename "${BACKUP_FILE}")"
+            aws s3 cp "${CHECKSUM_FILE}" "s3://${OFFSITE_S3_BUCKET}/$(basename "${CHECKSUM_FILE}")"
+            echo "    ✓ Off-site S3 upload completed successfully."
+        else
+            echo "    [-] Warning: OFFSITE_BACKUP_ENABLED=true but 'aws' CLI binary is not installed on host." >&2
+        fi
+    else
+        echo "    [-] Warning: OFFSITE_BACKUP_ENABLED=true but neither OFFSITE_RCLONE_REMOTE nor OFFSITE_S3_BUCKET is configured." >&2
+    fi
+else
+    echo "    [i] Off-site backup disabled (local backup retained)."
+fi
 
 echo "=========================================================="
 echo " Database Backup Succeeded deterministically!"

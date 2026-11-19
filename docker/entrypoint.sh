@@ -26,6 +26,9 @@ elif [ "$ROLE" = "scheduler" ]; then
         php /var/www/html/artisan schedule:run --verbose --no-interaction &
         sleep 60
     done
+elif [ "$ROLE" = "reverb" ]; then
+    echo "=== Starting Apeiron Enterprise Reverb WebSocket Server ==="
+    exec php /var/www/html/artisan reverb:start --host=0.0.0.0 --port=8080
 else
     exec "$@"
 fi

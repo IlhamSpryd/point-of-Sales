@@ -74,13 +74,13 @@ class KdsItemUpdated implements ShouldBroadcast, ShouldDispatchAfterCommit
     {
         if ($this->tenantId > 0 && $this->storeId > 0) {
             return [
-                new PrivateChannel("tenant.{$this->tenantId}.store.{$this->storeId}.kds"),
+                new PrivateChannel("kds.tenant.{$this->tenantId}.store.{$this->storeId}"),
             ];
         }
 
         if ($this->tenantId > 0) {
             return [
-                new PrivateChannel("tenant.{$this->tenantId}.kds"),
+                new PrivateChannel("kds.tenant.{$this->tenantId}"),
             ];
         }
 

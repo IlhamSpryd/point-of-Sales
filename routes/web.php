@@ -144,9 +144,10 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
         ->name('profile.oauth.unlink');
 });
 
-// Infra & Operations — Health Check Endpoints (Kubernetes & Load Balancer probes)
+// Infra & Operations — Health Check & Prometheus Metrics Endpoints (OPS-02, ENT-02)
 Route::get('/health/live', [HealthCheckController::class, 'live'])->name('health.live');
 Route::get('/health/ready', [HealthCheckController::class, 'ready'])->name('health.ready');
+Route::get('/metrics', [\App\Http\Controllers\Observability\MetricsController::class, 'index'])->name('observability.metrics');
 
 // Enterprise Workflow & Governance Approvals (EXT-04, ADR-110)
 Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensure.onboarding.completed'])->group(function () {

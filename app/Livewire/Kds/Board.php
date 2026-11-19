@@ -63,11 +63,21 @@ class Board extends Component
         ];
 
         if ($tenantId > 0 && $storeId > 0) {
+            $listeners["echo-private:kds.tenant.{$tenantId}.store.{$storeId},.kds.item.updated"] = '$refresh';
+            $listeners["echo-private:kds.tenant.{$tenantId}.store.{$storeId},kds.item.updated"] = '$refresh';
+            $listeners["echo-private:kds.tenant.{$tenantId}.store.{$storeId},.kds.order.created"] = '$refresh';
+            $listeners["echo-private:kds.tenant.{$tenantId}.store.{$storeId},kds.order.created"] = '$refresh';
+
             $listeners["echo-private:tenant.{$tenantId}.store.{$storeId}.kds,.kds.item.updated"] = '$refresh';
             $listeners["echo-private:tenant.{$tenantId}.store.{$storeId}.kds,kds.item.updated"] = '$refresh';
         }
 
         if ($tenantId > 0) {
+            $listeners["echo-private:kds.tenant.{$tenantId},.kds.item.updated"] = '$refresh';
+            $listeners["echo-private:kds.tenant.{$tenantId},kds.item.updated"] = '$refresh';
+            $listeners["echo-private:kds.tenant.{$tenantId},.kds.order.created"] = '$refresh';
+            $listeners["echo-private:kds.tenant.{$tenantId},kds.order.created"] = '$refresh';
+
             $listeners["echo-private:tenant.{$tenantId}.kds,.kds.item.updated"] = '$refresh';
             $listeners["echo-private:tenant.{$tenantId}.kds,kds.item.updated"] = '$refresh';
         }

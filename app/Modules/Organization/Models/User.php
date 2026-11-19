@@ -351,6 +351,27 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
     }
 
     /**
+     * Determines whether the user possesses operational access to the given physical store.
+     */
+    public function canAccessStore(int|string $storeId): bool
+    {
+        $roleName = $this->role?->name;
+        if ($roleName === 'Owner' || (bool) ($this->role->is_admin ?? false)) {
+            return true;
+        }
+
+        if ($this->hasPermission('stores.all') || $this->hasPermission('*')) {
+            return true;
+        }
+
+        if ($this->stores()->exists()) {
+            return $this->stores()->where('stores.id', (int) $storeId)->exists();
+        }
+
+        return true;
+    }
+
+    /**
      * Determines whether the user possesses authority to switch between physical branches.
      * Frontline store personnel (Cashier, Waiter, Barista, Kitchen) cannot switch branches.
      */

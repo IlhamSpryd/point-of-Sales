@@ -234,7 +234,7 @@ class KdsRealtimeBroadcastingTest extends TestCase
         $channels = $event->broadcastOn();
         $this->assertCount(1, $channels);
         $this->assertInstanceOf(PrivateChannel::class, $channels[0]);
-        $this->assertSame("private-tenant.{$this->tenant->id}.store.{$this->store->id}.kds", $channels[0]->name);
+        $this->assertSame("private-kds.tenant.{$this->tenant->id}.store.{$this->store->id}", $channels[0]->name);
         $this->assertSame('kds.item.updated', $event->broadcastAs());
 
         $payload = $event->broadcastWith();
@@ -265,13 +265,16 @@ class KdsRealtimeBroadcastingTest extends TestCase
     public function test_channel_authorization_allows_tenant_staff_and_blocks_cross_tenant_intruders(): void
     {
         $channels = Broadcast::getChannels();
+        $this->assertArrayHasKey('kds.tenant.{tenantId}.store.{storeId}', $channels);
         $this->assertArrayHasKey('tenant.{tenantId}.store.{storeId}.kds', $channels);
         $this->assertArrayHasKey('tenant.{tenantId}.kds', $channels);
 
+        $kdsCallback = $channels['kds.tenant.{tenantId}.store.{storeId}'];
         $storeCallback = $channels['tenant.{tenantId}.store.{storeId}.kds'];
         $tenantCallback = $channels['tenant.{tenantId}.kds'];
 
         // 1. Cook with KDS permissions can access their store channel and tenant channel
+        $this->assertTrue($kdsCallback($this->cookUser, $this->tenant->id, $this->store->id));
         $this->assertTrue($storeCallback($this->cookUser, $this->tenant->id, $this->store->id));
         $this->assertTrue($tenantCallback($this->cookUser, $this->tenant->id));
 
@@ -292,6 +295,7 @@ class KdsRealtimeBroadcastingTest extends TestCase
             ]);
         });
 
+        $this->assertFalse($kdsCallback($intruder, $this->tenant->id, $this->store->id));
         $this->assertFalse($storeCallback($intruder, $this->tenant->id, $this->store->id));
         $this->assertFalse($tenantCallback($intruder, $this->tenant->id));
 
@@ -304,7 +308,7 @@ class KdsRealtimeBroadcastingTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->assertFalse($storeCallback($unauthorizedUser, $this->tenant->id, $this->store->id));
+        $this->assertFalse($kdsCallback($unauthorizedUser, $this->tenant->id, $this->store->id));
         $this->assertFalse($tenantCallback($unauthorizedUser, $this->tenant->id));
     }
 }

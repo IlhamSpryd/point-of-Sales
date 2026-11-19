@@ -111,3 +111,48 @@ docker compose exec -T app php artisan optimize:clear
 docker compose exec -T app php artisan optimize
 docker compose exec -T app php artisan queue:restart
 ```
+
+---
+
+## 6. Off-Site Cloud Storage Backup Sync (OPS-06 — Cloudflare R2 / S3 via rclone)
+
+Untuk mencegah kehilangan data katastropik jika terjadi kegagalan perangkat keras pada node VPS, backup harian dapat disinkronkan secara otomatis ke object storage Cloudflare R2 (S3-compatible) yang berlokasi di luar VPS.
+
+### 6.1 Instalasi & Konfigurasi rclone pada Host VPS
+
+```bash
+# 1. Install rclone pada host Ubuntu/Debian
+apt-get update && apt-get install -y rclone
+
+# 2. Buat konfigurasi rclone (~/.config/rclone/rclone.conf) untuk Cloudflare R2
+mkdir -p ~/.config/rclone
+cat << 'EOF' > ~/.config/rclone/rclone.conf
+[r2]
+type = s3
+provider = Cloudflare
+access_key_id = <CLOUDFLARE_R2_ACCESS_KEY_ID>
+secret_access_key = <CLOUDFLARE_R2_SECRET_ACCESS_KEY>
+endpoint = https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+acl = private
+EOF
+
+# 3. Uji koneksi bucket Cloudflare R2
+rclone lsd r2:
+```
+
+### 6.2 Aktivasi pada `.env` Produksi
+
+Aktifkan sinkronisasi otomatis pada file `/var/www/point-of-sales/.env`:
+
+```ini
+OFFSITE_BACKUP_ENABLED=true
+OFFSITE_RCLONE_REMOTE=r2:apeiron-backups/daily
+OFFSITE_RETENTION_DAYS=30
+```
+
+Setelah diaktifkan, script `docker/scripts/backup-db.sh` akan:
+1. Memverifikasi arsip lokal (`gzip -t`).
+2. Mengunggah file `.sql.gz` dan `.sha256` ke bucket Cloudflare R2 (`rclone copyto`).
+3. Memangkas backup remote yang berusia lebih dari 30 hari (`rclone delete --min-age 30d`).
+4. Jika `OFFSITE_BACKUP_ENABLED=false`, script tetap berjalan lokal dan mengembalikan exit code 0 tanpa error.
+

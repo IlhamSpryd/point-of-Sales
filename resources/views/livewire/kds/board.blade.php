@@ -3,9 +3,14 @@
     x-data="{
         init() {
             if (window.Echo && {{ $tenantId ?? 0 }} > 0) {
-                const channelName = 'tenant.{{ $tenantId }}.' + ({{ $storeId ?? 0 }} > 0 ? 'store.{{ $storeId }}.' : '') + 'kds';
+                const channelName = {{ $storeId ?? 0 }} > 0
+                    ? 'kds.tenant.{{ $tenantId }}.store.{{ $storeId }}'
+                    : 'kds.tenant.{{ $tenantId }}';
                 window.Echo.private(channelName)
                     .listen('.kds.item.updated', () => {
+                        $wire.$refresh();
+                    })
+                    .listen('.kds.order.created', () => {
                         $wire.$refresh();
                     });
             }

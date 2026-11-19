@@ -31,7 +31,7 @@ fi
 # 3. Pull latest base images and build containers
 echo "[+] Step 1/5: Building and starting production containers..."
 $COMPOSE pull db redis web || true
-$COMPOSE build app worker scheduler
+$COMPOSE build app worker scheduler reverb
 
 echo "[+] Starting core storage services (database & redis)..."
 $COMPOSE up -d db redis
@@ -50,8 +50,8 @@ if [ $RETRY -eq $MAX_RETRIES ]; then
     exit 1
 fi
 
-echo "[+] Starting application, queue worker, scheduler, and web gateway..."
-$COMPOSE up -d app worker scheduler web
+echo "[+] Starting application, queue worker, scheduler, reverb, and web gateway..."
+$COMPOSE up -d app worker scheduler reverb web
 
 # 4. Sync compiled frontend assets to host public directory
 echo "[+] Step 2/5: Syncing compiled frontend assets from app container to host..."
@@ -70,9 +70,10 @@ $COMPOSE exec -T app php artisan route:cache
 $COMPOSE exec -T app php artisan view:cache
 $COMPOSE exec -T app php artisan event:cache
 
-# 7. Graceful worker restart
-echo "[+] Step 5/5: Broadcasting queue worker reload signal..."
+# 7. Graceful worker & reverb restart
+echo "[+] Step 5/5: Broadcasting queue worker reload signal and restarting reverb..."
 $COMPOSE exec -T app php artisan queue:restart
+$COMPOSE restart reverb || true
 
 # 7. Final status verification
 echo "[+] Step 5/5: Verifying container health and readiness..."

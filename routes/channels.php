@@ -22,6 +22,30 @@ Broadcast::channel('tenant.{tenantId}.store.{storeId}.waiter-calls', function (U
     return $user->stores()->where('stores.id', (int) $storeId)->exists();
 });
 
+Broadcast::channel('kds.tenant.{tenantId}.store.{storeId}', function (User $user, int $tenantId, int $storeId): bool {
+    if ((int) $user->tenant_id !== $tenantId) {
+        return false;
+    }
+
+    $role = $user->role;
+    $hasKdsAccess = $role && (
+        $role->name === 'Owner' ||
+        $role->name === 'Cook' ||
+        $role->name === 'Barista' ||
+        (bool) $role->is_admin ||
+        $role->hasPermission('*') ||
+        $role->hasPermission('kds.access') ||
+        $role->hasPermission('kds.view') ||
+        $role->hasPermission('orders.*')
+    );
+
+    if (! $hasKdsAccess) {
+        return false;
+    }
+
+    return $user->canAccessStore($storeId);
+});
+
 Broadcast::channel('tenant.{tenantId}.store.{storeId}.kds', function (User $user, int|string $tenantId, int|string $storeId): bool {
     if ((int) $user->tenant_id !== (int) $tenantId) {
         return false;

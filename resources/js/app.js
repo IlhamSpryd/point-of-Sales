@@ -4,6 +4,7 @@ import Swal from './vendor/swal-bridge';
 import erpChart from './components/erpChart';
 import { erpMotion, initErpMotion, registerGsapAlpineDirectives } from './motion/erp-motion';
 import { initSidebarPersistence } from './navigation/sidebar-persistence';
+import './echo';
 
 if (typeof window !== 'undefined') {
     window.gsap = gsap;

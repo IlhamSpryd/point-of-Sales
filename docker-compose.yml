@@ -16,6 +16,7 @@ services:
       - storage_public:/var/www/html/public/storage:ro
     depends_on:
       - app
+      - reverb
     networks:
       - apeiron_net
 
@@ -81,6 +82,32 @@ services:
         condition: service_started
       app:
         condition: service_started
+    networks:
+      - apeiron_net
+
+  reverb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: apeiron_reverb
+    restart: unless-stopped
+    command: ["reverb"]
+    volumes:
+      - storage_data:/var/www/html/storage
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_started
+      app:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -o /dev/null http://127.0.0.1:8080/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     networks:
       - apeiron_net
 
