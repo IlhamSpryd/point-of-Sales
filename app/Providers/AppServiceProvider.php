@@ -85,6 +85,11 @@ class AppServiceProvider extends ServiceProvider
             \App\Modules\Subscription\Services\EntitlementService::class
         );
 
+        $this->app->bind(
+            \App\Modules\Subscription\Contracts\SubscriptionPaymentSettlementInterface::class,
+            \App\Modules\Subscription\Application\Services\SubscriptionBillingOrchestrator::class
+        );
+
         $this->app->singleton(\App\Platform\Authorization\AbilityRegistry::class);
         $this->app->singleton(\App\Platform\Authorization\AbilityEvaluator::class);
     }

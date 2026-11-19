@@ -71,6 +71,8 @@ class OfflineOrderSyncService
                     'order_id' => $existing->id,
                     'order_code' => $existing->order_code,
                     'status' => 'already_synced',
+                    'sync_status' => 'duplicate_skipped',
+                    'duplicate_skipped' => true,
                 ];
 
                 continue;
@@ -143,13 +145,15 @@ class OfflineOrderSyncService
                     'index' => $index,
                     'offline_client_uuid' => $uuid,
                     'status' => 'rejected',
+                    'sync_status' => 'failed',
+                    'failed' => true,
                     'error' => $e->getMessage(),
                 ];
             }
         }
 
-        $syncedCount = count(array_filter($results, fn ($r) => in_array($r['status'], ['synced', 'already_synced'], true)));
-        $failedCount = count(array_filter($results, fn ($r) => $r['status'] === 'rejected'));
+        $syncedCount = count(array_filter($results, fn ($r) => in_array($r['status'], ['synced', 'duplicate_skipped', 'already_synced'], true)));
+        $failedCount = count(array_filter($results, fn ($r) => in_array($r['status'], ['failed', 'rejected'], true)));
 
         return [
             'synced_count' => $syncedCount,

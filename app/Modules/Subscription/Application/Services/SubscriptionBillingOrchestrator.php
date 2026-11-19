@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Subscription\Application\Services;
 
+use App\Modules\Subscription\Contracts\SubscriptionPaymentSettlementInterface;
 use App\Modules\Subscription\Models\Plan;
 use App\Modules\Subscription\Models\ProvisioningRequest;
 use App\Modules\Subscription\Models\TenantSubscription;
@@ -17,7 +18,7 @@ use Illuminate\Support\Str;
 /**
  * Orchestrates self-serve SaaS plan upgrades, prorated calculation, payment tokenization, and settlement (EXT-01, ADR-113).
  */
-class SubscriptionBillingOrchestrator
+class SubscriptionBillingOrchestrator implements SubscriptionPaymentSettlementInterface
 {
     public function __construct(
         private readonly ?\App\Modules\Integration\Contracts\PaymentGatewayInterface $paymentGateway,
@@ -66,7 +67,7 @@ class SubscriptionBillingOrchestrator
             'result_user_id' => $user?->id,
             'plan_id' => $targetPlan->id,
             'notes' => "Self-serve upgrade ke {$targetPlan->name} ({$billingCycle}) - Order {$orderCode}",
-            'correlation_id' => (string) Str::uuid(),
+            'correlation_id' => $orderCode,
             'started_at' => now(),
             'attempt_count' => 0,
         ]);
@@ -199,5 +200,106 @@ class SubscriptionBillingOrchestrator
 
             return $subscription->fresh(['plan']);
         });
+    }
+
+    /**
+     * Determine if this settlement handler manages the given order/payment reference.
+     */
+    public function handlesOrderId(string $orderId): bool
+    {
+        return str_starts_with(strtoupper($orderId), 'SUB-');
+    }
+
+    /**
+     * Atomically process subscription settlement notification payload from webhook (EXT-01, ADR-113).
+     *
+     * @param  array<string, mixed>  $rawPayload
+     */
+    public function settleFromWebhook(
+        string $orderId,
+        string $transactionStatus,
+        ?string $fraudStatus,
+        array $rawPayload
+    ): bool {
+        // Determine whether transaction status indicates a settled payment
+        $isSettled = ($transactionStatus === 'settlement')
+            || ($transactionStatus === 'capture' && ($fraudStatus === 'accept' || $fraudStatus === null));
+
+        // Locate provisioning request record
+        $orderRecord = ProvisioningRequest::where('correlation_id', $orderId)->first();
+        if ($orderRecord === null) {
+            $orderRecord = ProvisioningRequest::where('notes', 'like', "%{$orderId}%")->first();
+        }
+
+        $tenantId = $orderRecord?->result_tenant_id;
+        $planId = $orderRecord?->plan_id;
+
+        // Fallback: parse SUB-{tenantId}-{planId}-... format
+        if (($tenantId === null || $planId === null) && preg_match('/^SUB[-_](\d+)[-_](\d+)/i', $orderId, $matches)) {
+            $tenantId = (int) $matches[1];
+            $planId = (int) $matches[2];
+        }
+
+        if ($tenantId === null || $planId === null) {
+            Log::warning('[SUBSCRIPTION WEBHOOK] Could not resolve tenant or plan for order reference.', [
+                'order_id' => $orderId,
+                'status' => $transactionStatus,
+            ]);
+
+            return false;
+        }
+
+        // Strict Idempotency Check 1: Provisioning request already completed
+        if ($orderRecord !== null && $orderRecord->status === ProvisioningRequest::STATUS_COMPLETED) {
+            Log::info("[SUBSCRIPTION WEBHOOK] Order {$orderId} already completed. Idempotent skip.", [
+                'tenant_id' => $tenantId,
+            ]);
+
+            return true;
+        }
+
+        // Strict Idempotency Check 2: TenantSubscription already activated with this payment reference
+        $existingSub = TenantSubscription::where('tenant_id', $tenantId)->latest('id')->first();
+        if ($existingSub !== null) {
+            $metadata = json_decode((string) $existingSub->metadata, true) ?: [];
+
+            if (($metadata['payment_reference'] ?? null) === $orderId) {
+                Log::info("[SUBSCRIPTION WEBHOOK] Tenant {$tenantId} subscription already activated for reference {$orderId}. Idempotent skip.");
+
+                return true;
+            }
+        }
+
+        // If payment is settled, activate the subscription atomically
+        if ($isSettled) {
+            $this->activatePaidSubscription((int) $tenantId, (int) $planId, $orderId);
+
+            Log::info("[SUBSCRIPTION WEBHOOK] Successfully settled and activated subscription for tenant {$tenantId}.", [
+                'order_id' => $orderId,
+                'plan_id' => $planId,
+                'status' => $transactionStatus,
+            ]);
+
+            return true;
+        }
+
+        // Non-settled terminal states: deny, cancel, expire
+        if (in_array($transactionStatus, ['deny', 'cancel', 'expire'], true)) {
+            if ($orderRecord !== null && $orderRecord->status === ProvisioningRequest::STATUS_PENDING) {
+                $orderRecord->update([
+                    'status' => ProvisioningRequest::STATUS_FAILED,
+                    'error_message' => "Midtrans transaction status: {$transactionStatus}",
+                ]);
+            }
+
+            Log::info("[SUBSCRIPTION WEBHOOK] Subscription upgrade {$orderId} marked as failed due to status: {$transactionStatus}.");
+
+            return false;
+        }
+
+        // Pending or other non-terminal states
+        Log::info("[SUBSCRIPTION WEBHOOK] Subscription upgrade {$orderId} received status {$transactionStatus}, plan not activated.");
+
+        return false;
     }
 }

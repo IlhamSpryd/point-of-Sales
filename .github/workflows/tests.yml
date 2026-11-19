@@ -134,8 +134,8 @@ jobs:
       - name: Smoke test migrasi + seeder
         run: php artisan migrate:fresh --seed --force
 
-      - name: Fast Gate (Architecture Guardrails & Unit suite)
-        run: vendor/bin/phpunit --testsuite=Arch,Unit
+      - name: Core Quality Gate (Arch, Unit & Enterprise Integrity suites)
+        run: vendor/bin/phpunit --testsuite=Arch,Unit,Integrity
 
       - name: Test suite (paralel, tanpa grup chaos)
         run: php artisan test --parallel --exclude-group=chaos --coverage --min=${{ env.COVERAGE_MIN }}

@@ -10,6 +10,7 @@ use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\PaymentAttempt;
 use App\Modules\Sales\Services\Payment\PaymentInboxDispatcher;
 use App\Modules\Sales\Services\TransactionService;
+use App\Modules\Subscription\Contracts\SubscriptionPaymentSettlementInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,7 +30,10 @@ use Illuminate\Support\Facades\Log;
  */
 class MidtransNotificationController extends Controller
 {
-    public function __construct(private TransactionService $transactionService) {}
+    public function __construct(
+        private TransactionService $transactionService,
+        private SubscriptionPaymentSettlementInterface $subscriptionSettlement
+    ) {}
 
     public function handle(Request $request): JsonResponse
     {
@@ -79,6 +83,24 @@ class MidtransNotificationController extends Controller
             Log::warning('Midtrans notification: signature TIDAK VALID.', ['order_id' => $orderId]);
 
             return response()->json(['message' => 'invalid signature'], 403);
+        }
+
+        // Routing Webhook Langganan SaaS (EXT-01, ADR-113)
+        if ($this->subscriptionSettlement->handlesOrderId((string) $orderId)) {
+            $transactionStatus = (string) ($payload['transaction_status'] ?? '');
+            $fraudStatus = isset($payload['fraud_status']) ? (string) $payload['fraud_status'] : null;
+
+            $settled = $this->subscriptionSettlement->settleFromWebhook(
+                (string) $orderId,
+                $transactionStatus,
+                $fraudStatus,
+                $payload
+            );
+
+            return response()->json([
+                'message' => 'ok',
+                'subscription_settled' => $settled,
+            ]);
         }
 
         $tenantContext = app(TenantContext::class);

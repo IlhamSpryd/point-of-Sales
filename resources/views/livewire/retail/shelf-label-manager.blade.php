@@ -74,7 +74,7 @@
                             </td>
                             <td class="px-6 py-4">
                                 @php
-                                    $isPrinted = ($label->status === \App\Modules\Retail\Models\ShelfLabel::STATUS_PRINTED || $label->status === 'printed');
+                                    $isPrinted = ($label->status === \App\Modules\Catalog\Models\ShelfLabel::STATUS_PRINTED || $label->status === 'printed');
                                 @endphp
                                 <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
                                     <span class="w-1.5 h-1.5 rounded-full {{ $isPrinted ? 'bg-success' : 'bg-warning' }}"></span>
@@ -86,7 +86,7 @@
                                     <x-ui.table-action-item icon="print" href="{{ route('retail.shelf-labels.print-batch', $label->batch_number) }}" target="_blank" aria-label="Print Sheet">
                                         Print Sheet
                                     </x-ui.table-action-item>
-                                    @if ($label->status === \App\Modules\Retail\Models\ShelfLabel::STATUS_PENDING || $label->status === 'pending')
+                                    @if ($label->status === \App\Modules\Catalog\Models\ShelfLabel::STATUS_PENDING || $label->status === 'pending')
                                         <x-ui.table-action-item icon="check_circle" wire:click="markBatchPrinted('{{ $label->batch_number }}')" aria-label="Mark Done">
                                             Mark Done
                                         </x-ui.table-action-item>
