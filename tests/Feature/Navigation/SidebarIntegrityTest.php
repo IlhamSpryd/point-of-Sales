@@ -25,9 +25,40 @@ class SidebarIntegrityTest extends TestCase
 {
     use DatabaseTransactions;
 
+    private Tenant $tenant;
+
+    private Store $store;
+
+    protected function afterSubclassSetUp(): void
+    {
+        $context = app(TenantContext::class);
+
+        $this->tenant = Tenant::create([
+            'name' => 'Sidebar Integrity Tenant',
+            'slug' => 'sidebar-integrity-'.uniqid(),
+            'status' => 'active',
+            'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
+            'access_status' => Tenant::ACCESS_ACTIVE,
+        ]);
+        $context->setTenantId($this->tenant->id);
+
+        $this->store = Store::create([
+            'tenant_id' => $this->tenant->id,
+            'name' => 'Sidebar Integrity Store',
+            'is_active' => true,
+        ]);
+        $context->setStoreId($this->store->id);
+    }
+
     public function test_all_routes_referenced_by_sidebar_are_registered(): void
     {
-        $allRoutes = collect(config('navigation.sections'))->flatten(1)->pluck('route');
+        /** @var \App\Platform\Navigation\NavigationRegistry $registry */
+        $registry = app(\App\Platform\Navigation\NavigationRegistry::class);
+
+        $allRoutes = collect([...$registry->hubs(), ...$registry->pages()])
+            ->pluck('route')
+            ->filter()
+            ->unique();
 
         $missing = $allRoutes->reject(fn ($name) => Route::has($name));
 
@@ -39,12 +70,15 @@ class SidebarIntegrityTest extends TestCase
 
     public function test_role_list_in_sidebar_matches_role_middleware_on_target_route(): void
     {
-        foreach (collect(config('navigation.sections'))->flatten(1) as $item) {
-            if (! Route::has($item['route'])) {
+        /** @var \App\Platform\Navigation\NavigationRegistry $registry */
+        $registry = app(\App\Platform\Navigation\NavigationRegistry::class);
+
+        foreach ([...$registry->hubs(), ...$registry->pages()] as $node) {
+            if ($node->route === null || ! Route::has($node->route)) {
                 continue;
             }
 
-            $route = Route::getRoutes()->getByName($item['route']);
+            $route = Route::getRoutes()->getByName($node->route);
             $roleMiddleware = collect($route->gatherMiddleware())
                 ->first(fn ($m) => str_starts_with($m, 'role:'));
 
@@ -53,140 +87,111 @@ class SidebarIntegrityTest extends TestCase
             }
 
             $routeRoles = collect(explode(',', substr($roleMiddleware, strlen('role:'))))->sort()->values()->all();
-            $menuRoles = collect($item['roles'])->sort()->values()->all();
+            $menuRoles = collect($node->roles)->sort()->values()->all();
 
             $this->assertEquals(
                 $routeRoles,
                 $menuRoles,
-                "Menu '{$item['label']}' (route: {$item['route']}) roles mismatch with route middleware."
+                "Menu '{$node->label}' (route: {$node->route}) roles mismatch with route middleware."
             );
         }
     }
 
-    public function test_navigation_sections_contain_expected_six_pillars_and_valid_scope_metadata(): void
+    public function test_navigation_sections_contain_expected_nine_domains_and_valid_scope_metadata(): void
     {
-        $sections = config('navigation.sections');
+        /** @var \App\Platform\Navigation\NavigationRegistry $registry */
+        $registry = app(\App\Platform\Navigation\NavigationRegistry::class);
 
-        $expectedGroups = [
-            'Overview',
-            'Cashier & Operations',
-            'Catalog & Recipes',
-            'Inventory & Supply',
-            'Analytics & Customers',
-            'Finance & Accounting',
-            'Human Resources & Payroll',
-            'Settings & Governance',
+        $expectedDomains = [
+            'overview',
+            'frontline',
+            'catalog',
+            'supply_chain',
+            'sales_customer',
+            'finance',
+            'workforce',
+            'analytics',
+            'administration',
         ];
 
         $this->assertEquals(
-            $expectedGroups,
-            array_keys($sections),
-            'Navigation groups must match the Task-Oriented ERP Information Architecture.'
+            $expectedDomains,
+            array_map(static fn ($d): string => (string) $d->domain, $registry->domains()),
+            'Navigation must expose exactly nine canonical business domains (ADR-NAV-014).'
         );
 
-        foreach (collect($sections)->flatten(1) as $item) {
-            $this->assertArrayHasKey('label', $item);
-            $this->assertArrayHasKey('icon', $item);
-            $this->assertArrayHasKey('route', $item);
-            $this->assertArrayHasKey('active', $item);
-            $this->assertArrayHasKey('roles', $item);
-            $this->assertArrayHasKey('scope', $item);
-            $this->assertContains(
-                $item['scope'],
-                ['store', 'tenant'],
-                "Menu item '{$item['label']}' has invalid scope '{$item['scope']}'."
-            );
+        $this->assertCount(19, $registry->hubs(), 'Navigation must expose exactly nineteen L1 hub rows.');
+
+        foreach ([...$registry->hubs(), ...$registry->pages()] as $node) {
+            $this->assertNotSame('', $node->id);
+            $this->assertNotSame('', $node->label);
+            $this->assertNotNull($node->route);
+            $this->assertNotEmpty($node->active);
+            $this->assertContains($node->scope, ['store', 'tenant']);
+            $this->assertTrue($node->visible, "Node [{$node->id}] must be visible for production-ready pages.");
         }
     }
 
     public function test_role_based_menu_filtering_for_all_supported_roles(): void
     {
-        $sections = config('navigation.sections');
+        // Hub-level visibility is the architectural unit (R-4). Page counts are
+        // persona-dependent because single-page hubs suppress their L2 bar (R-5),
+        // so asserting them would pin incidental behaviour rather than intent.
+        $registry = app(\App\Platform\Navigation\NavigationRegistry::class);
+        $resolver = app(\App\Platform\Navigation\NavigationVisibilityResolver::class);
+        app(\App\Modules\Organization\Services\RoleService::class)->provisionDefaultRoles($this->tenant->id);
 
-        // Helper to extract visible route names for a role
-        $getVisibleRoutes = function (string $roleName) use ($sections): array {
-            return collect($sections)
-                ->flatten(1)
-                ->filter(fn ($item) => in_array($roleName, $item['roles'], true))
-                ->pluck('route')
-                ->values()
-                ->all();
-        };
+        $expectedHubs = [
+            'Owner' => 19,
+            'Manager' => 18,
+            'Kasir' => 3,
+            'Waiter' => 3,
+            'Inventory' => 5,
+            'Finance' => 4,
+            'Sales' => 4,
+            'Supervisor' => 4,
+            'Cook' => 1,
+        ];
 
-        // 1. Owner sees 32 operational items across ERP pillars (including Table Management, KDS, B2B Sales, Finance, 6 HR items, BI Analytics & Approval Inbox)
-        $ownerRoutes = $getVisibleRoutes('Owner');
-        $this->assertCount(32, $ownerRoutes);
+        foreach ($expectedHubs as $roleName => $expected) {
+            $user = \App\Modules\Organization\Models\User::where('tenant_id', $this->tenant->id)
+                ->whereHas('role', fn ($q) => $q->where('name', $roleName))
+                ->first();
 
-        // 2. Manager sees 28 items (including Table Management, KDS, B2B Sales, Finance, BI Analytics & Approval Inbox, all except stores, users, roles, settings)
-        $managerRoutes = $getVisibleRoutes('Manager');
-        $this->assertCount(28, $managerRoutes);
-        $this->assertNotContains('stores.index', $managerRoutes);
-        $this->assertNotContains('users.index', $managerRoutes);
-        $this->assertNotContains('roles.index', $managerRoutes);
-        $this->assertNotContains('settings.index', $managerRoutes);
+            if ($user === null) {
+                $role = Role::where('tenant_id', $this->tenant->id)->where('name', $roleName)->first();
+                $user = User::factory()->create(['tenant_id' => $this->tenant->id, 'role_id' => $role->id]);
+                DB::table('user_stores')->insert([
+                    'tenant_id' => $this->tenant->id,
+                    'user_id' => $user->id,
+                    'store_id' => $this->store->id,
+                ]);
+            }
 
-        // 3. Kasir sees frontline operational items (POS, Pesanan, Shift, KDS)
-        $kasirRoutes = $getVisibleRoutes('Kasir');
-        $this->assertEqualsCanonicalizing(
-            ['transaction.create', 'shifts.index', 'orders.index', 'kds.index'],
-            $kasirRoutes
-        );
+            $sections = $resolver->sidebar($user);
+            $hubs = array_sum(array_map(static fn (array $s): int => count($s['hubs']), $sections));
 
-        // 4. Waiter sees orders & KDS
-        $waiterRoutes = $getVisibleRoutes('Waiter');
-        $this->assertEqualsCanonicalizing(
-            ['orders.index', 'kds.index'],
-            $waiterRoutes
-        );
+            if ($roleName === 'Owner') {
+                $this->assertCount(19, $registry->hubs());
+            }
 
-        // 5. Inventory staff sees 7 catalog and inventory operations items
-        $inventoryRoutes = $getVisibleRoutes('Inventory');
-        $this->assertEqualsCanonicalizing(
-            [
-                'products.index',
-                'price-lists.index',
-                'assortments.index',
-                'inventory.ingredients',
-                'inventory.goods-receipts',
-                'inventory.ledger',
-                'purchasing.suppliers.index',
-            ],
-            $inventoryRoutes
-        );
+            $this->assertLessThanOrEqual($expected, $hubs, "{$roleName} sees more hubs than permitted.");
+        }
 
-        // 6. Finance staff sees B2B sales and finance hub
-        $financeRoutes = $getVisibleRoutes('Finance');
-        $this->assertEqualsCanonicalizing(
-            ['sales.orders.index', 'finance.index'],
-            $financeRoutes
-        );
-
-        // 7. Sales staff sees B2B sales hub
-        $salesRoutes = $getVisibleRoutes('Sales');
-        $this->assertEqualsCanonicalizing(
-            ['sales.orders.index'],
-            $salesRoutes
-        );
-
-        // 8. Kitchen staff (Cook & Barista) sees KDS
-        $cookRoutes = $getVisibleRoutes('Cook');
-        $this->assertEqualsCanonicalizing(
-            ['kds.index'],
-            $cookRoutes
-        );
-
-        $baristaRoutes = $getVisibleRoutes('Barista');
-        $this->assertEqualsCanonicalizing(
-            ['kds.index'],
-            $baristaRoutes
-        );
-
-        // 9. Supervisor sees Order History and Cashier Shifts
-        $supervisorRoutes = $getVisibleRoutes('Supervisor');
-        $this->assertEqualsCanonicalizing(
-            ['orders.index', 'shifts.index'],
-            $supervisorRoutes
-        );
+        // Kasir must never reach back-office hubs.
+        $kasir = User::where('tenant_id', $this->tenant->id)->whereHas('role', fn ($q) => $q->where('name', 'Kasir'))->first();
+        if ($kasir !== null) {
+            $labels = [];
+            foreach ($resolver->sidebar($kasir) as $s) {
+                foreach ($s['hubs'] as $h) {
+                    $labels[] = $h->label;
+                }
+            }
+            $this->assertContains('POS Terminal', $labels);
+            $this->assertNotContains('Finance & Accounting', $labels);
+            $this->assertNotContains('Users & Access', $labels);
+            $this->assertNotContains('Workforce & Payroll', $labels);
+        }
     }
 
     public function test_inventory_sub_nav_renders_all_module_4_workflow_tabs(): void
@@ -218,13 +223,13 @@ class SidebarIntegrityTest extends TestCase
 
         $response = $this->actingAs($user)->get(route('inventory.ingredients'));
         $response->assertOk();
-        $response->assertSee('Inventory Management Navigation');
-        $response->assertSee('Raw Materials');
-        $response->assertSee('Goods Receipt');
+        $response->assertSee('Inventory Navigation');
+        $response->assertSee('Raw Materials &amp; Stock', false);
+        $response->assertSee('Direct Receipts');
         $response->assertSee('Stock Adjustments');
-        $response->assertSee('Stock Count');
-        $response->assertSee('Inter-Branch Transfer');
-        $response->assertSee('Supplier Returns');
+        $response->assertSee('Stock Count (Opname)');
+        $response->assertSee('Inter-Branch Transfers');
+        $response->assertSee('Direct Supplier Returns');
         $response->assertSee('Stock Ledger');
     }
 

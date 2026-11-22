@@ -29,11 +29,8 @@ use Illuminate\Support\Facades\Route;
  */
 final class NavigationVisibilityResolver
 {
-    /** @var array<int, array<string, mixed>> */
+    /** @var array<string, list<array{domain: NavigationNode, hubs: list<NavigationNode>}>> */
     private array $sidebarCache = [];
-
-    /** @var array<int, array<string, list<NavigationNode>>> */
-    private array $subNavCache = [];
 
     /** @var array<string, array{hub: bool, pages: list<NavigationNode>}> */
     private array $visibilityCache = [];
@@ -186,7 +183,8 @@ final class NavigationVisibilityResolver
             return [];
         }
 
-        $cacheKey = (int) $user->id.'|'.(string) $this->tenantContext->getStoreId();
+        $userIdKey = $user->exists ? (string) $user->id : 'obj_'.spl_object_id($user);
+        $cacheKey = $userIdKey.'|'.(string) $this->tenantContext->getStoreId();
         if (isset($this->sidebarCache[$cacheKey])) {
             return $this->sidebarCache[$cacheKey];
         }
@@ -240,7 +238,8 @@ final class NavigationVisibilityResolver
             return [];
         }
 
-        $key = $hub->id.'|'.(int) $user->id.'|'.(string) $this->tenantContext->getStoreId();
+        $userIdKey = $user->exists ? (string) $user->id : 'obj_'.spl_object_id($user);
+        $key = $hub->id.'|'.$userIdKey.'|'.(string) $this->tenantContext->getStoreId();
         if (isset($this->visibilityCache[$key])) {
             return $this->visibilityCache[$key]['pages'];
         }
@@ -387,11 +386,11 @@ final class NavigationVisibilityResolver
             $domain = $this->registry->domainFor($hub);
             $pages = $this->visiblePagesFor($hub, $user);
 
-            if ($pages === [] || ! Route::has((string) $hub->route)) {
+            if ($pages === [] || ! Route::has((string) $hub->route) || $domain === null) {
                 continue;
             }
 
-            $group = $domain?->label ?? 'Apeiron';
+            $group = $domain->label;
 
             $items[] = [
                 'id' => $hub->id,

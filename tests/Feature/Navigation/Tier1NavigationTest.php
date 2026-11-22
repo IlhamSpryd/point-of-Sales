@@ -92,15 +92,15 @@ class Tier1NavigationTest extends TestCase
         $this->assertStringNotContainsString('Human Resources &amp; Payroll', $kasirHtml);
     }
 
-    public function test_smart_accordion_sidebar_renders_section_toggle_buttons_and_badges(): void
+    public function test_streamlined_sidebar_renders_clean_hub_rows_without_accordion_toggles(): void
     {
         $response = $this->actingAs($this->ownerUser)->get(route('dashboard'));
 
         $response->assertOk();
 
-        // Accordion triggers with aria-expanded
-        $response->assertSee('aria-expanded="openSections[\'overview\']"', false);
-        $response->assertSee('toggleSection(', false);
+        // Zero accordion expand_more toggles or section toggles (ADR-NAV-003)
+        $response->assertDontSee('toggleSection(', false);
+        $response->assertDontSee('openSections[', false);
 
         // Quick Access is removed from sidebar for a distraction-free modular experience
         $response->assertDontSee('Quick Access', false);
@@ -113,9 +113,9 @@ class Tier1NavigationTest extends TestCase
 
         $response->assertOk();
 
-        // Breadcrumbs container
-        $response->assertSee('aria-label="Context Breadcrumb"', false);
-        $response->assertSee('Inventori &amp; Stok', false);
+        // Breadcrumbs container uses semantic WCAG aria-label="Breadcrumb" (ADR-NAV-004)
+        $response->assertSee('aria-label="Breadcrumb"', false);
+        $response->assertSee('Supply Chain', false);
         $response->assertSee('Raw Materials &amp; Stock', false);
     }
 }

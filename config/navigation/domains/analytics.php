@@ -29,7 +29,7 @@ return [
             'landing' => true,
             'aliases' => ['bi', 'analitik', 'analytics', 'dashboard analitik'],
             'pages' => [
-                            ],
+            ],
         ],
         [
             'id' => 'nav.analytics.sales_reports',
@@ -44,7 +44,7 @@ return [
             'landing' => true,
             'aliases' => ['laporan penjualan', 'sales report', 'eod', 'tutup harian'],
             'pages' => [
-                            ],
+            ],
         ],
     ],
 ];

@@ -55,8 +55,8 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
             Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
         });
 
-        // Subscription Portal — Khusus Owner & Manager (SoD: Admin blocked)
-        Route::middleware('role:Owner,Manager')->group(function () {
+        // Subscription Portal — Khusus Owner (SoD: Admin & Manager blocked)
+        Route::middleware('role:Owner')->group(function () {
             Route::get('/subscription', SubscriptionPortal::class)->name('subscription.portal');
         });
 

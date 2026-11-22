@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Platform\Navigation;
 
-use InvalidArgumentException;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 
 /**
  * Immutable navigation node — Domain, Hub, Page or Page-Tab (ADR-NAV-001 / ADR-NAV-003).

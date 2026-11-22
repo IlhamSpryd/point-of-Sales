@@ -36,7 +36,19 @@ return [
             'landing' => true,
             'aliases' => ['keuangan', 'akuntansi', 'finance', 'gl', 'buku besar'],
             'pages' => [
-                                [
+                [
+                    'id' => 'nav.finance.gl.overview',
+                    'label' => 'Financial Overview',
+                    'route' => 'finance.index',
+                    'active' => ['finance.*'],
+                    'roles' => ['Owner', 'Manager', 'Finance', 'Admin'],
+                    'abilities' => ['finance.view'],
+                    'scope' => 'tenant',
+                    'order' => 121,
+                    'landing' => true,
+                    'aliases' => ['ikhtisar keuangan', 'financial overview', 'ringkasan'],
+                ],
+                [
                     'id' => 'nav.finance.gl.coa',
                     'label' => 'Chart of Accounts',
                     'route' => 'finance.coa.index',

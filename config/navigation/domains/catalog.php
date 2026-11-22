@@ -40,7 +40,19 @@ return [
             'landing' => true,
             'aliases' => ['produk', 'katalog', 'barang', 'item', 'catalog'],
             'pages' => [
-                                [
+                [
+                    'id' => 'nav.catalog.master.products',
+                    'label' => 'Products',
+                    'route' => 'products.index',
+                    'active' => ['products.*'],
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'abilities' => ['products.view'],
+                    'scope' => 'tenant',
+                    'order' => 41,
+                    'landing' => true,
+                    'aliases' => ['produk', 'daftar produk', 'products', 'item'],
+                ],
+                [
                     'id' => 'nav.catalog.master.categories',
                     'label' => 'Categories',
                     'route' => 'categories.index',
@@ -146,7 +158,7 @@ return [
             'label' => 'Pricing & Promotions',
             'route' => 'price-lists.index',
             'active' => ['price-lists.*', 'discounts.*', 'pricing.*'],
-            'roles' => ['Owner', 'Manager'],
+            'roles' => ['Owner', 'Manager', 'Inventory'],
             'abilities' => ['pricing.view'],
             'scope' => 'tenant',
             'icon' => 'sell',
@@ -154,7 +166,19 @@ return [
             'landing' => true,
             'aliases' => ['harga', 'promo', 'diskon', 'pricing', 'price'],
             'pages' => [
-                                [
+                [
+                    'id' => 'nav.catalog.pricing.price_lists',
+                    'label' => 'Price Lists',
+                    'route' => 'price-lists.index',
+                    'active' => ['price-lists.*'],
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'abilities' => ['pricing.view'],
+                    'scope' => 'tenant',
+                    'order' => 61,
+                    'landing' => true,
+                    'aliases' => ['daftar harga', 'price list', 'tier harga', 'pricing'],
+                ],
+                [
                     'id' => 'nav.catalog.pricing.discounts',
                     'label' => 'Discounts',
                     'route' => 'discounts.index',

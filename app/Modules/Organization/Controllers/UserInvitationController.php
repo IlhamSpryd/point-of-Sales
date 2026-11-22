@@ -5,6 +5,7 @@ namespace App\Modules\Organization\Controllers;
 use App\Core\Context\TenantContext;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUserInvitationRequest;
+use App\Modules\Organization\Models\Role;
 use App\Modules\Organization\Models\UserInvitation;
 use App\Modules\Organization\Services\UserInvitationService;
 use Illuminate\Http\RedirectResponse;

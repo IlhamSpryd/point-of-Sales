@@ -21,7 +21,10 @@
         ? $navResolver->breadcrumbsForRoute($currentRouteName, auth()->user())
         : [];
 
-    $homeUrl = \Illuminate\Support\Facades\Route::has('home') ? route('home') : url('/');
+    $landingRoute = \App\Modules\Organization\Controllers\HomeController::landingRouteFor(auth()->user());
+    $homeUrl = ($landingRoute !== 'home' && \Illuminate\Support\Facades\Route::has($landingRoute))
+        ? route($landingRoute)
+        : (\Illuminate\Support\Facades\Route::has('home') ? route('home') : url('/'));
 @endphp
 
 @if (count($trail) > 0)

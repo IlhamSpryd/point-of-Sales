@@ -192,20 +192,6 @@ final class NavigationRegistry
     }
 
     /**
-     * @param  array<int, array<string, mixed>>  $pageDefinitions
-     */
-    private function hasLandingFlag(array $pageDefinitions): bool
-    {
-        foreach ($pageDefinitions as $definition) {
-            if (! empty($definition['landing'])) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * @param  array<string, mixed>  $definition
      * @param  array<string, mixed>  $defaults
      */

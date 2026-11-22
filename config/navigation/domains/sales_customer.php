@@ -30,7 +30,19 @@ return [
             'landing' => true,
             'aliases' => ['penjualan', 'sales order', 'so', 'b2b', 'grosir'],
             'pages' => [
-                                [
+                [
+                    'id' => 'nav.sales.orders.list',
+                    'label' => 'Sales Orders (SO)',
+                    'route' => 'sales.orders.index',
+                    'active' => ['sales.orders.*'],
+                    'roles' => ['Owner', 'Manager', 'Sales', 'Admin', 'Finance'],
+                    'abilities' => ['sales.orders.view'],
+                    'scope' => 'tenant',
+                    'order' => 101,
+                    'landing' => true,
+                    'aliases' => ['sales order', 'so', 'pesanan penjualan', 'faktur so'],
+                ],
+                [
                     'id' => 'nav.sales.orders.quotations',
                     'label' => 'Quotations',
                     'route' => 'sales.quotations.index',
@@ -78,7 +90,19 @@ return [
             'landing' => true,
             'aliases' => ['pelanggan', 'customer', 'loyalty', 'member', 'crm'],
             'pages' => [
-                                [
+                [
+                    'id' => 'nav.sales.customers.directory',
+                    'label' => 'Customer Directory',
+                    'route' => 'customers.index',
+                    'active' => ['customers.*'],
+                    'roles' => ['Owner', 'Manager', 'Sales'],
+                    'abilities' => ['customers.view'],
+                    'scope' => 'tenant',
+                    'order' => 111,
+                    'landing' => true,
+                    'aliases' => ['pelanggan', 'customer', 'daftar pelanggan', 'directory'],
+                ],
+                [
                     'id' => 'nav.sales.customers.groups',
                     'label' => 'Customer Groups',
                     'route' => 'customers.groups.index',

@@ -49,7 +49,19 @@ return [
             'landing' => true,
             'aliases' => ['frontline', 'operasional', 'meja kasir'],
             'pages' => [
-                                [
+                [
+                    'id' => 'nav.frontline.desk.orders',
+                    'label' => 'Order History',
+                    'route' => 'orders.index',
+                    'active' => ['orders.*'],
+                    'roles' => ['Owner', 'Manager', 'Kasir', 'Waiter', 'Supervisor'],
+                    'abilities' => ['orders.view'],
+                    'scope' => 'store',
+                    'order' => 31,
+                    'landing' => true,
+                    'aliases' => ['pesanan', 'order', 'riwayat pesanan', 'struk', 'history'],
+                ],
+                [
                     'id' => 'nav.frontline.desk.shifts',
                     'label' => 'Cashier Shifts',
                     'route' => 'shifts.index',
@@ -89,7 +101,7 @@ return [
                     'label' => 'Omnichannel Mapping',
                     'route' => 'integrations.channel-mapping',
                     'active' => ['integrations.channel-mapping'],
-                    'roles' => ['Owner', 'Manager'],
+                    'roles' => ['Owner', 'Admin', 'Manager'],
                     'abilities' => ['products.manage'],
                     'scope' => 'store',
                     'order' => 35,

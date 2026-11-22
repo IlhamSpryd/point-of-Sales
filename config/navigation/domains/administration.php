@@ -27,7 +27,7 @@ return [
             'label' => 'Organization',
             'route' => 'stores.index',
             'active' => ['stores.*', 'devices.*', 'integrations.channel-mapping'],
-            'roles' => ['Owner', 'Admin', 'Manager'],
+            'roles' => ['Owner', 'Admin'],
             'abilities' => ['stores.manage'],
             'scope' => 'tenant',
             'icon' => 'storefront',
@@ -35,7 +35,7 @@ return [
             'landing' => true,
             'aliases' => ['organisasi', 'cabang', 'perangkat', 'device'],
             'pages' => [
-                                [
+                [
                     'id' => 'nav.admin.org.devices',
                     'label' => 'POS Devices',
                     'route' => 'devices.index',
@@ -74,7 +74,7 @@ return [
             'landing' => true,
             'aliases' => ['pengguna', 'user', 'akses', 'peran', 'role'],
             'pages' => [
-                                [
+                [
                     'id' => 'nav.admin.access.roles',
                     'label' => 'Roles & Permissions',
                     'route' => 'roles.index',
@@ -100,7 +100,7 @@ return [
             'landing' => true,
             'aliases' => ['pengaturan', 'settings', 'konfigurasi', 'sistem'],
             'pages' => [
-                            ],
+            ],
         ],
         [
             'id' => 'nav.admin.subscription',
@@ -113,17 +113,17 @@ return [
             'icon' => 'workspace_premium',
             'order' => 190,
             'landing' => true,
-            // SoD: Admin is deliberately excluded from Subscription Billing.
+            // SoD: Admin and Manager are excluded from Subscription Billing.
             'aliases' => ['langganan', 'paket', 'subscription', 'billing', 'upgrade'],
             'pages' => [
-                            ],
+            ],
         ],
         [
             'id' => 'nav.admin.governance',
             'label' => 'Audit & Approvals',
             'route' => 'erp.workflow.approvals',
             'active' => ['erp.workflow.*', 'activity-logs.*'],
-            'roles' => ['Owner', 'Manager', 'Admin', 'Supervisor'],
+            'roles' => ['Owner', 'Manager', 'Supervisor'],
             'abilities' => ['workflow.approvals.view'],
             'scope' => 'tenant',
             'icon' => 'fact_check',
@@ -131,7 +131,7 @@ return [
             'landing' => true,
             'aliases' => ['persetujuan', 'approval', 'audit', 'log aktivitas'],
             'pages' => [
-                                [
+                [
                     'id' => 'nav.admin.governance.audit_logs',
                     'label' => 'Audit Logs',
                     'route' => 'activity-logs.index',

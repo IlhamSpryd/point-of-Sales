@@ -31,7 +31,19 @@ return [
             'landing' => true,
             'aliases' => ['sdm', 'karyawan', 'payroll', 'gaji', 'hr', 'workforce'],
             'pages' => [
-                                [
+                [
+                    'id' => 'nav.workforce.people.employees',
+                    'label' => 'Employees',
+                    'route' => 'hr.employees.index',
+                    'active' => ['hr.employees.*'],
+                    'roles' => ['Owner', 'Manager'],
+                    'abilities' => ['hr.employees.view'],
+                    'scope' => 'tenant',
+                    'order' => 131,
+                    'landing' => true,
+                    'aliases' => ['karyawan', 'pegawai', 'staff', 'employee'],
+                ],
+                [
                     'id' => 'nav.workforce.people.schedules',
                     'label' => 'Schedules & Shifts',
                     'route' => 'hr.schedules.index',

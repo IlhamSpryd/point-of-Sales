@@ -19,16 +19,6 @@ class RolePolicy
         return in_array($role->name, ['Owner', 'Admin'], true) || (bool) $role->is_admin;
     }
 
-    private function isOwner(User $user): bool
-    {
-        $role = $user->role;
-        if (! $role instanceof Role) {
-            return false;
-        }
-
-        return $role->name === 'Owner' || (bool) $role->is_admin;
-    }
-
     public function viewAny(User $user): bool
     {
         return $this->isOwnerOrAdmin($user);

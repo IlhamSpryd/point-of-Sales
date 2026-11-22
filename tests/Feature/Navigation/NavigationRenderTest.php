@@ -13,7 +13,6 @@ use App\Platform\Navigation\NavigationRegistry;
 use App\Platform\Navigation\NavigationVisibilityResolver;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**

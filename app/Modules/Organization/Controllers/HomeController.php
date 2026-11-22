@@ -5,6 +5,7 @@ namespace App\Modules\Organization\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Organization\Models\Role;
 use App\Modules\Organization\Models\Tenant;
+use App\Modules\Organization\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\View;
@@ -21,6 +22,47 @@ use Illuminate\View\View;
  */
 class HomeController extends Controller
 {
+    public static function landingRouteFor(?User $user): string
+    {
+        if ($user === null) {
+            return 'login';
+        }
+
+        $roleName = $user->role?->name;
+
+        $roleHome = match ($roleName) {
+            'Kasir' => 'transaction.create',
+            'Manager' => 'reports.sales',
+            'Barista', 'Waiter' => 'kds.index',
+            'Cook' => 'kds.index',
+            'Inventory' => 'inventory.ingredients',
+            'Supervisor' => 'shifts.index',
+            'Owner', 'Admin' => 'dashboard',
+            'Finance' => 'finance.index',
+            'Sales' => 'sales.orders.index',
+            default => null,
+        };
+
+        if ($roleHome && Route::has($roleHome)) {
+            return $roleHome;
+        }
+
+        // Dynamic Custom Role Resolver: cari destinasi pertama yang diizinkan oleh navigation registry
+        if ($user->role) {
+            /** @var \App\Platform\Navigation\NavigationVisibilityResolver $resolver */
+            $resolver = app(\App\Platform\Navigation\NavigationVisibilityResolver::class);
+            foreach ($resolver->sidebar($user) as $section) {
+                foreach ($section['hubs'] as $hub) {
+                    if ($hub->route && Route::has($hub->route)) {
+                        return $hub->route;
+                    }
+                }
+            }
+        }
+
+        return 'home';
+    }
+
     public function index(): View|RedirectResponse
     {
         $user = auth()->user();
@@ -43,40 +85,9 @@ class HomeController extends Controller
             }
         }
 
-        $roleHome = match ($roleName) {
-            'Kasir' => 'transaction.create',
-            'Manager' => 'reports.sales',
-            'Barista', 'Waiter' => 'kds.index',
-            'Cook' => 'kds.index',
-            'Inventory' => 'inventory.ingredients',
-            'Supervisor' => 'shifts.index',
-            'Owner', 'Admin' => 'dashboard',
-            'Finance' => 'finance.index',
-            'Sales' => 'sales.orders.index',
-            default => null,
-        };
-
-        if ($roleHome && Route::has($roleHome)) {
-            return redirect()->route($roleHome);
-        }
-
-        // Dynamic Custom Role Resolver: cari destinasi pertama yang diizinkan oleh permission peran kustom
-        if ($user->role) {
-            foreach (config('navigation.sections', []) as $items) {
-                foreach ($items as $item) {
-                    $routeName = $item['route'] ?? null;
-                    if (! $routeName || ! Route::has($routeName)) {
-                        continue;
-                    }
-                    $permission = $item['permission'] ?? null;
-                    if (
-                        in_array($roleName, $item['roles'] ?? [], true)
-                        || ($permission && $user->hasPermission($permission))
-                    ) {
-                        return redirect()->route($routeName);
-                    }
-                }
-            }
+        $landing = self::landingRouteFor($user);
+        if ($landing !== 'home' && Route::has($landing)) {
+            return redirect()->route($landing);
         }
 
         // Role custom tanpa izin atau role tanpa pemetaan — tampilkan halaman aman

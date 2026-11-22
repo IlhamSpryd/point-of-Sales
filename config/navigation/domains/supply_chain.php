@@ -132,7 +132,19 @@ return [
             'landing' => true,
             'aliases' => ['pembelian', 'pengadaan', 'procurement', 'purchase', 'beli'],
             'pages' => [
-                                [
+                [
+                    'id' => 'nav.supply.procurement.orders',
+                    'label' => 'Purchase Orders',
+                    'route' => 'purchasing.orders.index',
+                    'active' => ['purchasing.orders.*'],
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'abilities' => ['purchasing.view'],
+                    'scope' => 'tenant',
+                    'order' => 81,
+                    'landing' => true,
+                    'aliases' => ['po', 'purchase order', 'pesanan pembelian', 'order beli'],
+                ],
+                [
                     'id' => 'nav.supply.procurement.suppliers',
                     'label' => 'Suppliers',
                     'route' => 'purchasing.suppliers.index',
@@ -191,7 +203,7 @@ return [
             'landing' => true,
             'aliases' => ['produksi', 'manufaktur', 'manufacturing', 'dapur pusat', 'bom'],
             'pages' => [
-                            ],
+            ],
         ],
     ],
 ];
