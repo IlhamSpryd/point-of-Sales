@@ -31,11 +31,15 @@ class TenantProvisioningService
 
     public const READINESS_READY = 'ready';
 
+    private ActivityLogService $activityLogService;
+
     public function __construct(
         private readonly TenantContext $tenantContext,
         private readonly RoleService $roleService,
-        private readonly ?ActivityLogService $activityLogService = null
-    ) {}
+        ?ActivityLogService $activityLogService = null
+    ) {
+        $this->activityLogService = $activityLogService ?? app(ActivityLogService::class);
+    }
 
     /**
      * Daftarkan dan lakukan provisioning tenant SaaS baru secara atomik.
@@ -61,119 +65,127 @@ class TenantProvisioningService
             throw new InvalidArgumentException("Email [{$normalizedEmail}] sudah terdaftar di sistem.");
         }
 
-        return DB::transaction(function () use ($tenantName, $ownerName, $normalizedEmail, $ownerPhone, $idempotencyKey) {
-            $slug = Str::slug($tenantName);
-            $baseSlug = $slug;
-            $counter = 1;
-            while (Tenant::where('subdomain', $slug)->exists()) {
-                $slug = "{$baseSlug}-{$counter}";
-                $counter++;
-            }
+        return $this->tenantContext->runWithoutTenant(function () use ($tenantName, $ownerName, $normalizedEmail, $ownerPhone, $idempotencyKey) {
+            return DB::transaction(function () use ($tenantName, $ownerName, $normalizedEmail, $ownerPhone, $idempotencyKey) {
+                $slug = Str::slug($tenantName);
+                $baseSlug = $slug;
+                $counter = 1;
+                while (Tenant::where('slug', $slug)->exists()) {
+                    $slug = "{$baseSlug}-{$counter}";
+                    $counter++;
+                }
 
-            $tenant = Tenant::create([
-                'name' => $tenantName,
-                'subdomain' => $slug,
-                'status' => 'pending_activation',
-            ]);
-
-            $company = Company::create([
-                'tenant_id' => $tenant->id,
-                'company_name' => $tenantName,
-                'company_code' => strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $tenantName) ?: 'CMP', 0, 8)),
-                'is_active' => true,
-            ]);
-
-            $store = Store::create([
-                'tenant_id' => $tenant->id,
-                'company_id' => $company->id,
-                'name' => 'Outlet Utama',
-                'branch_code' => 'OUT-001',
-                'is_active' => true,
-            ]);
-
-            $ownerRole = Role::create([
-                'tenant_id' => $tenant->id,
-                'name' => 'Owner',
-                'guard_name' => 'web',
-                'permissions' => ['*'],
-                'is_system' => true,
-                'is_admin' => true,
-            ]);
-
-            $this->roleService->provisionDefaultRoles($tenant);
-
-            $randomPassword = Str::random(32);
-            $owner = User::create([
-                'tenant_id' => $tenant->id,
-                'name' => $ownerName,
-                'email' => $normalizedEmail,
-                'phone' => $ownerPhone,
-                'password' => bcrypt($randomPassword),
-                'role_id' => $ownerRole->id,
-                'status' => 'pending_activation',
-            ]);
-
-            $tenant->update(['owner_user_id' => $owner->id]);
-
-            $rawToken = Str::random(64);
-            $tokenHash = hash('sha256', $rawToken);
-
-            OwnerOnboardingToken::create([
-                'tenant_id' => $tenant->id,
-                'user_id' => $owner->id,
-                'token_hash' => $tokenHash,
-                'expires_at' => now()->addDays(3),
-            ]);
-
-            $settingDefaults = [
-                'general.timezone' => 'Asia/Jakarta',
-                'general.currency' => 'IDR',
-                'pos.enable_quick_cash' => 'true',
-                'inventory.auto_deduct_sales' => 'true',
-            ];
-
-            foreach ($settingDefaults as $key => $value) {
-                Setting::create([
-                    'tenant_id' => $tenant->id,
-                    'key' => $key,
-                    'value' => $value,
+                $tenant = Tenant::create([
+                    'name' => $tenantName,
+                    'slug' => $slug,
+                    'status' => 'pending_activation',
                 ]);
-            }
 
-            $outbox = EmailOutbox::create([
-                'tenant_id' => $tenant->id,
-                'recipient_email' => $normalizedEmail,
-                'event_type' => 'tenant_onboarding',
-                'payload' => [
-                    'owner_name' => $ownerName,
-                    'tenant_name' => $tenantName,
-                    'onboarding_token' => $rawToken,
-                ],
-                'status' => EmailOutbox::STATUS_PENDING,
-            ]);
-
-            if ($this->activityLogService !== null) {
-                $this->activityLogService->log(
-                    tenantId: $tenant->id,
-                    action: 'tenant.provisioned',
-                    userId: $owner->id,
-                    storeId: $store->id,
-                    metadata: [
+                return $this->tenantContext->runAs((int) $tenant->id, null, function () use ($tenant, $tenantName, $ownerName, $normalizedEmail, $ownerPhone, $idempotencyKey) {
+                    $company = Company::create([
                         'tenant_id' => $tenant->id,
-                        'owner_id' => $owner->id,
-                        'store_id' => $store->id,
-                        'idempotency_key' => $idempotencyKey,
-                    ]
-                );
-            }
+                        'company_name' => $tenantName,
+                        'company_code' => strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $tenantName) ?: 'CMP', 0, 8)),
+                        'is_active' => true,
+                        'is_default' => true,
+                    ]);
 
-            return [
-                'tenant' => $tenant,
-                'store' => $store,
-                'owner' => $owner,
-                'onboarding_token' => $rawToken,
-                'outbox' => $outbox,
-            ];
+                    $store = Store::create([
+                        'tenant_id' => $tenant->id,
+                        'company_id' => $company->id,
+                        'name' => 'Outlet Utama',
+                        'branch_code' => 'OUT-001',
+                        'is_active' => true,
+                    ]);
+
+                    $ownerRole = Role::create([
+                        'tenant_id' => $tenant->id,
+                        'name' => 'Owner',
+                        'guard_name' => 'web',
+                        'permissions' => ['*'],
+                        'is_system' => true,
+                        'is_admin' => true,
+                    ]);
+
+                    $this->roleService->provisionDefaultRoles($tenant);
+
+                    $randomPassword = Str::random(32);
+                    $owner = User::create([
+                        'tenant_id' => $tenant->id,
+                        'name' => $ownerName,
+                        'email' => $normalizedEmail,
+                        'phone' => $ownerPhone,
+                        'password' => bcrypt($randomPassword),
+                        'role_id' => $ownerRole->id,
+                        'status' => 'pending_activation',
+                    ]);
+
+                    $owner->stores()->attach($store->id, ['tenant_id' => $tenant->id]);
+
+                    $tenant->update(['owner_user_id' => $owner->id]);
+
+                    $rawToken = Str::random(64);
+                    $tokenHash = hash('sha256', $rawToken);
+
+                    OwnerOnboardingToken::create([
+                        'tenant_id' => $tenant->id,
+                        'user_id' => $owner->id,
+                        'token_hash' => $tokenHash,
+                        'expires_at' => now()->addDays(3),
+                    ]);
+
+                    $settingDefaults = [
+                        'general.timezone' => 'Asia/Jakarta',
+                        'general.currency' => 'IDR',
+                        'pos.enable_quick_cash' => 'true',
+                        'inventory.auto_deduct_sales' => 'true',
+                    ];
+
+                    foreach ($settingDefaults as $key => $value) {
+                        Setting::create([
+                            'tenant_id' => $tenant->id,
+                            'key' => $key,
+                            'value' => $value,
+                        ]);
+                    }
+
+                    $outbox = EmailOutbox::create([
+                        'tenant_id' => $tenant->id,
+                        'user_id' => $owner->id,
+                        'recipient_email' => $normalizedEmail,
+                        'subject' => "Aktivasi Akun Apeiron Systems: {$tenantName}",
+                        'body_text' => "Halo {$ownerName},\n\nAkun Apeiron System untuk bisnis \"{$tenantName}\" telah dibuat.\nSilakan atur kata sandi Anda melalui tautan aktivasi berikut:\n".url('/onboarding/set-password/'.$rawToken)."\n\nTautan berlaku selama 48 jam.\n\n— Tim Apeiron System",
+                        'event_type' => 'tenant_onboarding',
+                        'payload' => [
+                            'owner_name' => $ownerName,
+                            'tenant_name' => $tenantName,
+                            'onboarding_token' => $rawToken,
+                        ],
+                        'status' => EmailOutbox::STATUS_PENDING,
+                    ]);
+
+                    $this->activityLogService->log(
+                        tenantId: $tenant->id,
+                        action: 'tenant.provisioned',
+                        userId: $owner->id,
+                        storeId: $store->id,
+                        metadata: [
+                            'tenant_id' => $tenant->id,
+                            'owner_id' => $owner->id,
+                            'store_id' => $store->id,
+                            'idempotency_key' => $idempotencyKey,
+                        ]
+                    );
+
+                    return [
+                        'tenant' => $tenant,
+                        'store' => $store,
+                        'owner' => $owner,
+                        'onboarding_token' => $rawToken,
+                        'outbox' => $outbox,
+                    ];
+                });
+            });
         });
     }
 

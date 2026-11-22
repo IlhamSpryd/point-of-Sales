@@ -207,6 +207,44 @@ class DocumentSequenceService
     }
 
     /**
+     * Generator nomor dokumen deterministik dengan format kanonikal:
+     * {PREFIX}/{STORE_CODE}/{YYYYMM}/{PADDED_NUMBER}
+     */
+    public function generateNextNumber(
+        int $tenantId,
+        string $docType,
+        ?int $storeId = null,
+        ?string $storeCode = null,
+        ?string $periodKey = null,
+        int $paddingLength = 4
+    ): string {
+        $prefix = strtoupper($docType);
+        $period = $periodKey !== null && $periodKey !== '' ? $periodKey : date('Ym');
+
+        $code = $storeCode;
+        if ($code === null && $storeId !== null) {
+            $code = DB::table('stores')
+                ->where('tenant_id', $tenantId)
+                ->where('id', $storeId)
+                ->value('code');
+            $code = $code ?: 'STR'.str_pad((string) $storeId, 2, '0', STR_PAD_LEFT);
+        }
+
+        $sequence = $this->nextValue(
+            tenantId: $tenantId,
+            docType: $docType,
+            storeId: $storeId,
+            periodKey: $period
+        );
+
+        $paddedNumber = str_pad((string) $sequence, $paddingLength, '0', STR_PAD_LEFT);
+
+        return $code !== null && $code !== ''
+            ? "{$prefix}/{$code}/{$period}/{$paddedNumber}"
+            : "{$prefix}/{$period}/{$paddedNumber}";
+    }
+
+    /**
      * Helper khusus: Kode Pemasok (SUP-XXXX).
      */
     public function nextSupplierCode(int $tenantId, int $padding = 4): string

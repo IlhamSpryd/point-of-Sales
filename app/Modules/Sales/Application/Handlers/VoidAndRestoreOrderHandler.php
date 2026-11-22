@@ -27,6 +27,7 @@ use App\Modules\Sales\Domain\StateMachines\OrderStateMachine;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\Payment;
 use App\Modules\Sales\Models\PaymentAttempt;
+use App\Modules\Sales\Services\TransactionService;
 use DomainException;
 use Exception;
 use Illuminate\Support\Collection;
@@ -62,9 +63,14 @@ class VoidAndRestoreOrderHandler
                 if ($attempt->provider === 'midtrans') {
                     try {
                         $checkId = $attempt->provider_order_id ?? $order->order_code;
-                        $gatewayStatus = $this->paymentGateway->getTransactionStatus($checkId);
+                        $gatewayStatus = app(TransactionService::class)->getMidtransTransactionStatus($checkId);
                         $txStatus = (string) ($gatewayStatus->transaction_status ?? '');
                         if (in_array($txStatus, ['capture', 'settlement'], true)) {
+                            app(TransactionService::class)->settlePaymentAttempt($attempt, [
+                                'transaction_id' => $gatewayStatus->transaction_id ?? null,
+                                'transaction_status' => $txStatus,
+                                'gross_amount' => $gatewayStatus->gross_amount ?? null,
+                            ]);
                             throw new DomainException('Cannot void order: payment transaction has already settled with payment gateway.');
                         }
                     } catch (DomainException $de) {

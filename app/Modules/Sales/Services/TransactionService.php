@@ -21,12 +21,18 @@ use App\Modules\Sales\Models\PaymentAttempt;
 class TransactionService
 {
     public function __construct(
-        protected CheckoutOrderHandler $checkoutHandler,
-        protected OnlinePaymentAndWebhookHandler $onlinePaymentHandler,
-        protected VoidAndRestoreOrderHandler $voidHandler,
-        protected OrderTotalsCalculatorService $totalsCalculator,
-        protected PosTableAndCustomerSyncService $posSyncService
-    ) {}
+        protected ?CheckoutOrderHandler $checkoutHandler = null,
+        protected ?OnlinePaymentAndWebhookHandler $onlinePaymentHandler = null,
+        protected ?VoidAndRestoreOrderHandler $voidHandler = null,
+        protected ?OrderTotalsCalculatorService $totalsCalculator = null,
+        protected ?PosTableAndCustomerSyncService $posSyncService = null
+    ) {
+        $this->checkoutHandler ??= app(CheckoutOrderHandler::class);
+        $this->onlinePaymentHandler ??= app(OnlinePaymentAndWebhookHandler::class);
+        $this->voidHandler ??= app(VoidAndRestoreOrderHandler::class);
+        $this->totalsCalculator ??= app(OrderTotalsCalculatorService::class);
+        $this->posSyncService ??= app(PosTableAndCustomerSyncService::class);
+    }
 
     /**
      * Memproses checkout pesanan POS secara atomik.
@@ -207,6 +213,14 @@ class TransactionService
     public function voidOrder(Order $order, string $reason, int $userId): void
     {
         $this->voidHandler->voidOrder($order, $reason, $userId);
+    }
+
+    /**
+     * Memulihkan stok untuk pesanan yang dibatalkan/void secara idempoten.
+     */
+    public function restoreStockForOrder(Order $order): void
+    {
+        $this->voidHandler->restoreStockForOrder($order);
     }
 
     /**

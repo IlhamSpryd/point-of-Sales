@@ -372,7 +372,11 @@ class DevDojoComponentsIntegrationTest extends TestCase
         $this->assertSame(0, $component->getSelectedCountProperty());
 
         // Test plain component without resetPage or getSelectableIds
-        $plainComponent = new class {};
+        $plainComponent = new class
+        {
+            use WithBulkActions;
+            use WithSorting;
+        };
         $plainComponent->sortBy('title');
         $this->assertSame('title', $plainComponent->sortField);
         $plainComponent->updatedSelectAll(true);
