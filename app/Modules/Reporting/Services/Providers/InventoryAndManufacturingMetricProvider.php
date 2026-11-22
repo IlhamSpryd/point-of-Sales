@@ -274,8 +274,9 @@ class InventoryAndManufacturingMetricProvider
         $q = $this->toNumericString($norm($quality), 6);
 
         $product = bcmul(bcmul($a, $p, 6), $q, 6);
+        $raw = bcmul($product, '100', 4);
 
-        return bcmul($product, '100', 2);
+        return number_format(round((float) $raw, 2, PHP_ROUND_HALF_UP), 2, '.', '');
     }
 
     public function calculateContributionPct(mixed $partValue, mixed $totalValue): string

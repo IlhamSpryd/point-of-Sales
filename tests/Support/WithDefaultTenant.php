@@ -25,8 +25,8 @@ trait WithDefaultTenant
             return;
         }
 
-        // Avoid database overhead and locking in unit tests that do not declare database traits
-        if (str_starts_with(static::class, 'Tests\\Unit\\')) {
+        // Avoid database overhead and locking in unit and arch tests that do not declare database traits
+        if (str_starts_with(static::class, 'Tests\\Unit\\') || str_starts_with(static::class, 'Tests\\Arch\\')) {
             $uses = array_flip(class_uses_recursive(static::class));
             $hasDbTrait = isset($uses[DatabaseTransactions::class])
                 || isset($uses[RefreshDatabase::class])

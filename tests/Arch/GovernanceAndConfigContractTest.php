@@ -16,6 +16,8 @@ use Tests\TestCase;
  */
 class GovernanceAndConfigContractTest extends TestCase
 {
+    protected bool $optOutFromDefaultTenant = true;
+
     private const ALLOWED_OWNER_MODULES = [
         'Catalog',
         'Customers',
