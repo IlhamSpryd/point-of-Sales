@@ -76,7 +76,7 @@
         :colspan="8"
     >
         @foreach ($journals as $journal)
-                        <tr class="hover:bg-muted/40 transition-colors">
+                        <tr wire:key="journal-row-{{ $journal->id }}" class="hover:bg-muted/40 transition-colors">
                             <td class="px-4 py-3 font-sans font-medium text-foreground">
                                 {{ $journal->journal_number }}
                             </td>
@@ -199,7 +199,7 @@
                                 </thead>
                                 <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
                                     @foreach ($lines as $index => $line)
-                                        <tr>
+                                        <tr wire:key="journal-line-input-{{ $index }}">
                                             <td class="p-2">
                                                 @php
                                                     $accOptions = collect($accounts)->map(fn($acc) => [
@@ -346,7 +346,7 @@
                         </thead>
                         <tbody class="divide-y divide-border">
                             @foreach ($selectedJournal->lines as $line)
-                                <tr>
+                                <tr wire:key="journal-detail-line-{{ $line->id }}">
                                     <td class="px-3 py-2 font-sans text-foreground font-medium">{{ $line->account?->account_code ?? $line->account_id }}</td>
                                     <td class="px-3 py-2 text-foreground">{{ $line->account?->account_name ?? '-' }}</td>
                                     <td class="px-3 py-2 text-muted-foreground">{{ $line->description ?: '-' }}</td>

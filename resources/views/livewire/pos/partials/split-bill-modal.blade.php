@@ -91,10 +91,10 @@
                         </div>
                         <div class="space-y-2 max-h-48 overflow-y-auto">
                             @foreach ($splitBillAmounts as $idx => $amt)
-                                <div class="flex items-center gap-2">
+                                <div wire:key="split-amount-part-{{ $idx }}" class="flex items-center gap-2">
                                     <span class="text-xs font-semibold text-muted-foreground w-20">Bagian {{ $idx + 1 }}:</span>
                                     <input type="number" step="100" min="1"
-                                        wire:model.live="splitBillAmounts.{{ $idx }}"
+                                        wire:model.live.debounce.300ms="splitBillAmounts.{{ $idx }}"
                                         placeholder="Nominal Rp"
                                         class="form-input flex-1 p-2 rounded-lg border border-border text-xs font-semibold font-sans tabular-nums">
                                     @if (count($splitBillAmounts) > 2)
@@ -111,7 +111,7 @@
                         <label class="block text-xs font-semibold text-foreground uppercase tracking-wider">Alokasikan Item ke Sub-Order (Part 1 vs Part 2)</label>
                         <div class="space-y-2 max-h-56 overflow-y-auto">
                             @foreach ($this->splitBillOrder->orderItems as $item)
-                                <div class="p-2.5 rounded-lg border border-border bg-background flex items-center justify-between gap-3">
+                                <div wire:key="split-item-part-{{ $item->id }}" class="p-2.5 rounded-lg border border-border bg-background flex items-center justify-between gap-3">
                                     <div>
                                         <span class="font-bold text-foreground block">{{ $item->product_name_snapshot ?? $item->product?->product_name }}</span>
                                         <span class="text-muted-foreground text-[11px] font-sans tabular-nums">

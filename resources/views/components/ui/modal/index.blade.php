@@ -18,9 +18,11 @@
     $wireModel = $attributes->whereStartsWith('wire:model')->first();
     // Strip wire:model so it isn't spread onto the (non-input) panel div.
     $attributes = $attributes->whereDoesntStartWith('wire:model');
-    $initialOpen = $open || $show;
-    $openExpression = $wireModel ? "\$wire.\$entangle('{$wireModel}', true)" : ($initialOpen ? 'true' : 'false');
-    $closeAction = 'modalOpen = false;' . ($onClose ? ' ' . rtrim($onClose, ';') . ';' : '');
+    $cleanWireModel = ($wireModel && preg_match('/^[a-zA-Z0-9_.]+$/', (string) $wireModel)) ? (string) $wireModel : null;
+    $initialOpenState = (bool) ($open || $show);
+    $safeOnClose = ($onClose && preg_match('/^\$wire\.[a-zA-Z0-9_]+(?:\([\'"a-zA-Z0-9_.,\s\-]*\))?;?$/', trim((string) $onClose)))
+        ? rtrim(trim((string) $onClose), ';') . ';'
+        : null;
 
     $maxWidthClass = match ($maxWidth) {
         'sm' => 'sm:max-w-sm',
@@ -51,7 +53,16 @@
 @endphp
 
 <div
-    x-data="{ modalOpen: {!! $openExpression !!}, modalId: @js($modalId) }"
+    x-data="{
+        modalOpen: @if($cleanWireModel) $wire.entangle(@js($cleanWireModel), true) @else @js($initialOpenState) @endif,
+        modalId: @js($modalId),
+        closeModal() {
+            this.modalOpen = false;
+            @if ($safeOnClose)
+                {!! $safeOnClose !!}
+            @endif
+        }
+    }"
     x-modelable="modalOpen"
     x-init="
         $watch('modalOpen', function (value) {
@@ -68,10 +79,10 @@
         }
     "
     class="relative h-auto w-auto"
-    @keydown.escape.window="if (modalOpen) { {!! $closeAction !!} }"
+    @keydown.escape.window="if (modalOpen) { closeModal() }"
     @open-modal.window="if ($event.detail === modalId || ($event.detail && $event.detail.id === modalId)) modalOpen = true"
-    @close-modal.window="if ($event.detail === modalId || ($event.detail && $event.detail.id === modalId)) { {!! $closeAction !!} }"
-    @close="{!! $closeAction !!}"
+    @close-modal.window="if ($event.detail === modalId || ($event.detail && $event.detail.id === modalId)) { closeModal() }"
+    @close="closeModal()"
 >
     @unless ($wireModel || $name)
         @if (isset($trigger))
@@ -106,7 +117,7 @@
                     x-transition:leave-end="opacity-0"
                 @endif
                 class="absolute inset-0 h-full w-full bg-black/60 backdrop-blur-[2px]"
-                @click="{!! $closeAction !!}"
+                @click="closeModal()"
                 aria-hidden="true"
             ></div>
 
@@ -163,7 +174,7 @@
                         <div class="absolute right-3.5 top-3.5 z-50">
                             <button
                                 class="inline-flex size-8 items-center justify-center rounded-lg bg-transparent text-muted-foreground transition hover:bg-secondary hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
-                                @click="{!! $closeAction !!}"
+                                @click="closeModal()"
                                 type="button"
                                 aria-label="Close dialog"
                             >

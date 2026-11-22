@@ -5,7 +5,7 @@
 ])
 
 <div
-    x-data="window.apeironCommandPalette ? window.apeironCommandPalette(@js(array_values($items))) : { open: false, search: '', active: 0, items: @js(array_values($items)), loadRecents() {}, openPalette() { this.open = true; }, move() {}, select() {}, showGroup() { return false; } }"
+    x-data="window.apeironCommandPalette ? window.apeironCommandPalette(@js(array_values($items))) : { open: false, search: '', active: 0, items: @js(array_values($items)), loadRecents() {}, openPalette() { this.open = true; }, closePalette() { this.open = false; }, move() {}, select() {}, showGroup() { return false; } }"
     @keydown.window.cmd.k.prevent="openPalette()"
     @keydown.window.ctrl.k.prevent="openPalette()"
     @command-open.window="openPalette()"
@@ -37,9 +37,9 @@
             role="dialog"
             aria-modal="true"
             aria-label="Command palette"
-            @keydown.escape.window="open = false"
+            @keydown.escape.window="closePalette()"
         >
-            <div x-show="open" x-transition.opacity class="absolute inset-0 bg-overlay-scrim" @click="open = false"></div>
+            <div x-show="open" x-transition.opacity class="absolute inset-0 bg-overlay-scrim" @click="closePalette()"></div>
 
             <div
                 x-show="open"

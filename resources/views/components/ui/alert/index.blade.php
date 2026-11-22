@@ -51,7 +51,7 @@
         @endif
 
         @if ($description)
-            <div @class(['opacity-90 leading-relaxed', 'mt-1' => $title])>{!! $description !!}</div>
+            <div @class(['opacity-90 leading-relaxed', 'mt-1' => $title])>{{ $description }}</div>
         @endif
 
         @if (trim($slot ?? '') !== '')

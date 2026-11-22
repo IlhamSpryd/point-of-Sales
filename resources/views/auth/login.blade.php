@@ -118,7 +118,7 @@
                     type="button"
                     id="btn-toggle-password"
                     @click="show = !show"
-                    class="absolute right-2.5 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground focus:outline-none focus:text-foreground rounded-lg transition-colors cursor-pointer flex items-center justify-center"
+                    class="absolute right-2.5 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus:text-foreground rounded-lg transition-colors cursor-pointer flex items-center justify-center"
                     :aria-label="show ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
                     :title="show ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
                 >

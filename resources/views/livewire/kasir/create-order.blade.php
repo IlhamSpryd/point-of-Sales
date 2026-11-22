@@ -76,7 +76,7 @@
         let barcodeBuf = '';
         let lastCharTime = Date.now();
         let debounceTimer = null;
-        window.addEventListener('keydown', (e) => {
+        const barcodeKeyHandler = (e) => {
             const el = e.target;
             const isEditing = el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
             const now = Date.now();
@@ -99,16 +99,25 @@
             if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey && !isEditing) {
                 barcodeBuf += e.key;
             }
-        });
+        };
+        window.addEventListener('keydown', barcodeKeyHandler);
+        if (typeof $cleanup === 'function') {
+            $cleanup(() => window.removeEventListener('keydown', barcodeKeyHandler));
+        }
+        document.addEventListener('livewire:navigating', () => {
+            window.removeEventListener('keydown', barcodeKeyHandler);
+        }, { once: true });
     
     "
     @destroy="window.apeironPosCartDirty = false"
     {{-- R-009 / WCAG AAA: navigasi keranjang penuh via keyboard — panah atas/bawah memilih baris, +/- mengubah kuantitas. --}}
     @keydown.window.arrowdown.prevent="moveCartCursor(1)"
     @keydown.window.arrowup.prevent="moveCartCursor(-1)"
-    @keydown.window."+".prevent="bumpCartCursor(1)"
-    @keydown.window."=".prevent="bumpCartCursor(1)"
-    @keydown.window."-".prevent="bumpCartCursor(-1)"
+    @keydown.window="
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes($event.target?.tagName) || $event.target?.isContentEditable) return;
+        if ($event.key === '+' || $event.key === '=') { $event.preventDefault(); bumpCartCursor(1); }
+        else if ($event.key === '-') { $event.preventDefault(); bumpCartCursor(-1); }
+    "
     @keydown.window.f2.prevent="focusSearch()"
     @keydown.window.f4.prevent="triggerPay()"
     @keydown.window.f5.prevent="$wire.fastCashPay(0)"
@@ -199,4 +208,7 @@
 @if ($midtransClientKey)
     <script src="{{ $midtransSnapSrc }}" data-client-key="{{ $midtransClientKey }}"></script>
 @endif
+<script>
+    window.ApeironTenantId = @js(auth()->user()?->tenant_id);
+</script>
 <script src="{{ asset('js/pos-offline-queue.js') }}"></script>

@@ -9,7 +9,7 @@
 @php
     $wireModel = $attributes->whereStartsWith('wire:model')->first();
     $attributes = $attributes->whereDoesntStartWith('wire:model');
-    $openExpr = $wireModel ? "\$wire.entangle('{$wireModel}')" : ($open ? 'true' : 'false');
+    $cleanWireModel = ($wireModel && preg_match('/^[a-zA-Z0-9_.]+$/', (string) $wireModel)) ? (string) $wireModel : null;
 
     $panelWidth = match ($maxWidth) {
         'sm' => 'max-w-sm',
@@ -26,7 +26,7 @@
 
 <div
     x-data="{
-        isOpen: {!! $openExpr !!},
+        isOpen: @if($cleanWireModel) $wire.entangle(@js($cleanWireModel)) @else @js((bool) $open) @endif,
         slideId: @js($slideId),
         close() {
             this.isOpen = false;

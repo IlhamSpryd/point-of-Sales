@@ -138,7 +138,7 @@
         :colspan="6"
     >
         @foreach ($employees as $emp)
-            <tr class="hover:bg-muted/30 transition-colors">
+            <tr wire:key="employee-row-{{ $emp->id }}" class="hover:bg-muted/30 transition-colors">
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs shrink-0 select-none">

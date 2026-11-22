@@ -84,7 +84,7 @@
         :colspan="8"
     >
         @foreach($purchaseOrders as $po)
-                    <tr class="hover:bg-muted/40 transition-colors">
+                    <tr wire:key="po-row-{{ $po->id }}" class="hover:bg-muted/40 transition-colors">
                         <td class="px-6 py-4">
                             <div class="font-bold text-foreground font-sans">{{ $po->po_number }}</div>
                             <div class="text-xs text-muted-foreground">{{ \Carbon\Carbon::parse($po->order_date)->format('d M Y') }}</div>
@@ -222,7 +222,7 @@
                             </thead>
                             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
                                 @foreach($items as $i => $item)
-                                <tr>
+                                <tr wire:key="po-item-row-{{ $i }}">
                                     <td class="px-3 py-2">
                                         <select wire:model.live="items.{{ $i }}.purchasable_type" wire:change="onItemTypeChanged({{ $i }})" class="w-full text-xs rounded-lg border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 py-1">
                                             <option value="product">Retail Product</option>
@@ -343,7 +343,7 @@
                             </thead>
                             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
                                 @foreach($selectedPo->lines as $line)
-                                <tr>
+                                <tr wire:key="po-detail-line-{{ $line->id }}">
                                     <td class="px-4 py-2.5">
                                         <div class="font-medium text-zinc-800 dark:text-zinc-200">
                                             {{ $line->purchasable?->product_name ?? $line->purchasable?->name ?? 'Item #' . $line->purchasable_id }}

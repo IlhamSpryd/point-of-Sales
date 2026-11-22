@@ -83,7 +83,7 @@
                             </td>
                             <td class="px-6 py-4 text-right whitespace-nowrap">
                                 <x-ui.table-actions>
-                                    <x-ui.table-action-item icon="print" href="{{ route('retail.shelf-labels.print-batch', $label->batch_number) }}" target="_blank" aria-label="Print Sheet">
+                                    <x-ui.table-action-item icon="print" href="{{ route('retail.shelf-labels.print-batch', $label->batch_number) }}" target="_blank" rel="noopener noreferrer" aria-label="Print Sheet">
                                         Print Sheet
                                     </x-ui.table-action-item>
                                     @if ($label->status === \App\Modules\Catalog\Models\ShelfLabel::STATUS_PENDING || $label->status === 'pending')

@@ -1,21 +1,64 @@
 /**
- * Apeiron POS — Offline Queue & IndexedDB Manager (DEC-006 / TR-003)
- * Menangani antrean transaksi lokal, status luring peramban, dan sinkronisasi idempoten otomatis.
+ * Apeiron POS — Multi-Tenant Partitioned Offline Queue & IndexedDB Manager (DEC-001 / DEC-006 / TR-003)
+ * Menangani antrean transaksi lokal terisolasi per tenant_id, status luring peramban, dan sinkronisasi idempoten otomatis.
  */
 (function (window) {
     'use strict';
 
-    const DB_NAME = 'apeiron_pos_offline_db';
     const DB_VERSION = 1;
     const STORE_NAME = 'offline_orders';
 
     let dbPromise = null;
+    let currentDb = null;
+    let currentTenantId = null;
+
+    function getActiveTenantId() {
+        const metaTenant = document.querySelector('meta[name="tenant-id"]')?.getAttribute('content');
+        return metaTenant || window.__APEIRON_BOOT__?.tenantId || window.ApeironTenantId || null;
+    }
+
+    function getDbName(tenantId) {
+        if (!tenantId) {
+            throw new Error('[OFFLINE POS] Konteks tenant_id tidak ditemukan. Akses IndexedDB dibatalkan demi keamanan multi-tenant.');
+        }
+        return `apeiron_pos_tenant_${tenantId}`;
+    }
+
+    function closeDatabase() {
+        if (currentDb) {
+            try {
+                currentDb.close();
+            } catch (e) {
+                console.warn('[OFFLINE POS] Gagal menutup koneksi IndexedDB:', e);
+            }
+            currentDb = null;
+        }
+        dbPromise = null;
+        currentTenantId = null;
+    }
 
     function openDatabase() {
-        if (dbPromise) return dbPromise;
+        const tenantId = getActiveTenantId();
+        if (!tenantId) {
+            const err = new Error('[OFFLINE POS] Konteks tenant_id tidak ditemukan. Akses IndexedDB ditolak demi isolasi multi-tenant (DEC-001).');
+            console.error(err.message);
+            return Promise.reject(err);
+        }
+
+        // Jika tenant beralih pada sesi terminal yang sama, tutup database tenant sebelumnya
+        if (currentTenantId && String(currentTenantId) !== String(tenantId)) {
+            closeDatabase();
+        }
+
+        if (dbPromise && currentDb && String(currentTenantId) === String(tenantId)) {
+            return dbPromise;
+        }
+
+        currentTenantId = tenantId;
+        const dbName = getDbName(tenantId);
 
         dbPromise = new Promise((resolve, reject) => {
-            const request = window.indexedDB.open(DB_NAME, DB_VERSION);
+            const request = window.indexedDB.open(dbName, DB_VERSION);
 
             request.onupgradeneeded = (event) => {
                 const db = event.target.result;
@@ -23,15 +66,19 @@
                     const store = db.createObjectStore(STORE_NAME, { keyPath: 'offline_client_uuid' });
                     store.createIndex('created_at', 'created_at', { unique: false });
                     store.createIndex('sync_status', 'sync_status', { unique: false });
+                    store.createIndex('tenant_id', 'tenant_id', { unique: false });
                 }
             };
 
             request.onsuccess = (event) => {
-                resolve(event.target.result);
+                currentDb = event.target.result;
+                resolve(currentDb);
             };
 
             request.onerror = (event) => {
-                console.error('[OFFLINE POS] Gagal membuka IndexedDB:', event.target.error);
+                console.error(`[OFFLINE POS] Gagal membuka IndexedDB [${dbName}]:`, event.target.error);
+                dbPromise = null;
+                currentDb = null;
                 reject(event.target.error);
             };
         });
@@ -42,6 +89,14 @@
     const ApeironOfflinePos = {
         isOnline: navigator.onLine,
 
+        getTenantId() {
+            return getActiveTenantId();
+        },
+
+        closeDatabase() {
+            closeDatabase();
+        },
+
         generateUuid() {
             return 'OFFLINE-' + 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
                 const r = Math.random() * 16 | 0;
@@ -51,6 +106,11 @@
         },
 
         async enqueueOrder(orderPayload) {
+            const tenantId = getActiveTenantId();
+            if (!tenantId) {
+                throw new Error('[OFFLINE POS] Konteks tenant aktif tidak tersedia. Transaksi offline ditolak.');
+            }
+
             // DEC-006: Batasan transaksi offline hanya boleh metode CASH
             const method = (orderPayload.payment_method || 'cash').toLowerCase();
             if (method !== 'cash') {
@@ -62,9 +122,10 @@
 
             const record = {
                 offline_client_uuid: uuid,
+                tenant_id: String(tenantId),
                 idempotency_key: orderPayload.idempotency_key || ('offline-sync-' + uuid),
                 payment_method: 'cash',
-                payload: { ...orderPayload, offline_client_uuid: uuid, payment_method: 'cash' },
+                payload: { ...orderPayload, offline_client_uuid: uuid, payment_method: 'cash', tenant_id: String(tenantId) },
                 sync_status: 'pending',
                 created_at: new Date().toISOString()
             };
@@ -75,7 +136,7 @@
                 const req = store.put(record);
 
                 req.onsuccess = () => {
-                    console.log(`[OFFLINE POS] Order berhasil disimpan di antrean lokal [${uuid}]`);
+                    console.log(`[OFFLINE POS] Order berhasil disimpan di antrean lokal tenant [${tenantId}] - [${uuid}]`);
                     this.notifyQueueChanged();
                     resolve(record);
                 };
@@ -85,6 +146,11 @@
         },
 
         async getPendingOrders() {
+            const tenantId = getActiveTenantId();
+            if (!tenantId) {
+                return [];
+            }
+
             const db = await openDatabase();
             return new Promise((resolve, reject) => {
                 const tx = db.transaction(STORE_NAME, 'readonly');
@@ -92,7 +158,9 @@
                 const req = store.getAll();
 
                 req.onsuccess = () => {
-                    const pending = (req.result || []).filter(r => r.sync_status === 'pending');
+                    const pending = (req.result || [])
+                        .filter(r => r.sync_status === 'pending')
+                        .filter(r => !r.tenant_id || String(r.tenant_id) === String(tenantId));
                     resolve(pending);
                 };
 
@@ -122,6 +190,12 @@
         },
 
         async syncPendingOrders() {
+            const tenantId = getActiveTenantId();
+            if (!tenantId) {
+                console.warn('[OFFLINE POS] Sinkronisasi ditolak: konteks tenant aktif tidak tersedia.');
+                return { synced: 0, pending: 0, error: 'missing_tenant_context' };
+            }
+
             if (!navigator.onLine) {
                 console.warn('[OFFLINE POS] Sinkronisasi ditunda: perangkat masih dalam kondisi offline.');
                 return { synced: 0, pending: await this.getPendingCount() };
@@ -132,9 +206,16 @@
                 return { synced: 0, pending: 0 };
             }
 
-            console.log(`[OFFLINE POS] Memulai sinkronisasi ${pending.length} transaksi offline ke server...`);
+            // Validasi fail-closed: pastikan semua payload terverifikasi milik tenant aktif (DEC-001)
+            const validBatch = pending
+                .filter(p => p.tenant_id && String(p.tenant_id) === String(tenantId))
+                .map(p => p.payload);
 
-            const batch = pending.map(p => p.payload);
+            if (validBatch.length === 0) {
+                return { synced: 0, pending: 0 };
+            }
+
+            console.log(`[OFFLINE POS] Memulai sinkronisasi ${validBatch.length} transaksi offline tenant [${tenantId}] ke server...`);
 
             try {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -145,7 +226,7 @@
                         'Accept': 'application/json',
                         'X-CSRF-TOKEN': csrfToken || ''
                     },
-                    body: JSON.stringify({ orders: batch })
+                    body: JSON.stringify({ orders: validBatch, tenant_id: tenantId })
                 });
 
                 if (!response.ok) {
@@ -178,9 +259,28 @@
         notifyQueueChanged() {
             this.getPendingCount().then(count => {
                 window.dispatchEvent(new CustomEvent('offline-queue-updated', { detail: { count } }));
-            });
+            }).catch(() => {});
         }
     };
+
+    // Deteksi logout: tutup handle database seketika
+    document.addEventListener('submit', (e) => {
+        const form = e.target;
+        if (form && typeof form.getAttribute === 'function') {
+            const action = form.getAttribute('action') || '';
+            if (action.includes('logout')) {
+                ApeironOfflinePos.closeDatabase();
+            }
+        }
+    });
+
+    window.addEventListener('apeiron-logout', () => {
+        ApeironOfflinePos.closeDatabase();
+    });
+
+    window.addEventListener('beforeunload', () => {
+        ApeironOfflinePos.closeDatabase();
+    });
 
     // Event listener deteksi jaringan otomatis
     window.addEventListener('online', () => {
@@ -199,4 +299,3 @@
     window.ApeironOfflinePos = ApeironOfflinePos;
 
 })(window);
-

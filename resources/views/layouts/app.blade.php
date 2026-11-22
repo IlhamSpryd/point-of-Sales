@@ -5,16 +5,27 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @auth
+        <meta name="tenant-id" content="{{ auth()->user()?->tenant_id }}">
+        <meta name="user-id" content="{{ auth()->id() }}">
+        <script>
+            window.__APEIRON_BOOT__ = Object.assign(window.__APEIRON_BOOT__ || {}, {
+                tenantId: @js(auth()->user()?->tenant_id),
+                userId: @js(auth()->id())
+            });
+            window.ApeironTenantId = @js(auth()->user()?->tenant_id);
+            window.ApeironUserId = @js(auth()->id());
+        </script>
+    @endauth
 
     <title>{{ $title ?? 'Apeiron System' }}</title>
 
     <x-favicon />
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
 
     <!-- Self-Hosted Fonts Preload (Offline First & Zero External Latency) -->
     <link rel="preload" href="{{ asset('fonts/plus-jakarta-sans.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="{{ asset('fonts/material-symbols-rounded.woff2') }}" as="font" type="font/woff2" crossorigin>
-    <!-- Google Fonts CDN Fallback for Material Symbols -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -161,12 +172,23 @@
     @livewireScripts
     <x-fullscreen-toggle />
     
-    <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.2.4/qz-tray.js"></script>
+    <script src="{{ asset('vendor/qz-tray.js') }}"></script>
     <x-qz-print />
     <x-ui.toast />
     <x-erp.confirm-dialog />
     @include('partials.sweetalert-confirm-delete')
     <x-erp.command-palette />
+
+    {{-- Safe PWA Service Worker Registration --}}
+    <script>
+        if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('{{ asset('sw.js') }}').catch(function (err) {
+                    console.warn('[PWA] Service Worker registration failed:', err);
+                });
+            });
+        }
+    </script>
 </body>
 
 </html>

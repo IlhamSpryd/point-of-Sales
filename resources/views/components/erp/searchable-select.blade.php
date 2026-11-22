@@ -38,14 +38,14 @@
 
     $elementId = $id ?? $name ?? ($wireModel ? str_replace('.', '_', $wireModel) : uniqid('erp-select-'));
     $listboxId = $elementId . '-listbox';
-    $valueExpression = $wireModel ? "\$wire.entangle('{$wireModel}')" : 'null';
+    $cleanWireModel = ($wireModel && preg_match('/^[a-zA-Z0-9_.]+$/', (string) $wireModel)) ? (string) $wireModel : null;
 @endphp
 
 <div
     x-data="{
         open: false,
         search: '',
-        value: {!! $valueExpression !!},
+        value: @if($cleanWireModel) $wire.entangle(@js($cleanWireModel)) @else null @endif,
         options: @js($normalizedOptions),
         focusedIndex: -1,
         searchMethod: @js($searchMethod),

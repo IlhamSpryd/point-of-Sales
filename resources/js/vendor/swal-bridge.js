@@ -100,11 +100,16 @@ const Swal = {
             titleEl.textContent = title;
 
             const descEl = panel.querySelector('#apeiron-swal-desc');
-            if (html) {
-                descEl.innerHTML = html;
-            } else {
-                descEl.textContent = text;
-            }
+            const descContent = String(html || text || '');
+            descEl.textContent = '';
+            // Safe DOM rendering: break on <br> or newlines without raw innerHTML
+            const lines = descContent.replace(/<br\s*[\/]?>/gi, '\n').split('\n');
+            lines.forEach((line, index) => {
+                if (index > 0) {
+                    descEl.appendChild(document.createElement('br'));
+                }
+                descEl.appendChild(document.createTextNode(line));
+            });
 
             const actionsEl = panel.querySelector('[data-swal-actions]');
             const confirmBtn = document.createElement('button');

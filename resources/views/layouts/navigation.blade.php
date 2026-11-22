@@ -107,14 +107,14 @@
         {{-- Circular Collapse Trigger Button (Desktop/Laptop/iPad - when wide) --}}
         <button type="button" @click="expanded = false" x-show="wide && !sidebarMobileOpen" x-cloak title="Collapse sidebar"
             aria-label="Collapse sidebar"
-            class="hidden md:flex w-7 h-7 items-center justify-center rounded-full text-shell-foreground bg-white hover:bg-shell-accent hover:text-shell-foreground-active border border-shell-border active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring transition-all duration-150 cursor-pointer shadow-2xs">
+            class="hidden md:flex w-11 h-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-shell-foreground bg-white hover:bg-shell-accent hover:text-shell-foreground-active border border-shell-border active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring transition-all duration-150 cursor-pointer shadow-2xs">
             <span class="material-symbols-rounded text-[16px]">chevron_left</span>
         </button>
 
         {{-- Close drawer (mobile) --}}
         <button type="button" @click="sidebarMobileOpen = false; $nextTick(() => document.getElementById('mobile-menu-btn')?.focus())" x-show="sidebarMobileOpen" x-cloak
             aria-label="Close navigation menu"
-            class="md:hidden w-[36px] h-[36px] flex items-center justify-center rounded-full text-shell-foreground hover:bg-shell-accent hover:text-shell-foreground-active active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring transition-all duration-200 cursor-pointer">
+            class="md:hidden w-11 h-11 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full text-shell-foreground hover:bg-shell-accent hover:text-shell-foreground-active active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring transition-all duration-200 cursor-pointer">
             <span class="material-symbols-rounded text-[20px]">close</span>
         </button>
     </div>
@@ -180,7 +180,7 @@
                             :href="$hubUrl"
                             :active="$isActive"
                             :label="$hub->label"
-                            class="w-9 h-9 justify-center rounded-[var(--radius-card)] active:scale-95 focus-visible:ring-inset-0 motion-reduce:transition-none {{ $isActive ? 'bg-shell-foreground-active text-white shadow-xs' : '' }}">
+                            class="w-11 h-11 min-h-[44px] min-w-[44px] justify-center rounded-[var(--radius-card)] active:scale-95 focus-visible:ring-inset-0 motion-reduce:transition-none {{ $isActive ? 'bg-shell-foreground-active text-white shadow-xs' : '' }}">
                             <span class="material-symbols-rounded text-[20px] {{ $isActive ? 'text-white' : 'text-shell-foreground group-hover:text-shell-foreground-active' }}" aria-hidden="true">{{ $hub->icon }}</span>
                             <span class="sr-only">{{ $hub->label }}</span>
                         </x-erp.nav-link>

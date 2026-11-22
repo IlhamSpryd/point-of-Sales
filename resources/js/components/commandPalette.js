@@ -4,6 +4,14 @@
  * Dedicated JavaScript component module replacing bulky inline HTML attribute x-data.
  * Ensures zero HTML parser attribute collisions or character escaping issues.
  */
+function getRecentsStorageKey() {
+    const metaTenant = document.querySelector('meta[name="tenant-id"]')?.getAttribute('content');
+    const metaUser = document.querySelector('meta[name="user-id"]')?.getAttribute('content');
+    const tenantId = metaTenant || window.__APEIRON_BOOT__?.tenantId || window.ApeironTenantId || 'global';
+    const userId = metaUser || window.__APEIRON_BOOT__?.userId || window.ApeironUserId || 'guest';
+    return `apeiron.nav.recents.${tenantId}.${userId}`;
+}
+
 export default function commandPalette(initialItems = []) {
     return {
         open: false,
@@ -11,6 +19,7 @@ export default function commandPalette(initialItems = []) {
         active: 0,
         items: Array.isArray(initialItems) ? initialItems : [],
         recents: [],
+        previousActiveElement: null,
 
         get filtered() {
             const q = this.search.trim().toLowerCase();
@@ -37,7 +46,8 @@ export default function commandPalette(initialItems = []) {
 
         loadRecents() {
             try {
-                this.recents = JSON.parse(localStorage.getItem('apeiron.nav.recents') || '[]');
+                const key = getRecentsStorageKey();
+                this.recents = JSON.parse(localStorage.getItem(key) || '[]');
             } catch (e) {
                 this.recents = [];
             }
@@ -48,7 +58,8 @@ export default function commandPalette(initialItems = []) {
             const next = [item.value, ...this.recents.filter(id => id !== item.value)].slice(0, 5);
             this.recents = next;
             try {
-                localStorage.setItem('apeiron.nav.recents', JSON.stringify(next));
+                const key = getRecentsStorageKey();
+                localStorage.setItem(key, JSON.stringify(next));
             } catch (e) {}
         },
 
@@ -78,6 +89,9 @@ export default function commandPalette(initialItems = []) {
             if (document.querySelector('#livewire-pos-root [aria-modal="true"]')) {
                 return;
             }
+            if (document.activeElement && typeof document.activeElement.focus === 'function') {
+                this.previousActiveElement = document.activeElement;
+            }
             this.open = true;
             this.search = '';
             this.active = 0;
@@ -86,6 +100,18 @@ export default function commandPalette(initialItems = []) {
                     this.$refs.search.focus();
                 }
             });
+        },
+
+        closePalette() {
+            this.open = false;
+            if (this.previousActiveElement && typeof this.previousActiveElement.focus === 'function') {
+                const el = this.previousActiveElement;
+                this.$nextTick(() => {
+                    try {
+                        el.focus();
+                    } catch (e) {}
+                });
+            }
         },
 
         move(dir) {
@@ -109,7 +135,7 @@ export default function commandPalette(initialItems = []) {
             }
             this.remember(item);
             this.$dispatch('command-select', { value: item.value, title: item.title, url: item.url });
-            this.open = false;
+            this.closePalette();
             if (item.url) {
                 if (window.Livewire && typeof window.Livewire.navigate === 'function') {
                     window.Livewire.navigate(item.url);

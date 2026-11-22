@@ -64,7 +64,7 @@
             $typeClasses = 'border-transparent no-underline text-foreground hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
             break;
         case 'link':
-            $typeClasses = 'border-transparent no-underline text-foreground hover:underline px-0 h-auto';
+            $typeClasses = 'border-transparent no-underline text-foreground hover:underline px-0 h-auto focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded-sm';
             break;
         default:
             $typeClasses = 'border-transparent no-underline bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';

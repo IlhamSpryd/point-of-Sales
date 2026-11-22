@@ -27,7 +27,7 @@
 
             <div class="flex items-center gap-2">
                 @if (in_array($statusVal, ['paid', 'completed'], true))
-                    <a href="{{ route('transaction.receipt', $order->order_code) }}" target="_blank">
+                    <a href="{{ route('transaction.receipt', $order->order_code) }}" target="_blank" rel="noopener noreferrer">
                         <x-ui.button variant="primary" class="h-9 text-xs" x-on:click="window.erpMotion?.pulseHighlight($el)">
                             <span class="material-symbols-rounded text-[16px]">print</span>
                             <span>{{ ($order->print_count ?? 0) > 0 ? __('Reprint (#') . (($order->print_count ?? 0) + 1) . ')' : __('Print Receipt') }}</span>

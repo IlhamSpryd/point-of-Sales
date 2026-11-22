@@ -35,47 +35,51 @@
 
     /* Muted / Accent */
     --muted: #F4F4F5;
-    --muted-foreground: #6B6B74;
+    --muted-foreground: #47474F;
     --accent: #F4F4F5;
     --accent-foreground: #18181B;
 
     /* Form & interaction */
     --border: #E4E4E7;
     --border-strong: #D4D4D8;
-    --input: #E4E4E7;
-    --ring: #A1A1AA;
+    --border-input: #94949E;
+    --input: #94949E;
+    --ring: #18181B;
     --focus: #18181B;
     --disabled: #A1A1AA;
     --disabled-bg: #F4F4F5;
     --selection: #18181B;
     --selection-foreground: #FAFAFA;
 
-    /* Status */
-    --success: #15803D;
+    /* Status (WCAG 2.2 Level AAA Standalone Ratios >= 7.0:1) */
+    --success: #14532D;
     --success-foreground: #052E16;
     --success-muted: #F0FDF4;
     --success-border: #BBF7D0;
-    --warning: #B45309;
+    --warning: #78350F;
     --warning-foreground: #451A03;
     --warning-muted: #FFFBEB;
     --warning-border: #FDE68A;
-    --destructive: #B91C1C;
+    --destructive: #991B1B;
     --destructive-foreground: #450A0A;
     --destructive-muted: #FEF2F2;
     --destructive-border: #FECACA;
-    --info: #1D4ED8;
+    --info: #1E40AF;
     --info-foreground: #172554;
     --info-muted: #EFF6FF;
     --info-border: #BFDBFE;
-    --neutral: #6B6B74;
+    --neutral: #47474F;
     --neutral-muted: #F4F4F5;
     --neutral-border: #E4E4E7;
 
     /* ERP surfaces */
     --surface-table-header: #FAFAFA;
     --surface-inset: #F4F4F5;
+    --surface-shell: #FFFFFF;
+    --surface-canvas: #FAFAFA;
 
     /* Charts */
+    --chart-accent: #10A37F;
     --chart-1: #18181B;
     --chart-2: #980000;
     --chart-3: #1D4ED8;
@@ -85,7 +89,7 @@
     --chart-7: #065F46;
     --chart-8: #57534E;
     --chart-grid: #E4E4E7;
-    --chart-axis-label: #6B6B74;
+    --chart-axis-label: #47474F;
     --chart-seq-0: #F4F4F5;
     --chart-seq-1: #D4D4D8;
     --chart-seq-2: #A1A1AA;
@@ -94,7 +98,7 @@
 
     /* Shell (Clean White ChatGPT Aesthetic) */
     --shell: #FFFFFF;
-    --shell-foreground: #71717A;
+    --shell-foreground: #47474F;
     --shell-foreground-active: #09090B;
     --shell-accent: #F4F4F5;
     --shell-border: #E4E4E7;
@@ -165,7 +169,8 @@
 
     --border: rgb(255 255 255 / 0.10);
     --border-strong: rgb(255 255 255 / 0.18);
-    --input: rgb(255 255 255 / 0.14);
+    --border-input: rgb(255 255 255 / 0.30);
+    --input: rgb(255 255 255 / 0.30);
     --ring: #71717A;
     --focus: #FAFAFA;
     --disabled: #52525B;
@@ -183,7 +188,7 @@
     --warning-muted: #451A03;
     --warning-border: rgb(251 191 36 / 0.30);
 
-    --destructive: #F87171;
+    --destructive: #FCA5A5;
     --destructive-foreground: #FEE2E2;
     --destructive-muted: #450A0A;
     --destructive-border: rgb(248 113 113 / 0.30);
@@ -199,6 +204,10 @@
 
     --surface-table-header: #111112;
     --surface-inset: #0F0F10;
+    --surface-shell: #111112;
+    --surface-canvas: #0A0A0B;
+
+    --chart-accent: #10A37F;
 
     --chart-1: #FAFAFA;
     --chart-2: #FCA5A5;
@@ -291,12 +300,15 @@
 
     --color-surface-inset: var(--surface-inset);
     --color-surface-table-header: var(--surface-table-header);
+    --color-surface-shell: var(--surface-shell);
+    --color-surface-canvas: var(--surface-canvas);
 
     --color-destructive: var(--destructive);
     --color-destructive-foreground: var(--destructive-foreground);
 
     --color-border: var(--border);
     --color-border-strong: var(--border-strong);
+    --color-border-input: var(--border-input);
     --color-input: var(--input);
     --color-ring: var(--ring);
     --color-focus: var(--focus);
@@ -306,6 +318,7 @@
     --color-selection-foreground: var(--selection-foreground);
 
     /* ── Charts (variables; consumed via getComputedStyle, not utilities) ── */
+    --color-chart-accent: var(--chart-accent);
     --color-chart-1: var(--chart-1);
     --color-chart-2: var(--chart-2);
     --color-chart-3: var(--chart-3);

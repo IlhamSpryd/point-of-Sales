@@ -89,7 +89,7 @@
         :colspan="6"
     >
         @foreach($customers as $c)
-                    <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition">
+                    <tr wire:key="customer-row-{{ $c->id }}" class="hover:bg-muted/40 transition-colors">
                         <td class="px-6 py-4">
                             <div class="font-semibold text-foreground dark:text-white">{{ $c->name }}</div>
                             <div class="flex items-center gap-2 mt-0.5">
@@ -306,7 +306,7 @@
                     <h4 class="text-xs font-semibold text-zinc-500 uppercase">Saved Addresses</h4>
                     <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
                         @forelse($activeAddresses as $addr)
-                        <div class="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-start justify-between gap-3">
+                        <div wire:key="addr-item-{{ $addr->id }}" class="p-3 rounded-xl border border-border bg-muted/30 flex items-start justify-between gap-3">
                             <div>
                                 <div class="flex items-center gap-2">
                                     <span class="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{{ $addr->label ?: 'Address' }}</span>
@@ -428,7 +428,7 @@
                     <h4 class="text-xs font-semibold text-zinc-500 uppercase">Contact Persons List</h4>
                     <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
                         @forelse($activeContacts as $contact)
-                        <div class="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between gap-3">
+                        <div wire:key="contact-item-{{ $contact->id }}" class="p-3 rounded-xl border border-border bg-muted/30 flex items-center justify-between gap-3">
                             <div>
                                 <div class="flex items-center gap-2">
                                     <span class="text-xs font-bold text-zinc-800 dark:text-zinc-200">{{ $contact->name }}</span>
@@ -633,7 +633,7 @@
                         </thead>
                         <tbody class="divide-y divide-border dark:divide-zinc-800">
                             @forelse($statementPreview['transactions'] as $tx)
-                            <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
+                            <tr wire:key="tx-row-{{ $loop->index }}" class="hover:bg-muted/40 transition-colors">
                                 <td class="px-3 py-2 whitespace-nowrap">{{ \Carbon\Carbon::parse($tx['entry_date'])->format('d/m/Y H:i') }}</td>
                                 <td class="px-3 py-2">
                                     <span class="text-xs text-muted-foreground font-medium">{{ $tx['entry_type_label'] }}</span>

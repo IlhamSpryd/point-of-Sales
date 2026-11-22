@@ -77,7 +77,7 @@
                 </thead>
                 <tbody class="divide-y divide-border dark:divide-zinc-800/70">
                     @forelse($salesOrders as $so)
-                        <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
+                        <tr wire:key="so-row-{{ $so->id }}" class="hover:bg-muted/40 transition-colors">
                             <td class="py-4 px-6">
                                 <div class="font-medium text-foreground dark:text-white flex items-center gap-1.5 font-sans">
                                     <span>{{ $so->so_number }}</span>
@@ -262,7 +262,7 @@
                         </thead>
                         <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800 font-sans">
                             @foreach($selectedSO->lines as $line)
-                                <tr>
+                                <tr wire:key="so-detail-line-{{ $line->id }}">
                                     <td class="p-3 text-zinc-400">{{ $line->line_number }}</td>
                                     <td class="p-3 font-sans">
                                         <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $line->description ?: ($line->product?->product_name ?? $line->product?->name) }}</div>
@@ -312,7 +312,7 @@
                     @foreach($selectedSO->lines as $line)
                         @php $rem = (float) $line->getRemainingQty(); @endphp
                         @if($rem > 0)
-                            <div class="p-3 rounded-xl border border-zinc-200 dark:border-zinc-700 flex items-center justify-between gap-4">
+                            <div wire:key="so-fulfill-line-{{ $line->id }}" class="p-3 rounded-xl border border-border flex items-center justify-between gap-4">
                                 <div class="flex-1">
                                     <div class="font-semibold text-xs text-zinc-800 dark:text-zinc-200">{{ $line->description ?: ($line->product?->product_name ?? $line->product?->name) }}</div>
                                     <div class="text-[11px] text-zinc-400">Remaining to ship: <strong>{{ number_format($rem, 2) }}</strong></div>
@@ -423,7 +423,7 @@
                         <span class="text-xs font-bold text-foreground uppercase tracking-wider block">Hasil Perbandingan Tarif Kurir 3PL</span>
                         <div class="space-y-1.5 max-h-56 overflow-y-auto">
                             @foreach ($calculatedShippingRates as $rate)
-                                <div class="p-2.5 rounded-xl border border-border bg-card flex justify-between items-center text-xs">
+                                <div wire:key="shipping-rate-{{ $loop->index }}" class="p-2.5 rounded-xl border border-border bg-card flex justify-between items-center text-xs">
                                     <div class="flex items-center gap-2.5">
                                         <span class="px-2 py-0.5 rounded bg-muted text-[11px] font-bold uppercase text-foreground">
                                             {{ $rate->courierCode }}

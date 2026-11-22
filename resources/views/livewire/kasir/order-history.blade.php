@@ -305,7 +305,7 @@
                             @php
                                 $returnedQty = $detail->orderReturns->flatMap->items->where('order_item_id', $item->id)->sum('quantity_returned');
                             @endphp
-                            <li class="p-3 flex justify-between items-start gap-3 bg-card">
+                            <li wire:key="detail-item-{{ $item->id }}" class="p-3 flex justify-between items-start gap-3 bg-card">
                                 <div class="min-w-0">
                                     <p class="font-bold text-foreground">
                                         {{ $item->qty }}&times; {{ $item->product->product_name ?? 'Deleted Product' }}
@@ -349,13 +349,13 @@
             <x-slot:footer>
                 <div class="flex flex-wrap gap-2 justify-end w-full">
                     <button type="button" wire:click="closeDetail"
-                        class="min-h-[40px] px-4 rounded-xl border border-border bg-card text-xs font-semibold text-muted-foreground hover:bg-muted transition-all active:scale-95">
+                        class="min-h-[44px] min-w-[44px] px-4 rounded-xl border border-border bg-card text-xs font-semibold text-muted-foreground hover:bg-muted transition-all active:scale-95">
                         Close
                     </button>
                     @if ($detail->order_status->value === 'pending' && $detail->payment_method?->value !== 'cash')
                         <button type="button" wire:click="syncMidtransStatus({{ $detail->id }})"
                             wire:loading.attr="disabled" wire:target="syncMidtransStatus"
-                            class="min-h-[40px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-all active:scale-95 shadow-xs disabled:opacity-50">
+                            class="min-h-[44px] min-w-[44px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-all active:scale-95 shadow-xs disabled:opacity-50">
                             <span wire:loading wire:target="syncMidtransStatus" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
                             <span wire:loading.remove wire:target="syncMidtransStatus" class="material-symbols-rounded text-[16px]">sync</span>
                             <span>Sync Midtrans Status</span>
@@ -364,21 +364,21 @@
                     @if (in_array($detail->order_status->value, ['paid', 'completed'], true))
                         <button type="button" wire:click="openReturnModal({{ $detail->id }})"
                             x-on:click="window.erpMotion?.pulseHighlight($el)"
-                            class="min-h-[40px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-amber-600 text-white text-xs font-bold hover:bg-amber-700 transition-all active:scale-95 shadow-xs">
+                            class="min-h-[44px] min-w-[44px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-warning text-white text-xs font-bold hover:bg-warning/90 transition-all active:scale-95 shadow-xs">
                             <span class="material-symbols-rounded text-[16px]">keyboard_return</span> Return &amp; Refund
                         </button>
                     @endif
                     @if ($detail->order_status->value === 'paid' && auth()->user()->can('void', $detail))
                         <button type="button" wire:click="$set('voidingOrderId', {{ $detail->id }})"
                             x-on:click="window.erpMotion?.pulseHighlight($el)"
-                            class="min-h-[40px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-destructive text-destructive-foreground text-xs font-bold hover:bg-destructive/90 transition-all active:scale-95 shadow-xs">
+                            class="min-h-[44px] min-w-[44px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-destructive text-destructive-foreground text-xs font-bold hover:bg-destructive/90 transition-all active:scale-95 shadow-xs">
                             <span class="material-symbols-rounded text-[16px]">cancel</span> Void Order
                         </button>
                     @endif
                     @if (in_array($detail->order_status->value, ['paid', 'completed'], true))
                         <button type="button" wire:click="requestReprint({{ $detail->id }})"
                             x-on:click="window.erpMotion?.pulseHighlight($el)"
-                            class="min-h-[40px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-all active:scale-95 shadow-xs">
+                            class="min-h-[44px] min-w-[44px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-all active:scale-95 shadow-xs">
                             <span class="material-symbols-rounded text-[16px]">print</span>
                             <span>{{ (($detail->print_count ?? 0) > 0) ? 'Reprint (#' . (($detail->print_count ?? 0) + 1) . ')' : 'Print Receipt' }}</span>
                         </button>
@@ -461,7 +461,7 @@
                 <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">1. Select Items &amp; Disposition</h4>
                 <div class="space-y-2.5">
                     @foreach ($returnItems as $id => $item)
-                        <div class="p-3 rounded-xl border border-border bg-muted/30 space-y-2">
+                        <div wire:key="return-item-{{ $id }}" class="p-3 rounded-xl border border-border bg-muted/30 space-y-2">
                             <div class="flex items-start justify-between gap-3">
                                 <label class="flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" wire:model.live="returnItems.{{ $id }}.selected"
@@ -475,7 +475,7 @@
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-border text-xs">
                                     <div>
                                         <label class="block text-[11px] font-bold text-muted-foreground mb-1">Return Quantity</label>
-                                        <input type="number" wire:model.live="returnItems.{{ $id }}.qty"
+                                        <input type="number" wire:model.live.debounce.300ms="returnItems.{{ $id }}.qty"
                                             min="1" max="{{ $item['remaining_qty'] }}"
                                             class="w-full rounded-lg border border-border bg-background px-2 py-1.5 text-xs font-bold text-foreground focus:ring-1 focus:ring-ring outline-none">
                                     </div>
@@ -511,7 +511,7 @@
                 <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">2. Refund Allocation</h4>
                 <div class="space-y-2.5">
                     @foreach ($refundAllocations as $pId => $alloc)
-                        <div class="p-3 rounded-xl border border-border bg-muted/30 space-y-2 text-xs">
+                        <div wire:key="refund-alloc-{{ $pId }}" class="p-3 rounded-xl border border-border bg-muted/30 space-y-2 text-xs">
                             <div class="flex justify-between items-center">
                                 <span class="font-bold text-foreground">Payment #{{ $pId }} (Original Method: <strong class="uppercase">{{ $alloc['orig_method'] }}</strong>)</span>
                                 <span class="text-muted-foreground">Max: <strong class="text-foreground">Rp {{ number_format($alloc['max_amount'], 0, ',', '.') }}</strong></span>
@@ -519,7 +519,7 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                                 <div>
                                     <label class="block text-[11px] font-bold text-muted-foreground mb-1">Refund Amount (Rp)</label>
-                                    <input type="number" wire:model.live="refundAllocations.{{ $pId }}.amount"
+                                    <input type="number" wire:model.live.debounce.300ms="refundAllocations.{{ $pId }}.amount"
                                         min="1" max="{{ $alloc['max_amount'] }}"
                                         class="w-full rounded-lg border border-border bg-background px-2 py-1.5 text-xs font-bold text-foreground focus:ring-1 focus:ring-ring outline-none">
                                 </div>

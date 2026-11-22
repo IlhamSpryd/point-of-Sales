@@ -265,7 +265,7 @@
                                         {{ number_format((float) $item->quantity_shipped, 2) }}
                                     </td>
                                     <td class="p-3 text-right">
-                                        <input type="number" step="0.0001" min="0" max="{{ $item->quantity_shipped }}" wire:model.live="receivedQuantities.{{ $item->id }}" class="form-input w-full p-2 text-right tabular-nums rounded-lg border border-border text-sm font-semibold">
+                                        <input type="number" step="0.0001" min="0" max="{{ $item->quantity_shipped }}" wire:model.live.debounce.300ms="receivedQuantities.{{ $item->id }}" class="form-input w-full p-2 text-right tabular-nums rounded-lg border border-border text-sm font-semibold">
                                         @error("receivedQuantities.{$item->id}") <span class="text-[10px] text-rose-600 block">{{ $message }}</span> @enderror
                                     </td>
                                     <td class="p-3">

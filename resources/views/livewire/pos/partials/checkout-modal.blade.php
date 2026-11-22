@@ -17,7 +17,7 @@
         </div>
 
         <!-- Payment Tabs Bar -->
-        <div class="grid grid-cols-5 p-2 bg-muted border-b border-border gap-1 shrink-0">
+        <div x-show="!receiptReady" class="grid grid-cols-5 p-2 bg-muted border-b border-border gap-1 shrink-0">
             <button type="button" x-on:click="setMethod('cash')"
                 :class="method === 'cash' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'"
                 class="px-3 py-2 rounded-lg font-medium text-xs transition-all flex items-center justify-center gap-1">
@@ -51,7 +51,7 @@
         </div>
 
         <!-- Body Modal Content -->
-        <div class="p-5 overflow-y-auto max-h-[62vh] space-y-4 custom-scrollbar bg-white">
+        <div x-show="!receiptReady" class="p-5 overflow-y-auto max-h-[62vh] space-y-4 custom-scrollbar bg-white">
             <!-- Net Total Due Banner -->
             <div class="flex items-center justify-between p-3.5 rounded-xl bg-muted border border-border">
                 <div>
@@ -323,8 +323,35 @@
             <p x-show="errorMsg" x-cloak class="text-xs font-semibold text-rose-600 bg-rose-50 p-2.5 rounded-lg border border-rose-100" x-text="errorMsg"></p>
         </div>
 
+        <!-- Receipt Fallback State (FE-UX-02 / Browser Popup Blocked Protection) -->
+        <div x-show="receiptReady" x-cloak class="p-8 text-center space-y-4 flex flex-col items-center justify-center min-h-[320px]">
+            <div class="w-14 h-14 rounded-2xl bg-success-muted text-success flex items-center justify-center border border-success-border">
+                <span class="material-symbols-rounded text-3xl">check_circle</span>
+            </div>
+            <div>
+                <h4 class="text-base font-bold text-foreground">Pembayaran Berhasil Diproses</h4>
+                <p class="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                    Struk kasir siap dicetak. Jika pencetakan otomatis terhalang oleh peramban, gunakan tombol di bawah ini:
+                </p>
+                <div class="mt-2 text-xs font-sans font-bold text-foreground tabular-nums">
+                    No. Order: <span x-text="'#' + (receiptOrderCode || '')"></span>
+                </div>
+            </div>
+            <div class="flex items-center justify-center gap-3 pt-3">
+                <button type="button" @click="printReceiptDirect(receiptOrderCode)"
+                    class="h-11 px-5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 flex items-center gap-2 shadow-xs transition-colors cursor-pointer">
+                    <span class="material-symbols-rounded text-[18px]">print</span>
+                    <span>Cetak Ulang Struk</span>
+                </button>
+                <button type="button" @click="closeModal()"
+                    class="h-11 px-5 rounded-xl bg-muted text-foreground text-xs font-semibold hover:bg-muted/80 transition-colors cursor-pointer border border-border">
+                    <span>Selesai / Tutup</span>
+                </button>
+            </div>
+        </div>
+
         <!-- Footer Modal Checkout -->
-        <div class="p-4 bg-muted border-t border-border flex items-center justify-between shrink-0">
+        <div x-show="!receiptReady" class="p-4 bg-muted border-t border-border flex items-center justify-between shrink-0">
             <button type="button" x-on:click.prevent="closeModal()" wire:ignore
                 class="px-4 py-2.5 rounded-lg border border-border hover:bg-white text-foreground font-medium text-sm transition-colors cursor-pointer"
                 aria-label="Cancel payment and return to cart">
@@ -386,6 +413,14 @@
             awaitingSnapToken: null,
             verifyingMidtrans: false,
             pollTimer: null,
+            receiptReady: false,
+            receiptOrderCode: null,
+
+            printReceiptDirect(orderCode) {
+                const code = orderCode || this.receiptOrderCode;
+                if (!code) return;
+                window.open(`/transaction/receipt/${code}?autoprint=1`, '_blank', 'width=400,height=600');
+            },
 
             getWire() {
                 if (this.$wire) return this.$wire;
@@ -417,6 +452,8 @@
                     this.transferSender = '';
                     this.errorMsg = '';
                     this.submitting = false;
+                    this.receiptReady = false;
+                    this.receiptOrderCode = null;
                     this.awaitingMidtransOrderCode = null;
                     this.awaitingSnapToken = null;
                     this.verifyingMidtrans = false;
@@ -425,6 +462,12 @@
                         (Date.now().toString(36) + Math.random().toString(36).slice(2));
                 };
                 window.addEventListener('open-checkout-modal', this._openModalHandler);
+
+                this._receiptReadyHandler = (e) => {
+                    this.receiptOrderCode = e.detail?.orderCode || null;
+                    this.receiptReady = true;
+                };
+                window.addEventListener('pos-receipt-ready', this._receiptReadyHandler);
 
                 if (window.Livewire) {
                     this.bindMidtransEvents();
@@ -466,7 +509,6 @@
                     this.verifyingMidtrans = false;
                     this.awaitingMidtransOrderCode = null;
                     this.awaitingSnapToken = null;
-                    this.closeModal();
                 });
             },
 
@@ -516,6 +558,8 @@
             },
 
             closeModal() {
+                this.receiptReady = false;
+                this.receiptOrderCode = null;
                 this.stopPolling();
                 this.$dispatch('close');
             },
@@ -524,6 +568,9 @@
                 this.stopPolling();
                 if (this._openModalHandler) {
                     window.removeEventListener('open-checkout-modal', this._openModalHandler);
+                }
+                if (this._receiptReadyHandler) {
+                    window.removeEventListener('pos-receipt-ready', this._receiptReadyHandler);
                 }
             },
 
@@ -739,16 +786,23 @@
 
             let printed = false;
             if (window.ApeironPrint?.printReceipt) {
-                printed = await window.ApeironPrint.printReceipt(orderCode);
+                try {
+                    printed = await window.ApeironPrint.printReceipt(orderCode);
+                } catch (err) {
+                    console.warn('[ApeironPrint] Cetak thermal gagal:', err);
+                    printed = false;
+                }
             }
 
-            if (!printed) {
-                window.open(`/transaction/receipt/${orderCode}?autoprint=1`, '_blank', 'width=400,height=600');
-            }
-
-            // [ZERO HARD RELOAD] Tutup modal dan reset dirty flag secara instan tanpa reload halaman
+            // [ZERO HARD RELOAD] Tutup modal jika berhasil dicetak, atau tampilkan fallback jika gagal/popup diblokir
             window.apeironPosCartDirty = false;
-            window.dispatchEvent(new CustomEvent('close-modal', { detail: 'checkout-payment' }));
+            if (printed) {
+                window.dispatchEvent(new CustomEvent('close-modal', { detail: 'checkout-payment' }));
+            } else {
+                // FE-UX-02: Jangan tutup modal secara diam-diam saat popup window.open diblokir browser.
+                // Tampilkan fallback state dengan tombol user-gesture "Cetak Ulang Struk"
+                window.dispatchEvent(new CustomEvent('pos-receipt-ready', { detail: { orderCode } }));
+            }
         });
     }
 
