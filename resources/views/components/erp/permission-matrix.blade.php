@@ -6,7 +6,7 @@
 
 @php
     $rawSelected = is_array($selected) ? $selected : (is_string($selected) ? (json_decode($selected, true) ?: []) : []);
-    $normalizedSelected = app(\App\Modules\Users\Services\RoleService::class)->normalizePermissions($rawSelected);
+    $normalizedSelected = app(\App\Modules\Organization\Services\RoleService::class)->normalizePermissions($rawSelected);
     $hasWildcard = in_array('*', $normalizedSelected, true);
 
     $domains = [

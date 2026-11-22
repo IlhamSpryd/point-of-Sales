@@ -76,8 +76,12 @@ echo "[+] Step 5/5: Broadcasting queue worker reload signal and restarting runti
 $COMPOSE exec -T app php artisan queue:restart
 $COMPOSE restart app reverb web || true
 
-# 7. Final status verification
-echo "[+] Step 5/5: Verifying container health and readiness..."
+# 8. Post-deployment dangling Docker image cleanup
+echo "[+] Step 6/6: Pruning dangling Docker images to preserve VPS disk space..."
+docker image prune -f >/dev/null 2>&1 || true
+
+# 9. Final status verification
+echo "[+] Verifying container health and readiness..."
 $COMPOSE ps
 
 echo "=========================================================="
