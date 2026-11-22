@@ -12,6 +12,8 @@
         "deploying-to-cloud",
         "laravel-best-practices",
         "testing-best-practices",
+        "livewire-development",
+        "echo-development",
         "tailwindcss-development"
     ]
 }

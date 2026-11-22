@@ -9,7 +9,7 @@ The Laravel Boost guidelines are specifically curated by Laravel maintainers for
 
 ## Foundational Context
 
-This application is a Laravel application running on PHP 8.3. You are an expert with the Laravel ecosystem. Always use the APIs that match the installed major version of each package — do not assume a version.
+This application is a Laravel application running on PHP 8.5. You are an expert with the Laravel ecosystem. Always use the APIs that match the installed major version of each package — do not assume a version.
 
 Before relying on a package's API, confirm its installed version:
 - PHP packages: run `composer show --direct` to list direct dependencies with versions, or `composer show <vendor/package>` for a single package.
@@ -24,7 +24,6 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - You must follow all existing code conventions used in this application. When creating or editing a file, check sibling files for the correct structure, approach, and naming.
 - Use descriptive names for variables and methods. For example, `isRegisteredForDiscounts`, not `discount()`.
 - Check for existing components to reuse before writing a new one.
-- **Design Tokens & Zero Hardcoded Hex:** Never introduce new arbitrary hardcoded hex color classes (e.g. `text-[#...]`, `bg-[#...]`, `border-[#...]`). Always use official design system semantic tokens (`bg-background`, `text-foreground`, `bg-card`, `border-border`, `text-muted-foreground`, `bg-primary`, `text-primary-foreground`, `bg-accent`, `ring-ring`, etc.).
 
 ## Verification Scripts
 
@@ -32,16 +31,8 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 ## Application Structure & Architecture
 
-- **13 Canonical Bounded Contexts (ADR-102):** The application is partitioned into exactly 13 modules across 6 tiers under `app/Modules/`:
-  - Tier 1: `Organization`, `Subscription`
-  - Tier 2: `Catalog`, `Customers`, `Workforce`
-  - Tier 3: `Pricing`, `Inventory`, `Manufacturing`
-  - Tier 4: `Sales`, `Purchasing`
-  - Tier 5: `Finance`
-  - Tier 6: `Reporting`, `Integration`
-- **Strict Anti-Drift Guardrails:** Strictly FORBIDDEN to recreate removed legacy directories (`HR`, `Products`, `FNB`, `Restaurant`, `Retail`, `MasterData`, `CRM`, `Users`, `Auth`, `Settings`, `Reports`, `Integrations`) or add thin wrapper classes in `app/Models/` or `app/Services/` (ADR-114). All domain logic and models reside exclusively within their canonical bounded contexts or shared platform primitives under `app/Platform/`.
-- **Core Platform Primitives (app/Platform/):** Mandatory use of `App\Platform\Money\Money` (ADR-106), `App\Platform\Authorization\AbilityRegistry` & `AbilityEvaluator` (ADR-110), `App\Platform\Configuration\TypedConfigService` (ADR-112), `App\Platform\Tenancy\TenantAwareJob` (OPS-01), `App\Platform\Workflow\MakerCheckerGuard` (EXT-04), `App\Platform\Audit\ImmutableAuditWriter`, `App\Platform\Documents\DocumentSequenceService`, and `App\Platform\Outbox\OutboxReaperService` (OPS-04, ADR-107).
-- **Mandatory Verification Gate:** Every change MUST pass `./vendor/bin/phpunit --testsuite=Arch,Unit`, `./vendor/bin/phpstan analyse --error-format=raw --memory-limit=1G`, and `./vendor/bin/pint --test` with 0 errors and zero ratchet ceiling increase (`NoGodClassTest`, `TenantScopeBypassTest`, `ModuleBoundaryTest`).
+- Stick to existing directory structure; don't create new base folders without approval.
+- Do not change the application's dependencies without approval.
 
 ## Frontend Bundling
 
@@ -105,7 +96,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Always use curly braces for control structures, even for single-line bodies.
 - Use PHP 8 constructor property promotion: `public function __construct(public GitHub $github) { }`. Do not leave empty zero-parameter `__construct()` methods unless the constructor is private.
 - Use explicit return type declarations and type hints for all method parameters: `function isAccessible(User $user, ?string $path = null): bool`
-- Use TitleCase for Enum keys: `FavoritePerson`, `BestLake`, `Monthly`.
+- Follow existing application Enum naming conventions.
 - Prefer PHPDoc blocks over inline comments. Only add inline comments for exceptionally complex logic.
 - Use array shape type definitions in PHPDoc blocks.
 
@@ -156,6 +147,14 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 - If you receive an "Illuminate\Foundation\ViteException: Unable to locate file in Vite manifest" error, you can run `npm run build` or ask the user to run `npm run dev` or `composer run dev`.
 
+=== livewire/core rules ===
+
+# Livewire
+
+- Livewire allows you to build dynamic, reactive interfaces in PHP without writing JavaScript.
+- You can use Alpine.js for client-side interactions instead of JavaScript frameworks.
+- Keep state server-side so the UI reflects it. Validate and authorize in actions as you would in HTTP requests.
+
 === pint/core rules ===
 
 # Laravel Pint Code Formatter
@@ -176,5 +175,36 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Run the narrowest set of tests that covers the change. Pass a file path or `--filter=testName` to `php artisan test --compact`.
 - Rerun a test after each change to it.
 - Run `vendor/bin/phpunit` to call the test runner directly. It accepts the same file path and `--filter=testName` arguments.
+
+---
+
+## Frontend Skill Routing (Wave 2 & Ongoing UI Work)
+
+Activate these skills when working on any frontend task. Skills are located in `.agents/skills/`.
+
+### Lead Design & Anti-Slop
+- **`impeccable`** — sole lead design director for all UI critique, polish, and visual quality.
+- **`apeiron-tall-frontend-standards`** — Apeiron-specific TALL stack rules (Blade, Livewire, Alpine.js, Tailwind tokens, offline PWA, KDS).
+
+### Audit 100+ UI Rules (`file:line`)
+- **`web-design-guidelines`** — Web Interface Guidelines checklist (Vercel Labs).
+
+### WCAG 2.2 AAA & Core Web Vitals
+- **`web-quality-audit`** — evidence-led web quality audit (performance, a11y, SEO, best practices).
+- **`accessibility`** — WCAG 2.2 audit and remediation.
+- **`core-web-vitals`** — LCP, INP, CLS optimization.
+- **`performance`** — page speed and load time optimization.
+
+### Livewire & Blade Refactoring (< 450 lines, `wire:key`, `#[Lazy]`)
+- **`livewire-development`** — Livewire 3/4 component patterns, reactivity, SFC/MFC conversion.
+- **`laravel-best-practices`** — Laravel backend patterns supporting frontend.
+- **`tailwindcss-development`** — Tailwind CSS utility classes, responsive grids, dark mode.
+
+### Vite Chunking & Bundle Optimization
+- **`vite`** — Vite config, plugin API, SSR, asset optimization.
+
+### Browser QA, Visual & CI Gate (`axe-core`)
+- **`playwright-cli`** — browser automation, test generation (use `--filename=` and `--headed`, not shell pipe).
+- **`playwright-best-practices`** — POM, CI/CD, a11y testing, flaky test debugging, security testing.
 
 </laravel-boost-guidelines>
