@@ -33,8 +33,22 @@ class AbilityEvaluator
         // 3. Superadmin / Owner bypass within tenant
         $role = $user->role;
         $roleName = $role?->name;
-        if ($role?->is_admin || in_array($roleName, ['Owner', 'Superadmin', 'Administrator'], true)) {
+        $isOwnerOrSuperadmin = in_array($roleName, ['Owner', 'Superadmin', 'Administrator'], true)
+            || ((bool) ($role->is_admin ?? false) && ! in_array($roleName, ['Admin', 'ROLE-ADM'], true));
+        if ($isOwnerOrSuperadmin) {
             return true;
+        }
+
+        // Segregation of Duties (SoD) hard-blocks on Admin (Decision 0.2 / ADR-NAV-009)
+        if ($roleName === 'Admin' || $role?->role_code === 'ROLE-ADM') {
+            if (str_starts_with($abilityName, 'subscription.') || in_array($abilityName, [
+                'finance.journal.post',
+                'finance.close_period',
+                'hrm.payroll_approve',
+                'workforce.payroll.approve',
+            ], true)) {
+                return false;
+            }
         }
 
         // 4. Resolve registered Ability definition
@@ -81,14 +95,16 @@ class AbilityEvaluator
 
         // Context-specific boundaries
         if ($requiredScope === Scope::BRANCH && isset($context['store_id'])) {
-            $userStoreId = null;
+            $targetStoreId = (int) $context['store_id'];
+            $hasStoreAccess = false;
+
             if ($user->relationLoaded('stores') && $user->stores->isNotEmpty()) {
-                $userStoreId = (int) $user->stores->first()->id;
-            } elseif ($user->store_id !== null) {
-                $userStoreId = (int) $user->store_id;
+                $hasStoreAccess = $user->stores->contains(static fn ($s): bool => (int) $s->id === $targetStoreId);
+            } elseif ($user->exists) {
+                $hasStoreAccess = $user->stores()->where('stores.id', $targetStoreId)->exists();
             }
 
-            if ($userScope === Scope::BRANCH && $userStoreId !== (int) $context['store_id']) {
+            if ($userScope === Scope::BRANCH && ! $hasStoreAccess) {
                 return false;
             }
         }

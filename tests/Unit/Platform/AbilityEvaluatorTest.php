@@ -237,4 +237,80 @@ class AbilityEvaluatorTest extends TestCase
             $this->evaluator->can($user, 'hrm.leave', ['user_id' => 99])
         );
     }
+
+    public function test_admin_is_subject_to_sod_hard_blocks_in_ability_evaluator(): void
+    {
+        $adminRole = new Role([
+            'name' => 'Admin',
+            'role_code' => 'ROLE-ADM',
+            'is_system_default' => 1,
+            'permissions' => ['*'],
+        ]);
+
+        $admin = new User([
+            'id' => 101,
+            'tenant_id' => 1,
+            'is_active' => true,
+        ]);
+        $admin->setRelation('role', $adminRole);
+
+        // Operational administrative ability is allowed
+        $this->assertTrue($this->evaluator->can($admin, 'catalog.manage'));
+
+        // SoD Hard-Blocks on Admin must be rejected (false)
+        $this->assertFalse($this->evaluator->can($admin, 'subscription.manage'));
+        $this->assertFalse($this->evaluator->can($admin, 'subscription.billing'));
+        $this->assertFalse($this->evaluator->can($admin, 'finance.journal.post'));
+        $this->assertFalse($this->evaluator->can($admin, 'finance.close_period'));
+        $this->assertFalse($this->evaluator->can($admin, 'workforce.payroll.approve'));
+        $this->assertFalse($this->evaluator->can($admin, 'hrm.payroll_approve'));
+
+        // Conversely, Owner must bypass and be allowed
+        $ownerRole = new Role([
+            'name' => 'Owner',
+            'role_code' => 'ROLE-OWN',
+            'is_system_default' => 1,
+            'is_admin' => true,
+        ]);
+        $owner = new User([
+            'id' => 1,
+            'tenant_id' => 1,
+            'is_active' => true,
+        ]);
+        $owner->setRelation('role', $ownerRole);
+
+        $this->assertTrue($this->evaluator->can($owner, 'subscription.manage'));
+        $this->assertTrue($this->evaluator->can($owner, 'finance.journal.post'));
+        $this->assertTrue($this->evaluator->can($owner, 'workforce.payroll.approve'));
+    }
+
+    public function test_branch_scope_permits_any_assigned_store_when_user_belongs_to_multiple_stores(): void
+    {
+        $role = new Role([
+            'name' => 'Manager',
+            'permissions' => ['sales.create'],
+        ]);
+
+        $user = new User([
+            'id' => 50,
+            'tenant_id' => 1,
+            'is_active' => true,
+        ]);
+        $user->setRelation('role', $role);
+
+        $store1 = new \App\Modules\Organization\Models\Store(['name' => 'Store 10']);
+        $store1->id = 10;
+        $store2 = new \App\Modules\Organization\Models\Store(['name' => 'Store 20']);
+        $store2->id = 20;
+        $user->setRelation('stores', collect([$store1, $store2]));
+
+        // Accessing store 20 (second store) must succeed
+        $this->assertTrue($this->evaluator->can($user, 'sales.create', ['store_id' => 20]));
+
+        // Accessing store 10 (first store) must succeed
+        $this->assertTrue($this->evaluator->can($user, 'sales.create', ['store_id' => 10]));
+
+        // Accessing unassigned store 99 must fail
+        $this->assertFalse($this->evaluator->can($user, 'sales.create', ['store_id' => 99]));
+    }
 }

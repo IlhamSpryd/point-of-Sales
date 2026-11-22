@@ -281,7 +281,6 @@ class UnifiedApprovalInboxTest extends TestCase
             'name' => 'Sam Supervisor',
             'email' => 'supervisor-'.Str::random(6).'@apeiron.test',
             'email_verified_at' => now(),
-            'store_id' => $this->store->id,
         ]);
 
         DB::table('user_stores')->insert([
@@ -312,5 +311,73 @@ class UnifiedApprovalInboxTest extends TestCase
 
         $poRequest->refresh();
         $this->assertEquals(ApprovalStatusEnum::Pending, $poRequest->status);
+    }
+
+    public function test_supervisor_inbox_is_strictly_scoped_to_assigned_branch(): void
+    {
+        $otherStore = Store::withoutGlobalScopes()->create([
+            'tenant_id' => $this->tenant->id,
+            'name' => 'Branch B - Remote',
+            'is_active' => true,
+        ]);
+
+        $cashierRole = Role::firstOrCreate(
+            ['tenant_id' => $this->tenant->id, 'name' => 'Kasir'],
+            ['permissions' => ['orders.create']]
+        );
+
+        $otherMaker = User::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'role_id' => $cashierRole->id,
+            'name' => 'Cashier Store B',
+            'email' => 'cashier-b-'.Str::random(6).'@apeiron.test',
+            'email_verified_at' => now(),
+        ]);
+
+        DB::table('user_stores')->insert([
+            'tenant_id' => $this->tenant->id,
+            'user_id' => $otherMaker->id,
+            'store_id' => $otherStore->id,
+        ]);
+
+        $supervisorRole = Role::firstOrCreate(
+            ['tenant_id' => $this->tenant->id, 'name' => 'Supervisor'],
+            ['permissions' => ['orders.*', 'shifts.*', 'void.approve']]
+        );
+
+        $supervisorUser = User::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'role_id' => $supervisorRole->id,
+            'name' => 'Supervisor Store A',
+            'email' => 'sup-a-'.Str::random(6).'@apeiron.test',
+            'email_verified_at' => now(),
+        ]);
+
+        DB::table('user_stores')->insert([
+            'tenant_id' => $this->tenant->id,
+            'user_id' => $supervisorUser->id,
+            'store_id' => $this->store->id,
+        ]);
+
+        // Operational approval from other store (Store B)
+        $remoteRequest = PurchaseApprovalRequest::withoutGlobalScopes()->create([
+            'tenant_id' => $this->tenant->id,
+            'approvable_type' => 'OrderVoid',
+            'approvable_id' => 909,
+            'rule_id' => null,
+            'step_order' => 1,
+            'status' => ApprovalStatusEnum::Pending,
+            'submitted_by_user_id' => $otherMaker->id,
+        ]);
+
+        // Supervisor of Store A must NOT see Store B requests in inbox
+        Livewire::actingAs($supervisorUser)
+            ->test(UnifiedApprovalInbox::class)
+            ->assertDontSee('#909')
+            ->call('approve', $remoteRequest->id)
+            ->assertSee('Supervisor hanya dapat menyetujui permohonan pada cabang yang ditugaskan');
+
+        $remoteRequest->refresh();
+        $this->assertEquals(ApprovalStatusEnum::Pending, $remoteRequest->status);
     }
 }

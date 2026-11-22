@@ -145,6 +145,10 @@ class NavigationGovernanceTest extends TestCase
             $content,
             'Governance Law G-3 Violated: RoleMiddleware reads config("navigation...").'
         );
+
+        // Prove legacy colliding taxonomies are eradicated from config/navigation.php (AC-MNT-01 / Task 5.1)
+        $this->assertNull(config('navigation.sections'), 'Governance Law G-3: Legacy navigation.sections must be deleted.');
+        $this->assertNull(config('navigation.sub_nav'), 'Governance Law G-3: Legacy navigation.sub_nav must be deleted.');
     }
 
     /**

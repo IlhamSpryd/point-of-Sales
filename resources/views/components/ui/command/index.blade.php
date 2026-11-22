@@ -89,6 +89,11 @@
         },
         select(item) {
             if (! item) return;
+            if (window.apeironPosCartDirty && !confirm('You have an active cart in POS. Leaving this page will cancel the current cart. Continue?')) {
+                return;
+            } else if (window.apeironPosCartDirty) {
+                window.apeironPosCartDirty = false;
+            }
             this.remember(item);
             this.$dispatch('command-select', { value: item.value, title: item.title, url: item.url });
             this.open = false;

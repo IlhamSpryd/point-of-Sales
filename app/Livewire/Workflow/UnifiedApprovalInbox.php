@@ -7,6 +7,7 @@ namespace App\Livewire\Workflow;
 use App\Core\Context\TenantContext;
 use App\Enums\ApprovalStatusEnum;
 use App\Livewire\Concerns\RequiresTenantContext;
+use App\Modules\Organization\Models\User;
 use App\Modules\Purchasing\Models\PurchaseApprovalRequest;
 use App\Platform\Audit\ImmutableAuditWriter;
 use App\Platform\Workflow\Exceptions\SegregationOfDutiesViolationException;
@@ -75,10 +76,27 @@ class UnifiedApprovalInbox extends Component
         }
 
         // Supervisor SoD Guard (OQ-10): Operational approvals only (Void, Discount, Stock Opname/Adjustment)
+        // and strictly branch-scoped (Scope::BRANCH)
         if ($user->role?->name === 'Supervisor') {
             $blockedTypes = ['PurchaseOrder', 'PurchaseRequest', 'Expense', 'purchase_order', 'purchase_request', 'expense'];
             if (in_array($request->approvable_type, $blockedTypes, true)) {
                 session()->flash('error', 'Supervisor dibatasi hanya untuk persetujuan operasional cabang (Order Void, Diskon, Opname/Penyesuaian Stok). Persetujuan PO/Pengeluaran memerlukan Manager atau Owner.');
+
+                return;
+            }
+
+            $userStoreIds = $this->resolveUserStoreIds($user);
+            $reqStoreId = $request->rule?->store_id;
+            if ($reqStoreId === null && $request->submittedByUser !== null) {
+                $submitterStoreIds = $this->resolveUserStoreIds($request->submittedByUser);
+                $hasCommonStore = array_intersect($userStoreIds, $submitterStoreIds) !== [];
+                if (! empty($userStoreIds) && ! $hasCommonStore) {
+                    session()->flash('error', 'Supervisor hanya dapat menyetujui permohonan pada cabang yang ditugaskan.');
+
+                    return;
+                }
+            } elseif ($reqStoreId !== null && ! empty($userStoreIds) && ! in_array((int) $reqStoreId, $userStoreIds, true)) {
+                session()->flash('error', 'Supervisor hanya dapat menyetujui permohonan pada cabang yang ditugaskan.');
 
                 return;
             }
@@ -160,11 +178,29 @@ class UnifiedApprovalInbox extends Component
             return;
         }
 
-        // Supervisor SoD Guard (OQ-10): Operational approvals only
+        // Supervisor SoD Guard (OQ-10): Operational approvals only and branch-scoped
         if ($user->role?->name === 'Supervisor') {
             $blockedTypes = ['PurchaseOrder', 'PurchaseRequest', 'Expense', 'purchase_order', 'purchase_request', 'expense'];
             if (in_array($request->approvable_type, $blockedTypes, true)) {
                 session()->flash('error', 'Supervisor dibatasi hanya untuk persetujuan operasional cabang.');
+                $this->closeRejectModal();
+
+                return;
+            }
+
+            $userStoreIds = $this->resolveUserStoreIds($user);
+            $reqStoreId = $request->rule?->store_id;
+            if ($reqStoreId === null && $request->submittedByUser !== null) {
+                $submitterStoreIds = $this->resolveUserStoreIds($request->submittedByUser);
+                $hasCommonStore = array_intersect($userStoreIds, $submitterStoreIds) !== [];
+                if (! empty($userStoreIds) && ! $hasCommonStore) {
+                    session()->flash('error', 'Supervisor hanya dapat memproses permohonan pada cabang yang ditugaskan.');
+                    $this->closeRejectModal();
+
+                    return;
+                }
+            } elseif ($reqStoreId !== null && ! empty($userStoreIds) && ! in_array((int) $reqStoreId, $userStoreIds, true)) {
+                session()->flash('error', 'Supervisor hanya dapat memproses permohonan pada cabang yang ditugaskan.');
                 $this->closeRejectModal();
 
                 return;
@@ -228,6 +264,14 @@ class UnifiedApprovalInbox extends Component
         $user = auth()->user();
         if ($user?->role?->name === 'Supervisor') {
             $query->whereNotIn('approvable_type', ['PurchaseOrder', 'PurchaseRequest', 'Expense', 'purchase_order', 'purchase_request', 'expense']);
+
+            $userStoreIds = $this->resolveUserStoreIds($user);
+            if (! empty($userStoreIds)) {
+                $query->where(function ($q) use ($userStoreIds) {
+                    $q->whereHas('rule', fn ($rq) => $rq->whereIn('store_id', $userStoreIds))
+                        ->orWhereHas('submittedByUser', fn ($uq) => $uq->whereHas('stores', fn ($sq) => $sq->whereIn('stores.id', $userStoreIds)));
+                });
+            }
         }
 
         if ($this->statusFilter !== 'ALL') {
@@ -265,5 +309,24 @@ class UnifiedApprovalInbox extends Component
             'requests' => $requests,
             'selectedRequest' => $selectedRequest,
         ]);
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function resolveUserStoreIds(?User $user): array
+    {
+        if ($user === null) {
+            return [];
+        }
+
+        $ids = [];
+        if ($user->relationLoaded('stores')) {
+            $ids = $user->stores->pluck('id')->map(static fn ($id): int => (int) $id)->all();
+        } else {
+            $ids = $user->stores()->pluck('stores.id')->map(static fn ($id): int => (int) $id)->all();
+        }
+
+        return array_values(array_unique($ids));
     }
 }

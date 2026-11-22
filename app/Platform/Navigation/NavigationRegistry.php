@@ -61,7 +61,7 @@ final class NavigationRegistry
             return;
         }
 
-        $path = $this->domainsPath ?? config('navigation_engine.domains_path');
+        $path = $this->domainsPath ?? config('navigation.domains_path') ?? config('navigation_engine.domains_path');
         if (! is_string($path) || ! is_dir($path)) {
             throw new RuntimeException('Navigation domains directory is missing: '.var_export($path, true));
         }

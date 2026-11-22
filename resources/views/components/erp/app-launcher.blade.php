@@ -1,3 +1,7 @@
+{{--
+    @deprecated ADR-NAV-011: App Launcher is deprecated and removed from the active top navbar.
+    Kept as a legacy stub for one release; scheduled for complete deletion in next cycle.
+--}}
 @php
     $roleName = auth()->user()?->role?->name;
     $allModules = config('navigation.modules', []);

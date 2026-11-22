@@ -48,7 +48,7 @@
 
     <div x-data="{
             sidebarMobileOpen: false,
-            expanded: true,
+            expanded: window.innerWidth >= 1024,
             isMobile: window.innerWidth < 768,
             get wide() {
                 return this.isMobile ? true : Boolean(this.expanded);
@@ -75,7 +75,7 @@
                 if (main) main.scrollTop = 0;
             }
         }"
-        x-init="expanded = (localStorage.getItem('sidebarExpanded') !== null) ? (localStorage.getItem('sidebarExpanded') === 'true') : true; $watch('expanded', val => localStorage.setItem('sidebarExpanded', val))"
+        x-init="expanded = (localStorage.getItem('sidebarExpanded') !== null) ? (localStorage.getItem('sidebarExpanded') === 'true') : (window.innerWidth >= 1024); $watch('expanded', val => localStorage.setItem('sidebarExpanded', val))"
         x-effect="if (sidebarMobileOpen) { document.body.classList.add('overflow-hidden'); } else { document.body.classList.remove('overflow-hidden'); }"
         @resize.window.debounce.100ms="isMobile = window.innerWidth < 768"
         x-on:livewire:navigating.window="startNav()"
