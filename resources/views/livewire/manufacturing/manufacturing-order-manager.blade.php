@@ -75,7 +75,7 @@
                                     <div class="flex items-center gap-1.5">
                                         <span class="material-symbols-rounded text-amber-500 text-[18px]">blender</span>
                                         <span>{{ $mo->destinationIngredient?->name ?? 'Prep #' . $mo->destination_ingredient_id }}</span>
-                                        <span class="text-2xs bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold px-1.5 py-0.5 rounded">Prep</span>
+                                        <span class="text-2xs text-amber-600 dark:text-amber-400 font-semibold">(Prep)</span>
                                     </div>
                                 @else
                                     <div class="flex items-center gap-1.5">

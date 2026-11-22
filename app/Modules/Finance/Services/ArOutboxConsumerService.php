@@ -30,12 +30,9 @@ class ArOutboxConsumerService
     {
         $query = DB::table('accounting_receivable_outboxes')
             ->where('status', 'pending')
+            ->when($tenantId !== null, fn ($q) => $q->where('tenant_id', $tenantId))
             ->orderBy('id', 'asc')
             ->limit($limit);
-
-        if ($tenantId !== null) {
-            $query->where('tenant_id', $tenantId);
-        }
 
         $records = DB::transaction(function () use ($query) {
             return $query->lock('FOR UPDATE SKIP LOCKED')->get();
@@ -371,6 +368,7 @@ class ArOutboxConsumerService
             $outbox->save();
         } else {
             DB::table('accounting_receivable_outboxes')
+                ->where('tenant_id', $outbox->tenant_id)
                 ->where('id', $outbox->id)
                 ->update([
                     'status' => 'processed_by_m7',
@@ -390,6 +388,7 @@ class ArOutboxConsumerService
             $outbox->save();
         } else {
             DB::table('accounting_receivable_outboxes')
+                ->where('tenant_id', $outbox->tenant_id)
                 ->where('id', $outbox->id)
                 ->update([
                     'retry_count' => $retryCount,

@@ -103,8 +103,8 @@
                                     {{ $req->submittedByUser?->name ?? 'Pengguna #' . $req->submitted_by_user_id }}
                                 </div>
                                 @if ($isOwnSubmission)
-                                    <span class="inline-block mt-0.5 text-2xs px-1.5 py-0.5 bg-muted text-muted-foreground rounded">
-                                        Pengajuan Saya (SoD Terkunci)
+                                    <span class="inline-block mt-0.5 text-2xs text-muted-foreground font-medium">
+                                        (Pengajuan Saya - SoD Terkunci)
                                     </span>
                                 @endif
                             </td>
@@ -170,8 +170,8 @@
 
     {{-- Modal Konfirmasi Penolakan --}}
     @if ($activeRejectingId)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-            <div class="bg-card border border-border rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
+        <x-ui.modal :open="true" maxWidth="md" onClose="$wire.closeRejectModal()">
+            <div class="p-6 space-y-4">
                 <div class="flex items-center justify-between border-b border-border pb-3">
                     <h3 class="text-base font-bold text-foreground flex items-center gap-2">
                         <span class="material-symbols-rounded text-destructive text-[22px]">cancel</span>
@@ -205,13 +205,13 @@
                     </button>
                 </div>
             </div>
-        </div>
+        </x-ui.modal>
     @endif
 
     {{-- Drawer / Modal Detail Permohonan --}}
     @if ($isDetailModalOpen && $selectedRequest)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-            <div class="bg-card border border-border rounded-2xl max-w-2xl w-full p-6 shadow-xl space-y-5 max-h-[90vh] overflow-y-auto">
+        <x-ui.modal :open="true" maxWidth="2xl" onClose="$wire.closeDetailModal()">
+            <div class="p-6 space-y-5 max-h-[90vh] overflow-y-auto">
                 <div class="flex items-center justify-between border-b border-border pb-3">
                     <div>
                         <h3 class="text-base font-bold text-foreground">
@@ -282,7 +282,7 @@
                     </button>
                 </div>
             </div>
-        </div>
+        </x-ui.modal>
     @endif
 </div>
 
