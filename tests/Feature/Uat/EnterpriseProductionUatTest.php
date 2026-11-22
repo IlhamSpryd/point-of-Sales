@@ -8,7 +8,6 @@ use App\Core\Context\TenantContext;
 use App\Enums\ApprovalStatusEnum;
 use App\Enums\KitchenStation;
 use App\Enums\OrderStatus;
-use App\Enums\PreparationStatus;
 use App\Events\KdsOrderCreated;
 use App\Livewire\Kasir\CreateOrder;
 use App\Livewire\Workflow\UnifiedApprovalInbox;
@@ -21,7 +20,6 @@ use App\Modules\Finance\Models\AccountingPeriod;
 use App\Modules\Finance\Models\FinancialEventOutbox;
 use App\Modules\Finance\Models\JournalEntry;
 use App\Modules\Inventory\Models\ProductStockBalance;
-use App\Modules\Organization\Application\Services\TenantLifecyclePurgeService;
 use App\Modules\Organization\Models\ActivityLog;
 use App\Modules\Organization\Models\Company;
 use App\Modules\Organization\Models\Device;
@@ -32,7 +30,6 @@ use App\Modules\Organization\Models\User;
 use App\Modules\Organization\Services\RoleService;
 use App\Modules\Purchasing\Models\PurchaseApprovalRequest;
 use App\Modules\Sales\Models\Order;
-use App\Modules\Sales\Models\OrderItem;
 use App\Modules\Sales\Models\Shift;
 use App\Modules\Sales\Services\TransactionService;
 use App\Modules\Subscription\Application\Services\SubscriptionBillingOrchestrator;
@@ -45,12 +42,12 @@ use App\Platform\Navigation\NavigationRegistry;
 use App\Platform\Navigation\NavigationVisibilityResolver;
 use Database\Seeders\ChartOfAccountsSeeder;
 use Database\Seeders\DefaultPostingRulesSeeder;
-use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -276,6 +273,13 @@ class EnterpriseProductionUatTest extends TestCase
             'tenant_id' => $tenantId,
         ]);
 
+        // 2b. Verify onboarding token generated per EXT-03
+        $this->assertNotEmpty($responseData['onboarding']['onboarding_token'] ?? null, 'Onboarding token must be generated in testing environment.');
+        $this->assertDatabaseHas('owner_onboarding_tokens', [
+            'tenant_id' => $tenantId,
+            'user_id' => $ownerId,
+        ]);
+
         // 3. Verify all provisioning steps marked COMPLETED
         $idempotencyKey = $headers['X-Idempotency-Key'];
         $provisioningReq = ProvisioningRequest::where('idempotency_key', $idempotencyKey)->first();
@@ -385,6 +389,11 @@ class EnterpriseProductionUatTest extends TestCase
             'Admin must be forbidden from updating Owner role.'
         );
 
+        // Admin HTTP route level 403 blocks (Subscription Billing & Owner editing)
+        $this->actingAs($admin)->get(route('subscription.portal'))->assertStatus(403);
+        $this->actingAs($admin)->get(route('users.edit', $owner->id))->assertStatus(403);
+        $this->actingAs($admin)->get(route('roles.edit', $ownerRole->id))->assertStatus(403);
+
         // 3. Sales reaches Customer Directory (customers.index, HTTP 200)
         $this->actingAs($sales)->get(route('customers.index'))->assertStatus(200);
 
@@ -405,6 +414,11 @@ class EnterpriseProductionUatTest extends TestCase
             $sales->can('manageCreditLimit', $customer),
             'Sales role must be forbidden from mutating credit limit.'
         );
+
+        Livewire::actingAs($sales)
+            ->test(\App\Livewire\Customers\CustomerManager::class)
+            ->call('delete', $customer->id, app(\App\Modules\Customers\Services\CustomerService::class))
+            ->assertStatus(403);
 
         // 4. Finance reaches Finance & Supplier Invoices without hitting 403 breadcrumb dead-ends
         $this->actingAs($finance)->get(route('finance.index'))->assertStatus(200);
@@ -523,36 +537,39 @@ class EnterpriseProductionUatTest extends TestCase
             'is_active' => true,
         ]);
 
-        $order = Order::forceCreate([
-            'tenant_id' => $tenant->id,
+        Event::fake([KdsOrderCreated::class]);
+
+        ProductStockBalance::withoutGlobalScopes()->updateOrCreate(
+            ['tenant_id' => $tenant->id, 'store_id' => $store->id, 'product_id' => $product->id],
+            ['quantity' => 50, 'reserved_quantity' => 0]
+        );
+
+        $transactionService = app(TransactionService::class);
+        $waiterOrder = $transactionService->createTransaction([
             'store_id' => $store->id,
-            'order_code' => 'ORD-KDS-'.uniqid(),
-            'order_date' => now(),
-            'user_id' => $waiter->id,
-            'order_status' => OrderStatus::Pending->value,
-            'order_amount' => 45000.00,
-            'subtotal_amount' => 45000.00,
             'order_type' => 'dine_in',
+            'payment_method' => 'qris',
+            'items' => [
+                [
+                    'product_id' => $product->id,
+                    'quantity' => 1,
+                    'unit_price' => 45000,
+                ],
+            ],
             'idempotency_key' => 'kds-event-test-'.uniqid(),
-        ]);
+        ], $waiter->id);
 
-        OrderItem::forceCreate([
-            'tenant_id' => $tenant->id,
-            'store_id' => $store->id,
-            'order_id' => $order->id,
-            'product_id' => $product->id,
-            'qty' => 1,
-            'order_price' => 45000.00,
-            'order_subtotal' => 45000.00,
-            'preparation_status' => PreparationStatus::Pending->value,
-        ]);
+        $this->assertNotNull($waiterOrder);
+        Event::assertDispatched(KdsOrderCreated::class, function (KdsOrderCreated $event) use ($waiterOrder, $tenant, $store) {
+            $channels = $event->broadcastOn();
 
-        $kdsEvent = new KdsOrderCreated($order);
-        $channels = $kdsEvent->broadcastOn();
-        $this->assertCount(1, $channels);
-        $this->assertInstanceOf(PrivateChannel::class, $channels[0]);
-        $this->assertSame("private-kds.tenant.{$tenant->id}.store.{$store->id}", $channels[0]->name);
-        $this->assertSame('kds.order.created', $kdsEvent->broadcastAs());
+            return (int) $event->orderId === (int) $waiterOrder->id
+                && (int) $event->tenantId === (int) $tenant->id
+                && (int) $event->storeId === (int) $store->id
+                && count($channels) === 1
+                && $channels[0]->name === "private-kds.tenant.{$tenant->id}.store.{$store->id}"
+                && $event->broadcastAs() === 'kds.order.created';
+        });
 
         // 5. Cross-tenant user attempting to authorize on Tenant A's KDS channel is denied (false)
         $channelDefinitions = Broadcast::getChannels();
@@ -735,8 +752,8 @@ class EnterpriseProductionUatTest extends TestCase
             ->assertJsonPath('data.synced_count', 1)
             ->assertJsonPath('data.failed_count', 0);
 
-        $reportedStatus = $syncRes2->json('data.results.0.status');
-        $this->assertTrue(in_array($reportedStatus, ['already_synced', 'duplicate_skipped'], true));
+        $this->assertSame('already_synced', $syncRes2->json('data.results.0.status'));
+        $this->assertSame('duplicate_skipped', $syncRes2->json('data.results.0.sync_status'));
         $this->assertSame($offlineOrderId, $syncRes2->json('data.results.0.order_id'));
 
         // Zero duplicate deduction: stock must strictly remain 96
@@ -852,7 +869,61 @@ class EnterpriseProductionUatTest extends TestCase
         $operationalRequestB->refresh();
         $this->assertSame(ApprovalStatusEnum::Pending, $operationalRequestB->status);
 
-        // 3. Supervisor A legitimately approves Store A request in their assigned branch
+        // 3. Supervisor from another tenant attempting to approve Tenant A's request is strictly rejected
+        $foreignTenant = null;
+        $foreignStore = null;
+        $foreignSupervisor = null;
+
+        app(TenantContext::class)->runWithoutTenant(function () use (&$foreignTenant, &$foreignStore, &$foreignSupervisor) {
+            $foreignTenant = Tenant::create([
+                'name' => 'Foreign Corp '.uniqid(),
+                'slug' => 'foreign-corp-'.uniqid(),
+                'status' => 'ACTIVE',
+                'access_status' => Tenant::ACCESS_ACTIVE,
+                'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
+            ]);
+            $foreignStore = Store::withoutGlobalScopes()->create([
+                'tenant_id' => $foreignTenant->id,
+                'name' => 'Foreign Store',
+                'is_active' => true,
+            ]);
+            app(RoleService::class)->provisionDefaultRoles($foreignTenant->id);
+
+            $foreignRole = Role::withoutGlobalScopes()
+                ->where('tenant_id', $foreignTenant->id)
+                ->where('name', 'Supervisor')
+                ->firstOrFail();
+
+            $foreignSupervisor = User::withoutGlobalScopes()->create([
+                'tenant_id' => $foreignTenant->id,
+                'name' => 'Foreign Supervisor',
+                'email' => 'sup.foreign.'.uniqid().'@corp.test',
+                'email_verified_at' => now(),
+                'password' => bcrypt('password'),
+                'role_id' => $foreignRole->id,
+                'store_id' => $foreignStore->id,
+                'is_active' => true,
+            ]);
+            DB::table('user_stores')->insert([
+                'tenant_id' => $foreignTenant->id,
+                'user_id' => $foreignSupervisor->id,
+                'store_id' => $foreignStore->id,
+            ]);
+        });
+
+        app(TenantContext::class)->setTenantId($foreignTenant->id);
+        app(TenantContext::class)->setStoreId($foreignStore->id);
+
+        Livewire::actingAs($foreignSupervisor)
+            ->test(UnifiedApprovalInbox::class)
+            ->call('approve', $operationalRequestA->id)
+            ->assertSee("Permintaan persetujuan #{$operationalRequestA->id} tidak ditemukan");
+
+        // Restore Tenant A context
+        app(TenantContext::class)->setTenantId($tenant->id);
+        app(TenantContext::class)->setStoreId($storeA->id);
+
+        // 4. Supervisor A legitimately approves Store A request in their assigned branch
         Livewire::actingAs($supervisorA)
             ->test(UnifiedApprovalInbox::class)
             ->call('approve', $operationalRequestA->id)
@@ -964,6 +1035,11 @@ class EnterpriseProductionUatTest extends TestCase
         $mutateRes->assertStatus(403);
         $mutateRes->assertJsonPath('error', 'TENANT_ARCHIVED');
 
+        // DELETE mutation is also strictly blocked with 403 TENANT_ARCHIVED
+        $deleteRes = $this->actingAs($owner)->deleteJson('/stores/'.$store->id);
+        $deleteRes->assertStatus(403);
+        $deleteRes->assertJsonPath('error', 'TENANT_ARCHIVED');
+
         // Part C: UU PDP PII Purge & 10-Year Fiscal Record Retention
         $customer = DB::table('customers')->insertGetId([
             'tenant_id' => $tenant->id,
@@ -992,10 +1068,45 @@ class EnterpriseProductionUatTest extends TestCase
             'updated_at' => now()->subMonths(6),
         ]);
 
-        // Execute purge command
-        $purgeService = app(TenantLifecyclePurgeService::class);
-        $purgedTenant = $purgeService->purgeTenant($tenant->id);
+        // Historical fiscal journal entry that MUST be preserved for 10-year retention
+        $fiscalPeriod = AccountingPeriod::create([
+            'tenant_id' => $tenant->id,
+            'period_code' => now()->subMonths(6)->format('Y-m'),
+            'start_date' => now()->subMonths(6)->startOfMonth()->toDateString(),
+            'end_date' => now()->subMonths(6)->endOfMonth()->toDateString(),
+            'fiscal_year' => (int) now()->subMonths(6)->format('Y'),
+            'period_number' => (int) now()->subMonths(6)->format('n'),
+            'status' => AccountingPeriodStatusEnum::OPEN->value,
+            'is_adjustment_period' => false,
+        ]);
 
+        $fiscalJournalId = DB::table('journal_entries')->insertGetId([
+            'tenant_id' => $tenant->id,
+            'company_id' => $fixture['company']->id,
+            'store_id' => $store->id,
+            'accounting_period_id' => $fiscalPeriod->id,
+            'journal_number' => 'JE-FISCAL-'.uniqid(),
+            'idempotency_key' => 'FISCAL-JE-'.uniqid(),
+            'posting_date' => now()->subMonths(6)->toDateString(),
+            'journal_type' => 'GENERAL',
+            'status' => JournalStatusEnum::POSTED->value,
+            'source_module' => 'finance',
+            'source_type' => 'manual',
+            'currency_code' => 'IDR',
+            'total_debit' => 500000.00,
+            'total_credit' => 500000.00,
+            'created_at' => now()->subMonths(6),
+            'updated_at' => now()->subMonths(6),
+        ]);
+
+        // Execute purge command via Artisan
+        $exitCode = Artisan::call('tenant:purge-archived', [
+            'tenant_id' => $tenant->id,
+            '--confirm' => true,
+        ]);
+        $this->assertSame(0, $exitCode);
+
+        $purgedTenant = Tenant::findOrFail($tenant->id);
         $this->assertSame(Tenant::STATUS_PURGED, $purgedTenant->status);
         $this->assertSame(Tenant::ACCESS_PURGED, $purgedTenant->access_status);
 
@@ -1016,9 +1127,14 @@ class EnterpriseProductionUatTest extends TestCase
         $this->assertNull($purgedCustomer->tax_id);
         $this->assertStringContainsString('@anonymized.internal', (string) $purgedCustomer->email);
 
-        // Verify 10-Year Fiscal Order is PRESERVED intact
+        // Verify 10-Year Fiscal Order and Journal Entry are PRESERVED intact
         $fiscalOrder = DB::table('orders')->where('id', $fiscalOrderId)->first();
         $this->assertNotNull($fiscalOrder, 'Historical orders must be preserved for 10-year fiscal compliance.');
         $this->assertEquals('500000.00', $fiscalOrder->order_amount);
+
+        $fiscalJournal = DB::table('journal_entries')->where('id', $fiscalJournalId)->first();
+        $this->assertNotNull($fiscalJournal, 'Historical journal entries must be preserved for 10-year fiscal compliance.');
+        $this->assertEquals('500000.00', $fiscalJournal->total_debit);
+        $this->assertEquals('500000.00', $fiscalJournal->total_credit);
     }
 }

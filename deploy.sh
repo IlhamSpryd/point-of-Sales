@@ -29,7 +29,7 @@ if [ ! -f .env ]; then
 fi
 
 # 3. Pull latest base images and build containers
-echo "[+] Step 1/5: Building and starting production containers..."
+echo "[+] Step 1/6: Building and starting production containers..."
 $COMPOSE pull db redis web || true
 $COMPOSE build app worker scheduler reverb
 
@@ -54,16 +54,16 @@ echo "[+] Starting application, queue worker, scheduler, reverb, and web gateway
 $COMPOSE up -d app worker scheduler reverb web
 
 # 4. Sync compiled frontend assets to host public directory
-echo "[+] Step 2/5: Syncing compiled frontend assets from app container to host..."
+echo "[+] Step 2/6: Syncing compiled frontend assets from app container to host..."
 mkdir -p ./public/build
 $COMPOSE cp app:/var/www/html/public/build/. ./public/build/
 
 # 5. Run database migrations
-echo "[+] Step 3/5: Executing database migrations..."
+echo "[+] Step 3/6: Executing database migrations..."
 $COMPOSE exec -T app php artisan migrate --force --no-interaction
 
 # 6. Clear and re-warm production caches
-echo "[+] Step 4/5: Re-warming application caches..."
+echo "[+] Step 4/6: Re-warming application caches..."
 $COMPOSE exec -T app php artisan optimize:clear
 $COMPOSE exec -T app php artisan config:cache
 $COMPOSE exec -T app php artisan route:cache
@@ -72,7 +72,7 @@ $COMPOSE exec -T app php artisan event:cache
 $COMPOSE exec -T app sh -c 'kill -USR2 1' || true
 
 # 7. Graceful worker, app, reverb & web restart
-echo "[+] Step 5/5: Broadcasting queue worker reload signal and restarting runtime services..."
+echo "[+] Step 5/6: Broadcasting queue worker reload signal and restarting runtime services..."
 $COMPOSE exec -T app php artisan queue:restart
 $COMPOSE restart app reverb web || true
 
