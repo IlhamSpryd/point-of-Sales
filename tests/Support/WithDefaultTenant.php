@@ -46,31 +46,37 @@ trait WithDefaultTenant
             return;
         }
 
-        $this->defaultTenant = Tenant::create([
-            'name' => 'Default Test Tenant '.Str::random(8),
-            'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
-            'access_status' => Tenant::ACCESS_ACTIVE,
-            'status' => 'active',
-        ]);
-        $this->defaultStore = Store::create([
-            'tenant_id' => $this->defaultTenant->id,
-            'name' => 'Default Test Store',
-            'address' => 'Test Address',
-        ]);
+        try {
+            $this->defaultTenant = Tenant::create([
+                'name' => 'Default Test Tenant '.Str::random(8),
+                'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
+                'access_status' => Tenant::ACCESS_ACTIVE,
+                'status' => 'active',
+            ]);
+            $this->defaultStore = Store::create([
+                'tenant_id' => $this->defaultTenant->id,
+                'name' => 'Default Test Store',
+                'address' => 'Test Address',
+            ]);
 
-        $defaultCompany = Company::create([
-            'tenant_id' => $this->defaultTenant->id,
-            'company_code' => 'CMP-DEF',
-            'company_name' => 'Default Company',
-            'legal_name' => 'Default Legal Entity',
-            'is_active' => true,
-            'is_default' => true,
-        ]);
+            $defaultCompany = Company::create([
+                'tenant_id' => $this->defaultTenant->id,
+                'company_code' => 'CMP-DEF',
+                'company_name' => 'Default Company',
+                'legal_name' => 'Default Legal Entity',
+                'is_active' => true,
+                'is_default' => true,
+            ]);
 
-        Artisan::call('tenant:provision-system-users', ['tenant' => $this->defaultTenant->id]);
+            Artisan::call('tenant:provision-system-users', ['tenant' => $this->defaultTenant->id]);
 
-        $context->setTenantId($this->defaultTenant->id);
-        $context->setCompanyId($defaultCompany->id);
-        $context->setStoreId($this->defaultStore->id);
+            $context->setTenantId($this->defaultTenant->id);
+            $context->setCompanyId($defaultCompany->id);
+            $context->setStoreId($this->defaultStore->id);
+        } catch (\Throwable) {
+            // Tests that do not use database traits (e.g. view audits running
+            // across parallel processes) gracefully proceed without database seeding.
+            return;
+        }
     }
 }

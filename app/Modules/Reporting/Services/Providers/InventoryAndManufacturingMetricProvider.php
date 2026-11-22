@@ -288,6 +288,8 @@ class InventoryAndManufacturingMetricProvider
             return '0.00';
         }
 
-        return bcmul(bcdiv($part, $total, 4), '100', 2);
+        $raw = bcmul(bcdiv($part, $total, 6), '100', 4);
+
+        return number_format(round((float) $raw, 2, PHP_ROUND_HALF_UP), 2, '.', '');
     }
 }
