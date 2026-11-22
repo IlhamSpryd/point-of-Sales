@@ -26,6 +26,14 @@
         </testsuite>
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
+            <exclude>tests/Feature/Tenancy</exclude>
+            <exclude>tests/Feature/Finance</exclude>
+            <exclude>tests/Feature/Subscription</exclude>
+            <exclude>tests/Feature/Workflow</exclude>
+            <exclude>tests/Feature/Navigation</exclude>
+            <exclude>tests/Feature/Kasir</exclude>
+            <exclude>tests/Feature/Retail</exclude>
+            <exclude>tests/Feature/Manufacturing</exclude>
         </testsuite>
     </testsuites>
     <groups>

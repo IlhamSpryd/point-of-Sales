@@ -18,6 +18,8 @@ use Tests\TestCase;
  */
 final class StatusPaletteTest extends TestCase
 {
+    protected bool $optOutFromDefaultTenant = true;
+
     /**
      * @return array<int, array{0: string, 1: string}>
      */

@@ -196,6 +196,12 @@ class CheckoutOrderHandler
 
                 $mergedItems = [];
                 foreach ($data['items'] as $rawItem) {
+                    if (! isset($rawItem['quantity']) || (int) $rawItem['quantity'] <= 0) {
+                        throw ValidationException::withMessages([
+                            'items' => 'Item quantity must be greater than zero.',
+                        ]);
+                    }
+
                     $optKey = '';
                     if (! empty($rawItem['options'])) {
                         $optIds = collect($rawItem['options'])->pluck('modifier_id')->filter()->sort()->values()->all();

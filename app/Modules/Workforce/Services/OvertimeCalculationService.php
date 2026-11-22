@@ -141,7 +141,9 @@ class OvertimeCalculationService
             return '0.00';
         }
 
-        return bcmul($hours, $rate, 2);
+        $product = bcmul($hours, $rate, 4);
+
+        return $this->toNumericString((string) round((float) $product, 2, PHP_ROUND_HALF_UP), 2);
     }
 
     /**

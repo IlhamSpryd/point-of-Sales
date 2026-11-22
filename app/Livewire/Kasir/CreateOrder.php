@@ -53,10 +53,10 @@ class CreateOrder extends Component
 
         $role = $authUser->role;
         $roleName = $role?->name;
-        $hasLegacyRole = (bool) ($role?->is_admin) || in_array($roleName, ['Owner', 'Manager', 'Kasir', 'Admin', 'Waiter'], true);
-        $evaluator = app(\App\Platform\Authorization\AbilityEvaluator::class);
+        $isCanonicalCashier = (bool) ($role?->is_admin) || in_array($roleName, ['Owner', 'Manager', 'Kasir', 'Admin'], true);
+        $isAuthorizedWaiter = $roleName === 'Waiter' && ((bool) $role->hasPermission('orders.create') || (bool) $role->hasPermission('can_create_order'));
 
-        if (! $hasLegacyRole && ! $evaluator->can($authUser, 'sales.create', ['store_id' => $this->activeStoreId])) {
+        if (! $isCanonicalCashier && ! $isAuthorizedWaiter) {
             abort(403, 'You do not have permission to access the POS terminal.');
         }
 
