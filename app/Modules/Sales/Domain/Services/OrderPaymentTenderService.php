@@ -40,6 +40,7 @@ class OrderPaymentTenderService
         foreach ($rawLegs as $i => $leg) {
             if (! is_array($leg)) {
                 throw ValidationException::withMessages([
+                    'payments' => 'Payment leg format must be an array.',
                     "payments.{$i}" => 'Payment leg format must be an array.',
                 ]);
             }
@@ -55,6 +56,7 @@ class OrderPaymentTenderService
 
             if ($method === null) {
                 throw ValidationException::withMessages([
+                    'payments' => 'Invalid payment method: '.json_encode($methodRaw),
                     "payments.{$i}.payment_method" => 'Invalid payment method: '.json_encode($methodRaw),
                 ]);
             }
@@ -62,6 +64,7 @@ class OrderPaymentTenderService
             $amountRaw = $leg['amount'] ?? null;
             if (! is_numeric($amountRaw) || (int) $amountRaw <= 0) {
                 throw ValidationException::withMessages([
+                    'payments' => 'Payment leg amount must be greater than zero.',
                     "payments.{$i}.amount" => 'Payment leg amount must be greater than zero.',
                 ]);
             }
@@ -72,6 +75,7 @@ class OrderPaymentTenderService
 
             if ($method === PaymentMethod::Cash && $tendered < $amount) {
                 throw ValidationException::withMessages([
+                    'payments' => 'Cash tendered (Rp'.number_format($tendered, 0, ',', '.').') cannot be less than cash applied (Rp'.number_format($amount, 0, ',', '.').').',
                     "payments.{$i}.amount_tendered" => 'Cash tendered (Rp'.number_format($tendered, 0, ',', '.').') cannot be less than cash applied (Rp'.number_format($amount, 0, ',', '.').').',
                 ]);
             }

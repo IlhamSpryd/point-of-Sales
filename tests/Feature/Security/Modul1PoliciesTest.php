@@ -96,6 +96,8 @@ class Modul1PoliciesTest extends TestCase
         // Kasir hanya ditugaskan di Cabang 1
         $kasir->stores()->attach($store1->id, ['tenant_id' => $tenant->id]);
 
+        app(TenantContext::class)->setTenantId($tenant->id);
+
         return [$tenant, $store1, $store2, $owner, $kasir];
     }
 

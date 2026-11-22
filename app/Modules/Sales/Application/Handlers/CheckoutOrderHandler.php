@@ -187,6 +187,12 @@ class CheckoutOrderHandler
                         ->where('status', ParkedCart::STATUS_PARKED)
                         ->lockForUpdate()
                         ->first();
+
+                    if (! $parkedCart) {
+                        throw ValidationException::withMessages([
+                            'parked_cart_id' => 'The parked cart is no longer active or has already been converted.',
+                        ]);
+                    }
                 }
 
                 $parsedPaymentLegs = null;

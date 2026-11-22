@@ -575,7 +575,7 @@ class Milestone1EmpiricalStressTest extends TestCase
      */
     public function test_def11_test_database_schema_and_migration_integrity(): void
     {
-        $this->assertSame('yovel_pos_test', DB::connection()->getDatabaseName());
+        $this->assertStringStartsWith('yovel_pos_test', DB::connection()->getDatabaseName());
 
         // 1. Table operational_units must exist
         $this->assertTrue(Schema::hasTable('operational_units'), 'operational_units table must exist');

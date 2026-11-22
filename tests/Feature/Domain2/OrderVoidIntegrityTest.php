@@ -63,6 +63,8 @@ class OrderVoidIntegrityTest extends TestCase
             'tenant_id' => $this->tenant->id,
             'role_id' => $this->adminRole->id,
         ]);
+
+        $this->cashier->stores()->attach($this->store->id, ['tenant_id' => $this->tenant->id]);
     }
 
     public function test_void_order_persists_void_status_and_audit_fields(): void
