@@ -361,6 +361,8 @@ class ExecutiveDashboardService
 
         if ($isReconciled) {
             return [
+                'state' => 'reconciled',
+                'status_state' => 'reconciled',
                 'is_trusted' => true,
                 'is_reconciled' => true,
                 'status_badge' => '100% Reconciled',
@@ -382,7 +384,9 @@ class ExecutiveDashboardService
         }
 
         return [
-            'is_trusted' => false,
+            'state' => 'audit_pending',
+            'status_state' => 'audit_pending',
+            'is_trusted' => true,
             'is_reconciled' => false,
             'status_badge' => 'Audit Pending',
             'status_text' => implode(' • ', $parts),

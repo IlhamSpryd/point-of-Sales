@@ -17,6 +17,7 @@ use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\Shift;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class DashboardOperationalWiringTest extends TestCase
@@ -538,5 +539,52 @@ class DashboardOperationalWiringTest extends TestCase
             ->post(route('roles.duplicate', $foreignRole->id));
 
         $response->assertNotFound();
+    }
+
+    public function test_gl_trust_indicator_returns_audit_pending_when_shifts_are_open_without_false_variance(): void
+    {
+        app(TenantContext::class)->setTenantId($this->tenant->id);
+
+        // Buat open shift kasir aktif
+        DB::table('shifts')->insert([
+            'tenant_id' => $this->tenant->id,
+            'store_id' => $this->store->id,
+            'user_id' => $this->ownerUser->id,
+            'opened_at' => now(),
+            'closed_at' => null,
+            'opening_balance' => 100000,
+            'status' => 'open',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $execService = app(ExecutiveDashboardService::class);
+        $data = $execService->getMetrics($this->ownerUser, 'today', $this->store->id, null, true);
+
+        $this->assertNotNull($data['glTrustIndicator']);
+        $this->assertEquals('audit_pending', $data['glTrustIndicator']['status_state']);
+        $this->assertTrue($data['glTrustIndicator']['is_trusted']);
+        $this->assertFalse($data['glTrustIndicator']['is_reconciled']);
+        $this->assertEquals('Audit Pending', $data['glTrustIndicator']['status_badge']);
+        $this->assertEquals(0, $data['glTrustIndicator']['reconciliation_variance']);
+        $this->assertGreaterThan(0, $data['glTrustIndicator']['unclosed_shifts']);
+    }
+
+    public function test_gl_trust_indicator_returns_reconciled_when_all_shifts_closed(): void
+    {
+        app(TenantContext::class)->setTenantId($this->tenant->id);
+
+        // Tutup semua shift
+        DB::table('shifts')->where('tenant_id', $this->tenant->id)->update(['closed_at' => now()]);
+
+        $execService = app(ExecutiveDashboardService::class);
+        $data = $execService->getMetrics($this->ownerUser, 'today', $this->store->id, null, true);
+
+        $this->assertNotNull($data['glTrustIndicator']);
+        $this->assertEquals('reconciled', $data['glTrustIndicator']['status_state']);
+        $this->assertTrue($data['glTrustIndicator']['is_trusted']);
+        $this->assertTrue($data['glTrustIndicator']['is_reconciled']);
+        $this->assertEquals('100% Reconciled', $data['glTrustIndicator']['status_badge']);
+        $this->assertEquals(0, $data['glTrustIndicator']['reconciliation_variance']);
     }
 }

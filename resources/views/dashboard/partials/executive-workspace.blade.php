@@ -5,7 +5,13 @@
     <section class="space-y-6" aria-label="Executive BI View">
         {{-- GL Accounting Trust Indicator Banner --}}
         @if(isset($executiveData['glTrustIndicator']))
-            @if(!empty($executiveData['glTrustIndicator']['is_trusted']) || !empty($executiveData['glTrustIndicator']['is_reconciled']))
+            @php
+                $glTrust = $executiveData['glTrustIndicator'];
+                $glVariance = (float) ($glTrust['reconciliation_variance'] ?? 0);
+                $isReconciled = !empty($glTrust['is_reconciled']);
+                $isAuditPending = ($glTrust['status_state'] ?? '') === 'audit_pending' || (!$isReconciled && abs($glVariance) < 0.01);
+            @endphp
+            @if($isReconciled)
                 <div class="rounded-xl border border-success-border bg-success-muted p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-rounded text-success text-2xl">verified_user</span>
@@ -20,6 +26,21 @@
                         Audited &amp; Reconciled
                     </span>
                 </div>
+            @elseif($isAuditPending)
+                <div class="rounded-xl border border-warning-border bg-warning-muted p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-rounded text-warning text-2xl">pending_actions</span>
+                        <div>
+                            <div class="text-xs sm:text-sm font-bold text-foreground">Audit Shift Berjalan: Buku Besar Sinkron (Variance: Rp 0)</div>
+                            <div class="text-xs text-muted-foreground mt-0.5">
+                                {{ $glTrust['status_text'] ?? 'Shift kasir aktif belum ditutup' }} · Subledger POS dan Jurnal GL seimbang tanpa selisih transaksi.
+                            </div>
+                        </div>
+                    </div>
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-warning text-warning-foreground self-start sm:self-auto">
+                        {{ $glTrust['status_badge'] ?? 'Audit Pending' }}
+                    </span>
+                </div>
             @else
                 <div class="rounded-xl border border-destructive-border bg-destructive-muted p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-center gap-3">
@@ -27,7 +48,7 @@
                         <div>
                             <div class="text-xs sm:text-sm font-bold text-destructive">GL Reconciliation Variance Detected</div>
                             <div class="text-xs text-muted-foreground mt-0.5">
-                                Selisih Rp {{ number_format($executiveData['glTrustIndicator']['reconciliation_variance'] ?? 0, 0, ',', '.') }} antara POS Subledger (Rp {{ number_format($executiveData['glTrustIndicator']['net_pos_sales'] ?? 0, 0, ',', '.') }}) dan Jurnal GL (Rp {{ number_format($executiveData['glTrustIndicator']['sales_journal_balance'] ?? 0, 0, ',', '.') }}). Periksa unposted batches!
+                                Selisih Rp {{ number_format($glVariance, 0, ',', '.') }} antara POS Subledger (Rp {{ number_format($glTrust['net_pos_sales'] ?? 0, 0, ',', '.') }}) dan Jurnal GL (Rp {{ number_format($glTrust['sales_journal_balance'] ?? 0, 0, ',', '.') }}). Periksa unposted batches!
                             </div>
                         </div>
                     </div>
