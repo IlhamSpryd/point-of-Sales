@@ -27,7 +27,7 @@
     $currentRouteName = request()->route()?->getName();
     if ($currentRouteName !== null) {
         $activeNode = $navRegistry->primaryForRoute($currentRouteName);
-        $activeHubId = $navRegistry->hubFor($activeNode)?->id;
+        $activeHubId = $activeNode !== null ? $navRegistry->hubFor($activeNode)?->id : null;
     }
 
     $homeUrl = route('home');

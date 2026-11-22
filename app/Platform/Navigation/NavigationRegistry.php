@@ -334,8 +334,12 @@ final class NavigationRegistry
         return $this->pagesByHub[$hubId] ?? [];
     }
 
-    public function hubFor(NavigationNode $node): ?NavigationNode
+    public function hubFor(?NavigationNode $node): ?NavigationNode
     {
+        if ($node === null) {
+            return null;
+        }
+
         $this->ensureLoaded();
 
         if ($node->isHub()) {
@@ -354,8 +358,12 @@ final class NavigationRegistry
     /**
      * The hub a page-tab belongs to (walks one extra level).
      */
-    public function hubForTab(NavigationNode $tab): ?NavigationNode
+    public function hubForTab(?NavigationNode $tab): ?NavigationNode
     {
+        if ($tab === null) {
+            return null;
+        }
+
         $this->ensureLoaded();
 
         $page = $tab->parent !== null ? ($this->byId[$tab->parent] ?? null) : null;
@@ -363,8 +371,12 @@ final class NavigationRegistry
         return $page !== null ? $this->hubFor($page) : null;
     }
 
-    public function domainFor(NavigationNode $node): ?NavigationNode
+    public function domainFor(?NavigationNode $node): ?NavigationNode
     {
+        if ($node === null) {
+            return null;
+        }
+
         $this->ensureLoaded();
 
         $hub = $node->isHub() ? $node : $this->hubFor($node);
