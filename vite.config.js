@@ -10,4 +10,18 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks(id) {
+                    if (id.includes('echarts')) {
+                        return 'vendor-echarts';
+                    }
+                    if (id.includes('gsap')) {
+                        return 'vendor-gsap';
+                    }
+                },
+            },
+        },
+    },
 });

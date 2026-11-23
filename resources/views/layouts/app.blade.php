@@ -3,6 +3,13 @@
 
 <head>
     <meta charset="utf-8">
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @auth
@@ -116,14 +123,19 @@
         <!-- Sidebar Navigation -->
         @include('layouts.navigation')
 
-        <!-- Main Content Wrapper (Unified White Frame with Inset Workspace Canvas) -->
-        <div class="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 bg-shell" id="main-wrapper">
+        <!-- Main Content Wrapper (Unified Curved Shell Frame with Inset Workspace Canvas) -->
+        <div class="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 bg-shell lg:pr-2.5 lg:pb-2.5" id="main-wrapper">
 
-            <!-- Unified White Top Navbar (Flows flush from left sidebar) -->
-            <header class="h-14 md:h-16 shrink-0 bg-shell text-shell-foreground flex items-center justify-between px-4 md:px-6 z-20 border-b-0 select-none">
+            <!-- Sticky h-14 Top Navbar (Flows flush from left sidebar) -->
+            <header class="h-14 shrink-0 bg-shell text-shell-foreground flex items-center justify-between px-4 lg:px-5 z-30 sticky top-0 border-b-0 select-none">
                 
-                <!-- Left: Active Branch & Context Breadcrumbs -->
-                <div class="flex items-center gap-2 md:gap-3 pl-12 md:pl-0 min-w-0">
+                <!-- Left: Mobile Drawer Trigger + Active Branch & Context Breadcrumbs -->
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <button type="button" @click="sidebarMobileOpen = true" aria-label="Open navigation menu"
+                        class="md:hidden min-h-[44px] min-w-[44px] rounded-lg bg-shell-accent hover:bg-shell-border text-shell-foreground flex items-center justify-center border border-shell-border shrink-0 cursor-pointer">
+                        <span class="material-symbols-rounded text-[20px]">menu</span>
+                    </button>
+
                     {{-- Branch Switcher (Top Navbar) --}}
                     <x-branch-switcher :dark="true" align="left" />
 
@@ -131,10 +143,68 @@
                     <x-erp.context-breadcrumbs />
                 </div>
 
-                <!-- Right: Utilities, Search & Notifications (Ultra-Minimal Tier-1 Layout) -->
+                <!-- Right: Utilities, Search & Notifications -->
                 <div class="flex items-center gap-2 sm:gap-2.5 shrink-0">
                     {{-- Sleek Command Palette Search (Cmd+K) --}}
                     <x-ui.header-search />
+
+                    {{-- Authorized Role Perspective Selector (Gated by AbilityEvaluator) --}}
+                    @if(request()->routeIs('dashboard*'))
+                        @php
+                            /** @var \App\Platform\Authorization\AbilityEvaluator $abilityEvaluator */
+                            $abilityEvaluator = app(\App\Platform\Authorization\AbilityEvaluator::class);
+                            $currentUser = auth()->user();
+                            $perspectives = [];
+                            if ($currentUser) {
+                                $isOwnerOrAdmin = in_array($currentUser->role?->name, ['Owner', 'Superadmin', 'Administrator'], true)
+                                    || (bool) ($currentUser->role?->is_admin ?? false)
+                                    || $currentUser->canViewConsolidatedStores();
+                                if ($isOwnerOrAdmin || $abilityEvaluator->can($currentUser, 'dashboard.scope.all_stores') || $abilityEvaluator->can($currentUser, 'dashboard.view')) {
+                                    $perspectives['executive'] = 'Executive / Owner';
+                                }
+                                if ($isOwnerOrAdmin || $abilityEvaluator->can($currentUser, 'dashboard.perspective.branch_ops') || in_array($currentUser->role?->name, ['Manager'], true)) {
+                                    $perspectives['branch_ops'] = 'Branch Ops';
+                                }
+                                if ($isOwnerOrAdmin || $abilityEvaluator->can($currentUser, 'dashboard.perspective.cashier') || in_array($currentUser->role?->name, ['Cashier', 'Kasir'], true)) {
+                                    $perspectives['cashier_workspace'] = 'Cashier / Shift';
+                                }
+                                if ($isOwnerOrAdmin || $abilityEvaluator->can($currentUser, 'dashboard.perspective.inventory') || (bool) $currentUser->hasPermission('inventory.view')) {
+                                    $perspectives['inventory'] = 'Inventory Control';
+                                }
+                                if ($isOwnerOrAdmin || $abilityEvaluator->can($currentUser, 'dashboard.perspective.finance') || (bool) $currentUser->hasPermission('finance.view')) {
+                                    $perspectives['finance'] = 'Finance & GL';
+                                }
+                            }
+                            $currentView = request()->query('view', $activeArchetype ?? 'executive');
+                        @endphp
+                        @if(count($perspectives) > 1)
+                            <div class="relative hidden sm:block">
+                                <select aria-label="Switch dashboard role view"
+                                    onchange="window.location.href = this.value"
+                                    class="h-8 px-2.5 rounded-lg bg-shell-accent border border-shell-border text-shell-foreground-active text-xs font-medium cursor-pointer focus:outline-none focus:ring-1 focus:ring-shell-ring">
+                                    @foreach($perspectives as $key => $label)
+                                        <option value="{{ route('dashboard', array_merge(request()->query(), ['view' => $key])) }}" {{ $currentView === $key ? 'selected' : '' }}>
+                                            Role: {{ $label }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+                    @endif
+
+                    {{-- Light/Dark Theme Switcher (Zero FOUC & Persisted) --}}
+                    <button type="button"
+                        @click="
+                            let isDark = document.documentElement.classList.toggle('dark');
+                            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                            $dispatch('theme-changed', { theme: isDark ? 'dark' : 'light' });
+                        "
+                        aria-label="Toggle color theme"
+                        class="w-8 h-8 rounded-lg bg-shell-accent hover:bg-shell-border text-shell-foreground hover:text-shell-foreground-active border border-shell-border flex items-center justify-center transition-colors cursor-pointer"
+                        title="Toggle Light / Dark Theme">
+                        <span class="material-symbols-rounded text-[18px] dark:hidden">dark_mode</span>
+                        <span class="material-symbols-rounded text-[18px] hidden dark:inline">light_mode</span>
+                    </button>
 
                     {{-- Micro Sync Indicator (Clean dot replaces bulky text badge) --}}
                     <div class="hidden sm:flex items-center justify-center w-8 h-8 rounded-lg text-shell-foreground hover:bg-shell-accent hover:text-shell-foreground-active transition-colors cursor-default"
@@ -152,7 +222,7 @@
 
             <!-- Main Scrollable Area (Curved Inset Workspace Canvas with Unified Border) -->
             <main
-                class="flex-1 overflow-y-auto overflow-x-hidden w-full bg-background md:rounded-tl-[28px] border-t border-l border-shell-border shadow-[inset_0_1px_3px_rgba(0,0,0,0.02)] flex flex-col {{ ($noPadding ?? false) ? '' : 'p-4 sm:p-6 lg:p-8' }}"
+                class="flex-1 overflow-y-auto overflow-x-hidden w-full bg-card border-t lg:border border-border rounded-t-[22px] lg:rounded-[20px] shadow-shell flex flex-col {{ ($noPadding ?? false) ? '' : 'p-4 sm:p-6 lg:p-7' }}"
                 :class="{ 'opacity-60 transition-opacity duration-150 pointer-events-none': navigating }"
                 id="main-content"
                 data-gsap="page-enter">

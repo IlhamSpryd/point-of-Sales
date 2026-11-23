@@ -26,14 +26,14 @@ use App\Modules\Sales\Models\OrderItem;
 use App\Modules\Sales\Models\OrderReturn;
 use App\Modules\Sales\Models\Shift;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Tests\Support\TwoTenantFixture;
 use Tests\TestCase;
 
 class Wave7SalesAnalyticsTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
     use TwoTenantFixture;
 
     protected SalesAnalyticsService $analyticsService;

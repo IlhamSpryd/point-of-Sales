@@ -11,14 +11,14 @@ use App\Exports\SalesExport;
 use App\Modules\Reporting\Services\ReportService;
 use App\Modules\Sales\Models\Order;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Tests\Support\TwoTenantFixture;
 use Tests\TestCase;
 
 class ReportServiceMultiStoreTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
     use TwoTenantFixture;
 
     protected function afterSubclassSetUp(): void

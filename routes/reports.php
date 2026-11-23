@@ -20,6 +20,8 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::post('/dashboard/approve-ticket', [DashboardController::class, 'approveTicket'])->name('dashboard.approve-ticket');
         Route::post('/dashboard/store-targets', [DashboardController::class, 'saveStoreTarget'])->name('dashboard.store-targets.save');
+        Route::get('/dashboard/orders/{orderId}/receipt', [DashboardController::class, 'orderReceipt'])->name('dashboard.orders.receipt');
+        Route::get('/dashboard/products/{productId}/recipe-bom', [DashboardController::class, 'productRecipeBom'])->name('dashboard.products.recipe-bom');
         Route::get('/analytics', AdvancedAnalyticsDashboard::class)->name('reports.analytics');
         Route::get('/reports/sales', [ReportController::class, 'index'])->name('reports.sales');
         Route::post('/reports/sales/eod-close', [ReportController::class, 'closeEod'])->name('reports.eod-close');

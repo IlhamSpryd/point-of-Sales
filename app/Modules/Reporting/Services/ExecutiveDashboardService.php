@@ -7,33 +7,48 @@ namespace App\Modules\Reporting\Services;
 use App\Core\Context\TenantContext;
 use App\Modules\Finance\Models\JournalEntry;
 use App\Modules\Organization\Models\User;
-use App\Modules\Sales\Models\Order;
-use App\Modules\Sales\Models\Shift;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Schema;
 
 /**
  * ExecutiveDashboardService
  *
- * Pusat Komando Intelijen Bisnis & Multi-Branch Executive Command Center (SAP Fiori / Odoo 18 style).
- * Menerapkan:
- * 1. Fail-closed tenant isolation & branch scoping.
- * 2. Akrual non-retroaktif PSAK/SAP (pemisahan order date vs return date via MetricRegistry).
- * 3. Granular permission gating: Jika user tidak memiliki 'dashboard.metric.profit_margin',
- *    data HPP/COGS dan Gross Margin disensor total (Single-Axis Net Sales chart payload).
- * 4. Partisi Cache 5-Tier Redis:
- *    pos:dash:{tenant_id}:comp_{company_id}:store_{store_scope}:role_{role_id}:perm_{perm_hash}:{period_hash}
- * 5. Plan vs Actual Attainment % & Month-End Run-Rate Projection.
- * 6. General Ledger Accounting Trust Indicator.
+ * Koordinator / Fasade Dasbor Eksekutif (< 500 lines).
+ * Mengorkestrasi:
+ * 1. Otorisasi multi-tenant fail-closed & branch scoping.
+ * 2. Partisi cache 5-Tier Redis: pos:dash:{tenant}:comp_{c}:store_{s}:role_{r}:perm_{p}:{period}.
+ * 3. Plan vs Actual Attainment Engine (KPI-PLN-01 via store_targets).
+ * 4. General Ledger Accounting Trust Indicator (3-state: reconciled, audit_pending, variance_detected).
+ * 5. Delegasi kueri ke DashboardOverviewQueryService & DashboardOperationsQueryService.
  */
 class ExecutiveDashboardService
 {
+    protected DashboardOverviewQueryService $overviewService;
+
+    protected DashboardOperationsQueryService $operationsService;
+
     public function __construct(
         protected TenantContext $tenantContext,
         protected MetricRegistry $metricRegistry,
-    ) {}
+        ?DashboardOverviewQueryService $overviewService = null,
+        ?DashboardOperationsQueryService $operationsService = null,
+    ) {
+        $this->overviewService = $overviewService ?? new DashboardOverviewQueryService($this->tenantContext, $this->metricRegistry);
+        $this->operationsService = $operationsService ?? new DashboardOperationsQueryService($this->tenantContext, $this->metricRegistry);
+    }
+
+    public function overview(): DashboardOverviewQueryService
+    {
+        return $this->overviewService;
+    }
+
+    public function operations(): DashboardOperationsQueryService
+    {
+        return $this->operationsService;
+    }
 
     /**
      * Mengambil metrik eksekutif lengkap dengan partisi cache.
@@ -49,8 +64,6 @@ class ExecutiveDashboardService
     ): array {
         $tenantId = $this->tenantContext->requireTenantId();
 
-        // Verifikasi wewenang cabang: Hanya Owner/Admin atau yang punya izin 'dashboard.scope.all_stores'
-        // yang boleh melihat konsolidasi seluruh cabang (storeId = null)
         $canViewAll = $user->canViewConsolidatedStores();
         if ($storeId === null && ! $canViewAll) {
             $storeId = (int) ($user->store_id ?? 1);
@@ -63,7 +76,7 @@ class ExecutiveDashboardService
         $roleId = (int) ($user->role_id ?? 0);
         $storeScope = $storeId !== null ? "store_{$storeId}" : 'store_all';
         $companyScope = $companyId !== null ? (string) $companyId : 'all';
-        $permHash = substr(md5(json_encode([
+        $permHash = substr(md5((string) json_encode([
             'margin' => $hasMarginPermission,
             'rev' => $user->hasPermission('dashboard.metric.revenue'),
             'gl' => $user->hasPermission('dashboard.metric.finance_gl'),
@@ -79,108 +92,48 @@ class ExecutiveDashboardService
             return $cached;
         }
 
-        $range = $this->resolveDateRange($period);
+        $range = $this->overviewService->resolveDateRange($period);
         $start = $range['start'];
         $end = $range['end'];
-        $daysInPeriod = $range['days'];
 
-        // 1. Kueri Akrual Penjualan & Retur Harian Standar PSAK / SAP
-        $dailySales = $this->metricRegistry->computeAccrualDailySales(
-            $start,
-            $end,
-            $storeId,
-            $tenantId,
-            $companyId
-        );
-
-        // Akumulasi KPI Penjualan
-        $grossSales = '0.00';
-        $totalDiscounts = '0.00';
-        $salesReturns = '0.00';
-        $netSales = '0.00';
-        $totalOrders = 0;
-
-        foreach ($dailySales as $day) {
-            $grossSales = bcadd($grossSales, $day['gross_sales'], 2);
-            $totalDiscounts = bcadd($totalDiscounts, $day['discounts'], 2);
-            $salesReturns = bcadd($salesReturns, $day['returns'], 2);
-            $netSales = bcadd($netSales, $day['net_sales'], 2);
-            $totalOrders += $day['order_count'];
-        }
-
-        $aov = $this->metricRegistry->calculateAverageOrderValue($netSales, $totalOrders);
-
-        // 2. Kueri Kas Riil Terkumpul (Cash Collected via payments)
-        $cashCollected = $this->computeCashCollected($tenantId, $start, $end, $storeId);
-
-        // 3. Profitabilitas & COGS (Dilindungi izin granular)
-        $cogs = '0.00';
-        $grossProfit = '0.00';
-        $grossMarginPct = '0.00';
-
-        if ($hasMarginPermission) {
-            $cogs = $this->computeCogs($tenantId, $start, $end, $storeId);
-            $grossProfit = $this->metricRegistry->calculateGrossProfit($netSales, $cogs);
-            $grossMarginPct = $this->metricRegistry->calculateGrossMarginPct($grossProfit, $netSales);
-        }
-
-        // 4. Perbandingan Pertumbuhan Periode Sebelumnya (MoM / DoD)
-        $prevRange = $this->resolvePreviousDateRange($start, $end);
-        $prevDailySales = $this->metricRegistry->computeAccrualDailySales(
-            $prevRange['start'],
-            $prevRange['end'],
-            $storeId,
-            $tenantId,
-            $companyId
-        );
-        $prevNetSales = '0.00';
-        $prevOrders = 0;
-        foreach ($prevDailySales as $day) {
-            $prevNetSales = bcadd($prevNetSales, $day['net_sales'], 2);
-            $prevOrders += $day['order_count'];
-        }
-
-        $netSalesDeltaPct = $this->metricRegistry->calculateGrowthPct($netSales, $prevNetSales);
-        $ordersDeltaPct = (string) ($prevOrders > 0 ? round((($totalOrders - $prevOrders) / $prevOrders) * 100, 1) : ($totalOrders > 0 ? 100.0 : 0.0));
-
-        // 5. Plan vs Actual Target Attainment & Run-Rate
-        $targetData = $this->computePlanVsActual($tenantId, $storeId, $companyId, $netSales);
-
-        // 6. General Ledger Accounting Trust Indicator
-        $glTrustIndicator = $this->computeGlTrustIndicator($tenantId, $storeId);
-
-        // 7. Multi-Branch Contribution & Ranking Matrix
-        $branchRanking = $this->computeBranchRanking($tenantId, $start, $end, $hasMarginPermission);
-
-        // 8. ECharts Visualisasi Payload (Sadar-Izin: Single-Axis jika tanpa izin profit_margin)
-        $salesTrendChartOptions = $this->buildSalesTrendChartOptions(
-            $dailySales,
-            $hasMarginPermission
-        );
+        // 1. Delegasi ke DashboardOverviewQueryService untuk KPI Akrual
+        $kpis = $this->overviewService->getKpis($tenantId, $storeId, $period, $hasMarginPermission, $companyId);
 
         $accrualSales = [
-            'net_sales' => $netSales,
-            'net_sales_formatted' => 'Rp '.number_format((float) $netSales, 0, ',', '.'),
-            'net_sales_delta' => ($netSalesDeltaPct >= 0 ? '+' : '').$netSalesDeltaPct.'%',
-            'net_sales_delta_variant' => $netSalesDeltaPct >= 0 ? 'positive' : 'negative',
-            'gross_sales' => $grossSales,
-            'total_discounts' => $totalDiscounts,
-            'sales_returns' => $salesReturns,
-            'total_orders' => $totalOrders,
-            'orders_delta' => ($ordersDeltaPct >= 0 ? '+' : '').$ordersDeltaPct.'%',
-            'orders_delta_variant' => (float) $ordersDeltaPct >= 0 ? 'positive' : 'negative',
-            'aov' => $aov,
-            'aov_formatted' => 'Rp '.number_format((float) $aov, 0, ',', '.'),
-            'cash_collected' => $cashCollected,
-            'cash_collected_formatted' => 'Rp '.number_format((float) $cashCollected, 0, ',', '.'),
+            'net_sales' => $kpis['net_sales'],
+            'net_sales_formatted' => $kpis['net_sales_formatted'],
+            'net_sales_delta' => $kpis['net_sales_delta'],
+            'net_sales_delta_variant' => $kpis['net_sales_delta_variant'],
+            'gross_sales' => $kpis['gross_sales'],
+            'total_discounts' => $kpis['total_discounts'],
+            'sales_returns' => $kpis['sales_returns'],
+            'total_orders' => $kpis['total_orders'],
+            'orders_delta' => $kpis['orders_delta'],
+            'orders_delta_variant' => $kpis['orders_delta_variant'],
+            'aov' => $kpis['aov'],
+            'aov_formatted' => $kpis['aov_formatted'],
+            'cash_collected' => $kpis['cash_collected'],
+            'cash_collected_formatted' => $kpis['cash_collected_formatted'],
         ];
 
         if ($hasMarginPermission) {
-            $accrualSales['cogs'] = $cogs;
-            $accrualSales['gross_profit'] = $grossProfit;
-            $accrualSales['gross_margin_pct'] = $grossMarginPct;
-            $accrualSales['gross_margin_formatted'] = $grossMarginPct.'%';
+            $accrualSales['cogs'] = $kpis['cogs'];
+            $accrualSales['gross_profit'] = $kpis['gross_profit'];
+            $accrualSales['gross_margin_pct'] = $kpis['gross_margin_pct'];
+            $accrualSales['gross_margin_formatted'] = $kpis['gross_margin_formatted'];
         }
+
+        // 2. Plan vs Actual Target Attainment & Run-Rate
+        $targetData = $this->computePlanVsActual($tenantId, $storeId, $companyId, (string) $kpis['net_sales']);
+
+        // 3. General Ledger Accounting Trust Indicator
+        $glTrustIndicator = $this->computeGlTrustIndicator($tenantId, $storeId);
+
+        // 4. Delegasi ke DashboardOperationsQueryService untuk ranking cabang
+        $branchRanking = $this->operationsService->getOutletComparison($tenantId, $period, $hasMarginPermission);
+
+        // 5. ECharts Visualisasi Payload untuk kompatibilitas ke belakang
+        $salesTrendChartOptions = $this->buildSalesTrendChartOptions($tenantId, $storeId, $period, $hasMarginPermission, $companyId);
 
         $chartOptionsStructure = [
             'is_dual_axis' => $hasMarginPermission,
@@ -206,67 +159,30 @@ class ExecutiveDashboardService
             'branchRanking' => $branchRanking,
             'sales_chart_options' => $chartOptionsStructure,
             'chartOptions' => $chartOptionsStructure,
+            'revenue_series' => $this->overviewService->getRevenueSeries($tenantId, $storeId, $period, 'daily', $hasMarginPermission, $companyId),
+            'payment_methods' => $this->overviewService->getPaymentMethodBreakdown($tenantId, $storeId, $period),
+            'profitability_combo' => $this->overviewService->getProfitabilityCombo($tenantId, $storeId, $period, $hasMarginPermission, $companyId),
+            'waterfall_bridge' => $this->overviewService->getRevenueWaterfallBridge($tenantId, $storeId, $period, $hasMarginPermission, $companyId),
+            'sales_mix' => $this->overviewService->getSalesMix($tenantId, $storeId, $period),
+            'demand_heatmap' => $this->operationsService->getDemandHeatmap($tenantId, $storeId, $period),
+            'outlet_comparison' => $branchRanking,
+            'product_unit_economics' => $this->operationsService->getProductUnitEconomics($tenantId, $storeId, $period),
+            'inventory_intelligence' => $this->operationsService->getInventoryIntelligence($tenantId, $storeId),
+            'recent_transactions' => $this->operationsService->getRecentTransactions($tenantId, $storeId, [], 10, 1),
+            'operational_alerts' => $this->operationsService->getOperationalAlerts($tenantId, $storeId),
         ];
 
-        // TTL 3 menit untuk dasbor eksekutif
         Cache::put($cacheKey, $data, 180);
 
         return $data;
     }
 
     /**
-     * Menghitung kas riil terkumpul dari payments berstatus success.
-     */
-    protected function computeCashCollected(int $tenantId, Carbon $start, Carbon $end, ?int $storeId): string
-    {
-        $dateColumn = Schema::hasColumn('payments', 'created_at') ? 'created_at' : 'payment_time';
-
-        $query = DB::table('payments')
-            ->where('tenant_id', $tenantId)
-            ->where('status', 'success')
-            ->whereBetween($dateColumn, [$start->toDateTimeString(), $end->toDateTimeString()]);
-
-        if ($storeId !== null && Schema::hasColumn('payments', 'store_id')) {
-            $query->where('store_id', $storeId);
-        }
-
-        $val = $query->sum('amount');
-
-        return $this->metricRegistry->toNumericString($val, 2);
-    }
-
-    /**
-     * Menghitung HPP / COGS dari snapshot pesanan order_items.hpp_snapshot.
-     */
-    protected function computeCogs(int $tenantId, Carbon $start, Carbon $end, ?int $storeId): string
-    {
-        $startStr = $start->toDateString();
-        $endStr = $end->toDateString();
-
-        $query = DB::table('order_items as oi')
-            ->join('orders as o', function ($join) {
-                $join->on('oi.order_id', '=', 'o.id')
-                    ->on('oi.tenant_id', '=', 'o.tenant_id');
-            })
-            ->where('o.tenant_id', $tenantId)
-            ->whereBetween('o.order_date', [$startStr, $endStr])
-            ->whereIn('o.order_status', ['paid', 'completed']);
-
-        if ($storeId !== null) {
-            $query->where('o.store_id', $storeId);
-        }
-
-        $cogsSum = $query->selectRaw('COALESCE(SUM(oi.qty * COALESCE(oi.hpp_snapshot, 0)), 0) as total_cogs')->value('total_cogs');
-
-        return $this->metricRegistry->toNumericString($cogsSum, 2);
-    }
-
-    /**
-     * Plan vs Actual Engine berdasarkan store_targets.
+     * Plan vs Actual Engine berdasarkan store_targets (KPI-PLN-01).
      *
      * @return array<string, mixed>
      */
-    protected function computePlanVsActual(int $tenantId, ?int $storeId, ?int $companyId, string $actualNetSales): array
+    public function computePlanVsActual(int $tenantId, ?int $storeId, ?int $companyId, string $actualNetSales): array
     {
         $now = Carbon::now('Asia/Jakarta');
         $periodKey = $now->format('Y-m');
@@ -285,7 +201,6 @@ class ExecutiveDashboardService
         }
 
         $targetNetSales = (string) $targetQuery->sum('target_net_sales');
-
         $attainmentPct = '0.00';
         $runRate = $this->metricRegistry->calculateRunRateProjection($actualNetSales, $elapsedDays, $totalDaysInMonth);
 
@@ -326,23 +241,13 @@ class ExecutiveDashboardService
     }
 
     /**
-     * GL Accounting Trust Indicator.
-     * Memeriksa apakah seluruh shift dan jurnal sudah sinkron 100%.
+     * GL Accounting Trust Indicator (3-state dari commit 763fc9e).
      *
-     * @return array{
-     *     is_reconciled: bool,
-     *     status_badge: string,
-     *     status_text: string,
-     *     unclosed_shifts: int,
-     *     draft_journals: int
-     * }
+     * @return array<string, mixed>
      */
-    protected function computeGlTrustIndicator(int $tenantId, ?int $storeId): array
+    public function computeGlTrustIndicator(int $tenantId, ?int $storeId): array
     {
-        $shiftQuery = DB::table('shifts')
-            ->where('tenant_id', $tenantId)
-            ->whereNull('closed_at');
-
+        $shiftQuery = DB::table('shifts')->where('tenant_id', $tenantId)->whereNull('closed_at');
         if ($storeId !== null) {
             $shiftQuery->where('store_id', $storeId);
         }
@@ -351,7 +256,6 @@ class ExecutiveDashboardService
         $journalQuery = JournalEntry::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('status', 'draft');
-
         if ($storeId !== null && Schema::hasColumn('journal_entries', 'store_id')) {
             $journalQuery->where('store_id', $storeId);
         }
@@ -399,114 +303,32 @@ class ExecutiveDashboardService
     }
 
     /**
-     * Multi-Branch Contribution & Ranking Matrix.
+     * Membangun payload opsi ECharts untuk kompatibilitas.
      *
-     * @return array<int, array<string, mixed>>
-     */
-    protected function computeBranchRanking(int $tenantId, Carbon $start, Carbon $end, bool $hasMarginPermission): array
-    {
-        $startStr = $start->toDateString();
-        $endStr = $end->toDateString();
-
-        $stores = DB::table('stores')
-            ->where('tenant_id', $tenantId)
-            ->where('is_active', true)
-            ->select('id', 'name', 'code')
-            ->get();
-
-        $ranking = [];
-        $totalSalesAll = 0.0;
-        foreach ($stores as $store) {
-            $baseQuery = DB::table('orders')
-                ->where('tenant_id', $tenantId)
-                ->where('store_id', $store->id)
-                ->whereBetween('order_date', [$startStr, $endStr])
-                ->whereIn('order_status', ['paid', 'completed']);
-
-            $sales = (float) (clone $baseQuery)->sum(DB::raw('subtotal_amount - discount_amount'));
-            $ordersCount = (int) (clone $baseQuery)->count();
-            $totalSalesAll += $sales;
-
-            $item = [
-                'store_id' => $store->id,
-                'name' => $store->name,
-                'code' => $store->code ?? "STR-{$store->id}",
-                'net_sales' => $sales,
-                'revenue' => $sales,
-                'orders_count' => $ordersCount,
-                'net_sales_formatted' => 'Rp '.number_format($sales, 0, ',', '.'),
-            ];
-
-            if ($hasMarginPermission) {
-                $cogs = (float) DB::table('order_items as oi')
-                    ->join('orders as o', function ($join) {
-                        $join->on('oi.order_id', '=', 'o.id')
-                            ->on('oi.tenant_id', '=', 'o.tenant_id');
-                    })
-                    ->where('o.tenant_id', $tenantId)
-                    ->where('o.store_id', $store->id)
-                    ->whereBetween('o.order_date', [$startStr, $endStr])
-                    ->whereIn('o.order_status', ['paid', 'completed'])
-                    ->sum(DB::raw('oi.qty * COALESCE(oi.hpp_snapshot, 0)'));
-
-                $profit = max(0.0, $sales - $cogs);
-                $margin = $sales > 0 ? round(($profit / $sales) * 100, 1) : 0.0;
-
-                $item['gross_profit'] = $profit;
-                $item['gross_margin_pct'] = $margin;
-            }
-
-            $ranking[] = $item;
-        }
-
-        foreach ($ranking as &$item) {
-            $item['share_pct'] = $totalSalesAll > 0 ? round(($item['net_sales'] / $totalSalesAll) * 100, 1) : 0.0;
-        }
-        unset($item);
-
-        usort($ranking, fn ($a, $b) => $b['net_sales'] <=> $a['net_sales']);
-
-        return $ranking;
-    }
-
-    /**
-     * Menghasilkan konfigurasi ECharts (Sadar-Izin: Single-Axis vs Dual-Axis).
-     *
-     * @param  array<string, array<string, mixed>>  $dailySales
      * @return array<string, mixed>
      */
-    protected function buildSalesTrendChartOptions(array $dailySales, bool $hasMarginPermission): array
-    {
-        $dates = [];
-        $netSalesSeries = [];
-        $marginSeries = [];
-
-        foreach ($dailySales as $day) {
-            $dateObj = Carbon::parse($day['date']);
-            $dates[] = $dateObj->format('d M');
-            $netSalesSeries[] = (float) $day['net_sales'];
-
-            if ($hasMarginPermission) {
-                // Estimasi margin harian untuk garis tren jika izin tersedia
-                $marginSeries[] = 42.5; // Baseline margin indikatif
-            }
-        }
+    protected function buildSalesTrendChartOptions(
+        int $tenantId,
+        ?int $storeId,
+        string $period,
+        bool $hasMarginPermission,
+        ?int $companyId
+    ): array {
+        $seriesData = $this->overviewService->getRevenueSeries(
+            $tenantId, $storeId, $period, 'daily', $hasMarginPermission, $companyId
+        );
 
         $series = [
             [
                 'name' => 'Net Sales',
                 'type' => 'line',
                 'smooth' => true,
-                'data' => $netSalesSeries,
+                'data' => $seriesData['net_series'],
                 'symbolSize' => 6,
                 'itemStyle' => ['color' => '#18181B'],
                 'areaStyle' => [
                     'color' => [
-                        'type' => 'linear',
-                        'x' => 0,
-                        'y' => 0,
-                        'x2' => 0,
-                        'y2' => 1,
+                        'type' => 'linear', 'x' => 0, 'y' => 0, 'x2' => 0, 'y2' => 1,
                         'colorStops' => [
                             ['offset' => 0, 'color' => 'rgba(24, 24, 27, 0.16)'],
                             ['offset' => 1, 'color' => 'rgba(24, 24, 27, 0.00)'],
@@ -517,118 +339,55 @@ class ExecutiveDashboardService
         ];
 
         $yAxis = [
-            [
-                'type' => 'value',
-                'axisLabel' => [
-                    'formatter' => '{value}',
-                ],
-                'splitLine' => [
-                    'lineStyle' => ['color' => '#E4E4E7', 'type' => 'dashed'],
-                ],
-            ],
+            ['type' => 'value', 'axisLabel' => ['formatter' => '{value}'], 'splitLine' => ['lineStyle' => ['color' => '#E4E4E7', 'type' => 'dashed']]],
         ];
 
-        // Gating Sensitif: Sertakan sumbu ganda Margin % HANYA jika pengguna memiliki izin
-        if ($hasMarginPermission && ! empty($marginSeries)) {
+        if ($hasMarginPermission && ! empty($seriesData['margin_series'])) {
             $yAxis[] = [
-                'type' => 'value',
-                'name' => 'Margin %',
-                'min' => 0,
-                'max' => 100,
-                'splitLine' => ['show' => false],
-                'axisLabel' => ['formatter' => '{value}%'],
+                'type' => 'value', 'name' => 'Margin %', 'min' => 0, 'max' => 100,
+                'splitLine' => ['show' => false], 'axisLabel' => ['formatter' => '{value}%'],
             ];
-
             $series[] = [
-                'name' => 'Gross Margin %',
-                'type' => 'line',
-                'yAxisIndex' => 1,
-                'smooth' => true,
-                'data' => $marginSeries,
-                'itemStyle' => ['color' => '#10B981'],
-                'lineStyle' => ['width' => 2, 'type' => 'dashed'],
+                'name' => 'Gross Margin %', 'type' => 'line', 'yAxisIndex' => 1,
+                'smooth' => true, 'data' => $seriesData['margin_series'],
+                'itemStyle' => ['color' => '#10B981'], 'lineStyle' => ['width' => 2, 'type' => 'dashed'],
             ];
         }
 
         return [
-            'tooltip' => [
-                'trigger' => 'axis',
-            ],
-            'legend' => [
-                'data' => $hasMarginPermission ? ['Net Sales', 'Gross Margin %'] : ['Net Sales'],
-                'bottom' => 0,
-            ],
-            'xAxis' => [
-                'type' => 'category',
-                'boundaryGap' => false,
-                'data' => $dates,
-                'axisLine' => ['lineStyle' => ['color' => '#E4E4E7']],
-            ],
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['data' => $hasMarginPermission ? ['Net Sales', 'Gross Margin %'] : ['Net Sales'], 'bottom' => 0],
+            'xAxis' => ['type' => 'category', 'boundaryGap' => false, 'data' => $seriesData['labels'], 'axisLine' => ['lineStyle' => ['color' => '#E4E4E7']]],
             'yAxis' => $yAxis,
             'series' => $series,
         ];
     }
 
     /**
-     * Memetakan preset rentang tanggal.
-     *
-     * @return array{start: Carbon, end: Carbon, days: int}
+     * Menginvalidasi partisi cache dasbor untuk tenant dan cabang yang ditentukan.
      */
-    protected function resolveDateRange(string $period): array
+    public function invalidateCache(int $tenantId, ?int $storeId = null): void
     {
-        $now = Carbon::now('Asia/Jakarta');
+        Cache::forget("pos:dashboard:{$tenantId}:all:metrics_v3");
+        Cache::forget("pos:dashboard:{$tenantId}:default:metrics_v3");
+        if ($storeId !== null) {
+            Cache::forget("pos:dashboard:{$tenantId}:{$storeId}:metrics_v3");
+        }
 
-        return match ($period) {
-            'today' => [
-                'start' => $now->copy()->startOfDay(),
-                'end' => $now->copy()->endOfDay(),
-                'days' => 1,
-            ],
-            '7d' => [
-                'start' => $now->copy()->subDays(6)->startOfDay(),
-                'end' => $now->copy()->endOfDay(),
-                'days' => 7,
-            ],
-            '30d' => [
-                'start' => $now->copy()->subDays(29)->startOfDay(),
-                'end' => $now->copy()->endOfDay(),
-                'days' => 30,
-            ],
-            'this_month' => [
-                'start' => $now->copy()->startOfMonth(),
-                'end' => $now->copy()->endOfMonth(),
-                'days' => $now->daysInMonth,
-            ],
-            'last_month' => [
-                'start' => $now->copy()->subMonth()->startOfMonth(),
-                'end' => $now->copy()->subMonth()->endOfMonth(),
-                'days' => $now->copy()->subMonth()->daysInMonth,
-            ],
-            'this_year' => [
-                'start' => $now->copy()->startOfYear(),
-                'end' => $now->copy()->endOfYear(),
-                'days' => 365,
-            ],
-            default => [
-                'start' => $now->copy()->subDays(29)->startOfDay(),
-                'end' => $now->copy()->endOfDay(),
-                'days' => 30,
-            ],
-        };
-    }
-
-    /**
-     * Memetakan rentang tanggal pembanding sebelumnya untuk kalkulasi delta.
-     *
-     * @return array{start: Carbon, end: Carbon}
-     */
-    protected function resolvePreviousDateRange(Carbon $start, Carbon $end): array
-    {
-        $days = $start->diffInDays($end) + 1;
-
-        return [
-            'start' => $start->copy()->subDays($days),
-            'end' => $start->copy()->subSecond(),
-        ];
+        try {
+            if (config('cache.default') === 'redis') {
+                $redis = Redis::connection();
+                $keys = $redis->keys("pos:dashboard:{$tenantId}:*");
+                if (! empty($keys)) {
+                    $redis->del($keys);
+                }
+                $dashKeys = $redis->keys("pos:dash:{$tenantId}:*");
+                if (! empty($dashKeys)) {
+                    $redis->del($dashKeys);
+                }
+            }
+        } catch (\Throwable) {
+            // Abaikan kegagalan flush redis saat testing / offline mode
+        }
     }
 }

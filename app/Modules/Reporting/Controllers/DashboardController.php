@@ -11,12 +11,14 @@ use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Organization\Services\CashierPinService;
 use App\Modules\Reporting\Models\StoreTarget;
 use App\Modules\Reporting\Services\CashierWorkspaceService;
+use App\Modules\Reporting\Services\DashboardOperationsQueryService;
 use App\Modules\Reporting\Services\DashboardService;
 use App\Modules\Reporting\Services\ExecutiveDashboardService;
 use App\Modules\Reporting\Services\ManagerDashboardService;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\Shift;
 use App\Modules\Sales\Services\TransactionService;
+use App\Platform\Authorization\AbilityEvaluator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -40,7 +42,12 @@ class DashboardController extends Controller
         protected CashierPinService $cashierPinService,
         protected AuditTrailService $auditTrailService,
         protected TenantContext $tenantContext,
-    ) {}
+        protected ?AbilityEvaluator $abilityEvaluator = null,
+        protected ?DashboardOperationsQueryService $operationsQueryService = null,
+    ) {
+        $this->abilityEvaluator = $abilityEvaluator ?? app(AbilityEvaluator::class);
+        $this->operationsQueryService = $operationsQueryService ?? app(DashboardOperationsQueryService::class);
+    }
 
     /**
      * Mengkalkulasi pendapatan dan statistik sadar-peran, lalu merendernya dalam View.
@@ -53,15 +60,40 @@ class DashboardController extends Controller
 
         $tenantId = $this->tenantContext->requireTenantId();
 
-        // 1. Resolusi Dynamic RBAC Workspace Archetype
+        // 1. Resolusi Dynamic RBAC Workspace Archetype dengan evaluasi AbilityEvaluator
         $userArchetype = $user->getDashboardArchetype();
-        $canSwitchArchetype = $user->hasPermission('*')
-            || (bool) ($user->role->is_admin ?? false)
+        $evaluator = $this->abilityEvaluator ?? app(AbilityEvaluator::class);
+
+        $isOwnerOrAdmin = in_array($user->role?->name, ['Owner', 'Superadmin', 'Administrator'], true)
+            || (bool) ($user->role ? $user->role->is_admin : false)
             || $user->canViewConsolidatedStores();
 
-        $activeArchetype = ($canSwitchArchetype && $request->filled('view'))
-            ? (string) $request->query('view')
-            : $userArchetype;
+        $allowedViews = [];
+        if ($isOwnerOrAdmin || $evaluator->can($user, 'dashboard.scope.all_stores') || $evaluator->can($user, 'dashboard.view')) {
+            $allowedViews[] = 'executive';
+        }
+        if ($isOwnerOrAdmin || $evaluator->can($user, 'dashboard.perspective.branch_ops') || in_array($user->role?->name, ['Manager'], true)) {
+            $allowedViews[] = 'branch_ops';
+        }
+        if ($isOwnerOrAdmin || $evaluator->can($user, 'dashboard.perspective.cashier') || in_array($user->role?->name, ['Cashier', 'Kasir'], true)) {
+            $allowedViews[] = 'cashier_workspace';
+            $allowedViews[] = 'cashier';
+        }
+        if ($isOwnerOrAdmin || $evaluator->can($user, 'dashboard.perspective.inventory') || (bool) $user->hasPermission('inventory.view')) {
+            $allowedViews[] = 'inventory';
+        }
+        if ($isOwnerOrAdmin || $evaluator->can($user, 'dashboard.perspective.finance') || (bool) $user->hasPermission('finance.view')) {
+            $allowedViews[] = 'finance';
+        }
+
+        $requestedView = $request->filled('view') ? (string) $request->query('view') : null;
+        if ($requestedView && in_array($requestedView, $allowedViews, true)) {
+            $activeArchetype = $requestedView === 'cashier' ? 'cashier_workspace' : $requestedView;
+        } else {
+            $activeArchetype = $userArchetype;
+        }
+
+        $canSwitchArchetype = count(array_unique($allowedViews)) > 1;
 
         // 2. Ambil metrik dasar (DashboardService) untuk kompatibilitas penuh komponen yang ada
         $metrics = $this->dashboardService->getDashboardMetrics();
@@ -374,5 +406,27 @@ class DashboardController extends Controller
         }
 
         return redirect()->back()->with('success', "Target bulanan untuk cabang {$store->name} ({$targetPeriod}) berhasil disimpan.");
+    }
+
+    /**
+     * Section F Drawer: Digital Receipt & Double-Entry GL Ledger Postings JSON.
+     */
+    public function orderReceipt(Request $request, int $orderId): JsonResponse
+    {
+        $tenantId = $this->tenantContext->requireTenantId();
+        $detail = $this->operationsQueryService->getTransactionReceiptDetail($tenantId, $orderId);
+
+        return response()->json($detail);
+    }
+
+    /**
+     * Section D Drawer: Product Unit Economics & Recipe BOM JSON.
+     */
+    public function productRecipeBom(Request $request, int $productId): JsonResponse
+    {
+        $tenantId = $this->tenantContext->requireTenantId();
+        $detail = $this->operationsQueryService->getProductRecipeBom($tenantId, $productId);
+
+        return response()->json($detail);
     }
 }

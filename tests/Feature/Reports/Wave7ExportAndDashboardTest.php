@@ -15,7 +15,7 @@ use App\Modules\Reporting\Models\ExportTask;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\OrderItem;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -25,7 +25,7 @@ use Tests\TestCase;
 
 class Wave7ExportAndDashboardTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
     use TwoTenantFixture;
 
     protected function afterSubclassSetUp(): void

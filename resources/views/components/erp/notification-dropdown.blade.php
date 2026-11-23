@@ -8,9 +8,85 @@
     honest state is an empty state — never fabricated activity.
 --}}
 @props([
-    'unreadCount' => 0,
-    'notifications' => [],
+    'unreadCount' => null,
+    'notifications' => null,
 ])
+
+@php
+    if ($notifications === null) {
+        $realNotifications = [];
+        $user = auth()->user();
+        if ($user && $user->tenant_id) {
+            $tId = (int) $user->tenant_id;
+            $sId = $user->store_id ?? session('active_store_id');
+            if ($sId === 'all') {
+                $sId = null;
+            }
+
+            try {
+                // 1. Stockout detection
+                $stockoutCount = (int) \Illuminate\Support\Facades\DB::table('products')
+                    ->where('tenant_id', $tId)
+                    ->where('is_active', true)
+                    ->where('stock', '<=', 0)
+                    ->count();
+                if ($stockoutCount > 0) {
+                    $realNotifications[] = [
+                        'id' => 'alert_stockout_' . $tId,
+                        'icon' => 'inventory_2',
+                        'variant' => 'amber',
+                        'title' => 'Stok Habis Terdeteksi',
+                        'desc' => "{$stockoutCount} SKU produk kehabisan stok dan memerlukan pengadaan/restock.",
+                        'time' => 'Live',
+                        'unread' => true,
+                    ];
+                }
+
+                // 2. Open Cashier Shifts
+                $shiftQ = \Illuminate\Support\Facades\DB::table('shifts')
+                    ->where('tenant_id', $tId)
+                    ->whereNull('closed_at');
+                if ($sId) {
+                    $shiftQ->where('store_id', (int) $sId);
+                }
+                $openShifts = (int) $shiftQ->count();
+                if ($openShifts > 0) {
+                    $realNotifications[] = [
+                        'id' => 'alert_shift_' . $tId,
+                        'icon' => 'schedule',
+                        'variant' => 'blue',
+                        'title' => 'Sesi Shift Kasir Aktif',
+                        'desc' => "{$openShifts} shift kasir sedang berjalan menunggu rekonsiliasi EOD.",
+                        'time' => 'Berjalan',
+                        'unread' => false,
+                    ];
+                }
+
+                // 3. Pending Void / Supervisor Overrides
+                $pendingVoids = (int) \Illuminate\Support\Facades\DB::table('orders')
+                    ->where('tenant_id', $tId)
+                    ->where('order_status', 'void_pending')
+                    ->count();
+                if ($pendingVoids > 0) {
+                    $realNotifications[] = [
+                        'id' => 'alert_void_' . $tId,
+                        'icon' => 'verified_user',
+                        'variant' => 'amber',
+                        'title' => 'Otorisasi Supervisor Menunggu',
+                        'desc' => "{$pendingVoids} permintaan pembatalan pesanan memerlukan verifikasi PIN.",
+                        'time' => 'Perhatian',
+                        'unread' => true,
+                    ];
+                }
+            } catch (\Throwable $e) {
+                $realNotifications = [];
+            }
+        }
+        $notifications = $realNotifications;
+    } else {
+        $notifications = (array) $notifications;
+    }
+@endphp
 
 <div x-data="{
         open: false,

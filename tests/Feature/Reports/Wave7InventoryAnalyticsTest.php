@@ -12,7 +12,7 @@ use App\Modules\Reporting\Services\Analytics\InventoryAnalyticsService;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\OrderItem;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\TwoTenantFixture;
@@ -20,7 +20,7 @@ use Tests\TestCase;
 
 class Wave7InventoryAnalyticsTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
     use TwoTenantFixture;
 
     protected InventoryAnalyticsService $inventoryService;

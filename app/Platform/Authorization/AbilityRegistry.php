@@ -97,5 +97,17 @@ class AbilityRegistry
         $this->register(new Ability('catalog.view', 'catalog', Scope::BRANCH, false, 'View products and categories'));
         $this->register(new Ability('catalog.manage', 'catalog', Scope::TENANT, false, 'Manage product master data'));
         $this->register(new Ability('catalog.pricing', 'catalog', Scope::TENANT, false, 'Update product base pricing'));
+
+        // Dashboard module abilities
+        $this->register(new Ability('dashboard.view', 'dashboard', Scope::BRANCH, false, 'View operational dashboard'));
+        $this->register(new Ability('dashboard.scope.all_stores', 'dashboard', Scope::TENANT, false, 'View consolidated multi-store dashboard'));
+        $this->register(new Ability('dashboard.metric.revenue', 'dashboard', Scope::BRANCH, false, 'View net sales & revenue figures'));
+        $this->register(new Ability('dashboard.metric.profit_margin', 'dashboard', Scope::TENANT, false, 'View COGS, gross profit & profit margin %'));
+        $this->register(new Ability('dashboard.metric.finance_gl', 'dashboard', Scope::COMPANY, false, 'View GL reconciliation & accounting journals'));
+        $this->register(new Ability('dashboard.action.approve_void_discount', 'dashboard', Scope::BRANCH, true, 'Authorize void orders and cash differences'));
+        $this->register(new Ability('dashboard.perspective.branch_ops', 'dashboard', Scope::BRANCH, false, 'Access Branch Operations workspace'));
+        $this->register(new Ability('dashboard.perspective.cashier', 'dashboard', Scope::BRANCH, false, 'Access Frontline Cashier workspace'));
+        $this->register(new Ability('dashboard.perspective.inventory', 'dashboard', Scope::BRANCH, false, 'Access Inventory Intelligence workspace'));
+        $this->register(new Ability('dashboard.perspective.finance', 'dashboard', Scope::COMPANY, false, 'Access Finance & GL workspace'));
     }
 }

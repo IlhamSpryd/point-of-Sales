@@ -1,5 +1,3 @@
-import gsap from 'gsap';
-
 /**
  * Offline-first, accessible Apeiron Dialog Bridge compatible with Swal.fire() & Swal.showLoading().
  * Replaces external cdn.jsdelivr.net/npm/sweetalert2@11 dependency so POS terminals
@@ -7,6 +5,32 @@ import gsap from 'gsap';
  */
 let activeOverlay = null;
 let activeCleanup = null;
+let gsapInstance = null;
+let gsapLoadPromise = null;
+
+async function loadGsap() {
+    if (gsapInstance) return gsapInstance;
+    if (typeof window !== 'undefined' && window.gsap) {
+        gsapInstance = window.gsap;
+        return gsapInstance;
+    }
+    if (!gsapLoadPromise) {
+        gsapLoadPromise = import('gsap')
+            .then((m) => {
+                gsapInstance = m.default || m;
+                if (typeof window !== 'undefined') {
+                    window.gsap = gsapInstance;
+                }
+                return gsapInstance;
+            })
+            .catch((err) => {
+                console.warn('[swal-bridge] Dynamic GSAP import failed:', err);
+                gsapLoadPromise = null;
+                return null;
+            });
+    }
+    return gsapLoadPromise;
+}
 
 function prefersReducedMotion() {
     return typeof window !== 'undefined'
@@ -147,8 +171,8 @@ const Swal = {
                     }
                 };
 
-                if (!prefersReducedMotion()) {
-                    gsap.to(panel, {
+                if (!prefersReducedMotion() && gsapInstance) {
+                    gsapInstance.to(panel, {
                         opacity: 0,
                         scale: 0.96,
                         y: 6,
@@ -203,11 +227,15 @@ const Swal = {
             });
 
             if (!prefersReducedMotion()) {
-                gsap.fromTo(
-                    panel,
-                    { opacity: 0, scale: 0.96, y: 8 },
-                    { opacity: 1, scale: 1, y: 0, duration: 0.2, ease: 'power3.out', overwrite: 'auto' }
-                );
+                loadGsap().then((gsap) => {
+                    if (gsap && panel && panel.parentNode) {
+                        gsap.fromTo(
+                            panel,
+                            { opacity: 0, scale: 0.96, y: 8 },
+                            { opacity: 1, scale: 1, y: 0, duration: 0.2, ease: 'power3.out', overwrite: 'auto' }
+                        );
+                    }
+                });
             }
 
             if (typeof didOpen === 'function') {

@@ -5,12 +5,12 @@ namespace Tests\Feature\Reports;
 use App\Modules\Organization\Models\Role;
 use App\Modules\Organization\Models\User;
 use App\Modules\Reporting\Services\DashboardService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class DashboardMetricsAndButtonsTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     protected User $user;
 

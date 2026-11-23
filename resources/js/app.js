@@ -1,19 +1,57 @@
 import focus from '@alpinejs/focus';
-import gsap from 'gsap';
 import Swal from './vendor/swal-bridge';
-import erpChart from './components/erpChart';
 import commandPalette from './components/commandPalette';
 import { erpMotion, initErpMotion, registerGsapAlpineDirectives } from './motion/erp-motion';
 import { initSidebarPersistence } from './navigation/sidebar-persistence';
+import dashboardChart from './components/dashboardCharts';
 import './echo';
 
+/**
+ * Dynamic proxy component for erpChart.
+ * Only loads ./components/erpChart (and Apache ECharts) asynchronously when an
+ * x-data="erpChart(...)" component is mounted.
+ */
+function erpChart(...args) {
+    let instance = null;
+    let destroyed = false;
+
+    return {
+        chartOptions: args[0]?.options || {},
+        loading: true,
+
+        init() {
+            import('./components/erpChart')
+                .then(({ default: factory }) => {
+                    if (destroyed) return;
+                    instance = factory(...args);
+                    Object.assign(this, instance);
+                    if (typeof instance.init === 'function') {
+                        instance.init.call(this);
+                    }
+                })
+                .catch((err) => {
+                    console.error('[erpChart] Dynamic component import failed:', err);
+                });
+        },
+
+        destroy() {
+            destroyed = true;
+            if (instance && typeof instance.destroy === 'function') {
+                instance.destroy.call(this);
+                instance = null;
+            }
+        },
+    };
+}
+
 if (typeof window !== 'undefined') {
-    window.gsap = gsap;
     window.Swal = Swal;
     window.erpMotion = erpMotion;
     window.ApeironMotion = erpMotion;
     window.erpChart = erpChart;
     window.apeironCommandPalette = commandPalette;
+    window.dashboardChart = dashboardChart;
+    window.loadGsap = erpMotion.loadGsap;
 }
 
 initErpMotion();
@@ -27,6 +65,7 @@ document.addEventListener('alpine:init', () => {
             // Plugin already registered
         }
         window.Alpine.data('erpChart', erpChart);
+        window.Alpine.data('dashboardChart', dashboardChart);
         window.Alpine.data('apeironCommandPalette', commandPalette);
         registerGsapAlpineDirectives(window.Alpine);
     }

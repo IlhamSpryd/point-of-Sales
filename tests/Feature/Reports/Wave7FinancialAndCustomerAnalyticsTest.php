@@ -20,7 +20,7 @@ use App\Modules\Reporting\Services\Analytics\CustomerAnalyticsService;
 use App\Modules\Reporting\Services\Analytics\FinancialBiService;
 use App\Modules\Sales\Models\Order;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\TwoTenantFixture;
@@ -28,7 +28,7 @@ use Tests\TestCase;
 
 class Wave7FinancialAndCustomerAnalyticsTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
     use TwoTenantFixture;
 
     protected FinancialBiService $financialService;
