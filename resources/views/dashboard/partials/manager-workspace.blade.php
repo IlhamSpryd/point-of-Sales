@@ -8,7 +8,7 @@
             <div>
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-primary uppercase tracking-wider">Branch Operational Command</span>
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-secondary text-secondary-foreground">Branch Ops</span>
+                    <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-secondary text-foreground border border-border">Branch Ops</span>
                 </div>
                 <div class="text-xl sm:text-2xl font-extrabold text-foreground mt-0.5">
                     {{ $managerData['store']['name'] ?? $activeStoreName ?? 'Store Operations' }}

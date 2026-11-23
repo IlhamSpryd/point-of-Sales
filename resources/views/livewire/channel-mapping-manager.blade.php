@@ -104,7 +104,7 @@
                         @empty
                             <tr>
                                 <td colspan="4" class="px-6 py-12 text-center text-muted-foreground">
-                                    <span class="material-symbols-rounded text-4xl block mb-2">link_off</span>
+                                    <span class="material-symbols-rounded text-[32px] block mb-2">link_off</span>
                                     No external channel SKU mappings registered.
                                 </td>
                             </tr>

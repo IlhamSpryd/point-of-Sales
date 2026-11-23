@@ -31,7 +31,7 @@
         {{-- Main Viewport Container --}}
         <main class="my-auto py-3 sm:py-4">
             <div class="mb-4 text-center sm:text-left">
-                <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                <h1 class="text-xl sm:text-[18px] leading-tight font-bold tracking-tight text-foreground">
                     Configure your first branch
                 </h1>
                 <p class="mt-1 text-xs sm:text-sm text-muted-foreground">
@@ -157,7 +157,7 @@
                         </a>
 
                         <button type="submit"
-                            class="flex-1 flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 transition-all cursor-pointer">
+                            class="flex-1 flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-xs hover:bg-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 transition-all cursor-pointer">
                             <span>Complete setup & open POS dashboard</span>
                         </button>
                     </div>

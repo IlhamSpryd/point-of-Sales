@@ -138,7 +138,7 @@
                     @empty
                         <tr>
                             <td colspan="8" class="px-6 py-12 text-center text-muted-foreground">
-                                <span class="material-symbols-rounded text-4xl block mb-2 text-muted-foreground/50">calendar_month</span>
+                                <span class="material-symbols-rounded text-[32px] block mb-2 text-muted-foreground/50">calendar_month</span>
                                 No active employees found in directory to schedule.
                             </td>
                         </tr>

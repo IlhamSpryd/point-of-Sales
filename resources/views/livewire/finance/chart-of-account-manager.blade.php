@@ -120,7 +120,7 @@
                     @empty
                         <tr>
                             <td colspan="7" class="px-4 py-12 text-center text-muted-foreground">
-                                <span class="material-symbols-rounded text-3xl mb-1 text-foreground">account_tree</span>
+                                <span class="material-symbols-rounded text-[28px] mb-1 text-foreground">account_tree</span>
                                 <p class="text-xs">No accounts matching the search criteria found.</p>
                             </td>
                         </tr>

@@ -144,7 +144,7 @@
                     @empty
                         <tr>
                             <td colspan="7" class="py-12 text-center text-muted-foreground">
-                                <span class="material-symbols-rounded text-4xl block mb-2">shopping_cart</span>
+                                <span class="material-symbols-rounded text-[32px] block mb-2">shopping_cart</span>
                                 No Sales Order data available.
                             </td>
                         </tr>

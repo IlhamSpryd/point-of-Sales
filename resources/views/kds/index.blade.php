@@ -23,7 +23,7 @@
                 <span class="material-symbols-rounded text-[20px]">arrow_back</span>
             </a>
             <div>
-                <h1 class="text-2xl font-bold tracking-tight leading-none">Kitchen Display</h1>
+                <h1 class="text-[18px] leading-tight font-bold tracking-tight leading-none">Kitchen Display</h1>
                 <p class="text-sm font-medium text-muted-foreground mt-1">Real-time Kitchen Status</p>
             </div>
         </div>

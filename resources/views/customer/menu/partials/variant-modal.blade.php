@@ -80,7 +80,7 @@
                         <div class="mb-3 flex items-center justify-between gap-2">
                             <h3 class="text-[12px] font-bold uppercase tracking-wider text-muted-foreground" x-text="group.name"></h3>
                             <span class="rounded-md px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider"
-                                  :class="group.is_required ? 'bg-primary text-white' : 'bg-secondary text-muted-foreground'"
+                                  :class="group.is_required ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'"
                                   x-text="(group.is_required ? 'Required' : 'Optional') + ' · ' + (group.selection_type === 'single' ? 'Select 1' : 'Multi-select')"></span>
                         </div>
 
@@ -98,7 +98,7 @@
                                         <span x-show="mod.extra_price > 0" class="mt-0.5 block text-[12px] font-medium text-muted-foreground" x-text="'+' + rupiah(mod.extra_price)"></span>
                                     </span>
                                     <span class="flex h-6 w-6 shrink-0 items-center justify-center border-[1.5px] transition-all duration-200"
-                                          :class="[ group.selection_type === 'single' ? 'rounded-full' : 'rounded-md', isSelected(group, mod.id) ? 'border-foreground bg-primary text-white' : 'border-primary-300 text-transparent' ]">
+                                          :class="[ group.selection_type === 'single' ? 'rounded-full' : 'rounded-md', isSelected(group, mod.id) ? 'border-foreground bg-primary text-primary-foreground' : 'border-primary-300 text-transparent' ]">
                                         <span class="material-symbols-rounded text-[16px]">check</span>
                                     </span>
                                 </button>
@@ -138,7 +138,7 @@
                 </div>
 
                 <button type="button" @click="submit()" :disabled="!canSubmit"
-                        class="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl bg-primary px-5 font-bold text-white shadow-lg transition-all duration-200 hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        class="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl bg-primary px-5 font-bold text-primary-foreground shadow-lg transition-all duration-200 hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     <span class="flex items-center gap-2 text-[15px]">
                         <span x-show="submitting" x-cloak class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true"></span>
                         <span x-text="submitting ? 'Adding…' : 'Add to Order'"></span>

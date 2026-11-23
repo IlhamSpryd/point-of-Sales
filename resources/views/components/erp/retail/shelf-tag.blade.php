@@ -33,7 +33,7 @@
                 {{ $originalPrice }}
             </span>
         @endif
-        <div class="text-2xl font-black text-foreground tracking-tight numeric font-sans">
+        <div class="text-[20px] font-semibold text-foreground tracking-tight numeric font-sans">
             {{ $price }}
         </div>
     </div>

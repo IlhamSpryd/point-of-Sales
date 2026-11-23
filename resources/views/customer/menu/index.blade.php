@@ -59,7 +59,7 @@
                             .then(r => r.json()).then(d => notify(d.message))
                             .catch(() => notify('Connection error. Please wave to a staff member.'))
                             .finally(() => busy = false)"
-                        class="flex items-center justify-center w-11 h-11 rounded-full bg-card border border-border text-muted-foreground hover:text-foreground active:scale-90 transition-all shadow-sm">
+                        class="flex items-center justify-center w-11 h-11 rounded-xl bg-card border border-border text-muted-foreground hover:text-foreground active:scale-90 transition-all shadow-sm">
                         <span class="material-symbols-rounded text-[20px]">room_service</span>
                     </button>
                 @endif
@@ -68,7 +68,7 @@
                 @php $activeOrders = session('customer_orders', []); @endphp
                 @if (!empty($activeOrders))
                     <a href="{{ route('customer.checkout.success', end($activeOrders)) }}"
-                        class="flex items-center justify-center w-11 h-11 rounded-full bg-card border border-border text-muted-foreground hover:text-foreground active:scale-90 transition-all shadow-sm"
+                        class="flex items-center justify-center w-11 h-11 rounded-xl bg-card border border-border text-muted-foreground hover:text-foreground active:scale-90 transition-all shadow-sm"
                         aria-label="Order Status">
                         <span class="material-symbols-rounded text-[20px]">receipt_long</span>
                     </a>
@@ -86,7 +86,7 @@
 
         <div class="px-4 pt-5 pb-2 space-y-4">
             {{-- Promo Banner --}}
-            <div class="relative overflow-hidden rounded-3xl bg-primary text-white p-6 shadow-md mb-4">
+            <div class="relative overflow-hidden rounded-3xl bg-primary text-primary-foreground p-6 shadow-md mb-4">
                 <div class="relative z-10">
                     <span
                         class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-card/20 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider mb-3 shadow-sm border border-white/10">
@@ -115,14 +115,14 @@
             <div class="flex gap-2.5 overflow-x-auto scrollbar-hide px-4 py-2 items-center">
                 <button type="button" @click="activeCategory = 'all'"
                     :aria-pressed="(activeCategory === 'all').toString()"
-                    :class="activeCategory === 'all' ? 'bg-primary text-white border-foreground shadow-sm' : 'bg-card text-muted-foreground border-border hover:bg-secondary'"
+                    :class="activeCategory === 'all' ? 'bg-primary text-primary-foreground border-foreground shadow-sm' : 'bg-card text-muted-foreground border-border hover:bg-secondary'"
                     class="shrink-0 flex items-center justify-center h-10 px-4 rounded-xl border text-sm font-medium whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     All Items
                 </button>
                 @foreach ($visibleCategories as $cat)
                     <button type="button" @click="activeCategory = '{{ $cat->id }}'"
                         :aria-pressed="(activeCategory === '{{ $cat->id }}').toString()"
-                        :class="activeCategory === '{{ $cat->id }}' ? 'bg-primary text-white border-foreground shadow-sm' : 'bg-card text-muted-foreground border-border hover:bg-secondary'"
+                        :class="activeCategory === '{{ $cat->id }}' ? 'bg-primary text-primary-foreground border-foreground shadow-sm' : 'bg-card text-muted-foreground border-border hover:bg-secondary'"
                         class="shrink-0 flex items-center justify-center h-10 px-4 rounded-xl border text-sm font-medium whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                         {{ $cat->category_name }}
                     </button>
@@ -173,7 +173,7 @@
                                     @endif
                                     @if ($soldOut)
                                         <span
-                                            class="absolute left-2 top-2 rounded-lg bg-primary px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-md">Sold Out</span>
+                                            class="absolute left-2 top-2 rounded-lg bg-primary px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-primary-foreground backdrop-blur-md">Sold Out</span>
                                     @endif
                                 </span>
 
@@ -192,7 +192,7 @@
                                         {{ number_format($product->product_price, 0, ',', '.') }}</span>
                                     @unless ($soldOut)
                                         <span
-                                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-sm transition-colors group-hover:bg-primary/90">
+                                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-foreground text-background shadow-xs transition-colors group-hover:bg-primary/90">
                                             <span class="material-symbols-rounded text-[20px]">add</span>
                                         </span>
                                     @endunless
@@ -222,7 +222,7 @@
             x-transition:leave-end="translate-y-full opacity-0"
             class="fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] z-40 mx-auto max-w-md">
             <a href="{{ route('customer.cart.index') }}"
-                class="flex min-h-14 w-full items-center justify-between rounded-2xl bg-primary px-5 font-semibold text-white shadow-xl transition-all hover:bg-primary/90 active:scale-[0.98]"
+                class="flex min-h-14 w-full items-center justify-between rounded-2xl bg-primary px-5 font-semibold text-primary-foreground shadow-xl transition-all hover:bg-primary/90 active:scale-[0.98]"
                 wire:navigate>
                 <span class="rounded-lg bg-card/20 px-3 py-1 text-sm" x-text="count + (count === 1 ? ' Item' : ' Items')"></span>
                 <span>View Cart</span>
@@ -235,7 +235,7 @@
             x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
             x-transition:leave-end="opacity-0 translate-y-4"
-            class="fixed inset-x-4 bottom-28 z-[60] mx-auto max-w-sm rounded-2xl bg-primary px-4 py-3 text-center text-sm font-medium text-white shadow-xl">
+            class="fixed inset-x-4 bottom-28 z-[60] mx-auto max-w-sm rounded-2xl bg-primary px-4 py-3 text-center text-sm font-medium text-primary-foreground shadow-xl">
             <span x-text="toastMsg"></span>
         </div>
 

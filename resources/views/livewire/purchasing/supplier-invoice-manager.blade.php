@@ -134,7 +134,7 @@
                     <tr>
                         <td colspan="7" class="px-6 py-12 text-center">
                             <div class="flex flex-col items-center justify-center">
-                                <span class="material-symbols-rounded text-5xl text-foreground">receipt</span>
+                                <span class="material-symbols-rounded text-[36px] text-foreground">receipt</span>
                                 <h3 class="mt-2 text-sm font-semibold text-foreground">No supplier invoices found</h3>
                                 <p class="mt-1 text-xs text-muted-foreground">Record supplier invoices to perform three-way matching against Purchase Orders and Goods Received Notes.</p>
                             </div>

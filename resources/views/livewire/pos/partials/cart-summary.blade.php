@@ -42,7 +42,7 @@
                         placeholder="Coupon / voucher code..."
                         class="flex-1 min-h-[40px] h-10 px-3 text-xs bg-background border border-border rounded-md text-foreground placeholder-muted-foreground focus:border-foreground focus:outline-none uppercase tabular-nums transition-colors" />
                     <button type="button" wire:click.prevent="applyVoucher"
-                        class="min-h-[40px] h-10 px-3 text-xs font-medium text-white bg-primary hover:bg-primary/90 rounded-md transition-colors shadow-2xs cursor-pointer">
+                        class="min-h-[40px] h-10 px-3 text-xs font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-md transition-colors shadow-2xs cursor-pointer">
                         Apply
                     </button>
                     <button type="button" @click="openPromo = false" class="text-muted-foreground hover:text-foreground p-1 text-xs cursor-pointer leading-none" title="Close">
@@ -134,7 +134,7 @@
                 </div>
                 <div class="grid grid-cols-3 gap-1.5">
                     <button type="button" wire:click.prevent="fastCashPay(0)" wire:loading.attr="disabled"
-                        class="min-h-[44px] h-11 px-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white text-xs font-semibold flex items-center justify-center transition-colors duration-150 disabled:opacity-50 cursor-pointer">
+                        class="min-h-[44px] h-11 px-2.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold flex items-center justify-center transition-colors duration-150 disabled:opacity-50 cursor-pointer">
                         Exact Cash
                     </button>
                     <button type="button" wire:click.prevent="fastCashPay(50000)" wire:loading.attr="disabled"
@@ -157,7 +157,7 @@
     {{-- Fast Payment Method Bar (Tunai, QRIS, EDC Kartu, Transfer) --}}
     @unless ($isWaiterRole || $pendingOrderId)
         <div class="grid grid-cols-4 gap-1.5 py-0.5">
-            <button class="min-h-[44px] h-11 px-1 rounded-md bg-primary text-white text-xs text-center font-medium shadow-2xs transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none cursor-pointer"
+            <button class="min-h-[44px] h-11 px-1 rounded-md bg-primary text-primary-foreground text-xs text-center font-medium shadow-2xs transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none cursor-pointer"
                 type="button"
                 @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }}, method: 'cash' }); $dispatch('open-modal', 'checkout-payment')"
                 @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
@@ -203,7 +203,7 @@
         @if ($isWaiterRole)
             <button wire:click.prevent="parkCurrentCart" id="btn-dispatch-kitchen"
                 wire:loading.attr="disabled" wire:target="parkCurrentCart"
-                class="w-full h-11 px-4 rounded-lg bg-primary hover:bg-primary/90 text-white transition-all flex items-center justify-between shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                class="w-full h-11 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground transition-all flex items-center justify-between shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 @disabled(count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-rounded text-lg">restaurant</span>
@@ -218,13 +218,13 @@
                 wire:loading.attr="disabled" wire:target="submitOrder"
                 wire:loading.class.add="pointer-events-none"
                 aria-label="Pay pending QR order (F4)"
-                class="w-full h-11 px-4 rounded-lg bg-primary hover:bg-primary/90 text-white transition-all flex items-center justify-between shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                class="w-full h-11 px-4 rounded-lg bg-foreground hover:opacity-90 text-background transition-all flex items-center justify-between shadow-sm disabled:bg-muted disabled:text-muted-foreground disabled:border disabled:border-border disabled:opacity-75 disabled:cursor-not-allowed"
                 @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
                 <div class="flex items-center gap-2">
                     <span wire:loading wire:target="submitOrder" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
                     <span wire:loading.remove wire:target="submitOrder" class="text-sm font-medium">Pay Now</span>
                     <span wire:loading wire:target="submitOrder" class="text-sm font-medium">Processing...</span>
-                    <span class="px-1.5 py-0.5 rounded bg-card/20 text-xs tabular-nums uppercase">F4</span>
+                    <span class="px-1.5 py-0.5 rounded bg-background/20 text-xs tabular-nums uppercase">F4</span>
                 </div>
                 <span class="text-sm font-semibold tabular-nums">
                     Rp {{ number_format($this->totalAmount, 0, ',', '.') }}
@@ -234,12 +234,12 @@
             <button type="button" id="btn-proses-bayar"
                 wire:loading.attr="disabled" wire:target="submitOrder"
                 aria-haspopup="dialog" aria-controls="checkout-payment"
-                class="w-full h-11 px-4 rounded-lg bg-primary hover:bg-primary/90 text-white transition-all flex items-center justify-between shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                class="w-full h-11 px-4 rounded-lg bg-foreground hover:opacity-90 text-background transition-all flex items-center justify-between shadow-sm disabled:bg-muted disabled:text-muted-foreground disabled:border disabled:border-border disabled:opacity-75 disabled:cursor-not-allowed"
                 @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }} }); $dispatch('open-modal', 'checkout-payment')"
                 @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
                 <div class="flex items-center gap-2">
                     <span class="text-sm font-medium">Pay Now</span>
-                    <span class="px-1.5 py-0.5 rounded bg-card/20 text-xs tabular-nums uppercase">F4</span>
+                    <span class="px-1.5 py-0.5 rounded bg-background/20 text-xs tabular-nums uppercase">F4</span>
                 </div>
                 <span class="text-sm font-semibold tabular-nums">
                     Rp {{ number_format($this->totalAmount, 0, ',', '.') }}

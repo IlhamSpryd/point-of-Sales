@@ -56,7 +56,7 @@
         <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
             Amount Received
         </span>
-        <div class="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight numeric tabular-nums" x-text="formatRupiah(amount)">
+        <div class="text-[22px] font-semibold text-foreground tracking-tight numeric tabular-nums" x-text="formatRupiah(amount)">
             Rp 0
         </div>
         <template x-if="totalRequired > 0">

@@ -61,7 +61,7 @@
 
                 <button type="submit" wire:loading.attr="disabled" wire:target="openShift"
                     x-on:click="window.erpMotion?.pulseHighlight($el)"
-                    class="w-full disabled:opacity-60 disabled:cursor-wait bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-xl shadow-md active:scale-[0.98] transition-all flex justify-center items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    class="w-full disabled:opacity-60 disabled:cursor-wait bg-foreground hover:opacity-90 text-background font-bold py-3.5 rounded-xl shadow-md active:scale-[0.98] transition-all flex justify-center items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     <span wire:loading wire:target="openShift" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
                     <span>Start Shift Session</span>
                 </button>
@@ -115,7 +115,7 @@
                         <span class="material-symbols-rounded text-[20px]">swap_horiz</span> Handover
                     </button>
                     <button type="button" x-on:click="openCloseModal = true; window.erpMotion?.pulseHighlight($el)"
-                        class="px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 active:scale-95 transition-all shadow-sm flex items-center gap-1.5">
+                        class="px-4 py-2 rounded-xl bg-foreground text-background text-xs font-bold hover:opacity-90 active:scale-95 transition-all shadow-sm flex items-center gap-1.5">
                         <span class="material-symbols-rounded text-[20px]">lock</span> Close Shift
                     </button>
                     @if(auth()->user()?->role?->is_admin || in_array(auth()->user()?->role?->name, ['Owner', 'Manager', 'Supervisor'], true))
@@ -157,7 +157,7 @@
                                 @endif
                                 <button type="button" wire:click="acceptHandover({{ $pendingHandover->id }})"
                                     x-on:click="window.erpMotion?.pulseHighlight($el)"
-                                    class="px-3.5 py-1.5 bg-positive hover:bg-positive text-white text-xs font-bold rounded-xl shadow-sm active:scale-95 transition-all">
+                                    class="px-3.5 py-1.5 bg-positive hover:bg-positive text-positive-foreground text-xs font-bold rounded-xl shadow-sm active:scale-95 transition-all">
                                     Accept Handover
                                 </button>
                                 <button type="button" wire:click="cancelHandover({{ $pendingHandover->id }})"
@@ -198,7 +198,7 @@
 
                 <div class="bg-card rounded-2xl p-5 border border-border shadow-sm bg-gradient-to-br from-card to-secondary/50" data-gsap="kpi-card">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-foreground block mb-1.5">Expected Drawer Cash</span>
-                    <p class="text-2xl font-black text-foreground font-sans tabular-nums">Rp {{ number_format($expectedCash, 0, ',', '.') }}</p>
+                    <p class="text-[20px] font-semibold text-foreground font-sans tabular-nums">Rp {{ number_format($expectedCash, 0, ',', '.') }}</p>
                     <span class="text-xs text-muted-foreground mt-1 block">Expected cash balance at closing</span>
                 </div>
             </div>
@@ -371,7 +371,7 @@
                     </button>
                     <button type="submit" form="cash-movement-form"
                         x-on:click="window.erpMotion?.pulseHighlight($el)"
-                        class="px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 shadow-sm active:scale-95 transition-all">
+                        class="px-4 py-2 rounded-xl bg-foreground text-background text-xs font-bold hover:opacity-90 shadow-sm active:scale-95 transition-all">
                         Save Movement
                     </button>
                 </div>
@@ -427,7 +427,7 @@
                     </button>
                     <button type="submit" form="handover-form"
                         x-on:click="window.erpMotion?.pulseHighlight($el)"
-                        class="px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 shadow-sm active:scale-95 transition-all">
+                        class="px-4 py-2 rounded-xl bg-foreground text-background text-xs font-bold hover:opacity-90 shadow-sm active:scale-95 transition-all">
                         Submit Handover
                     </button>
                 </div>
@@ -533,7 +533,7 @@
                     </button>
                     <button type="submit" form="force-close-form"
                         x-on:click="window.erpMotion?.pulseHighlight($el)"
-                        class="px-4 py-2 rounded-xl bg-destructive hover:bg-destructive text-white text-xs font-bold shadow-sm active:scale-95 transition-all">
+                        class="px-4 py-2 rounded-xl bg-destructive hover:bg-destructive text-destructive-foreground text-xs font-bold shadow-sm active:scale-95 transition-all">
                         Execute Force Close
                     </button>
                 </div>

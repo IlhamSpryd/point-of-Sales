@@ -39,7 +39,7 @@
                         <th scope="col" class="py-2 px-3 text-right">Avg Ticket</th>
                         <th scope="col" class="py-2 px-3 text-left w-36">Target Attainment</th>
                         <th scope="col" class="py-2 px-3 text-left w-24">Trend</th>
-                        <th scope="col" class="py-2 pl-3 text-right">Share</th>
+                        <th scope="col" class="py-2 pl-3 pr-4 text-right whitespace-nowrap">Share</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border/60">
@@ -120,7 +120,7 @@
                                     <span class="text-muted-foreground text-[10px]">—</span>
                                 @endif
                             </td>
-                            <td class="py-2 pl-3 text-right tabular-nums font-bold text-foreground">
+                            <td class="py-2 pl-3 pr-4 text-right tabular-nums font-bold text-foreground whitespace-nowrap">
                                 {{ $share }}%
                             </td>
                         </tr>

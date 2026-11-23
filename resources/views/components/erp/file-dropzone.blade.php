@@ -141,7 +141,7 @@
                             <img :src="item.preview" :alt="item.name" class="size-full object-cover transition-transform duration-300 group-hover:scale-105" />
                         </template>
                         <template x-if="!item.preview">
-                            <span class="material-symbols-rounded text-3xl text-muted-foreground" x-text="item.isPdf ? 'picture_as_pdf' : 'description'"></span>
+                            <span class="material-symbols-rounded text-[28px] text-muted-foreground" x-text="item.isPdf ? 'picture_as_pdf' : 'description'"></span>
                         </template>
 
                         {{-- Action Overlay --}}

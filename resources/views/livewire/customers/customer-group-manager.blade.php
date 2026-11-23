@@ -94,7 +94,7 @@
                     @empty
                     <tr>
                         <td colspan="5" class="px-6 py-12 text-center text-muted-foreground">
-                            <span class="material-symbols-rounded text-4xl block mb-2">folder_off</span>
+                            <span class="material-symbols-rounded text-[32px] block mb-2">folder_off</span>
                             No customer groups found.
                         </td>
                     </tr>

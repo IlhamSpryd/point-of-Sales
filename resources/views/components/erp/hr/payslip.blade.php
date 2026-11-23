@@ -116,7 +116,7 @@
                 Direct deposit to employee registered bank account
             </span>
         </div>
-        <div class="text-2xl sm:text-3xl font-black text-foreground tracking-tight numeric tabular-nums">
+        <div class="text-[20px] font-semibold text-foreground tracking-tight numeric tabular-nums">
             Rp {{ number_format($netSalary, 0, ',', '.') }}
         </div>
     </div>

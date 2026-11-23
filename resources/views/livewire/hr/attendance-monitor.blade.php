@@ -151,7 +151,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="px-6 py-12 text-center text-muted-foreground">
-                                <span class="material-symbols-rounded text-4xl block mb-2 text-muted-foreground/50">event_busy</span>
+                                <span class="material-symbols-rounded text-[32px] block mb-2 text-muted-foreground/50">event_busy</span>
                                 No attendance records found for the selected date and branch.
                             </td>
                         </tr>

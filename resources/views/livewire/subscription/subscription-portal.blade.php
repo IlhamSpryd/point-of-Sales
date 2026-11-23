@@ -3,7 +3,7 @@
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-foreground tracking-tight">
+            <h1 class="text-[18px] leading-tight font-bold text-foreground tracking-tight">
                 SaaS Subscription & Quota Portal
             </h1>
             <p class="text-sm text-muted-foreground mt-1">
@@ -48,7 +48,7 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
                 <span class="text-xs font-semibold uppercase tracking-wider text-primary">Active Plan</span>
-                <h2 class="text-2xl font-extrabold text-foreground mt-1">{{ $activePlan?->name ?? 'Starter Tier' }}</h2>
+                <h2 class="text-[18px] font-semibold tracking-tight text-foreground">{{ $activePlan?->name ?? 'Starter Tier' }}</h2>
                 <p class="text-xs text-muted-foreground mt-0.5">Billing Status: <span class="font-semibold text-positive uppercase">{{ $subscription?->status ?? 'ACTIVE' }}</span></p>
             </div>
             <div class="text-right">

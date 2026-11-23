@@ -186,7 +186,7 @@
                         @empty
                             <tr>
                                 <td colspan="8" class="py-12 text-center text-muted-foreground">
-                                    <span class="material-symbols-rounded text-4xl mb-2 text-foreground block">receipt_long</span>
+                                    <span class="material-symbols-rounded text-[32px] mb-2 text-foreground block">receipt_long</span>
                                     <div>No sales invoices recorded yet.</div>
                                 </td>
                             </tr>

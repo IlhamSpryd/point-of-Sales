@@ -64,7 +64,7 @@
                         <div class="p-4 rounded-xl bg-secondary border border-border space-y-3">
                             <div class="flex items-center justify-between">
                                 <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Unit Economics</span>
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                                <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold"
                                       :class="(productBomData?.product?.margin_pct ?? selectedProduct.margin_pct) >= 40 ? 'bg-success-muted text-success border border-success-border' : 'bg-warning-muted text-warning border border-warning-border'"
                                       x-text="(productBomData?.product?.margin_pct ?? selectedProduct.margin_pct) + '% Margin'">
                                 </span>

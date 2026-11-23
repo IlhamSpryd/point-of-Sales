@@ -81,7 +81,7 @@
                                 <span class="block text-[13px] text-muted-foreground mt-0.5">{{ $hint }}</span>
                             </span>
                             <span class="w-6 h-6 rounded-full border-[1.5px] flex items-center justify-center shrink-0 transition-all duration-200"
-                                  :class="method === '{{ $value }}' ? 'bg-primary border-foreground text-white' : 'border-primary-300 text-transparent'">
+                                  :class="method === '{{ $value }}' ? 'bg-primary border-foreground text-primary-foreground' : 'border-primary-300 text-transparent'">
                                 <span class="material-symbols-rounded text-[16px]">check</span>
                             </span>
                         </button>
@@ -98,7 +98,7 @@
             <div class="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md bg-card/90 backdrop-blur-xl border-t border-border sm:border-x">
                 <div class="px-4 pt-4 pb-safe">
                     <button type="submit" :disabled="submitting"
-                            class="w-full flex items-center justify-between rounded-2xl bg-primary text-white px-5 min-h-14 font-semibold shadow-lg hover:bg-primary/90 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                            class="w-full flex items-center justify-between rounded-2xl bg-primary text-primary-foreground px-5 min-h-14 font-semibold shadow-lg hover:bg-primary/90 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                         <span class="flex items-center gap-2 text-[15px]">
                             <span x-show="submitting" x-cloak class="spinner" aria-hidden="true"></span>
                             <span x-text="submitting ? 'Processing…' : 'Pay Now'"></span>

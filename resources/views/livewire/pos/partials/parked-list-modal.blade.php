@@ -4,7 +4,7 @@
     <x-slot:header>
         <div class="flex items-center gap-2">
             <h3 class="text-base font-semibold text-foreground">Parked Orders (Held Orders)</h3>
-            <span class="px-1.5 py-0.5 rounded bg-primary text-white text-xs font-sans tabular-nums font-bold">
+            <span class="px-1.5 py-0.5 rounded bg-primary text-primary-foreground text-xs font-sans tabular-nums font-bold">
                 {{ $this->parkedCarts->count() }}
             </span>
         </div>
@@ -72,7 +72,7 @@
     <x-slot:footer>
         <div class="flex justify-between items-center w-full">
             <button type="button" wire:click="$set('isParkedListOpen', false); $set('isParkModalOpen', true)"
-                class="px-3.5 py-2 rounded-lg bg-primary text-white text-xs font-medium hover:bg-primary/90 flex items-center gap-1.5 shadow-xs transition-all cursor-pointer">
+                class="px-3.5 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 flex items-center gap-1.5 shadow-xs transition-all cursor-pointer">
                 <span class="material-symbols-rounded text-[16px]">archive</span>
                 <span>Park Current Order</span>
             </button>

@@ -58,7 +58,8 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <span class="font-sans font-bold text-foreground text-sm">{{ $session->session_number }}</span>
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {{ $session->status->value === 'COMPLETED' ? 'bg-positive text-positive' : 'bg-warning text-warning' }}">
+                        <span class="inline-flex items-center gap-1.5 text-xs font-medium text-foreground">
+                            <span class="w-1.5 h-1.5 rounded-full {{ $session->status->value === 'COMPLETED' ? 'bg-emerald-500' : 'bg-amber-500' }}"></span>
                             {{ $session->status->value }}
                         </span>
                     </div>
@@ -274,7 +275,7 @@
         </div>
     @else
         <div class="card-surface p-12 rounded-2xl border border-border text-center space-y-3 shadow-xs">
-            <span class="material-symbols-rounded text-4xl text-muted-foreground">account_balance</span>
+            <span class="material-symbols-rounded text-[32px] text-muted-foreground">account_balance</span>
             <h3 class="text-base font-bold text-foreground">No Active Reconciliation Session</h3>
             <p class="text-xs text-muted-foreground max-w-sm mx-auto">Select a cash/bank account and click "Start New Session" to begin matching statement lines.</p>
             <button type="button"

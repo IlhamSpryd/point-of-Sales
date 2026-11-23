@@ -12,10 +12,10 @@
 
             <button type="button"
                 @click="$dispatch('open-drawer', 'pos-mobile-cart-drawer')"
-                class="px-4 py-2.5 bg-primary hover:bg-primary/90 text-white font-medium text-xs rounded-xl shadow-sm active:scale-95 transition-all flex items-center gap-2">
+                class="px-4 py-2.5 bg-foreground hover:opacity-90 text-background font-medium text-xs rounded-xl shadow-sm active:scale-95 transition-all flex items-center gap-2">
                 <span class="material-symbols-rounded text-[20px]">shopping_bag</span>
                 <span>View Order</span>
-                <span class="bg-card/20 text-white text-xs px-1.5 py-0.5 rounded-full font-sans tabular-nums font-bold">
+                <span class="bg-secondary text-foreground text-xs px-1.5 py-0.5 rounded font-sans tabular-nums font-semibold border border-border">
                     {{ count($this->cartLines) }}
                 </span>
             </button>
@@ -27,7 +27,7 @@
         <x-slot:header>
             <div class="flex items-center gap-2">
                 <span class="text-base font-semibold text-foreground">Current Order</span>
-                <span class="bg-primary text-white text-xs font-sans tabular-nums px-2 py-0.5 rounded-full font-bold">
+                <span class="bg-foreground text-background text-xs font-sans tabular-nums px-1.5 py-0.5 rounded font-semibold">
                     {{ count($this->cartLines) }}
                 </span>
             </div>

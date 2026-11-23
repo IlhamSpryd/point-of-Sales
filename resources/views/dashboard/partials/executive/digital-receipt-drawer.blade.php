@@ -127,8 +127,8 @@
                                     <span class="material-symbols-rounded text-sm text-primary">account_balance</span>
                                     <h3 class="text-xs font-bold uppercase tracking-wider text-muted-foreground">GL Subledger Postings</h3>
                                 </div>
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold"
-                                      :class="receiptDetailData?.gl_journal ? 'bg-success-muted text-success border border-success-border' : 'bg-muted text-muted-foreground'"
+                                <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold"
+                                      :class="receiptDetailData?.gl_journal ? 'bg-success-muted text-success border border-success-border' : 'bg-muted text-muted-foreground border border-border'"
                                       x-text="receiptDetailData?.gl_journal ? 'POSTED & IN SYNC' : 'AUTO POSTED'">
                                 </span>
                             </div>

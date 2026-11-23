@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold tracking-tight text-foreground">Fixed Assets & Depreciation</h1>
+            <h1 class="text-[18px] leading-tight font-bold tracking-tight text-foreground">Fixed Assets & Depreciation</h1>
             <p class="text-sm text-muted-foreground mt-1">Pengelolaan aset tetap fisik, kapitalisasi biaya, dan jadwal depresiasi buku besar.</p>
         </div>
         <div class="flex items-center gap-3">

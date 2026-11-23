@@ -36,7 +36,7 @@
             <h1 class="text-[17px] font-bold">Your cart is empty</h1>
             <p class="text-[14px] text-muted-foreground mt-1 mb-6">Discover our menu and add items to begin your order.</p>
             <template x-if="menuUrl">
-                <a :href="menuUrl" class="inline-flex items-center gap-2 rounded-2xl bg-primary text-white px-6 min-h-12 font-semibold active:scale-95 hover:bg-primary/90 transition-all duration-200">
+                <a :href="menuUrl" class="inline-flex items-center gap-2 rounded-2xl bg-primary text-primary-foreground px-6 min-h-12 font-semibold active:scale-95 hover:bg-primary/90 transition-all duration-200">
                     <span class="material-symbols-rounded text-[20px]">restaurant_menu</span> View Menu
                 </a>
             </template>
@@ -85,13 +85,13 @@
                                 <div class="flex items-center rounded-full bg-secondary border border-border p-0.5" role="group" :aria-label="'Quantity ' + line.name">
                                     <button type="button" @click="change(line, -1)" :disabled="busy"
                                             :aria-label="line.qty === 1 ? 'Remove ' + line.name : 'Decrease quantity'"
-                                            class="w-11 h-11 rounded-full flex items-center justify-center bg-card shadow-sm text-foreground hover:bg-card active:scale-90 disabled:opacity-50 transition-all duration-200">
+                                            class="w-11 h-11 rounded-xl flex items-center justify-center bg-card shadow-sm text-foreground hover:bg-card active:scale-90 disabled:opacity-50 transition-all duration-200">
                                         <span class="material-symbols-rounded text-[20px]" x-text="line.qty === 1 ? 'delete' : 'remove'"></span>
                                     </button>
                                     <span class="w-9 text-center font-bold text-[15px] tabular-nums" x-text="line.qty" aria-live="polite"></span>
                                     <button type="button" @click="change(line, 1)" :disabled="busy || line.qty >= 20"
                                             aria-label="Increase quantity"
-                                            class="w-11 h-11 rounded-full flex items-center justify-center bg-card shadow-sm text-foreground hover:bg-card active:scale-90 disabled:opacity-40 transition-all duration-200">
+                                            class="w-11 h-11 rounded-xl flex items-center justify-center bg-card shadow-sm text-foreground hover:bg-card active:scale-90 disabled:opacity-40 transition-all duration-200">
                                         <span class="material-symbols-rounded text-[20px]">add</span>
                                     </button>
                                 </div>
@@ -119,7 +119,7 @@
                     <div class="flex justify-between text-muted-foreground"><dt x-text="'Tax (' + taxPercent + '%)'"></dt><dd class="tabular-nums" x-text="rupiah(tax)"></dd></div>
                 </dl>
                 <a :href="checkoutUrl" :class="busy ? 'pointer-events-none opacity-60' : ''"
-                   class="flex items-center justify-between w-full rounded-2xl bg-primary text-white px-5 min-h-14 font-semibold shadow-lg hover:bg-primary/90 active:scale-[0.98] transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                   class="flex items-center justify-between w-full rounded-2xl bg-primary text-primary-foreground px-5 min-h-14 font-semibold shadow-lg hover:bg-primary/90 active:scale-[0.98] transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                     <span class="text-[15px]">Proceed to Checkout</span>
                     <span class="tabular-nums text-[15px]" x-text="rupiah(total)"></span>
                 </a>

@@ -275,7 +275,7 @@
                                 <span>Pilih Varian</span>
                                 <span class="text-destructive">*</span>
                             </label>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-warning text-warning border border-warning/20">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded px-1.5 py-0.5 text-[10px] font-bold bg-warning text-warning border border-warning/20">
                                 Wajib • Pilih 1
                             </span>
                         </div>
@@ -327,7 +327,7 @@
                             <label class="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                                 <span>Satuan Jual</span>
                             </label>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-muted text-muted-foreground border border-border">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded px-1.5 py-0.5 text-[10px] font-bold bg-muted text-muted-foreground border border-border">
                                 Multi-UOM
                             </span>
                         </div>
@@ -375,7 +375,7 @@
                                     </label>
                                     <div>
                                         @if ($group->is_required)
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-warning text-warning border border-warning/20">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded px-1.5 py-0.5 text-[10px] font-bold bg-warning text-warning border border-warning/20">
                                                 @if ($group->selection_type === 'single')
                                                     Wajib • Pilih 1
                                                 @elseif ($group->min_select && $group->min_select > 1)
@@ -385,7 +385,7 @@
                                                 @endif
                                             </span>
                                         @else
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted text-muted-foreground border border-border">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded px-1.5 py-0.5 text-[10px] font-medium bg-muted text-muted-foreground border border-border">
                                                 Opsional{{ $group->max_select ? ' • Maks ' . $group->max_select : '' }}
                                             </span>
                                         @endif

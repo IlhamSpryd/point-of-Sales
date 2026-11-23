@@ -32,10 +32,10 @@
     <div class="flex items-center gap-2 overflow-x-auto pb-2.5 mb-3 shrink-0 select-none scrollbar-hide">
         <!-- All Items -->
         <button type="button" @click="activeCategory = 'all'"
-            :class="activeCategory === 'all' ? 'bg-primary text-white shadow-sm' : 'bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border'"
+            :class="activeCategory === 'all' ? 'bg-foreground text-background font-semibold shadow-xs' : 'bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border'"
             class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium shrink-0 transition-all cursor-pointer">
             <span class="truncate">All Items</span>
-            <span :class="activeCategory === 'all' ? 'text-white/70' : 'text-muted-foreground'"
+            <span :class="activeCategory === 'all' ? 'text-background/80' : 'text-muted-foreground'"
                 class="text-xs font-medium tabular-nums transition-colors">
                 ({{ $this->categories->sum(fn($cat) => $cat->products->count()) }})
             </span>
@@ -44,10 +44,10 @@
         @foreach ($this->categories as $category)
             @if ($category->products->count() > 0)
                 <button wire:key="pos-cat-{{ $category->id }}" type="button" @click="activeCategory = {{ $category->id }}"
-                    :class="activeCategory === {{ $category->id }} ? 'bg-primary text-white shadow-sm' : 'bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border'"
+                    :class="activeCategory === {{ $category->id }} ? 'bg-foreground text-background font-semibold shadow-xs' : 'bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border'"
                     class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium shrink-0 transition-all cursor-pointer">
                     <span class="truncate">{{ $category->category_name }}</span>
-                    <span :class="activeCategory === {{ $category->id }} ? 'text-white/70' : 'text-muted-foreground'"
+                    <span :class="activeCategory === {{ $category->id }} ? 'text-background/80' : 'text-muted-foreground'"
                         class="text-xs font-medium tabular-nums transition-colors">
                         ({{ $category->products->count() }})
                     </span>
@@ -58,7 +58,7 @@
         <div class="h-5 w-px bg-secondary shrink-0 mx-1"></div>
 
         <button type="button" @click="activeCategory = 'fav'"
-            :class="activeCategory === 'fav' ? 'bg-primary text-white shadow-sm' : 'bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border'"
+            :class="activeCategory === 'fav' ? 'bg-foreground text-background font-semibold shadow-xs' : 'bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border'"
             class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium shrink-0 transition-colors cursor-pointer">
             <span class="material-symbols-rounded text-[16px] text-warning">star</span>
             <span class="truncate">Favorites</span>
@@ -143,12 +143,12 @@
                             <div class="relative w-full h-[120px] rounded-lg overflow-hidden bg-muted flex items-center justify-center">
                                 @if ($isOutOfStock)
                                     <div class="absolute inset-0 bg-card/80 backdrop-blur-[1px] flex items-center justify-center z-10">
-                                        <span class="px-2.5 py-1 rounded bg-primary text-white text-xs uppercase font-medium">Out of Stock</span>
+                                        <span class="px-2.5 py-1 rounded bg-primary text-primary-foreground text-xs uppercase font-medium">Out of Stock</span>
                                     </div>
                                 @endif
 
                                 @if ($inCartQty > 0)
-                                    <span class="absolute top-2 left-2 z-20 px-2 py-0.5 rounded bg-primary text-white text-xs tabular-nums font-medium shadow-sm">
+                                    <span class="absolute top-2 left-2 z-20 px-2 py-0.5 rounded bg-primary text-primary-foreground text-xs tabular-nums font-medium shadow-sm">
                                         {{ $inCartQty }} in Cart
                                     </span>
                                 @elseif ($isLowStock)
@@ -208,7 +208,7 @@
                             <span class="text-sm font-semibold text-foreground tabular-nums">
                                 Rp {{ number_format($product->product_price, 0, ',', '.') }}
                             </span>
-                            <button class="flex items-center justify-center min-w-[44px] min-h-[44px] w-11 h-11 rounded-lg {{ $isOutOfStock ? 'bg-secondary text-muted-foreground cursor-not-allowed' : 'bg-muted hover:bg-primary hover:text-white text-foreground cursor-pointer' }} transition-colors"
+                            <button class="flex items-center justify-center min-w-[44px] min-h-[44px] w-11 h-11 rounded-lg {{ $isOutOfStock ? 'bg-secondary text-muted-foreground cursor-not-allowed' : 'bg-muted hover:bg-primary hover:text-primary-foreground text-foreground cursor-pointer' }} transition-colors"
                                 type="button" title="{{ $isOutOfStock ? ($hasBom ? 'Insufficient ingredients (Out of stock)' : 'Product out of stock') : 'Add' }}"
                                 @if(!$isOutOfStock)
                                     x-on:click.stop="window.erpMotion?.pulseHighlight($el); $wire.{{ $clickAction }}"

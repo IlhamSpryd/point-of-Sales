@@ -88,7 +88,7 @@
                     <form method="POST" action="{{ route('two-factor.confirm') }}" class="flex flex-col sm:flex-row gap-3">
                         @csrf
                         <input type="text" name="code" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" placeholder="123456" required class="w-full sm:w-48 text-center tracking-widest text-base font-sans px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-ring">
-                        <button type="submit" id="btn-confirm-2fa" class="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary/90 transition-all cursor-pointer">
+                        <button type="submit" id="btn-confirm-2fa" class="px-4 py-2 bg-primary text-primary-foreground text-xs font-semibold rounded-lg hover:bg-primary/90 transition-all cursor-pointer">
                             {{ __('Confirm & Enable 2FA') }}
                         </button>
                     </form>
@@ -118,7 +118,7 @@
 
                 <form method="POST" action="{{ route('two-factor.enable') }}">
                     @csrf
-                    <button type="submit" id="btn-enable-2fa" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg bg-primary text-white hover:bg-primary/90 transition-all active:scale-[0.98] cursor-pointer">
+                    <button type="submit" id="btn-enable-2fa" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all active:scale-[0.98] cursor-pointer">
                         <span class="material-symbols-rounded text-sm">lock</span>
                         <span>{{ __('Enable 2FA') }}</span>
                     </button>

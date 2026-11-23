@@ -132,7 +132,7 @@
                     <tr>
                         <td colspan="7" class="px-6 py-12 text-center">
                             <div class="flex flex-col items-center justify-center">
-                                <span class="material-symbols-rounded text-5xl text-foreground">keyboard_return</span>
+                                <span class="material-symbols-rounded text-[36px] text-foreground">keyboard_return</span>
                                 <h3 class="mt-2 text-sm font-semibold text-foreground">No purchase returns found</h3>
                                 <p class="mt-1 text-xs text-muted-foreground">Create goods returns to suppliers for damaged or non-conforming items.</p>
                             </div>

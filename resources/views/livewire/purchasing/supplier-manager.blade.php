@@ -128,7 +128,7 @@
                     <tr>
                         <td colspan="6" class="px-6 py-12 text-center">
                             <div class="flex flex-col items-center justify-center">
-                                <span class="material-symbols-rounded text-5xl text-foreground">store_mall_directory</span>
+                                <span class="material-symbols-rounded text-[36px] text-foreground">store_mall_directory</span>
                                 <h3 class="mt-2 text-sm font-semibold text-foreground">No suppliers found</h3>
                                 <p class="mt-1 text-xs text-muted-foreground">Get started by adding a new supplier for procurement.</p>
                             </div>

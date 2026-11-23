@@ -90,7 +90,7 @@
                 Cancel
             </button>
             <button type="submit" form="manual-discount-form"
-                class="px-5 py-2 rounded-lg bg-primary text-white text-xs font-medium hover:bg-primary/90 shadow-sm transition-all active:scale-95">
+                class="px-5 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 shadow-sm transition-all active:scale-95">
                 Apply Discount
             </button>
         </div>

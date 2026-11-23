@@ -51,7 +51,7 @@
                     <div class="text-xs font-semibold uppercase tracking-wider text-muted-foreground" x-text="kpiMeta.label"></div>
                     <div class="flex items-baseline gap-3">
                         <span class="text-2xl sm:text-3xl font-extrabold text-foreground tabular-nums" x-text="kpiMeta.valueFormatted"></span>
-                        <span class="text-xs font-bold px-2 py-0.5 rounded-full"
+                        <span class="text-xs font-semibold px-1.5 py-0.5 rounded tabular-nums"
                               :class="kpiMeta.isPositive ? 'bg-success-muted text-success border border-success-border' : 'bg-destructive-muted text-destructive border border-destructive-border'"
                               x-text="kpiMeta.delta"></span>
                     </div>

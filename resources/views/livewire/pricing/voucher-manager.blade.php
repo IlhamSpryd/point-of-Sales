@@ -4,7 +4,7 @@
     <!-- Header Page & Actions -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-foreground tracking-tight">
+            <h1 class="text-[18px] leading-tight font-bold text-foreground tracking-tight">
                 Promotional Coupons & Vouchers
             </h1>
             <p class="text-sm text-muted-foreground mt-1">

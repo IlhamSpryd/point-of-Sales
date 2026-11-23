@@ -7,7 +7,7 @@
         />
     </x-slot:header>
 
-    <div class="space-y-6" data-gsap="page-enter">
+    <div class="p-5 lg:p-6 space-y-6" data-gsap="page-enter">
         @include('finance.partials.sub-nav')
 
         <!-- KPI Summary Cards -->
@@ -42,7 +42,7 @@
             />
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             <!-- Recent Journal Entries List (2 Cols) -->
             <div class="lg:col-span-2 space-y-4">
                 <div class="flex items-center justify-between">
@@ -55,7 +55,7 @@
                 <div class="card-surface rounded-2xl overflow-hidden border border-border shadow-xs">
                     @if($recentJournals->isEmpty())
                         <div class="p-8 text-center space-y-2">
-                            <span class="material-symbols-rounded text-3xl text-muted-foreground/60">hourglass_empty</span>
+                            <span class="material-symbols-rounded text-[28px] text-muted-foreground/60">hourglass_empty</span>
                             <p class="text-sm font-medium text-foreground">No transaction journals recorded yet</p>
                             <p class="text-xs text-muted-foreground max-w-sm mx-auto">
                                 Journals are automatically posted upon cashier checkout, goods receipt (GRN) approval, or customer invoice verification.

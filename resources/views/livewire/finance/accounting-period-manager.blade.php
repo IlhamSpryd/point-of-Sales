@@ -139,7 +139,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="px-4 py-12 text-center text-muted-foreground">
-                                <span class="material-symbols-rounded text-3xl mb-1 text-muted-foreground/60">event_busy</span>
+                                <span class="material-symbols-rounded text-[28px] mb-1 text-muted-foreground/60">event_busy</span>
                                 <p class="text-xs">No accounting periods found for fiscal year {{ $selectedFiscalYear }}.</p>
                                 <button type="button"
                                         wire:click="generateFiscalYearPeriods"
@@ -207,12 +207,12 @@
                     <div class="p-3 rounded-xl border border-border flex items-center justify-between text-xs bg-muted/30">
                         <span class="font-medium text-foreground">{{ ucwords(str_replace('_', ' ', (string) $gate)) }}</span>
                         @if (is_array($result) ? ($result['passed'] ?? false) : (bool) $result)
-                            <span class="px-2 py-0.5 rounded-full text-2xs font-bold bg-positive text-positive inline-flex items-center gap-1">
-                                <span class="material-symbols-rounded text-xs">check</span> PASSED
+                            <span class="text-xs font-medium text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> PASSED
                             </span>
                         @else
-                            <span class="px-2 py-0.5 rounded-full text-2xs font-bold bg-warning text-warning inline-flex items-center gap-1">
-                                <span class="material-symbols-rounded text-xs">warning</span> PENDING
+                            <span class="text-xs font-medium text-amber-600 dark:text-amber-400 inline-flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> PENDING
                             </span>
                         @endif
                     </div>

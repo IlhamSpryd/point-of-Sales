@@ -4,18 +4,13 @@
     {{-- Header & Title --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-4">
         <div>
-            <div class="flex items-center gap-2">
-                <span class="inline-flex items-center justify-center p-2 rounded-lg bg-muted text-muted-foreground border border-border">
-                    <span class="material-symbols-rounded text-2xl">insights</span>
-                </span>
-                <div>
-                    <h1 class="text-xl font-bold tracking-tight text-foreground">
-                        Business Intelligence & Advanced Analytics
-                    </h1>
-                    <p class="text-xs text-muted-foreground">
-                        Integrated analytics across Sales, Inventory, General Ledger, and Customers.
-                    </p>
-                </div>
+            <div>
+                <h1 class="text-[18px] font-semibold tracking-[-0.02em] leading-tight text-foreground">
+                    Business Intelligence & Advanced Analytics
+                </h1>
+                <p class="text-[12px] text-muted-foreground mt-0.5">
+                    Integrated analytics across Sales, Inventory, General Ledger, and Customers.
+                </p>
             </div>
         </div>
 
@@ -50,33 +45,33 @@
 
     {{-- Filter Bar --}}
     <div class="bg-card p-4 rounded-xl border border-border shadow-xs flex flex-wrap items-center justify-between gap-4">
-        {{-- Navigation Tabs --}}
-        <div class="flex items-center gap-1 p-1 bg-muted rounded-lg">
+        {{-- Navigation Tabs (Clean Underline) --}}
+        <div class="flex items-center gap-6 border-b border-border -mb-px">
             <button wire:click="setTab('sales')" type="button"
-                class="px-3.5 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer {{ $activeTab === 'sales' ? 'bg-card text-foreground font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground' }}">
+                class="pb-2.5 pt-1 border-b-2 text-xs transition-colors cursor-pointer {{ $activeTab === 'sales' ? 'border-foreground text-foreground font-semibold' : 'border-transparent text-muted-foreground hover:text-foreground' }}">
                 <span class="flex items-center gap-1.5">
-                    <span class="material-symbols-rounded text-sm">trending_up</span>
+                    <span class="material-symbols-rounded text-[16px]">trending_up</span>
                     <span>Sales</span>
                 </span>
             </button>
             <button wire:click="setTab('inventory')" type="button"
-                class="px-3.5 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer {{ $activeTab === 'inventory' ? 'bg-card text-foreground font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground' }}">
+                class="pb-2.5 pt-1 border-b-2 text-xs transition-colors cursor-pointer {{ $activeTab === 'inventory' ? 'border-foreground text-foreground font-semibold' : 'border-transparent text-muted-foreground hover:text-foreground' }}">
                 <span class="flex items-center gap-1.5">
-                    <span class="material-symbols-rounded text-sm">inventory_2</span>
+                    <span class="material-symbols-rounded text-[16px]">inventory_2</span>
                     <span>Inventory</span>
                 </span>
             </button>
             <button wire:click="setTab('finance')" type="button"
-                class="px-3.5 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer {{ $activeTab === 'finance' ? 'bg-card text-foreground font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground' }}">
+                class="pb-2.5 pt-1 border-b-2 text-xs transition-colors cursor-pointer {{ $activeTab === 'finance' ? 'border-foreground text-foreground font-semibold' : 'border-transparent text-muted-foreground hover:text-foreground' }}">
                 <span class="flex items-center gap-1.5">
-                    <span class="material-symbols-rounded text-sm">account_balance</span>
+                    <span class="material-symbols-rounded text-[16px]">account_balance</span>
                     <span>General Ledger</span>
                 </span>
             </button>
             <button wire:click="setTab('customers')" type="button"
-                class="px-3.5 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer {{ $activeTab === 'customers' ? 'bg-card text-foreground font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground' }}">
+                class="pb-2.5 pt-1 border-b-2 text-xs transition-colors cursor-pointer {{ $activeTab === 'customers' ? 'border-foreground text-foreground font-semibold' : 'border-transparent text-muted-foreground hover:text-foreground' }}">
                 <span class="flex items-center gap-1.5">
-                    <span class="material-symbols-rounded text-sm">group</span>
+                    <span class="material-symbols-rounded text-[16px]">group</span>
                     <span>Customers & CRM</span>
                 </span>
             </button>
@@ -138,9 +133,9 @@
                         <div class="bg-card p-4 rounded-xl border border-border shadow-xs">
                             <span class="text-xs font-medium text-muted-foreground">Current Month Revenue</span>
                             <div class="mt-1 flex items-baseline justify-between">
-                                <span class="text-lg font-bold text-foreground">Rp {{ number_format((float) $momComparison['current_revenue'], 0, ',', '.') }}</span>
-                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full {{ (float) $momComparison['revenue_growth_pct'] >= 0 ? 'bg-success-muted text-success border border-success-border' : 'bg-destructive-muted text-destructive border border-destructive-border' }}">
-                                    {{ (float) $momComparison['revenue_growth_pct'] >= 0 ? '+' : '' }}{{ $momComparison['revenue_growth_pct'] }}% MoM
+                                <span class="text-[20px] font-semibold text-foreground tracking-[-0.02em] tabular-nums whitespace-nowrap">Rp {{ number_format((float) $momComparison['current_revenue'], 0, ',', '.') }}</span>
+                                <span class="text-xs font-semibold tabular-nums {{ (float) $momComparison['revenue_growth_pct'] >= 0 ? 'text-success' : 'text-destructive' }}">
+                                    {{ (float) $momComparison['revenue_growth_pct'] >= 0 ? '↗ +' : '↘ ' }}{{ $momComparison['revenue_growth_pct'] }}% MoM
                                 </span>
                             </div>
                             <span class="text-[11px] text-muted-foreground mt-1 block">Prior month: Rp {{ number_format((float) $momComparison['previous_revenue'], 0, ',', '.') }}</span>
@@ -149,9 +144,9 @@
                         <div class="bg-card p-4 rounded-xl border border-border shadow-xs">
                             <span class="text-xs font-medium text-muted-foreground">Total Orders</span>
                             <div class="mt-1 flex items-baseline justify-between">
-                                <span class="text-lg font-bold text-foreground">{{ number_format($momComparison['current_orders']) }}</span>
-                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full {{ (float) $momComparison['orders_growth_pct'] >= 0 ? 'bg-success-muted text-success border border-success-border' : 'bg-destructive-muted text-destructive border border-destructive-border' }}">
-                                    {{ (float) $momComparison['orders_growth_pct'] >= 0 ? '+' : '' }}{{ $momComparison['orders_growth_pct'] }}%
+                                <span class="text-[20px] font-semibold text-foreground tracking-[-0.02em] tabular-nums whitespace-nowrap">{{ number_format($momComparison['current_orders']) }}</span>
+                                <span class="text-xs font-semibold tabular-nums {{ (float) $momComparison['orders_growth_pct'] >= 0 ? 'text-success' : 'text-destructive' }}">
+                                    {{ (float) $momComparison['orders_growth_pct'] >= 0 ? '↗ +' : '↘ ' }}{{ $momComparison['orders_growth_pct'] }}%
                                 </span>
                             </div>
                             <span class="text-[11px] text-muted-foreground mt-1 block">Prior month: {{ number_format($momComparison['previous_orders']) }} orders</span>
@@ -160,9 +155,9 @@
                         <div class="bg-card p-4 rounded-xl border border-border shadow-xs">
                             <span class="text-xs font-medium text-muted-foreground">Average Order Value (AOV)</span>
                             <div class="mt-1 flex items-baseline justify-between">
-                                <span class="text-lg font-bold text-foreground">Rp {{ number_format((float) $momComparison['current_aov'], 0, ',', '.') }}</span>
-                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full {{ (float) $momComparison['aov_growth_pct'] >= 0 ? 'bg-success-muted text-success border border-success-border' : 'bg-destructive-muted text-destructive border border-destructive-border' }}">
-                                    {{ (float) $momComparison['aov_growth_pct'] >= 0 ? '+' : '' }}{{ $momComparison['aov_growth_pct'] }}%
+                                <span class="text-[20px] font-semibold text-foreground tracking-[-0.02em] tabular-nums whitespace-nowrap">Rp {{ number_format((float) $momComparison['current_aov'], 0, ',', '.') }}</span>
+                                <span class="text-xs font-semibold tabular-nums {{ (float) $momComparison['aov_growth_pct'] >= 0 ? 'text-success' : 'text-destructive' }}">
+                                    {{ (float) $momComparison['aov_growth_pct'] >= 0 ? '↗ +' : '↘ ' }}{{ $momComparison['aov_growth_pct'] }}%
                                 </span>
                             </div>
                             <span class="text-[11px] text-muted-foreground mt-1 block">Prior month: Rp {{ number_format((float) $momComparison['previous_aov'], 0, ',', '.') }}</span>
@@ -174,11 +169,11 @@
                                 $nominalDiff = bcsub($momComparison['current_revenue'], $momComparison['previous_revenue'], 2);
                             @endphp
                             <div class="mt-1 flex items-baseline justify-between">
-                                <span class="text-lg font-bold {{ (float) $nominalDiff >= 0 ? 'text-success' : 'text-destructive' }}">
+                                <span class="text-[20px] font-semibold tracking-[-0.02em] tabular-nums whitespace-nowrap {{ (float) $nominalDiff >= 0 ? 'text-success' : 'text-destructive' }}">
                                     {{ (float) $nominalDiff >= 0 ? '+' : '' }}Rp {{ number_format((float) $nominalDiff, 0, ',', '.') }}
                                 </span>
-                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full {{ (float) $momComparison['revenue_growth_pct'] >= 0 ? 'bg-success-muted text-success border border-success-border' : 'bg-destructive-muted text-destructive border border-destructive-border' }}">
-                                    {{ (float) $momComparison['revenue_growth_pct'] >= 0 ? '+' : '' }}{{ $momComparison['revenue_growth_pct'] }}%
+                                <span class="text-xs font-semibold tabular-nums {{ (float) $momComparison['revenue_growth_pct'] >= 0 ? 'text-success' : 'text-destructive' }}">
+                                    {{ (float) $momComparison['revenue_growth_pct'] >= 0 ? '↗ +' : '↘ ' }}{{ $momComparison['revenue_growth_pct'] }}%
                                 </span>
                             </div>
                             <span class="text-[11px] text-muted-foreground mt-1 block">Comparison: {{ $momComparison['current_period'] }} vs {{ $momComparison['previous_period'] }}</span>
@@ -194,8 +189,8 @@
                                 <h3 class="text-sm font-bold text-foreground">Sales Trend & Revenue Evolution</h3>
                                 <p class="text-xs text-muted-foreground mt-0.5">Penjualan harian teragregasi akrual PSAK/SAP</p>
                             </div>
-                            <span class="text-xs font-semibold px-2.5 py-1 rounded-md bg-muted text-foreground tabular-nums">
-                                {{ count($salesTrend) }} Titik Waktu
+                            <span class="text-xs text-muted-foreground tabular-nums">
+                                {{ count($salesTrend) }} titik waktu
                             </span>
                         </div>
                         <x-erp.chart id="advanced-analytics-sales-trend" :options="$salesTrendChartOptions ?? []" height="h-72" />
@@ -297,7 +292,7 @@
                         <span class="text-xs font-medium text-muted-foreground">Inventory Turnover Ratio</span>
                         <div class="mt-1 flex items-baseline justify-between">
                             <span class="text-xl font-bold text-foreground">{{ $turnover['turnover_ratio'] ?? '0.00' }}x</span>
-                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground border border-border">
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded px-1.5 py-0.5 bg-secondary text-secondary-foreground border border-border">
                                 {{ $turnover['velocity_category'] ?? 'HEALTHY' }}
                             </span>
                         </div>
@@ -411,7 +406,7 @@
                                 <span class="text-xl font-bold text-success">
                                     Rp {{ number_format((float) $plSummary['gross_profit'], 0, ',', '.') }}
                                 </span>
-                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-success-muted text-success border border-success-border">
+                                <span class="text-xs font-semibold px-2 py-0.5 rounded px-1.5 py-0.5 bg-success-muted text-success border border-success-border">
                                     {{ $plSummary['gross_margin_pct'] }}%
                                 </span>
                             </div>
@@ -424,7 +419,7 @@
                                 <span class="text-xl font-bold text-primary">
                                     Rp {{ number_format((float) $plSummary['net_profit'], 0, ',', '.') }}
                                 </span>
-                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground border border-border">
+                                <span class="text-xs font-semibold px-2 py-0.5 rounded px-1.5 py-0.5 bg-secondary text-secondary-foreground border border-border">
                                     {{ $plSummary['net_margin_pct'] }}%
                                 </span>
                             </div>

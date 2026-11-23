@@ -4,7 +4,7 @@
     <!-- Header Page & Actions -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-foreground tracking-tight">
+            <h1 class="text-[18px] leading-tight font-bold text-foreground tracking-tight">
                 Retail Shelf Price Labels
             </h1>
             <p class="text-sm text-muted-foreground mt-1">
@@ -97,7 +97,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="px-6 py-12 text-center text-muted-foreground">
-                                <span class="material-symbols-rounded text-4xl block mb-2 text-muted-foreground/50">label_off</span>
+                                <span class="material-symbols-rounded text-[32px] block mb-2 text-muted-foreground/50">label_off</span>
                                 No shelf labels found. Click "Generate Labels" to create new price tags.
                             </td>
                         </tr>

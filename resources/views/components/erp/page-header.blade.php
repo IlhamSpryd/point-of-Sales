@@ -14,7 +14,7 @@
 <div {{ $attributes->twMerge('flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6 shrink-0') }}>
     <div class="min-w-0">
         <div class="flex items-center gap-2.5 flex-wrap">
-            <h1 class="text-lg sm:text-xl font-bold text-foreground tracking-tight truncate">
+            <h1 class="text-[18px] font-semibold tracking-[-0.02em] leading-tight text-foreground truncate">
                 {{ $title }}
             </h1>
             @if ($badge)
@@ -23,7 +23,7 @@
         </div>
 
         @if ($sub)
-            <p class="mt-1 text-xs sm:text-sm font-medium text-muted-foreground">
+            <p class="mt-0.5 text-[12px] font-medium text-muted-foreground">
                 {{ $sub }}
             </p>
         @endif

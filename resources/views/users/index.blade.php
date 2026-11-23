@@ -252,7 +252,7 @@
                             @empty
                                 <tr>
                                     <td colspan="5" class="px-6 py-12 text-center text-muted-foreground text-sm">
-                                        <span class="material-symbols-rounded text-4xl block mb-2">mail</span>
+                                        <span class="material-symbols-rounded text-[32px] block mb-2">mail</span>
                                         No pending staff invitations.
                                     </td>
                                 </tr>

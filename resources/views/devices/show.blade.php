@@ -56,7 +56,7 @@
                     <div class="card-surface p-6 md:p-8 rounded-2xl border-2 border-warning bg-warning-muted/40">
                         <div class="flex items-start gap-4">
                             <div class="p-3 bg-warning-muted text-warning rounded-2xl">
-                                <span class="material-symbols-rounded text-3xl">key</span>
+                                <span class="material-symbols-rounded text-[28px]">key</span>
                             </div>
                             <div class="flex-1">
                                 <h5 class="text-lg font-bold text-foreground">Physical Terminal Pairing Token</h5>
@@ -65,7 +65,7 @@
                                 </p>
 
                                 <div class="mt-6 flex flex-col sm:flex-row sm:items-center gap-4">
-                                    <div class="px-6 py-4 bg-card rounded-2xl border-2 border-dashed border-warning font-sans text-2xl md:text-3xl font-extrabold tracking-widest text-foreground text-center shadow-xs select-all">
+                                    <div class="px-6 py-4 bg-card rounded-2xl border-2 border-dashed border-warning font-sans text-xl md:text-2xl font-extrabold tracking-widest text-foreground text-center shadow-xs select-all">
                                         {{ $device->pairing_token ?? 'EXPIRED' }}
                                     </div>
                                     
@@ -90,7 +90,7 @@
                     <div class="card-surface p-6 md:p-8 rounded-2xl border-2 border-positive bg-positive-muted/30">
                         <div class="flex items-start gap-4">
                             <div class="p-3 bg-positive-muted text-positive rounded-2xl">
-                                <span class="material-symbols-rounded text-3xl">verified</span>
+                                <span class="material-symbols-rounded text-[28px]">verified</span>
                             </div>
                             <div class="flex-1">
                                 <h5 class="text-lg font-bold text-foreground">Device Connected &amp; Authorized</h5>
@@ -130,7 +130,7 @@
                     <div class="card-surface p-6 md:p-8 rounded-2xl border-2 border-destructive bg-destructive-muted/30">
                         <div class="flex items-start gap-4">
                             <div class="p-3 bg-destructive-muted text-destructive rounded-2xl">
-                                <span class="material-symbols-rounded text-3xl">block</span>
+                                <span class="material-symbols-rounded text-[28px]">block</span>
                             </div>
                             <div class="flex-1">
                                 <h5 class="text-lg font-bold text-foreground">Device Access Revoked</h5>

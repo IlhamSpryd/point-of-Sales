@@ -127,7 +127,7 @@
 
                 <div class="card-surface p-5 rounded-2xl bg-success-muted border border-success-border">
                     <span class="text-xs font-bold text-success uppercase block mb-1">Net Sales (Operating Revenue)</span>
-                    <h4 class="text-2xl font-black tabular-nums text-success">Rp {{ number_format((float) $detailedSummary['net_sales'], 0, ',', '.') }}</h4>
+                    <h4 class="text-[20px] font-black tabular-nums text-success">Rp {{ number_format((float) $detailedSummary['net_sales'], 0, ',', '.') }}</h4>
                     <span class="text-[11px] text-success mt-1 block">Gross - Discounts - Returns</span>
                 </div>
 
@@ -206,7 +206,7 @@
                         @empty
                         <tr>
                             <td colspan="4" class="px-6 py-12 text-center text-muted-foreground">
-                                <span class="material-symbols-rounded text-4xl block mb-2">receipt_long</span>
+                                <span class="material-symbols-rounded text-[32px] block mb-2">receipt_long</span>
                                 No transactions recorded for this period.
                             </td>
                         </tr>

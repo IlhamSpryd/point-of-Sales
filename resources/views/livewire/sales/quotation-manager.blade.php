@@ -129,7 +129,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="py-12 text-center text-muted-foreground">
-                                <span class="material-symbols-rounded text-4xl block mb-2">request_quote</span>
+                                <span class="material-symbols-rounded text-[32px] block mb-2">request_quote</span>
                                 No price quotation data available.
                             </td>
                         </tr>

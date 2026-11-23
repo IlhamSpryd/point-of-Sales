@@ -19,31 +19,31 @@
         <!-- Payment Tabs Bar -->
         <div x-show="!receiptReady" class="grid grid-cols-5 p-2 bg-muted border-b border-border gap-1 shrink-0">
             <button type="button" x-on:click="setMethod('cash')"
-                :class="method === 'cash' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'"
+                :class="method === 'cash' ? 'bg-foreground text-background font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground'"
                 class="px-3 py-2 rounded-lg font-medium text-xs transition-all flex items-center justify-center gap-1">
                 <span class="material-symbols-rounded text-[14px]">payments</span>
                 <span>Cash</span>
             </button>
             <button type="button" x-on:click="setMethod('qris')"
-                :class="method === 'qris' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'"
+                :class="method === 'qris' ? 'bg-foreground text-background font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground'"
                 class="px-3 py-2 rounded-lg font-medium text-xs transition-all flex items-center justify-center gap-1">
                 <span class="material-symbols-rounded text-[14px]">qr_code_2</span>
                 <span>QRIS</span>
             </button>
             <button type="button" x-on:click="setMethod('card')"
-                :class="method === 'card' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'"
+                :class="method === 'card' ? 'bg-foreground text-background font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground'"
                 class="px-3 py-2 rounded-lg font-medium text-xs transition-all flex items-center justify-center gap-1">
                 <span class="material-symbols-rounded text-[14px]">credit_card</span>
                 <span>Card</span>
             </button>
             <button type="button" x-on:click="setMethod('store_credit')"
-                :class="method === 'store_credit' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'"
+                :class="method === 'store_credit' ? 'bg-foreground text-background font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground'"
                 class="px-3 py-2 rounded-lg font-medium text-xs transition-all flex items-center justify-center gap-1">
                 <span class="material-symbols-rounded text-[14px]">account_balance</span>
                 <span>Transfer</span>
             </button>
             <button type="button" x-on:click="setMethod('split')"
-                :class="method === 'split' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'"
+                :class="method === 'split' ? 'bg-foreground text-background font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground'"
                 class="px-3 py-2 rounded-lg font-medium text-xs transition-all flex items-center justify-center gap-1">
                 <span class="material-symbols-rounded text-[14px]">call_split</span>
                 <span>Split Bill</span>
@@ -56,7 +56,7 @@
             <div class="flex items-center justify-between p-3.5 rounded-xl bg-muted border border-border">
                 <div>
                     <span class="text-xs text-muted-foreground font-medium uppercase tracking-wider block">Net Total Due</span>
-                    <span class="text-2xl font-bold text-foreground tabular-nums" x-text="'Rp ' + formatRupiah(total)"></span>
+                    <span class="text-[20px] font-semibold text-foreground tabular-nums" x-text="'Rp ' + formatRupiah(total)"></span>
                 </div>
                 <div class="flex items-center gap-2">
                     <button type="button" wire:click="$set('isManualDiscountModalOpen', true)"
@@ -120,12 +120,12 @@
                     </span>
                     <div class="inline-flex p-1 bg-card rounded-lg border border-border">
                         <button type="button" x-on:click="qrisMode = 'midtrans'"
-                            :class="qrisMode === 'midtrans' ? 'bg-primary text-white shadow-2xs' : 'text-muted-foreground hover:text-foreground'"
+                            :class="qrisMode === 'midtrans' ? 'bg-foreground text-background font-semibold shadow-2xs' : 'text-muted-foreground hover:text-foreground'"
                             class="px-2.5 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer">
                             Dynamic QRIS
                         </button>
                         <button type="button" x-on:click="qrisMode = 'manual'"
-                            :class="qrisMode === 'manual' ? 'bg-primary text-white shadow-2xs' : 'text-muted-foreground hover:text-foreground'"
+                            :class="qrisMode === 'manual' ? 'bg-foreground text-background font-semibold shadow-2xs' : 'text-muted-foreground hover:text-foreground'"
                             class="px-2.5 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer">
                             Static QR / Counter EDC
                         </button>
@@ -165,7 +165,7 @@
                                     <span>Re-open QR Code</span>
                                 </button>
                                 <button type="button" x-on:click="checkMidtransStatus()" :disabled="verifyingMidtrans"
-                                    class="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all disabled:opacity-50 cursor-pointer">
+                                    class="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all disabled:opacity-50 cursor-pointer">
                                     <span x-show="verifyingMidtrans" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
                                     <span x-show="!verifyingMidtrans" class="material-symbols-rounded text-[16px]">sync</span>
                                     <span x-text="verifyingMidtrans ? 'Verifying...' : 'Verify Payment Status'"></span>
@@ -202,14 +202,14 @@
                 <div class="grid grid-cols-2 gap-2">
                     @forelse ($this->storeEdcTerminals as $term)
                         <button type="button" x-on:click="edcBank = '{{ $term->device_name }}'"
-                            :class="edcBank === '{{ $term->device_name }}' ? 'border-foreground bg-primary text-white shadow-xs' : 'border-border bg-card text-foreground hover:bg-muted'"
+                            :class="edcBank === '{{ $term->device_name }}' ? 'border-foreground bg-primary text-primary-foreground shadow-xs' : 'border-border bg-card text-foreground hover:bg-muted'"
                             class="p-2.5 rounded-lg border font-medium text-xs flex items-center justify-between transition-colors cursor-pointer">
                             <span class="truncate">{{ $term->device_name }}</span>
                             <span class="text-xs opacity-80">{{ $term->device_code ?? 'Online' }}</span>
                         </button>
                     @empty
                         <button type="button" x-on:click="edcBank = 'EDC Utama'"
-                            :class="edcBank === 'EDC Utama' ? 'border-foreground bg-primary text-white shadow-xs' : 'border-border bg-card text-foreground hover:bg-muted'"
+                            :class="edcBank === 'EDC Utama' ? 'border-foreground bg-primary text-primary-foreground shadow-xs' : 'border-border bg-card text-foreground hover:bg-muted'"
                             class="p-2.5 rounded-lg border font-medium text-xs flex items-center justify-between transition-colors cursor-pointer">
                             <span>Main EDC Terminal</span>
                             <span class="text-xs opacity-80">Online</span>
@@ -294,16 +294,16 @@
                 <div x-show="remaining > 0" class="space-y-2 pt-2 border-t border-border">
                     <div class="grid grid-cols-4 gap-1.5">
                         <button type="button" x-on:click="splitTargetMethod = 'cash'"
-                            :class="splitTargetMethod === 'cash' ? 'bg-primary text-white' : 'bg-card border-border text-foreground'"
+                            :class="splitTargetMethod === 'cash' ? 'bg-primary text-primary-foreground' : 'bg-card border-border text-foreground'"
                             class="px-2 py-1.5 rounded-md border text-xs font-medium">Cash</button>
                         <button type="button" x-on:click="splitTargetMethod = 'qris'"
-                            :class="splitTargetMethod === 'qris' ? 'bg-primary text-white' : 'bg-card border-border text-foreground'"
+                            :class="splitTargetMethod === 'qris' ? 'bg-primary text-primary-foreground' : 'bg-card border-border text-foreground'"
                             class="px-2 py-1.5 rounded-md border text-xs font-medium">QRIS</button>
                         <button type="button" x-on:click="splitTargetMethod = 'card'"
-                            :class="splitTargetMethod === 'card' ? 'bg-primary text-white' : 'bg-card border-border text-foreground'"
+                            :class="splitTargetMethod === 'card' ? 'bg-primary text-primary-foreground' : 'bg-card border-border text-foreground'"
                             class="px-2 py-1.5 rounded-md border text-xs font-medium">Card</button>
                         <button type="button" x-on:click="splitTargetMethod = 'store_credit'"
-                            :class="splitTargetMethod === 'store_credit' ? 'bg-primary text-white' : 'bg-card border-border text-foreground'"
+                            :class="splitTargetMethod === 'store_credit' ? 'bg-primary text-primary-foreground' : 'bg-card border-border text-foreground'"
                             class="px-2 py-1.5 rounded-md border text-xs font-medium">Transfer</button>
                     </div>
                     <div class="flex gap-2">
@@ -312,7 +312,7 @@
                             placeholder="Allocation amount..."
                             class="flex-1 h-9 px-3 rounded-lg border border-border tabular-nums text-xs text-foreground bg-card focus:outline-none focus:border-foreground">
                         <button type="button" x-on:click="addSplitLeg()"
-                            class="px-3 h-9 rounded-lg bg-primary text-white text-xs font-medium hover:bg-primary/90 transition-colors">
+                            class="px-3 h-9 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors">
                             + Allocate
                         </button>
                     </div>
@@ -326,7 +326,7 @@
         <!-- Receipt Fallback State (FE-UX-02 / Browser Popup Blocked Protection) -->
         <div x-show="receiptReady" x-cloak class="p-8 text-center space-y-4 flex flex-col items-center justify-center min-h-[320px]">
             <div class="w-14 h-14 rounded-2xl bg-success-muted text-success flex items-center justify-center border border-success-border">
-                <span class="material-symbols-rounded text-3xl">check_circle</span>
+                <span class="material-symbols-rounded text-[28px]">check_circle</span>
             </div>
             <div>
                 <h4 class="text-base font-bold text-foreground">Pembayaran Berhasil Diproses</h4>
@@ -365,7 +365,7 @@
                 :aria-busy="submitting"
                 aria-live="polite"
                 :disabled="submitting || (method === 'split' ? remaining > 0 : false)"
-                class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-sm flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
                 <span x-show="submitting" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true"></span>
                 <span class="material-symbols-rounded text-[16px]" x-show="!submitting" x-text="(method === 'qris' && qrisMode === 'midtrans') ? 'qr_code_scanner' : 'check_circle'"></span>
                 <span x-text="submitting ? 'Processing Payment...' : ((method === 'qris' && qrisMode === 'midtrans') ? 'Proceed to QR Payment' : 'Confirm & Complete Order')"></span>
@@ -377,7 +377,7 @@
                 wire:ignore
                 aria-live="polite"
                 :disabled="verifyingMidtrans"
-                class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-sm flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
                 <span x-show="verifyingMidtrans" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true"></span>
                 <span class="material-symbols-rounded text-[16px]" x-show="!verifyingMidtrans">verified</span>
                 <span x-text="verifyingMidtrans ? 'Verifying...' : 'Verify & Complete Order'"></span>
