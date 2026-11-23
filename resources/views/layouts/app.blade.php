@@ -137,8 +137,8 @@
         <!-- Main Content Wrapper (Unified Curved Shell Frame with Inset Workspace Canvas) -->
         <div class="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 bg-[var(--chrome-surface)]" id="main-wrapper">
 
-            <!-- Sticky h-13 Top Navbar (Clean Executive Layout, 52px) -->
-            <header class="h-13 shrink-0 bg-[var(--chrome-surface)] text-foreground flex items-center justify-between px-5 z-30 sticky top-0 select-none">
+            <!-- Sticky h-14 Top Navbar (Clean Executive Layout, 56px) -->
+            <header class="h-14 shrink-0 bg-[var(--chrome-surface)] text-foreground flex items-center justify-between px-5 z-30 sticky top-0 select-none">
                 
                 <!-- Left: Mobile Drawer Trigger + Active Branch & Context Breadcrumbs -->
                 <div class="flex items-center gap-3 min-w-0">

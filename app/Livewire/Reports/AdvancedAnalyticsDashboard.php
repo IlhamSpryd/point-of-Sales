@@ -194,11 +194,9 @@ class AdvancedAnalyticsDashboard extends Component
                         'type' => 'category',
                         'boundaryGap' => false,
                         'data' => $dates,
-                        'axisLine' => ['lineStyle' => ['color' => '#E4E4E7']],
                     ],
                     'yAxis' => [
                         'type' => 'value',
-                        'splitLine' => ['lineStyle' => ['color' => '#E4E4E7', 'type' => 'dashed']],
                     ],
                     'series' => [
                         [
@@ -207,20 +205,6 @@ class AdvancedAnalyticsDashboard extends Component
                             'smooth' => true,
                             'data' => $netSales,
                             'symbolSize' => 6,
-                            'itemStyle' => ['color' => '#18181B'],
-                            'areaStyle' => [
-                                'color' => [
-                                    'type' => 'linear',
-                                    'x' => 0,
-                                    'y' => 0,
-                                    'x2' => 0,
-                                    'y2' => 1,
-                                    'colorStops' => [
-                                        ['offset' => 0, 'color' => 'rgba(24, 24, 27, 0.16)'],
-                                        ['offset' => 1, 'color' => 'rgba(24, 24, 27, 0.00)'],
-                                    ],
-                                ],
-                            ],
                         ],
                     ],
                 ];

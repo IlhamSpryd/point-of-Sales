@@ -38,6 +38,17 @@ export async function loadEcharts() {
 }
 
 /**
+ * Compact Indonesian Rupiah Formatter
+ */
+export function formatCompactIDR(val) {
+    const num = Math.abs(Number(val) || 0);
+    if (num >= 1000000000) return (num / 1000000000).toFixed(1).replace('.0', '') + ' M';
+    if (num >= 1000000) return (num / 1000000).toFixed(1).replace('.0', '') + ' jt';
+    if (num >= 1000) return (num / 1000).toFixed(0) + ' rb';
+    return num.toLocaleString('id-ID');
+}
+
+/**
  * Alpine.js v3 Data Component untuk Apache ECharts (Dynamic Lazy Loaded)
  *
  * Menerapkan:
@@ -47,11 +58,15 @@ export async function loadEcharts() {
  * 4. ResizeObserver pada elemen container (menyesuaikan saat sidebar toggles).
  * 5. Pembersihan listener Livewire pada teardown untuk mencegah memory leak.
  * 6. Dynamic code-splitting: ECharts dimuat asinkron saat mount.
+ * 7. Theme-Adaptive 0-Reload: MutationObserver & apeiron:theme-changed listener untuk recoloring real-time.
+ * 8. Compact IDR Axis formatting otomatis.
  */
 export default function erpChart({ chartId, options = {} } = {}) {
     let chartInstance = null;
     let resizeObserver = null;
+    let themeObserver = null;
     let unsubscribeLivewire = null;
+    let handleThemeChange = null;
     let isDisposed = false;
 
     return {
@@ -88,11 +103,34 @@ export default function erpChart({ chartId, options = {} } = {}) {
                 // Observasi perubahan ukuran kontainer (termasuk saat toggle sidebar navigasi)
                 if (typeof window !== 'undefined' && window.ResizeObserver) {
                     resizeObserver = new ResizeObserver(() => {
-                        if (chartInstance) {
+                        if (chartInstance && !isDisposed) {
                             chartInstance.resize();
                         }
                     });
                     resizeObserver.observe(this.$refs.container);
+                }
+
+                // Theme Change Reactivity tanpa reload halaman
+                handleThemeChange = () => {
+                    if (chartInstance && !isDisposed) {
+                        const updatedThemedOptions = this.applyDesignTokens(this.chartOptions);
+                        chartInstance.setOption(updatedThemedOptions, false);
+                    }
+                };
+
+                if (typeof window !== 'undefined') {
+                    window.addEventListener('apeiron:theme-changed', handleThemeChange);
+                    window.addEventListener('theme-changed', handleThemeChange);
+
+                    if (window.MutationObserver) {
+                        themeObserver = new MutationObserver(() => {
+                            handleThemeChange();
+                        });
+                        themeObserver.observe(document.documentElement, {
+                            attributes: true,
+                            attributeFilter: ['class'],
+                        });
+                    }
                 }
 
                 // Integrasi reaktif dengan event Livewire tanpa reload halaman
@@ -101,6 +139,7 @@ export default function erpChart({ chartId, options = {} } = {}) {
                         const listenerResult = window.Livewire.on(`update-chart-${chartId}`, (payload) => {
                             if (chartInstance && payload) {
                                 const newOptions = payload.options || payload;
+                                this.chartOptions = newOptions;
                                 chartInstance.setOption(this.applyDesignTokens(newOptions), false);
                             }
                         });
@@ -123,6 +162,17 @@ export default function erpChart({ chartId, options = {} } = {}) {
                 resizeObserver = null;
             }
 
+            if (themeObserver) {
+                themeObserver.disconnect();
+                themeObserver = null;
+            }
+
+            if (typeof window !== 'undefined' && handleThemeChange) {
+                window.removeEventListener('apeiron:theme-changed', handleThemeChange);
+                window.removeEventListener('theme-changed', handleThemeChange);
+                handleThemeChange = null;
+            }
+
             if (typeof unsubscribeLivewire === 'function') {
                 unsubscribeLivewire();
                 unsubscribeLivewire = null;
@@ -135,45 +185,148 @@ export default function erpChart({ chartId, options = {} } = {}) {
         },
 
         applyDesignTokens(baseOptions = {}) {
-            let primary = '#18181B';
-            let foreground = '#09090B';
-            let muted = '#71717A';
-            let border = '#E4E4E7';
-            let cardBg = '#FFFFFF';
+            const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
 
-            if (typeof window !== 'undefined' && document?.documentElement) {
-                const styles = getComputedStyle(document.documentElement);
-                primary = styles.getPropertyValue('--primary').trim() || primary;
-                foreground = styles.getPropertyValue('--foreground').trim() || foreground;
-                muted = styles.getPropertyValue('--muted-foreground').trim() || muted;
-                border = styles.getPropertyValue('--border').trim() || border;
-                cardBg = styles.getPropertyValue('--card').trim() || cardBg;
+            let primary = isDark ? '#FAFAFA' : '#18181B';
+            let foreground = isDark ? '#FAFAFA' : '#09090B';
+            let muted = isDark ? '#A1A1AA' : '#71717A';
+            let border = isDark ? 'rgba(255, 255, 255, 0.10)' : '#E4E4E7';
+            let splitLine = isDark ? 'rgba(255, 255, 255, 0.06)' : '#F4F4F5';
+            let cardBg = isDark ? '#18181D' : '#FFFFFF';
+            let accent = isDark ? '#4ADE80' : '#10A37F';
+
+            const merged = { ...baseOptions };
+
+            merged.textStyle = {
+                fontFamily: '"Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif',
+                ...(merged.textStyle || {}),
+            };
+
+            merged.grid = {
+                top: 28,
+                right: 20,
+                bottom: 28,
+                left: 20,
+                containLabel: true,
+                ...(merged.grid || {}),
+            };
+
+            // Tooltip standard dengan IDR formatter
+            merged.tooltip = {
+                trigger: 'axis',
+                backgroundColor: cardBg,
+                borderColor: border,
+                borderWidth: 1,
+                textStyle: {
+                    color: foreground,
+                    fontSize: 12,
+                    fontFamily: '"Plus Jakarta Sans", sans-serif',
+                },
+                extraCssText: isDark
+                    ? 'box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.5); border-radius: 8px;'
+                    : 'box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.08); border-radius: 8px;',
+                valueFormatter: (val) => {
+                    if (typeof val === 'number') {
+                        return 'Rp ' + Number(val).toLocaleString('id-ID');
+                    }
+                    return val;
+                },
+                ...(merged.tooltip || {}),
+            };
+
+            // Adaptasi xAxis
+            if (merged.xAxis) {
+                const processXAxis = (ax) => ({
+                    ...ax,
+                    axisLine: {
+                        lineStyle: { color: border },
+                        ...(ax.axisLine || {}),
+                    },
+                    axisLabel: {
+                        color: muted,
+                        fontFamily: '"Plus Jakarta Sans", sans-serif',
+                        fontSize: 11,
+                        ...(ax.axisLabel || {}),
+                    },
+                });
+
+                if (Array.isArray(merged.xAxis)) {
+                    merged.xAxis = merged.xAxis.map(processXAxis);
+                } else {
+                    merged.xAxis = processXAxis(merged.xAxis);
+                }
             }
 
-            return {
-                textStyle: {
-                    fontFamily: '"Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif'
-                },
-                tooltip: {
-                    trigger: 'axis',
-                    backgroundColor: cardBg,
-                    borderColor: border,
-                    borderWidth: 1,
-                    textStyle: {
-                        color: foreground,
-                        fontSize: 12
+            // Adaptasi yAxis dengan Compact IDR
+            if (merged.yAxis) {
+                const processYAxis = (ay) => ({
+                    ...ay,
+                    splitLine: {
+                        lineStyle: {
+                            color: splitLine,
+                            type: 'dashed',
+                        },
+                        ...(ay.splitLine || {}),
                     },
-                    extraCssText: 'box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.08); border-radius: 8px;'
-                },
-                grid: {
-                    top: 36,
-                    right: 20,
-                    bottom: 30,
-                    left: 20,
-                    containLabel: true
-                },
-                ...baseOptions
-            };
+                    axisLabel: {
+                        color: muted,
+                        fontFamily: '"Plus Jakarta Sans", sans-serif',
+                        fontSize: 11,
+                        formatter: (val) => {
+                            if (typeof val === 'number' && Math.abs(val) >= 1000) {
+                                return 'Rp ' + formatCompactIDR(val);
+                            }
+                            return val;
+                        },
+                        ...(ay.axisLabel || {}),
+                    },
+                });
+
+                if (Array.isArray(merged.yAxis)) {
+                    merged.yAxis = merged.yAxis.map(processYAxis);
+                } else {
+                    merged.yAxis = processYAxis(merged.yAxis);
+                }
+            }
+
+            // Adaptasi Series (Line/Bar)
+            if (Array.isArray(merged.series)) {
+                merged.series = merged.series.map((s) => {
+                    const seriesCopy = { ...s };
+                    const seriesColor = isDark ? accent : primary;
+
+                    if (!seriesCopy.itemStyle || seriesCopy.itemStyle.color === '#18181B' || seriesCopy.itemStyle.color === '#09090B') {
+                        seriesCopy.itemStyle = {
+                            ...(seriesCopy.itemStyle || {}),
+                            color: seriesColor,
+                        };
+                    }
+
+                    if (seriesCopy.type === 'line' && (seriesCopy.areaStyle || !s.hasOwnProperty('areaStyle'))) {
+                        seriesCopy.areaStyle = {
+                            color: {
+                                type: 'linear',
+                                x: 0,
+                                y: 0,
+                                x2: 0,
+                                y2: 1,
+                                colorStops: isDark
+                                    ? [
+                                          { offset: 0, color: 'rgba(74, 222, 128, 0.22)' },
+                                          { offset: 1, color: 'rgba(74, 222, 128, 0.00)' },
+                                      ]
+                                    : [
+                                          { offset: 0, color: 'rgba(24, 24, 27, 0.14)' },
+                                          { offset: 1, color: 'rgba(24, 24, 27, 0.00)' },
+                                      ],
+                            },
+                        };
+                    }
+                    return seriesCopy;
+                });
+            }
+
+            return merged;
         }
     };
 }
