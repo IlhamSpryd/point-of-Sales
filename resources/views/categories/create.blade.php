@@ -40,7 +40,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <x-form-label for="parent_id">Parent Category (Optional)</x-form-label>
-                    <select id="parent_id" name="parent_id" class="w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm text-foreground focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 {{ $errors->has('parent_id') ? 'border-destructive' : '' }}">
+                    <select id="parent_id" name="parent_id" class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm text-foreground focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 {{ $errors->has('parent_id') ? 'border-destructive' : '' }}">
                         <option value="">-- No Parent (Root Category) --</option>
                         @foreach($parentCategories as $parent)
                             <option value="{{ $parent->id }}" {{ old('parent_id') == $parent->id ? 'selected' : '' }}>
@@ -66,7 +66,7 @@
             <div>
                 <x-form-label for="description">Description (Optional)</x-form-label>
                 <textarea id="description" name="description" rows="3"
-                          class="w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm text-foreground focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 {{ $errors->has('description') ? 'border-destructive' : '' }}"
+                          class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm text-foreground focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 {{ $errors->has('description') ? 'border-destructive' : '' }}"
                           placeholder="Category description...">{{ old('description') }}</textarea>
                 @error('description')
                     <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>

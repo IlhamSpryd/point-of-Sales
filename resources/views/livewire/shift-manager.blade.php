@@ -8,7 +8,7 @@
 }" data-gsap="page-enter">
     @if(!$activeShift)
         {{-- Form Open Shift --}}
-        <div class="bg-white rounded-3xl p-8 border border-border shadow-sm max-w-lg mx-auto text-center" data-gsap="kpi-card">
+        <div class="bg-card rounded-3xl p-8 border border-border shadow-sm max-w-lg mx-auto text-center" data-gsap="kpi-card">
             <h3 class="text-xl font-bold text-foreground mb-2">Open Cashier Shift</h3>
             <p class="text-sm text-muted-foreground mb-8">Select an active terminal, count physical opening cash in the drawer, and verify your PIN.</p>
 
@@ -72,7 +72,7 @@
         <div class="space-y-6">
 
             {{-- Operational Context Header --}}
-            <div class="bg-white rounded-3xl p-6 border border-border shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="bg-card rounded-3xl p-6 border border-border shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 rounded-2xl bg-positive-muted border border-positive flex items-center justify-center text-positive">
                         <span class="material-symbols-rounded text-[28px]">point_of_sale</span>
@@ -106,12 +106,12 @@
                 <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
                     <button type="button" wire:click="$set('isMovementModalOpen', true)"
                         x-on:click="window.erpMotion?.pulseHighlight($el)"
-                        class="px-3.5 py-2 rounded-xl border border-border bg-white text-xs font-bold text-foreground hover:bg-secondary active:scale-95 transition-all shadow-sm flex items-center gap-1.5">
+                        class="px-3.5 py-2 rounded-xl border border-border bg-card text-xs font-bold text-foreground hover:bg-secondary active:scale-95 transition-all shadow-sm flex items-center gap-1.5">
                         <span class="material-symbols-rounded text-[20px]">account_balance_wallet</span> Cash In / Out
                     </button>
                     <button type="button" wire:click="$set('isHandoverModalOpen', true)"
                         x-on:click="window.erpMotion?.pulseHighlight($el)"
-                        class="px-3.5 py-2 rounded-xl border border-border bg-white text-xs font-bold text-foreground hover:bg-secondary active:scale-95 transition-all shadow-sm flex items-center gap-1.5">
+                        class="px-3.5 py-2 rounded-xl border border-border bg-card text-xs font-bold text-foreground hover:bg-secondary active:scale-95 transition-all shadow-sm flex items-center gap-1.5">
                         <span class="material-symbols-rounded text-[20px]">swap_horiz</span> Handover
                     </button>
                     <button type="button" x-on:click="openCloseModal = true; window.erpMotion?.pulseHighlight($el)"
@@ -147,12 +147,12 @@
                             <div class="mt-3 flex flex-wrap items-center gap-2.5">
                                 <div>
                                     <input type="password" wire:model="cashierPin" placeholder="Recipient Cashier PIN" maxlength="6"
-                                        class="px-3 py-1.5 bg-white border border-warning rounded-xl text-xs font-sans font-bold text-center tracking-wider focus:ring-1 focus:ring-warning outline-none">
+                                        class="px-3 py-1.5 bg-card border border-warning rounded-xl text-xs font-sans font-bold text-center tracking-wider focus:ring-1 focus:ring-warning outline-none">
                                 </div>
                                 @if($pendingHandover->cash_discrepancy != 0)
                                     <div>
                                         <input type="password" wire:model="supervisorPin" placeholder="Supervisor PIN" maxlength="6"
-                                            class="px-3 py-1.5 bg-white border border-destructive rounded-xl text-xs font-sans font-bold text-center tracking-wider focus:ring-1 focus:ring-destructive outline-none">
+                                            class="px-3 py-1.5 bg-card border border-destructive rounded-xl text-xs font-sans font-bold text-center tracking-wider focus:ring-1 focus:ring-destructive outline-none">
                                     </div>
                                 @endif
                                 <button type="button" wire:click="acceptHandover({{ $pendingHandover->id }})"
@@ -161,7 +161,7 @@
                                     Accept Handover
                                 </button>
                                 <button type="button" wire:click="cancelHandover({{ $pendingHandover->id }})"
-                                    class="px-3 py-1.5 border border-border bg-white hover:bg-secondary text-foreground text-xs font-semibold rounded-xl active:scale-95 transition-all">
+                                    class="px-3 py-1.5 border border-border bg-card hover:bg-secondary text-foreground text-xs font-semibold rounded-xl active:scale-95 transition-all">
                                     Cancel
                                 </button>
                             </div>
@@ -171,13 +171,13 @@
 
             {{-- KPI Summary Cards --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-white rounded-2xl p-5 border border-border shadow-sm" data-gsap="kpi-card">
+                <div class="bg-card rounded-2xl p-5 border border-border shadow-sm" data-gsap="kpi-card">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">Opening Balance</span>
                     <p class="text-xl font-black text-foreground font-sans tabular-nums">Rp {{ number_format($activeShift->opening_balance, 0, ',', '.') }}</p>
                     <span class="text-xs text-muted-foreground mt-1 block">Drawer cash balance when shift opened</span>
                 </div>
 
-                <div class="bg-white rounded-2xl p-5 border border-border shadow-sm" data-gsap="kpi-card">
+                <div class="bg-card rounded-2xl p-5 border border-border shadow-sm" data-gsap="kpi-card">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-positive block mb-1.5">Cash Sales Revenue</span>
                     <p class="text-xl font-black text-positive font-sans tabular-nums">+ Rp {{ number_format($cashSales, 0, ',', '.') }}</p>
                     <span class="text-xs text-muted-foreground mt-1 block">Total cash transactions during this shift</span>
@@ -187,7 +187,7 @@
                     $totalCashIn = $cashMovements->where('type.value', 'cash_in')->sum('amount');
                     $totalCashOut = $cashMovements->where('type.value', 'cash_out')->sum('amount');
                 @endphp
-                <div class="bg-white rounded-2xl p-5 border border-border shadow-sm" data-gsap="kpi-card">
+                <div class="bg-card rounded-2xl p-5 border border-border shadow-sm" data-gsap="kpi-card">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-warning block mb-1.5">Drawer Cash Movements</span>
                     <p class="text-base font-bold text-foreground font-sans tabular-nums">
                         <span class="text-positive">+{{ number_format($totalCashIn, 0, ',', '.') }}</span> / 
@@ -196,7 +196,7 @@
                     <span class="text-xs text-muted-foreground mt-1 block">Cash-In vs Cash-Out</span>
                 </div>
 
-                <div class="bg-white rounded-2xl p-5 border border-border shadow-sm bg-gradient-to-br from-white to-gray-50" data-gsap="kpi-card">
+                <div class="bg-card rounded-2xl p-5 border border-border shadow-sm bg-gradient-to-br from-card to-gray-50" data-gsap="kpi-card">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-foreground block mb-1.5">Expected Drawer Cash</span>
                     <p class="text-2xl font-black text-foreground font-sans tabular-nums">Rp {{ number_format($expectedCash, 0, ',', '.') }}</p>
                     <span class="text-xs text-muted-foreground mt-1 block">Expected cash balance at closing</span>
@@ -204,7 +204,7 @@
             </div>
 
             {{-- Drawer Cash Movement History --}}
-            <div class="bg-white rounded-2xl p-5 border border-border shadow-sm">
+            <div class="bg-card rounded-2xl p-5 border border-border shadow-sm">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h4 class="font-bold text-sm text-foreground">Drawer Cash Movement History</h4>
@@ -257,7 +257,7 @@
 
             {{-- Shift Handover History --}}
             @if($handovers->isNotEmpty())
-                <div class="bg-white rounded-2xl p-5 border border-border shadow-sm">
+                <div class="bg-card rounded-2xl p-5 border border-border shadow-sm">
                     <h4 class="font-bold text-sm text-foreground mb-1">Shift Handover History</h4>
                     <p class="text-xs text-muted-foreground mb-4">List of operational cashier transfers during this shift.</p>
 
@@ -316,10 +316,10 @@
             <form id="cash-movement-form" wire:submit.prevent="recordCashMovement" class="space-y-4">
                 {{-- Movement Type --}}
                 <div class="grid grid-cols-2 gap-2 p-1 bg-secondary rounded-xl">
-                    <label class="flex items-center justify-center py-2 text-xs font-bold rounded-lg cursor-pointer transition-all {{ $movementType === 'cash_in' ? 'bg-white text-foreground shadow-sm' : 'text-muted-foreground' }}">
+                    <label class="flex items-center justify-center py-2 text-xs font-bold rounded-lg cursor-pointer transition-all {{ $movementType === 'cash_in' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground' }}">
                         <input type="radio" wire:model.live="movementType" value="cash_in" class="sr-only"> Cash In
                     </label>
-                    <label class="flex items-center justify-center py-2 text-xs font-bold rounded-lg cursor-pointer transition-all {{ $movementType === 'cash_out' ? 'bg-white text-foreground shadow-sm' : 'text-muted-foreground' }}">
+                    <label class="flex items-center justify-center py-2 text-xs font-bold rounded-lg cursor-pointer transition-all {{ $movementType === 'cash_out' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground' }}">
                         <input type="radio" wire:model.live="movementType" value="cash_out" class="sr-only"> Cash Out
                     </label>
                 </div>
@@ -327,7 +327,7 @@
                 {{-- Movement Category --}}
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Category</label>
-                    <select wire:model="movementCategory" class="w-full px-3.5 py-2.5 bg-secondary border border-border rounded-xl text-xs font-bold text-foreground focus:bg-white focus:ring-1 focus:ring-ring outline-none">
+                    <select wire:model="movementCategory" class="w-full px-3.5 py-2.5 bg-secondary border border-border rounded-xl text-xs font-bold text-foreground focus:bg-card focus:ring-1 focus:ring-ring outline-none">
                         @if($movementType === 'cash_in')
                             <option value="restock_change">Restock Change (Float / Small Bills)</option>
                             <option value="correction">Cash In Correction</option>
@@ -343,14 +343,14 @@
                 {{-- Amount --}}
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Amount (Rp)</label>
-                    <input type="number" wire:model="movementAmount" required min="1" class="w-full px-3.5 py-2.5 bg-secondary border border-border rounded-xl font-sans font-bold text-sm text-foreground focus:bg-white focus:ring-1 focus:ring-ring outline-none" placeholder="0">
+                    <input type="number" wire:model="movementAmount" required min="1" class="w-full px-3.5 py-2.5 bg-secondary border border-border rounded-xl font-sans font-bold text-sm text-foreground focus:bg-card focus:ring-1 focus:ring-ring outline-none" placeholder="0">
                     @error('movementAmount') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 {{-- Reason / Description --}}
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Reason / Note</label>
-                    <textarea wire:model="movementReason" required rows="2" class="w-full px-3.5 py-2.5 bg-secondary border border-border rounded-xl text-xs text-foreground focus:bg-white focus:ring-1 focus:ring-ring outline-none resize-none" placeholder="e.g. Added small change bills..."></textarea>
+                    <textarea wire:model="movementReason" required rows="2" class="w-full px-3.5 py-2.5 bg-secondary border border-border rounded-xl text-xs text-foreground focus:bg-card focus:ring-1 focus:ring-ring outline-none resize-none" placeholder="e.g. Added small change bills..."></textarea>
                     @error('movementReason') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
@@ -358,7 +358,7 @@
                 @if($movementType === 'cash_out')
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-destructive mb-1">Supervisor PIN (Cash Out Authorization)</label>
-                        <input type="password" wire:model="movementSupervisorPin" maxlength="6" class="w-full px-3.5 py-2.5 bg-destructive-muted/40 border border-destructive rounded-xl text-center font-sans font-bold text-sm tracking-widest text-destructive focus:bg-white focus:ring-1 focus:ring-destructive outline-none" placeholder="••••••">
+                        <input type="password" wire:model="movementSupervisorPin" maxlength="6" class="w-full px-3.5 py-2.5 bg-destructive-muted/40 border border-destructive rounded-xl text-center font-sans font-bold text-sm tracking-widest text-destructive focus:bg-card focus:ring-1 focus:ring-destructive outline-none" placeholder="••••••">
                         @error('movementSupervisorPin') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
                 @endif
@@ -390,7 +390,7 @@
                 {{-- Select Recipient Cashier --}}
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Recipient Cashier</label>
-                    <select wire:model="handoverToUserId" required class="w-full px-3.5 py-2.5 bg-secondary border border-border rounded-xl text-xs font-bold text-foreground focus:bg-white focus:ring-1 focus:ring-ring outline-none">
+                    <select wire:model="handoverToUserId" required class="w-full px-3.5 py-2.5 bg-secondary border border-border rounded-xl text-xs font-bold text-foreground focus:bg-card focus:ring-1 focus:ring-ring outline-none">
                         <option value="">-- Select Recipient Cashier --</option>
                         @foreach($eligibleCashiers as $c)
                             <option value="{{ $c->id }}">{{ $c->name }} ({{ $c->role?->name ?? 'Cashier' }})</option>
@@ -402,20 +402,20 @@
                 {{-- Counted Cash at Handover --}}
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Counted Physical Cash (Rp)</label>
-                    <input type="number" wire:model="handoverCountedCash" required min="0" class="w-full px-3.5 py-2.5 bg-secondary border border-border rounded-xl font-sans font-bold text-sm text-foreground focus:bg-white focus:ring-1 focus:ring-ring outline-none" placeholder="0">
+                    <input type="number" wire:model="handoverCountedCash" required min="0" class="w-full px-3.5 py-2.5 bg-secondary border border-border rounded-xl font-sans font-bold text-sm text-foreground focus:bg-card focus:ring-1 focus:ring-ring outline-none" placeholder="0">
                     @error('handoverCountedCash') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 {{-- Notes --}}
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Handover Notes (Optional)</label>
-                    <textarea wire:model="handoverNotes" rows="2" class="w-full px-3.5 py-2.5 bg-secondary border border-border rounded-xl text-xs text-foreground focus:bg-white focus:ring-1 focus:ring-ring outline-none resize-none" placeholder="Operational notes..."></textarea>
+                    <textarea wire:model="handoverNotes" rows="2" class="w-full px-3.5 py-2.5 bg-secondary border border-border rounded-xl text-xs text-foreground focus:bg-card focus:ring-1 focus:ring-ring outline-none resize-none" placeholder="Operational notes..."></textarea>
                 </div>
 
                 {{-- Transferring Cashier PIN --}}
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Transferring Cashier PIN</label>
-                    <input type="password" wire:model="cashierPin" maxlength="6" class="w-full px-3.5 py-2.5 bg-secondary border border-border rounded-xl text-center font-sans font-bold text-sm tracking-widest focus:bg-white focus:ring-1 focus:ring-ring outline-none" placeholder="••••••">
+                    <input type="password" wire:model="cashierPin" maxlength="6" class="w-full px-3.5 py-2.5 bg-secondary border border-border rounded-xl text-center font-sans font-bold text-sm tracking-widest focus:bg-card focus:ring-1 focus:ring-ring outline-none" placeholder="••••••">
                     @error('cashierPin') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
             </form>
@@ -510,18 +510,18 @@
 
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Counted Physical Cash in Drawer</label>
-                    <input type="number" wire:model="closing_balance" required min="0" class="w-full px-3.5 py-2.5 bg-secondary border border-border rounded-xl font-sans font-bold text-sm text-foreground focus:bg-white focus:ring-1 focus:ring-ring outline-none" placeholder="0">
+                    <input type="number" wire:model="closing_balance" required min="0" class="w-full px-3.5 py-2.5 bg-secondary border border-border rounded-xl font-sans font-bold text-sm text-foreground focus:bg-card focus:ring-1 focus:ring-ring outline-none" placeholder="0">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-destructive mb-1">Force Close Reason (Required)</label>
-                    <textarea wire:model="forceCloseReason" required rows="2" class="w-full px-3.5 py-2.5 bg-destructive-muted/30 border border-destructive rounded-xl text-xs text-foreground focus:bg-white focus:ring-1 focus:ring-destructive outline-none resize-none" placeholder="e.g. Cashier suddenly taken ill, shift handed over to supervisor..."></textarea>
+                    <textarea wire:model="forceCloseReason" required rows="2" class="w-full px-3.5 py-2.5 bg-destructive-muted/30 border border-destructive rounded-xl text-xs text-foreground focus:bg-card focus:ring-1 focus:ring-destructive outline-none resize-none" placeholder="e.g. Cashier suddenly taken ill, shift handed over to supervisor..."></textarea>
                     @error('forceCloseReason') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-destructive mb-1">Supervisor PIN (Authorization)</label>
-                    <input type="password" wire:model="forceCloseSupervisorPin" maxlength="6" required class="w-full px-3.5 py-2.5 bg-destructive-muted/50 border border-destructive rounded-xl text-center font-sans font-bold text-sm tracking-widest text-destructive focus:bg-white focus:ring-1 focus:ring-destructive outline-none" placeholder="••••••">
+                    <input type="password" wire:model="forceCloseSupervisorPin" maxlength="6" required class="w-full px-3.5 py-2.5 bg-destructive-muted/50 border border-destructive rounded-xl text-center font-sans font-bold text-sm tracking-widest text-destructive focus:bg-card focus:ring-1 focus:ring-destructive outline-none" placeholder="••••••">
                     @error('forceCloseSupervisorPin') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
             </form>

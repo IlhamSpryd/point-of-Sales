@@ -123,13 +123,13 @@
     @keydown.window.f5.prevent="$wire.fastCashPay(0)"
     @keydown.window.f8.prevent="$wire.set('isParkModalOpen', true)"
     @keydown.window.f9.prevent="$wire.set('isParkedListOpen', true)"
-    class="flex flex-col h-full w-full overflow-hidden min-h-0 bg-white">
+    class="flex flex-col h-full w-full overflow-hidden min-h-0 bg-background">
 
     {{-- Operational Context Banner (Shift Warning) --}}
     @include('livewire.pos.partials.operational-banner')
 
     <!-- Main Structure: Left (Header + Product Catalog & Discovery) & Right (Full-Height Order Cart) -->
-    <div class="flex flex-row w-full h-full p-3 lg:p-4 gap-3 lg:gap-4 overflow-hidden bg-white min-h-0">
+    <div class="flex flex-row w-full h-full p-3 lg:p-4 gap-3 lg:gap-4 overflow-hidden bg-background min-h-0">
         <!-- Left Column: POS Workspace (Header + Catalog & Grid) -->
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
             {{-- Header: POS / Cashier context, Dine-In/Takeaway, Order ID, Hold & Table --}}

@@ -618,7 +618,7 @@
                 </div>
 
                 <!-- Transactions Table -->
-                <div class="rounded-xl border border-border overflow-hidden max-h-80 overflow-y-auto">
+                <div class="rounded-xl border border-border overflow-x-auto max-h-80 overflow-y-auto">
                     <table class="table-standard w-full min-w-full text-left text-xs text-muted-foreground">
                         <thead class="bg-secondary /80 text-[11px] font-semibold uppercase text-muted-foreground sticky top-0 border-b border-border">
                             <tr>

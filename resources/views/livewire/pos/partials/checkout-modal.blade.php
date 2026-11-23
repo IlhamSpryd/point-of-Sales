@@ -51,7 +51,7 @@
         </div>
 
         <!-- Body Modal Content -->
-        <div x-show="!receiptReady" class="p-5 overflow-y-auto max-h-[62vh] space-y-4 custom-scrollbar bg-white">
+        <div x-show="!receiptReady" class="p-5 overflow-y-auto max-h-[62vh] space-y-4 custom-scrollbar bg-card">
             <!-- Net Total Due Banner -->
             <div class="flex items-center justify-between p-3.5 rounded-xl bg-muted border border-border">
                 <div>
@@ -60,7 +60,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <button type="button" wire:click="$set('isManualDiscountModalOpen', true)"
-                        class="px-3 py-1.5 rounded-lg bg-white border border-border text-foreground hover:bg-muted text-xs font-medium flex items-center gap-1.5 transition-colors">
+                        class="px-3 py-1.5 rounded-lg bg-card border border-border text-foreground hover:bg-muted text-xs font-medium flex items-center gap-1.5 transition-colors">
                         <span class="material-symbols-rounded text-[16px] text-warning">sell</span>
                         <span>Apply Discount</span>
                     </button>
@@ -77,7 +77,7 @@
                     <input type="text" inputmode="numeric" :value="amountFormatted"
                         x-on:input="setAmountInput($event)"
                         placeholder="0"
-                        class="w-full h-12 pl-12 pr-24 rounded-xl border-2 border-foreground tabular-nums text-xl font-bold text-foreground focus:outline-none bg-white">
+                        class="w-full h-12 pl-12 pr-24 rounded-xl border-2 border-foreground tabular-nums text-xl font-bold text-foreground focus:outline-none bg-card">
                     <button type="button" x-on:click="fillRemaining()"
                         class="absolute right-2 top-1/2 -translate-y-1/2 px-2.5 py-1.5 rounded-lg bg-muted text-foreground text-xs hover:bg-secondary transition-colors font-medium">
                         Exact Amount
@@ -118,7 +118,7 @@
                     <span class="text-xs font-semibold text-foreground uppercase tracking-wider">
                         QR Payment Mode
                     </span>
-                    <div class="inline-flex p-1 bg-white rounded-lg border border-border">
+                    <div class="inline-flex p-1 bg-card rounded-lg border border-border">
                         <button type="button" x-on:click="qrisMode = 'midtrans'"
                             :class="qrisMode === 'midtrans' ? 'bg-primary text-white shadow-2xs' : 'text-muted-foreground hover:text-foreground'"
                             class="px-2.5 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer">
@@ -133,7 +133,7 @@
                 </div>
 
                 <!-- Mode 1: Dynamic QRIS & Digital Gateway -->
-                <div x-show="qrisMode === 'midtrans'" class="p-4 bg-white rounded-xl border border-border space-y-3">
+                <div x-show="qrisMode === 'midtrans'" class="p-4 bg-card rounded-xl border border-border space-y-3">
                     <template x-if="!awaitingMidtransOrderCode">
                         <div class="flex items-start gap-3.5">
                             <div class="w-11 h-11 rounded-xl bg-muted border border-border text-foreground flex items-center justify-center shrink-0">
@@ -160,7 +160,7 @@
                             </div>
                             <div class="flex flex-wrap items-center justify-center gap-2 pt-1 w-full">
                                 <button type="button" x-show="awaitingSnapToken" x-on:click="openSnapPopup()"
-                                    class="px-3.5 py-2 rounded-lg bg-white border border-border hover:bg-muted text-foreground text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer">
+                                    class="px-3.5 py-2 rounded-lg bg-card border border-border hover:bg-muted text-foreground text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer">
                                     <span class="material-symbols-rounded text-[16px]">qr_code_2</span>
                                     <span>Re-open QR Code</span>
                                 </button>
@@ -176,7 +176,7 @@
                 </div>
 
                 <!-- Mode 2: Manual Static QRIS -->
-                <div x-show="qrisMode === 'manual'" class="p-4 bg-white rounded-xl border border-border space-y-3">
+                <div x-show="qrisMode === 'manual'" class="p-4 bg-card rounded-xl border border-border space-y-3">
                     <div class="flex items-center gap-3">
                         <div class="w-11 h-11 rounded-xl bg-muted border border-border flex items-center justify-center shrink-0">
                             <span class="material-symbols-rounded text-[24px] text-foreground">qr_code_2</span>
@@ -189,7 +189,7 @@
                     <div>
                         <label class="text-xs text-muted-foreground block mb-1">Reference Number / RRN (Optional)</label>
                         <input type="text" x-model="qrisReference" placeholder="e.g. RRN-99283741"
-                            class="w-full h-9 px-3 rounded-lg border border-border text-xs text-foreground tabular-nums focus:outline-none focus:border-foreground bg-white">
+                            class="w-full h-9 px-3 rounded-lg border border-border text-xs text-foreground tabular-nums focus:outline-none focus:border-foreground bg-card">
                     </div>
                 </div>
             </div>
@@ -202,14 +202,14 @@
                 <div class="grid grid-cols-2 gap-2">
                     @forelse ($this->storeEdcTerminals as $term)
                         <button type="button" x-on:click="edcBank = '{{ $term->device_name }}'"
-                            :class="edcBank === '{{ $term->device_name }}' ? 'border-foreground bg-primary text-white shadow-xs' : 'border-border bg-white text-foreground hover:bg-muted'"
+                            :class="edcBank === '{{ $term->device_name }}' ? 'border-foreground bg-primary text-white shadow-xs' : 'border-border bg-card text-foreground hover:bg-muted'"
                             class="p-2.5 rounded-lg border font-medium text-xs flex items-center justify-between transition-colors cursor-pointer">
                             <span class="truncate">{{ $term->device_name }}</span>
                             <span class="text-xs opacity-80">{{ $term->device_code ?? 'Online' }}</span>
                         </button>
                     @empty
                         <button type="button" x-on:click="edcBank = 'EDC Utama'"
-                            :class="edcBank === 'EDC Utama' ? 'border-foreground bg-primary text-white shadow-xs' : 'border-border bg-white text-foreground hover:bg-muted'"
+                            :class="edcBank === 'EDC Utama' ? 'border-foreground bg-primary text-white shadow-xs' : 'border-border bg-card text-foreground hover:bg-muted'"
                             class="p-2.5 rounded-lg border font-medium text-xs flex items-center justify-between transition-colors cursor-pointer">
                             <span>Main EDC Terminal</span>
                             <span class="text-xs opacity-80">Online</span>
@@ -219,7 +219,7 @@
                 <div>
                     <label class="text-xs text-muted-foreground block mb-1">Approval Code / Trace Number (EDC Slip)</label>
                     <input type="text" x-model="edcTrace" placeholder="e.g. 849201"
-                        class="w-full h-9 px-3 rounded-lg border border-border text-xs text-foreground tabular-nums focus:outline-none focus:border-foreground bg-white">
+                        class="w-full h-9 px-3 rounded-lg border border-border text-xs text-foreground tabular-nums focus:outline-none focus:border-foreground bg-card">
                 </div>
             </div>
 
@@ -230,7 +230,7 @@
                         Official Store Bank Account
                     </label>
                     @forelse ($this->storeBankAccounts as $acc)
-                        <div class="flex items-center justify-between p-3 rounded-lg bg-white border border-border">
+                        <div class="flex items-center justify-between p-3 rounded-lg bg-card border border-border">
                             <div class="flex flex-col min-w-0 pr-2">
                                 <span class="text-xs text-muted-foreground">{{ $acc->bank_name ?? $acc->account_name }}</span>
                                 <span class="tabular-nums font-bold text-sm text-foreground font-sans tracking-wide">{{ $acc->bank_account_number }}</span>
@@ -242,7 +242,7 @@
                             </button>
                         </div>
                     @empty
-                        <div class="flex items-center justify-between p-3 rounded-lg bg-white border border-border">
+                        <div class="flex items-center justify-between p-3 rounded-lg bg-card border border-border">
                             <div class="flex flex-col min-w-0">
                                 <span class="text-xs text-muted-foreground">Bank Central Asia (BCA)</span>
                                 <span class="tabular-nums font-bold text-sm text-foreground font-sans">8010 9928 1120</span>
@@ -258,7 +258,7 @@
                 <div>
                     <label class="text-xs text-muted-foreground block mb-1">Sender Name / Transfer Reference</label>
                     <input type="text" x-model="transferSender" placeholder="Account holder name or payment note..."
-                        class="w-full h-9 px-3 rounded-lg border border-border text-xs text-foreground focus:outline-none focus:border-foreground bg-white">
+                        class="w-full h-9 px-3 rounded-lg border border-border text-xs text-foreground focus:outline-none focus:border-foreground bg-card">
                 </div>
             </div>
 
@@ -274,7 +274,7 @@
                 <!-- Added Payment Legs List -->
                 <div x-show="legs.length > 0" class="space-y-2">
                     <template x-for="leg in legs" :key="leg.uid">
-                        <div class="flex items-center justify-between gap-3 bg-white rounded-lg border border-border p-2.5">
+                        <div class="flex items-center justify-between gap-3 bg-card rounded-lg border border-border p-2.5">
                             <div class="flex items-center gap-2">
                                 <span class="material-symbols-rounded text-[16px] text-foreground">check_circle</span>
                                 <div>
@@ -294,23 +294,23 @@
                 <div x-show="remaining > 0" class="space-y-2 pt-2 border-t border-border">
                     <div class="grid grid-cols-4 gap-1.5">
                         <button type="button" x-on:click="splitTargetMethod = 'cash'"
-                            :class="splitTargetMethod === 'cash' ? 'bg-primary text-white' : 'bg-white border-border text-foreground'"
+                            :class="splitTargetMethod === 'cash' ? 'bg-primary text-white' : 'bg-card border-border text-foreground'"
                             class="px-2 py-1.5 rounded-md border text-xs font-medium">Cash</button>
                         <button type="button" x-on:click="splitTargetMethod = 'qris'"
-                            :class="splitTargetMethod === 'qris' ? 'bg-primary text-white' : 'bg-white border-border text-foreground'"
+                            :class="splitTargetMethod === 'qris' ? 'bg-primary text-white' : 'bg-card border-border text-foreground'"
                             class="px-2 py-1.5 rounded-md border text-xs font-medium">QRIS</button>
                         <button type="button" x-on:click="splitTargetMethod = 'card'"
-                            :class="splitTargetMethod === 'card' ? 'bg-primary text-white' : 'bg-white border-border text-foreground'"
+                            :class="splitTargetMethod === 'card' ? 'bg-primary text-white' : 'bg-card border-border text-foreground'"
                             class="px-2 py-1.5 rounded-md border text-xs font-medium">Card</button>
                         <button type="button" x-on:click="splitTargetMethod = 'store_credit'"
-                            :class="splitTargetMethod === 'store_credit' ? 'bg-primary text-white' : 'bg-white border-border text-foreground'"
+                            :class="splitTargetMethod === 'store_credit' ? 'bg-primary text-white' : 'bg-card border-border text-foreground'"
                             class="px-2 py-1.5 rounded-md border text-xs font-medium">Transfer</button>
                     </div>
                     <div class="flex gap-2">
                         <input type="text" inputmode="numeric" :value="splitAmountFormatted"
                             x-on:input="setSplitAmountInput($event)"
                             placeholder="Allocation amount..."
-                            class="flex-1 h-9 px-3 rounded-lg border border-border tabular-nums text-xs text-foreground bg-white focus:outline-none focus:border-foreground">
+                            class="flex-1 h-9 px-3 rounded-lg border border-border tabular-nums text-xs text-foreground bg-card focus:outline-none focus:border-foreground">
                         <button type="button" x-on:click="addSplitLeg()"
                             class="px-3 h-9 rounded-lg bg-primary text-white text-xs font-medium hover:bg-primary/90 transition-colors">
                             + Allocate
@@ -353,7 +353,7 @@
         <!-- Footer Modal Checkout -->
         <div x-show="!receiptReady" class="p-4 bg-muted border-t border-border flex items-center justify-between shrink-0">
             <button type="button" x-on:click.prevent="closeModal()" wire:ignore
-                class="px-4 py-2.5 rounded-lg border border-border hover:bg-white text-foreground font-medium text-sm transition-colors cursor-pointer"
+                class="px-4 py-2.5 rounded-lg border border-border hover:bg-muted text-foreground font-medium text-sm transition-colors cursor-pointer"
                 aria-label="Cancel payment and return to cart">
                 <span x-text="awaitingMidtransOrderCode ? 'Close Window' : 'Cancel'"></span>
             </button>

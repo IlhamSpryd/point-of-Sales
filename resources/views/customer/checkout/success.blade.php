@@ -67,7 +67,7 @@
         <div class="mt-5 space-y-3">
             @if ($menuUrl)
                 <a href="{{ $menuUrl }}" x-show="!isPending" x-cloak
-                   class="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl border border-border bg-white font-semibold shadow-sm transition-all hover:bg-card active:scale-[0.98]">
+                   class="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card font-semibold shadow-sm transition-all hover:bg-card active:scale-[0.98]">
                     <span class="material-symbols-rounded text-[20px]">restaurant_menu</span> <span class="text-[16px]">Back to Menu</span>
                 </a>
                 

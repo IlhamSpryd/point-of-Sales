@@ -59,7 +59,7 @@
                             .then(r => r.json()).then(d => notify(d.message))
                             .catch(() => notify('Connection error. Please wave to a staff member.'))
                             .finally(() => busy = false)"
-                        class="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-border text-muted-foreground hover:text-foreground active:scale-90 transition-all shadow-sm">
+                        class="flex items-center justify-center w-11 h-11 rounded-full bg-card border border-border text-muted-foreground hover:text-foreground active:scale-90 transition-all shadow-sm">
                         <span class="material-symbols-rounded text-[20px]">room_service</span>
                     </button>
                 @endif
@@ -68,7 +68,7 @@
                 @php $activeOrders = session('customer_orders', []); @endphp
                 @if (!empty($activeOrders))
                     <a href="{{ route('customer.checkout.success', end($activeOrders)) }}"
-                        class="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-border text-muted-foreground hover:text-foreground active:scale-90 transition-all shadow-sm"
+                        class="flex items-center justify-center w-11 h-11 rounded-full bg-card border border-border text-muted-foreground hover:text-foreground active:scale-90 transition-all shadow-sm"
                         aria-label="Order Status">
                         <span class="material-symbols-rounded text-[20px]">receipt_long</span>
                     </a>
@@ -76,7 +76,7 @@
 
                 @if ($tableName)
                     <span
-                        class="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-border bg-white px-2.5 py-1 text-xs font-medium text-foreground shadow-2xs">
+                        class="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1 text-xs font-medium text-foreground shadow-2xs">
                         <span class="material-symbols-rounded text-[14px] text-muted-foreground">table_restaurant</span>
                         {{ $tableName }}
                     </span>
@@ -89,7 +89,7 @@
             <div class="relative overflow-hidden rounded-3xl bg-primary text-white p-6 shadow-md mb-4">
                 <div class="relative z-10">
                     <span
-                        class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/20 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider mb-3 shadow-sm border border-white/10">
+                        class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-card/20 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider mb-3 shadow-sm border border-white/10">
                         <span class="material-symbols-rounded text-[14px] text-warning">stars</span> Today's Specials
                     </span>
                     <h2 class="font-bold text-xl leading-tight mb-1.5 text-white">Explore Our Featured Menu</h2>
@@ -98,7 +98,7 @@
 
                 {{-- Elemen Dekoratif Premium --}}
                 <div
-                    class="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none">
+                    class="absolute -bottom-10 -right-10 w-40 h-40 bg-card/10 rounded-full blur-2xl pointer-events-none">
                 </div>
                 <div
                     class="absolute -top-10 -right-5 w-24 h-24 bg-warning rounded-full blur-xl pointer-events-none">
@@ -115,14 +115,14 @@
             <div class="flex gap-2.5 overflow-x-auto scrollbar-hide px-4 py-2 items-center">
                 <button type="button" @click="activeCategory = 'all'"
                     :aria-pressed="(activeCategory === 'all').toString()"
-                    :class="activeCategory === 'all' ? 'bg-primary text-white border-foreground shadow-sm' : 'bg-white text-muted-foreground border-border hover:bg-secondary'"
+                    :class="activeCategory === 'all' ? 'bg-primary text-white border-foreground shadow-sm' : 'bg-card text-muted-foreground border-border hover:bg-secondary'"
                     class="shrink-0 flex items-center justify-center h-10 px-4 rounded-xl border text-sm font-medium whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     All Items
                 </button>
                 @foreach ($visibleCategories as $cat)
                     <button type="button" @click="activeCategory = '{{ $cat->id }}'"
                         :aria-pressed="(activeCategory === '{{ $cat->id }}').toString()"
-                        :class="activeCategory === '{{ $cat->id }}' ? 'bg-primary text-white border-foreground shadow-sm' : 'bg-white text-muted-foreground border-border hover:bg-secondary'"
+                        :class="activeCategory === '{{ $cat->id }}' ? 'bg-primary text-white border-foreground shadow-sm' : 'bg-card text-muted-foreground border-border hover:bg-secondary'"
                         class="shrink-0 flex items-center justify-center h-10 px-4 rounded-xl border text-sm font-medium whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                         {{ $cat->category_name }}
                     </button>
@@ -159,7 +159,7 @@
                             x-transition:enter-end="opacity-100 scale-100">
                             <button type="button"
                                 @if ($soldOut) disabled @else @click="$dispatch('open-variant', { id: {{ $product->id }} })" @endif
-                                class="group flex h-full w-full flex-col rounded-3xl border border-border bg-white p-3 text-left shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100">
+                                class="group flex h-full w-full flex-col rounded-3xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100">
                                 <span class="relative mb-3 block aspect-square overflow-hidden rounded-2xl bg-card">
                                     @if ($product->photo_url)
                                         <img src="{{ $product->photo_url }}" alt=""
@@ -224,7 +224,7 @@
             <a href="{{ route('customer.cart.index') }}"
                 class="flex min-h-14 w-full items-center justify-between rounded-2xl bg-primary px-5 font-semibold text-white shadow-xl transition-all hover:bg-primary/90 active:scale-[0.98]"
                 wire:navigate>
-                <span class="rounded-lg bg-white/20 px-3 py-1 text-sm" x-text="count + (count === 1 ? ' Item' : ' Items')"></span>
+                <span class="rounded-lg bg-card/20 px-3 py-1 text-sm" x-text="count + (count === 1 ? ' Item' : ' Items')"></span>
                 <span>View Cart</span>
                 <span class="tabular-nums" x-text="'Rp ' + Number(subtotal).toLocaleString('id-ID')"></span>
             </a>

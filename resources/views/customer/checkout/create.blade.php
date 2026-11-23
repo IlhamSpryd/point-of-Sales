@@ -58,7 +58,7 @@
                     <label for="customer_phone" class="block text-[13px] font-semibold text-foreground mb-1.5">Mobile Number</label>
                     <input type="tel" name="customer_phone" id="customer_phone" value="{{ old('customer_phone') }}"
                            placeholder="e.g. 08123456789"
-                           class="w-full rounded-xl border-border bg-white px-4 py-2.5 text-[14px] focus:border-primary focus:ring-1 focus:ring-ring outline-none transition-all" />
+                           class="w-full rounded-xl border-border bg-card px-4 py-2.5 text-[14px] focus:border-primary focus:ring-1 focus:ring-ring outline-none transition-all" />
                     <p class="mt-2 text-[11px] text-muted-foreground">Enter registered mobile number to collect loyalty points for this order.</p>
                 </div>
             </section>
@@ -71,7 +71,7 @@
                         <button type="button" role="radio"
                                 :aria-checked="(method === '{{ $value }}').toString()"
                                 @click="method = '{{ $value }}'"
-                                :class="method === '{{ $value }}' ? 'border-foreground ring-1 ring-ring bg-white' : 'border-border bg-white hover:bg-card'"
+                                :class="method === '{{ $value }}' ? 'border-foreground ring-1 ring-ring bg-card' : 'border-border bg-card hover:bg-card'"
                                 class="w-full min-h-16 flex items-center gap-4 rounded-2xl border-[1.5px] px-4 py-3 text-left transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                             <span class="w-11 h-11 rounded-xl bg-secondary flex items-center justify-center shrink-0">
                                 <span class="material-symbols-rounded text-[24px]">{{ $icon }}</span>
@@ -95,7 +95,7 @@
             <div class="h-40" aria-hidden="true"></div>
 
             {{-- Bar CTA (fixed) --}}
-            <div class="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md bg-white/90 backdrop-blur-xl border-t border-border sm:border-x">
+            <div class="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md bg-card/90 backdrop-blur-xl border-t border-border sm:border-x">
                 <div class="px-4 pt-4 pb-safe">
                     <button type="submit" :disabled="submitting"
                             class="w-full flex items-center justify-between rounded-2xl bg-primary text-white px-5 min-h-14 font-semibold shadow-lg hover:bg-primary/90 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">

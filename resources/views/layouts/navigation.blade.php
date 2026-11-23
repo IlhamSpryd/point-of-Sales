@@ -102,7 +102,7 @@
         {{-- Circular Collapse Trigger Button (Desktop/Laptop/iPad - when wide) --}}
         <button type="button" @click="expanded = false" x-show="wide && !sidebarMobileOpen" x-cloak title="Collapse sidebar"
             aria-label="Collapse sidebar"
-            class="hidden md:flex w-11 h-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-shell-foreground bg-white hover:bg-shell-accent hover:text-shell-foreground-active border border-shell-border active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring transition-all duration-150 cursor-pointer shadow-2xs">
+            class="hidden md:flex w-11 h-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-shell-foreground bg-card hover:bg-shell-accent hover:text-shell-foreground-active border border-shell-border active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring transition-all duration-150 cursor-pointer shadow-2xs">
             <span class="material-symbols-rounded text-[16px]">chevron_left</span>
         </button>
 

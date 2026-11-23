@@ -171,7 +171,7 @@
                             <div class="p-3 rounded-2xl border border-border bg-secondary/50 space-y-2">
                                 <div class="grid grid-cols-12 gap-2 items-center">
                                     <div class="col-span-12 sm:col-span-2">
-                                        <select wire:model.live="items.{{ $index }}.item_type" class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-white">
+                                        <select wire:model.live="items.{{ $index }}.item_type" class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-card">
                                             <option value="product">Product</option>
                                             <option value="ingredient">Raw Material</option>
                                         </select>
@@ -179,14 +179,14 @@
 
                                     <div class="col-span-12 sm:col-span-4">
                                         @if ($item['item_type'] === 'product')
-                                            <select wire:model="items.{{ $index }}.product_id" class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-white">
+                                            <select wire:model="items.{{ $index }}.product_id" class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-card">
                                                 <option value="">Select Product...</option>
                                                 @foreach ($products as $prod)
                                                     <option value="{{ $prod->id }}">{{ $prod->product_name }} ({{ $prod->product_code ?: 'No Code' }})</option>
                                                 @endforeach
                                             </select>
                                         @else
-                                            <select wire:model="items.{{ $index }}.ingredient_id" class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-white">
+                                            <select wire:model="items.{{ $index }}.ingredient_id" class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-card">
                                                 <option value="">Select Raw Material...</option>
                                                 @foreach ($ingredients as $ing)
                                                     <option value="{{ $ing->id }}">{{ $ing->name }} ({{ $ing->unit }})</option>
@@ -196,7 +196,7 @@
                                     </div>
 
                                     <div class="col-span-6 sm:col-span-2">
-                                        <select wire:model="items.{{ $index }}.direction" class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-white font-semibold">
+                                        <select wire:model="items.{{ $index }}.direction" class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-card font-semibold">
                                             <option value="OUT">Outflow (OUT)</option>
                                             <option value="IN">Inflow (IN)</option>
                                         </select>
@@ -204,7 +204,7 @@
 
                                     <div class="col-span-6 sm:col-span-3">
                                         <input type="number" step="0.0001" min="0.0001" wire:model="items.{{ $index }}.quantity" placeholder="Qty" title="Quantity"
-                                               class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-white text-right font-medium">
+                                               class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-card text-right font-medium">
                                     </div>
 
                                     <div class="col-span-12 sm:col-span-1 text-right">
@@ -217,11 +217,11 @@
                                 <div class="grid grid-cols-12 gap-2 text-xs">
                                     <div class="col-span-12 sm:col-span-6">
                                         <input type="text" wire:model="items.{{ $index }}.reason_note" placeholder="Line note (optional)"
-                                               class="w-full text-xs py-1 px-2 rounded-lg border border-border bg-white placeholder-slate-400">
+                                               class="w-full text-xs py-1 px-2 rounded-lg border border-border bg-card placeholder-slate-400">
                                     </div>
                                     <div class="col-span-12 sm:col-span-6">
                                         <input type="number" step="0.0001" min="0" wire:model="items.{{ $index }}.unit_cost_snapshot" placeholder="Unit cost snapshot (0 = auto WAC)"
-                                               class="w-full text-xs py-1 px-2 rounded-lg border border-border bg-white text-right text-foreground">
+                                               class="w-full text-xs py-1 px-2 rounded-lg border border-border bg-card text-right text-foreground">
                                     </div>
                                 </div>
                             </div>

@@ -246,7 +246,7 @@
                 </div>
 
                 <!-- Lines Table -->
-                <div class="border border-border rounded-xl overflow-hidden">
+                <div class="border border-border rounded-xl overflow-x-auto">
                     <table class="table-standard min-w-full text-left text-xs">
                         <thead class="bg-secondary text-muted-foreground uppercase font-semibold">
                             <tr>

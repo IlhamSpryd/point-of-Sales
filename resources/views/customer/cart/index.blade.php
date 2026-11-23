@@ -85,13 +85,13 @@
                                 <div class="flex items-center rounded-full bg-secondary border border-border p-0.5" role="group" :aria-label="'Quantity ' + line.name">
                                     <button type="button" @click="change(line, -1)" :disabled="busy"
                                             :aria-label="line.qty === 1 ? 'Remove ' + line.name : 'Decrease quantity'"
-                                            class="w-11 h-11 rounded-full flex items-center justify-center bg-white shadow-sm text-foreground hover:bg-card active:scale-90 disabled:opacity-50 transition-all duration-200">
+                                            class="w-11 h-11 rounded-full flex items-center justify-center bg-card shadow-sm text-foreground hover:bg-card active:scale-90 disabled:opacity-50 transition-all duration-200">
                                         <span class="material-symbols-rounded text-[20px]" x-text="line.qty === 1 ? 'delete' : 'remove'"></span>
                                     </button>
                                     <span class="w-9 text-center font-bold text-[15px] tabular-nums" x-text="line.qty" aria-live="polite"></span>
                                     <button type="button" @click="change(line, 1)" :disabled="busy || line.qty >= 20"
                                             aria-label="Increase quantity"
-                                            class="w-11 h-11 rounded-full flex items-center justify-center bg-white shadow-sm text-foreground hover:bg-card active:scale-90 disabled:opacity-40 transition-all duration-200">
+                                            class="w-11 h-11 rounded-full flex items-center justify-center bg-card shadow-sm text-foreground hover:bg-card active:scale-90 disabled:opacity-40 transition-all duration-200">
                                         <span class="material-symbols-rounded text-[20px]">add</span>
                                     </button>
                                 </div>
@@ -112,7 +112,7 @@
 
         {{-- Bar ringkasan + CTA (fixed) --}}
         <div x-show="lines.length > 0" x-cloak
-             class="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md bg-white/90 backdrop-blur-xl border-t border-border sm:border-x">
+             class="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md bg-card/90 backdrop-blur-xl border-t border-border sm:border-x">
             <div class="px-4 pt-4 pb-safe">
                 <dl class="text-[14px] space-y-1.5 mb-4" aria-live="polite">
                     <div class="flex justify-between text-muted-foreground"><dt>Subtotal</dt><dd class="tabular-nums" x-text="rupiah(subtotal)"></dd></div>

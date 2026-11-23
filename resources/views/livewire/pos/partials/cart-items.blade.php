@@ -75,7 +75,7 @@
 
                 <div class="flex items-center justify-between pt-1 border-t border-border">
                     <!-- Stepper Quantity -->
-                    <div class="flex items-center gap-1 bg-white border border-border rounded-md p-0.5 h-8">
+                    <div class="flex items-center gap-1 bg-card border border-border rounded-md p-0.5">
                         @if ($pendingOrderId)
                             <span class="text-sm font-semibold text-foreground px-2 min-w-[20px] text-center tabular-nums">
                                 {{ $line['qty'] }}
@@ -84,7 +84,7 @@
                             <button type="button"
                                 wire:click.prevent="updateCartQty({{ $line['index'] }}, -1)"
                                 aria-label="Decrease quantity of {{ $line['product_name'] }}"
-                                class="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-colors">
+                                class="min-w-[44px] min-h-[44px] p-2 rounded flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-colors">
                                 <span class="material-symbols-rounded text-[14px]">remove</span>
                             </button>
                             <span class="text-sm font-semibold text-foreground px-2 min-w-[20px] text-center tabular-nums">
@@ -93,7 +93,7 @@
                             <button type="button"
                                 wire:click.prevent="updateCartQty({{ $line['index'] }}, 1)"
                                 aria-label="Increase quantity of {{ $line['product_name'] }}"
-                                class="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-colors">
+                                class="min-w-[44px] min-h-[44px] p-2 rounded flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-colors">
                                 <span class="material-symbols-rounded text-[14px]">add</span>
                             </button>
                         @endif

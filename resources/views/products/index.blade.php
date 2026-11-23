@@ -245,7 +245,7 @@
                     <div>
                         <x-form-label for="bulk_action">Select Bulk Action <span class="text-danger-600">*</span></x-form-label>
                         <select id="bulk_action" name="action" x-model="bulkAction" required
-                            class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-primary focus:ring-1 focus:ring-ring">
+                            class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-card focus:border-primary focus:ring-1 focus:ring-ring">
                             <option value="update_status">Update Product Lifecycle Status</option>
                             <option value="update_category">Move to Another Category</option>
                             <option value="update_price">Adjust Selling Price</option>
@@ -257,7 +257,7 @@
                     <div x-show="bulkAction === 'update_status'" x-cloak>
                         <x-form-label for="bulk_status">Select New Status</x-form-label>
                         <select id="bulk_status" name="status"
-                            class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-primary focus:ring-1 focus:ring-ring">
+                            class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-card focus:border-primary focus:ring-1 focus:ring-ring">
                             <option value="active">Active (Available in POS & Menu)</option>
                             <option value="inactive">Inactive</option>
                             <option value="draft">Draft</option>
@@ -269,7 +269,7 @@
                     <div x-show="bulkAction === 'update_category'" x-cloak>
                         <x-form-label for="bulk_category">Select New Category</x-form-label>
                         <select id="bulk_category" name="category_id"
-                            class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-primary focus:ring-1 focus:ring-ring">
+                            class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-card focus:border-primary focus:ring-1 focus:ring-ring">
                             <option value="">-- No Category --</option>
                             @foreach ($categories as $cat)
                                 <option value="{{ $cat->id }}">{{ $cat->category_name }}</option>
@@ -282,7 +282,7 @@
                         <div>
                             <x-form-label for="bulk_price_mode">Adjustment Mode</x-form-label>
                             <select id="bulk_price_mode" name="price_mode"
-                                class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-primary focus:ring-1 focus:ring-ring">
+                                class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-card focus:border-primary focus:ring-1 focus:ring-ring">
                                 <option value="fixed">Set Fixed Price (Rp)</option>
                                 <option value="percentage_increase">Increase by (%)</option>
                                 <option value="percentage_decrease">Decrease by (%)</option>
@@ -300,7 +300,7 @@
                         <div>
                             <x-form-label for="bulk_store_id">Select Branch</x-form-label>
                             <select id="bulk_store_id" name="store_id"
-                                class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-primary focus:ring-1 focus:ring-ring">
+                                class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-card focus:border-primary focus:ring-1 focus:ring-ring">
                                 @foreach ($stores as $st)
                                     <option value="{{ $st->id }}">{{ $st->name }}</option>
                                 @endforeach

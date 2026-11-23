@@ -186,7 +186,7 @@
                             </div>
                         @enderror
 
-                        <div class="border border-border rounded-xl overflow-hidden">
+                        <div class="border border-border rounded-xl overflow-x-auto">
                             <table class="w-full text-left text-xs">
                                 <thead class="bg-secondary /60 text-muted-foreground font-semibold border-b border-border">
                                     <tr>
@@ -333,7 +333,7 @@
                     @endif
                 </div>
 
-                <div class="border border-border rounded-xl overflow-hidden">
+                <div class="border border-border rounded-xl overflow-x-auto">
                     <table class="w-full text-left text-xs">
                         <thead class="bg-muted/50 text-muted-foreground font-semibold border-b border-border">
                             <tr>

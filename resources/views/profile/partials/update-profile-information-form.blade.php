@@ -90,7 +90,7 @@
                 <form method="POST" action="{{ route('profile.email.verify') }}" class="mt-4 flex flex-col sm:flex-row gap-3 items-center">
                     @csrf
                     <input type="text" name="otp_code" maxlength="6" placeholder="6-digit code" required
-                           class="w-full sm:w-48 h-10 px-3 text-center tracking-widest font-sans text-base font-bold rounded-xl border border-warning bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-warning" />
+                           class="w-full sm:w-48 h-10 px-3 text-center tracking-widest font-sans text-base font-bold rounded-xl border border-warning bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-warning" />
                     
                     <button type="submit" class="w-full sm:w-auto h-10 px-4 bg-warning hover:bg-warning text-white font-medium text-xs rounded-xl shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">
                         <span class="material-symbols-rounded text-base">verified</span>

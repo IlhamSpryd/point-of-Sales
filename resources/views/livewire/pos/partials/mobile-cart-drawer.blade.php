@@ -2,7 +2,7 @@
 <div class="lg:hidden" x-data="{ isMobileCartOpen: false }">
     {{-- Floating Cart Summary Bar (Tampil di mobile saat keranjang tidak kosong) --}}
     @if(count($this->cartLines) > 0)
-        <div class="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-border px-4 py-3 shadow-lg flex items-center justify-between gap-3 select-none">
+        <div class="fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-md border-t border-border px-4 py-3 shadow-lg flex items-center justify-between gap-3 select-none">
             <div class="min-w-0">
                 <span class="text-xs font-medium text-muted-foreground block">Total ({{ count($this->cartLines) }} {{ count($this->cartLines) === 1 ? 'Item' : 'Items' }})</span>
                 <span class="text-base font-bold text-foreground font-sans tabular-nums">
@@ -15,7 +15,7 @@
                 class="px-4 py-2.5 bg-primary hover:bg-primary/90 text-white font-medium text-xs rounded-xl shadow-sm active:scale-95 transition-all flex items-center gap-2">
                 <span class="material-symbols-rounded text-[20px]">shopping_bag</span>
                 <span>View Order</span>
-                <span class="bg-white/20 text-white text-xs px-1.5 py-0.5 rounded-full font-sans tabular-nums font-bold">
+                <span class="bg-card/20 text-white text-xs px-1.5 py-0.5 rounded-full font-sans tabular-nums font-bold">
                     {{ count($this->cartLines) }}
                 </span>
             </button>
@@ -39,7 +39,7 @@
                 @unless ($pendingOrderId)
                     <div class="relative" x-data="{ showResults: false }">
                         @if ($customerId)
-                            <div class="flex items-center justify-between gap-2 bg-white rounded-lg px-3 py-2 border border-border shadow-xs">
+                            <div class="flex items-center justify-between gap-2 bg-card rounded-lg px-3 py-2 border border-border shadow-xs">
                                 <span class="flex items-center gap-1.5 text-xs font-semibold text-foreground truncate">
                                     <span class="material-symbols-rounded text-[16px] text-muted-foreground">person</span>
                                     {{ $customerName }}
@@ -54,12 +54,12 @@
                                 <input type="text" wire:model.live.debounce.300ms="customerSearch"
                                     x-on:focus="showResults = true" x-on:click.outside="showResults = false"
                                     placeholder="Customer (optional)..."
-                                    class="w-full h-8 pl-9 pr-3 text-xs bg-white border border-border rounded-lg text-foreground placeholder-muted-foreground focus:border-foreground focus:outline-none transition-colors" />
+                                    class="w-full h-8 pl-9 pr-3 text-xs bg-card border border-border rounded-lg text-foreground placeholder-muted-foreground focus:border-foreground focus:outline-none transition-colors" />
                             </div>
 
                             @if (mb_strlen(trim($customerSearch)) >= 2)
                                 <div x-show="showResults" x-cloak wire:loading.class="opacity-50"
-                                    class="absolute z-40 mt-1 w-full bg-white rounded-xl border border-border shadow-xl overflow-hidden max-h-48 overflow-y-auto custom-scrollbar">
+                                    class="absolute z-40 mt-1 w-full bg-card rounded-xl border border-border shadow-xl overflow-hidden max-h-48 overflow-y-auto custom-scrollbar">
                                     @forelse ($this->customerResults as $c)
                                         <button type="button" wire:key="customer-mobile-{{ $c->id }}"
                                             wire:click="selectCustomer({{ $c->id }}, '{{ addslashes($c->name) }}')"
@@ -79,7 +79,7 @@
             </div>
 
             {{-- Isi Cart Items & Summary --}}
-            <div class="flex-1 flex flex-col overflow-hidden min-h-0 bg-white p-3">
+            <div class="flex-1 flex flex-col overflow-hidden min-h-0 bg-card p-3">
                 @include('livewire.pos.partials.cart-items')
                 @include('livewire.pos.partials.cart-summary')
             </div>

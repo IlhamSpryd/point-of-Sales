@@ -42,7 +42,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 {{-- Left Column: Registered Account Details (Google / Apple Style) --}}
                 <div class="lg:col-span-5">
-                    <div class="overflow-hidden rounded-2xl border border-border bg-white shadow-xs">
+                    <div class="overflow-hidden rounded-2xl border border-border bg-card shadow-xs">
                         <div class="bg-secondary/75 px-4 py-3 border-b border-border flex items-center justify-between">
                             <h2 class="text-xs font-semibold text-foreground uppercase tracking-wide">Registered Account Details</h2>
                             <span class="text-[11px] text-muted-foreground font-normal">Verified via signup</span>
@@ -77,7 +77,7 @@
                 </div>
 
                 {{-- Right Column: Form Card --}}
-                <div class="lg:col-span-7 bg-white p-5 sm:p-6 shadow-sm ring-1 ring-ring rounded-2xl">
+                <div class="lg:col-span-7 bg-card p-5 sm:p-6 shadow-sm ring-1 ring-ring rounded-2xl">
                     @if (session('success'))
                         <div class="mb-4 rounded-xl bg-secondary p-3 border border-border text-xs font-medium text-foreground" role="status">
                             {{ session('success') }}
@@ -116,7 +116,7 @@
                             </label>
                             <div class="mt-1.5">
                                 <select name="business_category" id="business_category" required
-                                    class="block w-full rounded-xl border border-border px-3.5 py-2.5 text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring text-sm shadow-xs transition-all bg-white">
+                                    class="block w-full rounded-xl border border-border px-3.5 py-2.5 text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring text-sm shadow-xs transition-all bg-card">
                                     <option value="fnb_cafe" @selected(old('business_category', $businessCategory) === 'fnb_cafe')>Cafe & Coffee Shop</option>
                                     <option value="fnb_restaurant" @selected(old('business_category', $businessCategory) === 'fnb_restaurant')>Restaurant & Dining</option>
                                     <option value="fnb_bakery" @selected(old('business_category', $businessCategory) === 'fnb_bakery')>Bakery & Pastry</option>
@@ -134,7 +134,7 @@
                             </label>
                             <div class="mt-1.5">
                                 <select name="tenant_timezone" id="tenant_timezone" required
-                                    class="block w-full rounded-xl border border-border px-3.5 py-2.5 text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring text-sm shadow-xs transition-all bg-white">
+                                    class="block w-full rounded-xl border border-border px-3.5 py-2.5 text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring text-sm shadow-xs transition-all bg-card">
                                     <option value="Asia/Jakarta" @selected(old('tenant_timezone', $tenantTimezone) === 'Asia/Jakarta')>Western Indonesia Time (WIB) — Asia/Jakarta</option>
                                     <option value="Asia/Makassar" @selected(old('tenant_timezone', $tenantTimezone) === 'Asia/Makassar')>Central Indonesia Time (WITA) — Asia/Makassar</option>
                                     <option value="Asia/Jayapura" @selected(old('tenant_timezone', $tenantTimezone) === 'Asia/Jayapura')>Eastern Indonesia Time (WIT) — Asia/Jayapura</option>

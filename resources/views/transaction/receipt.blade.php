@@ -12,7 +12,7 @@
         </div>
     </div>
 
-    <div id="receipt" class="receipt-area mx-auto bg-white text-foreground">
+    <div id="receipt" class="receipt-area mx-auto bg-card text-foreground">
         <div class="text-center mb-2">
             <div class="flex justify-center mb-1.5">
                 <x-brand-logo variant="symbol" mode="light" class="h-5 w-auto text-black" />

@@ -215,7 +215,7 @@
                         </button>
                     </div>
 
-                    <div class="border border-border rounded-2xl overflow-hidden">
+                    <div class="border border-border rounded-2xl overflow-x-auto">
                         <table class="table-standard w-full min-w-full text-left text-xs">
                             <thead class="bg-secondary text-muted-foreground font-bold border-b border-border">
                                 <tr>
@@ -327,7 +327,7 @@
                     @endif
 
                     <h5 class="text-sm font-bold text-foreground">Returned Items Breakdown</h5>
-                    <div class="border border-border rounded-2xl overflow-hidden">
+                    <div class="border border-border rounded-2xl overflow-x-auto">
                         <table class="table-standard w-full min-w-full text-left text-xs">
                             <thead class="bg-secondary text-muted-foreground font-bold border-b border-border">
                                 <tr>

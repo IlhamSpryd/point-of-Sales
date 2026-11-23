@@ -39,7 +39,7 @@
                 </p>
             </div>
 
-            <div class="bg-white p-5 sm:p-6 shadow-sm ring-1 ring-ring rounded-2xl">
+            <div class="bg-card p-5 sm:p-6 shadow-sm ring-1 ring-ring rounded-2xl">
                 @if (session('success'))
                     <div class="mb-3 rounded-xl bg-secondary p-3 border border-border text-xs font-medium text-foreground" role="status">
                         {{ session('success') }}
@@ -93,7 +93,7 @@
                             </label>
                             <div class="mt-1">
                                 <select name="store_timezone" id="store_timezone" required
-                                    class="block w-full rounded-xl border border-border px-3.5 py-2 text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring text-sm shadow-xs transition-all bg-white">
+                                    class="block w-full rounded-xl border border-border px-3.5 py-2 text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring text-sm shadow-xs transition-all bg-card">
                                     <option value="Asia/Jakarta" @selected(old('store_timezone', $storeTimezone) === 'Asia/Jakarta')>WIB — Asia/Jakarta</option>
                                     <option value="Asia/Makassar" @selected(old('store_timezone', $storeTimezone) === 'Asia/Makassar')>WITA — Asia/Makassar</option>
                                     <option value="Asia/Jayapura" @selected(old('store_timezone', $storeTimezone) === 'Asia/Jayapura')>WIT — Asia/Jayapura</option>
@@ -108,7 +108,7 @@
                             </label>
                             <div class="mt-1">
                                 <select name="default_channel" id="default_channel" required
-                                    class="block w-full rounded-xl border border-border px-3.5 py-2 text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring text-sm shadow-xs transition-all bg-white">
+                                    class="block w-full rounded-xl border border-border px-3.5 py-2 text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring text-sm shadow-xs transition-all bg-card">
                                     <option value="dine_in" @selected(old('default_channel', $defaultChannel) === 'dine_in')>Dine-in</option>
                                     <option value="takeaway" @selected(old('default_channel', $defaultChannel) === 'takeaway')>Takeaway</option>
                                     <option value="delivery" @selected(old('default_channel', $defaultChannel) === 'delivery')>Delivery</option>

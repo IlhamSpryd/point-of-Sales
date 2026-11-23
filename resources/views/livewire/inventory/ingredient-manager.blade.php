@@ -235,7 +235,7 @@
                 <div>
                     <x-form-label for="adjustType">Adjustment Type <span class="text-destructive">*</span></x-form-label>
                     <div class="relative">
-                        <select id="adjustType" wire:model="adjustType" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('adjustType') ? 'input-error' : '' }}">
+                        <select id="adjustType" wire:model="adjustType" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-card text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('adjustType') ? 'input-error' : '' }}">
                             <option value="purchase_receipt">Goods Receipt (Purchase)</option>
                             <option value="adjustment">Manual Correction (+ / -)</option>
                             <option value="waste">Damaged Goods / Waste (-)</option>
@@ -255,7 +255,7 @@
 
                 <div>
                     <x-form-label for="adjustReason">Reason / Notes (Optional)</x-form-label>
-                    <textarea id="adjustReason" wire:model="adjustReason" rows="3" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('adjustReason') ? 'input-error' : '' }}" placeholder="Additional notes..."></textarea>
+                    <textarea id="adjustReason" wire:model="adjustReason" rows="3" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('adjustReason') ? 'input-error' : '' }}" placeholder="Additional notes..."></textarea>
                     @error('adjustReason') <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p> @enderror
                 </div>
 

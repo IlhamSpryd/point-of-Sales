@@ -57,7 +57,7 @@
                 <div>
                     <x-form-label for="type">Rule Type / Target <span class="text-danger-600">*</span></x-form-label>
                     <select id="type" name="type" x-model="type" required
-                        class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-primary focus:ring-1 focus:ring-ring">
+                        class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-card focus:border-primary focus:ring-1 focus:ring-ring">
                         <option value="standard">Standard (Global)</option>
                         <option value="wholesale">Tiered Wholesale (Quantity-based)</option>
                         <option value="customer_tier">Loyalty Tier</option>
@@ -77,7 +77,7 @@
                 <div x-show="type === 'customer_specific'" x-cloak>
                     <x-form-label for="customer_id">Select Contract Customer</x-form-label>
                     <select id="customer_id" name="customer_id"
-                        class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-primary focus:ring-1 focus:ring-ring">
+                        class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-card focus:border-primary focus:ring-1 focus:ring-ring">
                         <option value="">-- Select Customer --</option>
                         @foreach ($customers as $c)
                             <option value="{{ $c->id }}">{{ $c->name }} ({{ $c->phone ?? 'No Phone' }})</option>
@@ -88,7 +88,7 @@
                 <div x-show="type === 'customer_tier'" x-cloak>
                     <x-form-label for="loyalty_tier_id">Select Loyalty Tier</x-form-label>
                     <select id="loyalty_tier_id" name="loyalty_tier_id"
-                        class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-primary focus:ring-1 focus:ring-ring">
+                        class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-card focus:border-primary focus:ring-1 focus:ring-ring">
                         <option value="">-- Select Tier --</option>
                         @foreach ($loyaltyTiers as $t)
                             <option value="{{ $t->id }}">{{ $t->name }}</option>
@@ -99,7 +99,7 @@
                 <div x-show="type === 'branch'" x-cloak>
                     <x-form-label for="store_id">Select Target Branch</x-form-label>
                     <select id="store_id" name="store_id"
-                        class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-primary focus:ring-1 focus:ring-ring">
+                        class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-card focus:border-primary focus:ring-1 focus:ring-ring">
                         <option value="">-- Select Branch --</option>
                         @foreach ($stores as $s)
                             <option value="{{ $s->id }}">{{ $s->name }}</option>
@@ -161,7 +161,7 @@
                                 <tr>
                                     <td class="px-4 py-2.5">
                                         <select :name="'items[' + index + '][product_id]'" x-model="item.product_id" required
-                                            class="w-full h-9 px-3 rounded-lg border border-border text-sm bg-white focus:border-primary focus:ring-1 focus:ring-ring">
+                                            class="w-full h-9 px-3 rounded-lg border border-border text-sm bg-card focus:border-primary focus:ring-1 focus:ring-ring">
                                             <option value="">-- Select Product --</option>
                                             @foreach ($products as $p)
                                                 <option value="{{ $p->id }}">{{ $p->product_name }} (Rp {{ number_format($p->product_price, 0, ',', '.') }})</option>

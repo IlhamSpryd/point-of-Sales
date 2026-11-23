@@ -194,7 +194,7 @@
                     };
                 @endphp
                 <div wire:key="order-card-{{ $order->id }}"
-                    class="p-4 rounded-xl border border-border bg-white hover:bg-secondary transition-colors cursor-pointer shadow-xs"
+                    class="p-4 rounded-xl border border-border bg-card hover:bg-secondary transition-colors cursor-pointer shadow-xs"
                     wire:click="viewDetail({{ $order->id }})">
                     <div class="flex justify-between items-start">
                         <span class="font-sans font-bold text-xs text-foreground">{{ $order->order_code }}</span>

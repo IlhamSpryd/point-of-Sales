@@ -9,7 +9,7 @@
                 <span class="font-sans tabular-nums">Shift #{{ $this->activeShift->id }}</span>
             </a>
         @endif
-        <div class="hidden xl:flex items-center gap-1 px-2.5 py-1 bg-white border border-border rounded-lg text-muted-foreground whitespace-nowrap">
+        <div class="hidden xl:flex items-center gap-1 px-2.5 py-1 bg-card border border-border rounded-lg text-muted-foreground whitespace-nowrap">
             <span class="material-symbols-rounded text-[14px]">receipt_long</span>
             <span class="text-xs font-sans tabular-nums text-foreground font-medium">
                 {{ $pendingOrderCode ? '#' . $pendingOrderCode : ($this->activeShift ? '#SHIFT-' . str_pad((string)$this->activeShift->id, 3, '0', STR_PAD_LEFT) : '#POS-ONLINE') }}
@@ -33,7 +33,7 @@
         @if ($orderType === 'dine_in' && $this->isTablesEnabled)
             <div class="relative">
                 <select wire:model.live="tableId"
-                    class="h-9 pl-8 pr-7 bg-white border border-border hover:bg-muted transition-colors text-foreground text-xs font-medium rounded-lg shadow-2xs appearance-none cursor-pointer focus:outline-none focus:border-foreground">
+                    class="h-9 pl-8 pr-7 bg-card border border-border hover:bg-muted transition-colors text-foreground text-xs font-medium rounded-lg shadow-2xs appearance-none cursor-pointer focus:outline-none focus:border-foreground">
                     <option value="">-- Select Table --</option>
                     @foreach ($this->activeTables as $table)
                         @php
@@ -58,7 +58,7 @@
 
         <!-- Parked Orders & List Button -->
         <button type="button" wire:click="$set('isParkedListOpen', true)"
-            class="flex items-center gap-1.5 px-3 h-9 rounded-lg bg-white border border-border hover:bg-muted transition-colors text-foreground text-xs font-medium shadow-2xs cursor-pointer"
+            class="flex items-center gap-1.5 px-3 h-9 rounded-lg bg-card border border-border hover:bg-muted transition-colors text-foreground text-xs font-medium shadow-2xs cursor-pointer"
             title="Parked Orders List (F9)">
             <span class="material-symbols-rounded text-[16px] text-muted-foreground">pause_circle</span>
             <span class="hidden sm:inline">Parked</span>

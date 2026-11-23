@@ -242,7 +242,7 @@
                     <strong>Anti-Over-Receipt Policy (OD-03):</strong> Received quantity cannot exceed shipped quantity. If physical count is short, a discrepancy resolution must be designated (return to origin or write off in transit).
                 </div>
 
-                <div class="max-h-80 overflow-y-auto mb-4">
+                <div class="max-h-80 overflow-x-auto overflow-y-auto mb-4">
                     <table class="table-standard w-full min-w-full text-left text-sm">
                         <thead class="bg-secondary text-xs font-semibold text-muted-foreground uppercase">
                             <tr>
@@ -335,7 +335,7 @@
                     </div>
                 </div>
 
-                <div class="max-h-80 overflow-y-auto mb-4">
+                <div class="max-h-80 overflow-x-auto overflow-y-auto mb-4">
                     <table class="table-standard w-full min-w-full text-left text-sm">
                         <thead class="bg-secondary text-xs font-semibold text-muted-foreground uppercase">
                             <tr>

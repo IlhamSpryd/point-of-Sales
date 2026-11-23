@@ -212,7 +212,7 @@
 
     <!-- Batch Details & Payslip Modal -->
     <x-ui.modal wire:model="isDetailModalOpen" title="Employee Payslips in Batch" description="Breakdown of employee gross earnings, statutory PPh 21 TER PMK 168/2023, BPJS deductions, and take-home pay." maxWidth="4xl">
-        <div class="max-h-[60vh] overflow-y-auto card-surface rounded-xl border border-border">
+        <div class="max-h-[60vh] overflow-x-auto overflow-y-auto card-surface rounded-xl border border-border">
             <table class="w-full text-left text-sm text-foreground divide-y divide-border">
                 <thead class="bg-muted/50 text-xs font-semibold text-muted-foreground uppercase">
                     <tr>

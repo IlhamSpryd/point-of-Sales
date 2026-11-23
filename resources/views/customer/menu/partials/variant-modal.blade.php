@@ -30,7 +30,7 @@
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="translate-y-0 opacity-100"
          x-transition:leave-end="translate-y-full opacity-0"
-         class="relative z-10 mx-auto flex max-h-[88dvh] w-full max-w-md flex-col overflow-hidden rounded-t-[1.75rem] bg-white shadow-2xl">
+         class="relative z-10 mx-auto flex max-h-[88dvh] w-full max-w-md flex-col overflow-hidden rounded-t-[1.75rem] bg-card shadow-2xl">
 
         {{-- Handle (mobile) --}}
         <div class="flex shrink-0 justify-center pt-3" aria-hidden="true">
@@ -68,7 +68,7 @@
                 <span class="material-symbols-rounded mb-3 text-[32px] text-primary-300">cloud_off</span>
                 <p class="mb-4 max-w-xs text-sm font-medium text-muted-foreground" x-text="error"></p>
                 <button type="button" @click="load()"
-                        class="min-h-11 rounded-xl border border-border bg-white px-5 text-sm font-semibold shadow-sm transition-all duration-200 hover:bg-card active:scale-95">
+                        class="min-h-11 rounded-xl border border-border bg-card px-5 text-sm font-semibold shadow-sm transition-all duration-200 hover:bg-card active:scale-95">
                     Retry
                 </button>
             </div>
@@ -91,7 +91,7 @@
                                         :role="group.selection_type === 'single' ? 'radio' : 'checkbox'"
                                         :aria-checked="isSelected(group, mod.id).toString()"
                                         @click="toggle(group, mod.id)"
-                                        :class="isSelected(group, mod.id) ? 'border-foreground bg-card ring-1 ring-ring' : 'border-border bg-white hover:bg-card'"
+                                        :class="isSelected(group, mod.id) ? 'border-foreground bg-card ring-1 ring-ring' : 'border-border bg-card hover:bg-card'"
                                         class="flex min-h-14 items-center justify-between gap-3 rounded-2xl border-[1.5px] px-4 py-3 text-left transition-all duration-200 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                                     <span class="min-w-0">
                                         <span class="block text-[14px] font-bold leading-tight" x-text="mod.name"></span>
@@ -111,13 +111,13 @@
                     <label for="variant-notes" class="mb-2 block text-[12px] font-bold uppercase tracking-wider text-muted-foreground">Special instructions (optional)</label>
                     <textarea id="variant-notes" x-model="notes" rows="2" maxlength="255"
                               placeholder="e.g. less ice, extra napkin"
-                              class="w-full resize-none rounded-2xl border border-border bg-card px-4 py-3 text-[15px] placeholder:text-primary-400 transition-all duration-200 focus:border-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-ring"></textarea>
+                              class="w-full resize-none rounded-2xl border border-border bg-card px-4 py-3 text-[15px] placeholder:text-primary-400 transition-all duration-200 focus:border-primary focus:bg-card focus:outline-none focus:ring-1 focus:ring-ring"></textarea>
                 </div>
             </div>
         </div>
 
         {{-- Footer --}}
-        <div x-show="product && !error && !loading" x-cloak class="shrink-0 border-t border-border bg-white px-5 pt-4 pb-safe">
+        <div x-show="product && !error && !loading" x-cloak class="shrink-0 border-t border-border bg-card px-5 pt-4 pb-safe">
             <p x-show="missing.length" x-cloak class="mb-3 text-xs font-medium text-destructive"
                x-text="'Please complete required selections: ' + missing.join(', ')"></p>
             
@@ -126,12 +126,12 @@
                     <span class="text-[14px] font-bold text-muted-foreground">Quantity:</span>
                     <div class="flex shrink-0 items-center rounded-full border border-border bg-secondary p-0.5" role="group" aria-label="Quantity">
                         <button type="button" @click="qty = Math.max(1, qty - 1)" :disabled="qty <= 1" aria-label="Decrease quantity"
-                                class="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm transition-all duration-200 active:scale-90 disabled:opacity-40">
+                                class="flex h-11 w-11 items-center justify-center rounded-full bg-card shadow-sm transition-all duration-200 active:scale-90 disabled:opacity-40">
                             <span class="material-symbols-rounded text-[20px]">remove</span>
                         </button>
                         <span class="w-8 text-center text-[15px] font-bold tabular-nums" x-text="qty" aria-live="polite"></span>
                         <button type="button" @click="qty = Math.min(20, qty + 1)" :disabled="qty >= 20" aria-label="Increase quantity"
-                                class="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm transition-all duration-200 active:scale-90 disabled:opacity-40">
+                                class="flex h-11 w-11 items-center justify-center rounded-full bg-card shadow-sm transition-all duration-200 active:scale-90 disabled:opacity-40">
                             <span class="material-symbols-rounded text-[20px]">add</span>
                         </button>
                     </div>

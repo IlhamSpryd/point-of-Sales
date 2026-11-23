@@ -13,6 +13,11 @@
                     .listen('.kds.order.created', () => {
                         $wire.$refresh();
                     });
+                this.$cleanup(() => {
+                    if (window.Echo) {
+                        window.Echo.leave(channelName);
+                    }
+                });
             }
         }
     }"
@@ -68,7 +73,7 @@
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3 3xl:gap-8 4xl:grid-cols-4">
 
         {{-- COLUMN 1: QUEUED --}}
-        <section aria-labelledby="kds-pending" class="bg-white border border-border rounded-2xl flex flex-col overflow-hidden shadow-xs">
+        <section aria-labelledby="kds-pending" class="bg-card border border-border rounded-2xl flex flex-col overflow-hidden shadow-xs">
             <header class="flex items-center justify-between border-b border-border bg-secondary/70 px-5 py-3.5">
                 <h3 id="kds-pending" class="flex items-center gap-2 font-bold text-sm text-foreground">
                     <span class="size-2.5 rounded-full bg-primary"></span> Queued
@@ -90,7 +95,7 @@
         </section>
 
         {{-- COLUMN 2: IN PREPARATION --}}
-        <section aria-labelledby="kds-brewing" class="bg-white border border-border rounded-2xl flex flex-col overflow-hidden shadow-xs">
+        <section aria-labelledby="kds-brewing" class="bg-card border border-border rounded-2xl flex flex-col overflow-hidden shadow-xs">
             <header class="flex items-center justify-between border-b border-border bg-secondary/70 px-5 py-3.5">
                 <h3 id="kds-brewing" class="flex items-center gap-2 font-bold text-sm text-warning">
                     <span class="size-2.5 animate-pulse rounded-full bg-warning"></span> Preparing
@@ -112,7 +117,7 @@
         </section>
 
         {{-- COLUMN 3: READY TO SERVE --}}
-        <section aria-labelledby="kds-ready" class="bg-white border border-border rounded-2xl flex flex-col overflow-hidden shadow-xs">
+        <section aria-labelledby="kds-ready" class="bg-card border border-border rounded-2xl flex flex-col overflow-hidden shadow-xs">
             <header class="flex items-center justify-between border-b border-border bg-secondary/70 px-5 py-3.5">
                 <h3 id="kds-ready" class="flex items-center gap-2 font-bold text-sm text-positive">
                     <span class="size-2.5 rounded-full bg-positive"></span> Ready to Serve

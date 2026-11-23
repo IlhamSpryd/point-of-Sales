@@ -186,7 +186,7 @@
         </x-slot:header>
         <x-slot:content>
             @if ($activeOpname)
-                <div class="max-h-96 overflow-y-auto mb-4">
+                <div class="max-h-96 overflow-x-auto overflow-y-auto mb-4">
                     <table class="table-standard w-full min-w-full text-left text-sm">
                         <thead class="bg-secondary text-xs font-semibold text-muted-foreground uppercase">
                             <tr>
@@ -258,7 +258,7 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 shrink-0">
-                                <button type="button" wire:click="resolveDriftItem({{ $d['item_id'] }}, 'RE_SNAPSHOT')" class="px-3 py-2 bg-white hover:bg-secondary text-foreground font-semibold rounded-xl border border-border shadow-sm">
+                                <button type="button" wire:click="resolveDriftItem({{ $d['item_id'] }}, 'RE_SNAPSHOT')" class="px-3 py-2 bg-card hover:bg-secondary text-foreground font-semibold rounded-xl border border-border shadow-sm">
                                     Recount (Re-Snapshot)
                                 </button>
                                 <button type="button" wire:click="resolveDriftItem({{ $d['item_id'] }}, 'REBASE_OVERRIDE')" class="px-3 py-2 bg-destructive hover:bg-destructive text-white font-semibold rounded-xl shadow-sm">
@@ -307,7 +307,7 @@
                     </div>
                 </div>
 
-                <div class="max-h-96 overflow-y-auto mb-4">
+                <div class="max-h-96 overflow-x-auto overflow-y-auto mb-4">
                     <table class="table-standard w-full min-w-full text-left text-sm">
                         <thead class="bg-secondary text-xs font-semibold text-muted-foreground uppercase">
                             <tr>

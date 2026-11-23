@@ -64,7 +64,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white p-4 rounded-lg border border-warning text-xs font-sans break-all select-all text-foreground">
+                <div class="bg-card p-4 rounded-lg border border-warning text-xs font-sans break-all select-all text-foreground">
                     <strong>{{ __('Secret Key:') }}</strong> {{ $sessionSecret }}<br>
                     <span class="text-muted-foreground text-[11px]">{{ $sessionQrUri }}</span>
                 </div>
@@ -72,7 +72,7 @@
                 @if (! empty($sessionRecoveryCodes))
                     <div class="mt-4">
                         <h4 class="text-xs font-semibold text-warning mb-2">{{ __('Store These Emergency Recovery Codes:') }}</h4>
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-white p-3 rounded-lg border border-warning">
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-card p-3 rounded-lg border border-warning">
                             @foreach ($sessionRecoveryCodes as $code)
                                 <code class="text-xs font-sans font-bold text-foreground bg-secondary px-2 py-1 rounded text-center">{{ $code }}</code>
                             @endforeach
@@ -98,7 +98,7 @@
                 </div>
             </div>
         @else
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-border bg-white gap-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-border bg-card gap-4">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-lg border border-border bg-secondary flex items-center justify-center shrink-0 text-muted-foreground">
                         <span class="material-symbols-rounded">shield</span>

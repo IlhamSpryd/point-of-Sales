@@ -125,7 +125,7 @@
                     </td>
                     <td class="px-6 py-4">
                         <div class="flex items-center gap-3">
-                            <div class="bg-white p-2 rounded-xl border border-border inline-block shadow-xs">
+                            <div class="bg-card p-2 rounded-xl border border-border inline-block shadow-xs">
                                 {!! Cache::remember('pos:qr:table:'.$table->id, 86400, fn() => (string) QrCode::size(70)->generate(rtrim(config('app.url'), '/') . route('customer.menu.index', ['token' => $routeToken], false))) !!}
                             </div>
                             <div class="text-xs text-muted-foreground">
@@ -188,7 +188,7 @@
                 @php
                     $routeToken = $table->qr_token ?? $table->secure_token;
                 @endphp
-                <div class="bg-white rounded-2xl border border-border p-4 shadow-xs" data-gsap="kpi-card">
+                <div class="bg-card rounded-2xl border border-border p-4 shadow-xs" data-gsap="kpi-card">
                     <div class="flex justify-between items-start mb-3">
                         <div class="flex flex-col">
                             <span class="font-bold text-foreground text-sm">{{ $table->table_name }}</span>
@@ -223,7 +223,7 @@
                     </div>
                     
                     <div class="flex items-center gap-4 pt-3 border-t border-border">
-                        <div class="bg-white p-2 rounded-xl border border-border shadow-xs shrink-0">
+                        <div class="bg-card p-2 rounded-xl border border-border shadow-xs shrink-0">
                             {!! Cache::remember('pos:qr:table:'.$table->id, 86400, fn() => (string) QrCode::size(55)->generate(rtrim(config('app.url'), '/') . route('customer.menu.index', ['token' => $routeToken], false))) !!}
                         </div>
                         <div class="flex-1 min-w-0">

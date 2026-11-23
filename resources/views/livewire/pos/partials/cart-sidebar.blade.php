@@ -1,5 +1,5 @@
 <!-- Persistent Full-Height Cart & Checkout Summary (380px) -->
-<aside class="w-[360px] xl:w-[380px] shrink-0 flex flex-col h-full bg-white rounded-2xl p-3.5 lg:p-4 shadow-sm border border-border select-none overflow-hidden">
+<aside class="w-[360px] xl:w-[380px] shrink-0 flex flex-col h-full bg-card rounded-2xl p-3.5 lg:p-4 shadow-sm border border-border select-none overflow-hidden">
     <!-- Cart Header: Current Order, Counter, Mode, Reset -->
     <div class="flex items-center justify-between pb-2.5 border-b border-border mb-2 shrink-0">
         <h2 class="text-sm font-semibold text-foreground">Current Order</h2>
@@ -37,11 +37,11 @@
                     <input type="text" wire:model.live.debounce.300ms="customerSearch"
                         x-on:focus="showResults = true" x-on:click.outside="showResults = false"
                         placeholder="Customer (optional)..."
-                        class="w-full h-8 pl-9 pr-3 text-xs bg-muted border border-border rounded-lg text-foreground placeholder-muted-foreground focus:bg-white focus:border-foreground focus:outline-none transition-colors" />
+                        class="w-full h-8 pl-9 pr-3 text-xs bg-muted border border-border rounded-lg text-foreground placeholder-muted-foreground focus:bg-card focus:border-foreground focus:outline-none transition-colors" />
                 </div>
                 @if (mb_strlen(trim($customerSearch)) >= 2)
                     <div x-show="showResults" x-cloak wire:loading.class="opacity-50"
-                        class="absolute z-40 mt-1 w-full bg-white rounded-xl border border-border shadow-xl overflow-hidden max-h-48 overflow-y-auto custom-scrollbar">
+                        class="absolute z-40 mt-1 w-full bg-card rounded-xl border border-border shadow-xl overflow-hidden max-h-48 overflow-y-auto custom-scrollbar">
                         @forelse ($this->customerResults as $c)
                             <button type="button" wire:key="customer-result-{{ $c->id }}"
                                 wire:click="selectCustomer({{ $c->id }}, '{{ addslashes($c->name) }}')"

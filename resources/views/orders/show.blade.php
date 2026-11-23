@@ -73,7 +73,7 @@
                             @php
                                 $returnedQty = $order->orderReturns->flatMap->items->where('order_item_id', $item->id)->sum('quantity_returned');
                             @endphp
-                            <div class="p-3.5 flex justify-between items-center text-xs bg-white hover:bg-secondary/50 transition-colors">
+                            <div class="p-3.5 flex justify-between items-center text-xs bg-card hover:bg-secondary/50 transition-colors">
                                 <div>
                                     <span class="font-bold text-foreground text-sm">{{ $item->product->product_name ?? 'Product' }}</span>
                                     <span class="text-muted-foreground font-semibold"> &times; {{ $item->qty }} pcs</span>
@@ -109,7 +109,7 @@
                                     <p class="text-muted-foreground"><strong class="text-foreground">{{ __('Reason:') }}</strong> {{ $ret->reason }}</p>
                                     <div class="space-y-1.5 pt-1">
                                         @foreach ($ret->items as $retItem)
-                                            <div class="flex justify-between items-center bg-white p-2 rounded-lg border border-warning">
+                                            <div class="flex justify-between items-center bg-card p-2 rounded-lg border border-warning">
                                                 <span class="font-medium">{{ $retItem->quantity_returned }}× {{ $retItem->orderItem->product->product_name ?? 'Item' }}</span>
                                                 <div class="flex items-center gap-2">
                                                     <span class="text-xs text-muted-foreground font-medium">({{ $retItem->disposition }})</span>

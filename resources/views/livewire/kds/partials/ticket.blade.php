@@ -12,7 +12,7 @@
 @endphp
 
 <article wire:key="{{ $variant }}-{{ $item->id }}" data-gsap="kds-card"
-         class="rounded-2xl border border-border bg-white p-4 shadow-xs transition-all duration-200 hover:shadow-md hover:border-border">
+         class="rounded-2xl border border-border bg-card p-4 shadow-xs transition-all duration-200 hover:shadow-md hover:border-border">
 
     <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
@@ -111,7 +111,7 @@
                 <button type="button" wire:click="release({{ $item->id }})" wire:loading.attr="disabled" wire:target="release({{ $item->id }})"
                         x-on:click="window.erpMotion?.pulseHighlight($el)"
                         title="Release item" aria-label="Release item"
-                        class="flex min-h-10 min-w-10 items-center justify-center rounded-xl border border-border bg-white text-muted-foreground shadow-sm transition-all duration-200 hover:bg-secondary active:scale-[0.98] disabled:cursor-wait disabled:opacity-60 {{ $isMine ? '' : 'flex-1 gap-1.5 text-xs font-bold' }}">
+                        class="flex min-h-10 min-w-10 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground shadow-sm transition-all duration-200 hover:bg-secondary active:scale-[0.98] disabled:cursor-wait disabled:opacity-60 {{ $isMine ? '' : 'flex-1 gap-1.5 text-xs font-bold' }}">
                     <span wire:loading.remove wire:target="release({{ $item->id }})" class="flex items-center gap-1">
                         <span class="material-symbols-rounded text-[20px]">undo</span>
                         @unless ($isMine) Release @endunless
@@ -126,7 +126,7 @@
         @if ($canProcess && ($isMine || $canOverride))
             <button type="button" wire:click="recall({{ $item->id }})" wire:loading.attr="disabled" wire:target="recall({{ $item->id }})"
                     x-on:click="window.erpMotion?.pulseHighlight($el)"
-                    class="mt-3.5 flex min-h-10 w-full items-center justify-center rounded-xl border border-border bg-white shadow-sm transition-all duration-200 hover:bg-secondary active:scale-[0.98] disabled:cursor-wait disabled:opacity-60 text-xs font-bold text-foreground">
+                    class="mt-3.5 flex min-h-10 w-full items-center justify-center rounded-xl border border-border bg-card shadow-sm transition-all duration-200 hover:bg-secondary active:scale-[0.98] disabled:cursor-wait disabled:opacity-60 text-xs font-bold text-foreground">
                 <span wire:loading.remove wire:target="recall({{ $item->id }})" class="flex items-center gap-1.5">
                     <span class="material-symbols-rounded text-[20px]">undo</span> Recall to Prep
                 </span>

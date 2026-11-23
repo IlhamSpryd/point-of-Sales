@@ -31,7 +31,7 @@
                             <div>
                                 <x-form-label for="selection_type">Selection Type <span class="text-destructive">*</span></x-form-label>
                                 <div class="relative">
-                                    <select id="selection_type" wire:model="groupForm.selection_type" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('groupForm.selection_type') ? 'input-error' : '' }}" required>
+                                    <select id="selection_type" wire:model="groupForm.selection_type" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-card text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('groupForm.selection_type') ? 'input-error' : '' }}" required>
                                         <option value="single">Single (Choose 1 option)</option>
                                         <option value="multiple">Multiple (Choose multiple options)</option>
                                     </select>
@@ -48,7 +48,7 @@
                                 <div class="relative">
                                     <input type="checkbox" wire:model="groupForm.is_required" class="sr-only">
                                     <div class="block bg-primary-200 w-10 h-6 rounded-full transition-colors duration-300"></div>
-                                    <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 shadow-sm"></div>
+                                    <div class="dot absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform duration-300 shadow-sm"></div>
                                 </div>
                                 <div class="ml-3 text-sm font-semibold text-foreground">
                                     Required selection
@@ -104,7 +104,7 @@
                                 <div class="relative">
                                     <input type="checkbox" wire:model="modifierForm.is_default" class="sr-only">
                                     <div class="block bg-primary-200 w-10 h-6 rounded-full transition-colors duration-300"></div>
-                                    <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 shadow-sm"></div>
+                                    <div class="dot absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform duration-300 shadow-sm"></div>
                                 </div>
                                 <div class="ml-3 text-sm font-semibold text-foreground">
                                     Set as default option
@@ -127,7 +127,7 @@
                                     <h5 class="text-sm font-bold text-foreground">Additional Ingredients (Optional BOM)</h5>
                                     <p class="text-xs text-muted-foreground mt-0.5">Specify ingredients to automatically deduct from stock when this modifier is selected.</p>
                                 </div>
-                                <button type="button" @click="addIngredient" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-white border border-border rounded-xl hover:bg-muted transition-colors shadow-sm">
+                                <button type="button" @click="addIngredient" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-card border border-border rounded-xl hover:bg-muted transition-colors shadow-sm">
                                     <span class="material-symbols-rounded text-[16px]">add</span> Add Ingredient
                                 </button>
                             </div>
@@ -136,7 +136,7 @@
                                 <template x-for="(ing, index) in ingredients" :key="index">
                                     <div class="flex items-start gap-3">
                                         <div class="flex-1 relative">
-                                            <select x-model="ing.id" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm" required>
+                                            <select x-model="ing.id" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-card text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm" required>
                                                 <option value="">-- Select Ingredient --</option>
                                                 @foreach($this->ingredients as $i)
                                                     <option value="{{ $i->id }}">{{ $i->name }} ({{ $i->unit }})</option>
@@ -147,7 +147,7 @@
                                             </div>
                                         </div>
                                         <div class="w-32">
-                                            <input type="number" step="0.0001" x-model="ing.quantity" placeholder="Quantity" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm" required>
+                                            <input type="number" step="0.0001" x-model="ing.quantity" placeholder="Quantity" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm" required>
                                         </div>
                                         <button type="button" @click="removeIngredient(index)" class="inline-flex items-center justify-center w-[46px] h-[46px] rounded-xl text-destructive hover:bg-destructive-muted border border-transparent hover:border-destructive transition-colors" title="Remove line">
                                             <span class="material-symbols-rounded text-[20px]">close</span>
