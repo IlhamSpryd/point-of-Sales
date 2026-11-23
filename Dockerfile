@@ -15,6 +15,7 @@ RUN npm ci --no-audit --prefer-offline
 
 COPY resources ./resources
 COPY public ./public
+COPY app ./app
 COPY vite.config.js ./
 RUN npm run build
 

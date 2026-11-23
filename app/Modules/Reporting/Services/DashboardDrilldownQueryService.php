@@ -87,16 +87,17 @@ class DashboardDrilldownQueryService
         // Top 5 Produk Terjual pada Hari Tersebut
         $topProducts = DB::table('order_items as oi')
             ->join('orders as o', fn ($j) => $j->on('oi.order_id', '=', 'o.id')->on('oi.tenant_id', '=', 'o.tenant_id'))
+            ->leftJoin('products as pr', fn ($j) => $j->on('oi.product_id', '=', 'pr.id')->on('oi.tenant_id', '=', 'pr.tenant_id'))
             ->where('oi.tenant_id', $tenantId)
             ->whereDate('o.order_date', $dateStr)
             ->whereIn('o.order_status', ['paid', 'completed'])
             ->when($storeId !== null, fn ($q) => $q->where('o.store_id', $storeId))
             ->select(
-                'oi.product_name',
-                DB::raw('SUM(oi.quantity) as total_qty'),
-                DB::raw('COALESCE(SUM(oi.subtotal), 0) as total_sales')
+                DB::raw("COALESCE(oi.product_name_snapshot, pr.name, 'Product') as product_name"),
+                DB::raw('SUM(oi.qty) as total_qty'),
+                DB::raw('COALESCE(SUM(oi.order_subtotal), 0) as total_sales')
             )
-            ->groupBy('oi.product_name')
+            ->groupBy(DB::raw("COALESCE(oi.product_name_snapshot, pr.name, 'Product')"))
             ->orderByDesc('total_sales')
             ->limit(5)
             ->get()
@@ -182,14 +183,19 @@ class DashboardDrilldownQueryService
         // Top items pada window waktu ini
         $popularItems = DB::table('order_items as oi')
             ->join('orders as o', fn ($j) => $j->on('oi.order_id', '=', 'o.id')->on('oi.tenant_id', '=', 'o.tenant_id'))
+            ->leftJoin('products as pr', fn ($j) => $j->on('oi.product_id', '=', 'pr.id')->on('oi.tenant_id', '=', 'pr.tenant_id'))
             ->where('oi.tenant_id', $tenantId)
             ->whereBetween('o.order_date', [$range['start']->toDateString(), $range['end']->toDateString()])
             ->whereIn('o.order_status', ['paid', 'completed'])
             ->whereRaw('DAYOFWEEK(CONVERT_TZ(o.created_at, "+00:00", "+07:00")) = ?', [$mysqlDay])
             ->whereRaw('HOUR(CONVERT_TZ(o.created_at, "+00:00", "+07:00")) = ?', [$hour])
             ->when($storeId !== null, fn ($q) => $q->where('o.store_id', $storeId))
-            ->select('oi.product_name', DB::raw('SUM(oi.quantity) as qty'), DB::raw('SUM(oi.subtotal) as total'))
-            ->groupBy('oi.product_name')
+            ->select(
+                DB::raw("COALESCE(oi.product_name_snapshot, pr.name, 'Product') as product_name"),
+                DB::raw('SUM(oi.qty) as qty'),
+                DB::raw('COALESCE(SUM(oi.order_subtotal), 0) as total')
+            )
+            ->groupBy(DB::raw("COALESCE(oi.product_name_snapshot, pr.name, 'Product')"))
             ->orderByDesc('qty')
             ->limit(5)
             ->get();
