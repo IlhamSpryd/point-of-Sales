@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Core\Context\TenantContext;
+use App\Exports\Concerns\SanitizesSpreadsheetFormulas;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -17,6 +18,8 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class RolesExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithStyles
 {
+    use SanitizesSpreadsheetFormulas;
+
     public function __construct(protected Builder $query) {}
 
     public function collection(): Collection
@@ -43,12 +46,12 @@ class RolesExport implements FromCollection, ShouldAutoSize, WithHeadings, WithM
 
     public function map($role): array
     {
-        return [
+        return $this->sanitizeRow([
             $role->id,
             $role->name,
             $role->users_count,
             $role->created_at ? $role->created_at->format('d/m/Y H:i') : '-',
-        ];
+        ]);
     }
 
     public function styles(Worksheet $sheet): array

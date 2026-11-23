@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exports;
 
+use App\Exports\Concerns\SanitizesSpreadsheetFormulas;
 use App\Modules\Customers\Models\Customer;
 use App\Modules\Sales\Services\AccountsReceivableService;
 use Carbon\Carbon;
@@ -17,6 +18,8 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class CustomerStatementExport implements FromArray, ShouldAutoSize, WithHeadings, WithStyles
 {
+    use SanitizesSpreadsheetFormulas;
+
     protected array $statementData;
 
     protected ?Customer $customer;
@@ -86,7 +89,7 @@ class CustomerStatementExport implements FromArray, ShouldAutoSize, WithHeadings
             $this->statementData['closing_balance'],
         ];
 
-        return $rows;
+        return array_map(fn (array $row): array => $this->sanitizeRow($row), $rows);
     }
 
     public function styles(Worksheet $sheet): array

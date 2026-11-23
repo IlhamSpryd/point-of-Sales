@@ -9,6 +9,7 @@ use App\Modules\Sales\Models\Shift;
 use App\Modules\Sales\Services\ShiftService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Locked;
 
 trait ManagesShiftHandoverAndMovements
 {
@@ -30,6 +31,7 @@ trait ManagesShiftHandoverAndMovements
 
     public ?int $toUserId = null;
 
+    #[Locked]
     public ?int $handoverShiftId = null;
 
     public $handoverCountedCash = 0;
@@ -40,11 +42,13 @@ trait ManagesShiftHandoverAndMovements
 
     public string $handoverCashierPin = '';
 
+    #[Locked]
     public ?int $activeHandoverId = null;
 
     public bool $isHandoverModalOpen = false;
 
     // Force Close state
+    #[Locked]
     public ?int $forceClosingShiftId = null;
 
     public string $forceCloseReason = '';

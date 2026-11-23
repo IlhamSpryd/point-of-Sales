@@ -6,6 +6,7 @@ namespace App\Exports;
 
 use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
+use App\Exports\Concerns\SanitizesSpreadsheetFormulas;
 use App\Modules\Sales\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -32,6 +33,8 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  */
 class SalesExport implements FromQuery, ShouldAutoSize, WithChunkReading, WithHeadings, WithMapping, WithStyles
 {
+    use SanitizesSpreadsheetFormulas;
+
     private const CHUNK_SIZE = 1000;
 
     public function __construct(
@@ -96,7 +99,7 @@ class SalesExport implements FromQuery, ShouldAutoSize, WithChunkReading, WithHe
         $refundAmount = (float) $order->paymentRefunds->sum('amount');
         $netSales = max(0.00, (float) $order->order_amount - $refundAmount);
 
-        return [
+        return $this->sanitizeRow([
             $order->created_at->format('d/m/Y H:i'),
             $order->order_code,
             $order->user ? $order->user->name : 'Kasir',
@@ -108,7 +111,7 @@ class SalesExport implements FromQuery, ShouldAutoSize, WithChunkReading, WithHe
             (float) $order->order_amount,
             $refundAmount,
             $netSales,
-        ];
+        ]);
     }
 
     public function styles(Worksheet $sheet): array

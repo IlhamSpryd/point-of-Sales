@@ -6,6 +6,7 @@ namespace App\Exports;
 
 use App\Core\Context\TenantContext;
 use App\Enums\StockMovementType;
+use App\Exports\Concerns\SanitizesSpreadsheetFormulas;
 use App\Modules\Inventory\Models\IngredientStockMovement;
 use App\Modules\Inventory\Models\StockMovement;
 use Carbon\Carbon;
@@ -25,6 +26,8 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  */
 class InventoryLedgerExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithStyles
 {
+    use SanitizesSpreadsheetFormulas;
+
     public function __construct(
         protected Carbon $startDate,
         protected Carbon $endDate,
@@ -150,7 +153,7 @@ class InventoryLedgerExport implements FromCollection, ShouldAutoSize, WithHeadi
      */
     public function map($row): array
     {
-        return [
+        return $this->sanitizeRow([
             $row['created_at'],
             $row['store_name'],
             $row['item_type'],
@@ -162,7 +165,7 @@ class InventoryLedgerExport implements FromCollection, ShouldAutoSize, WithHeadi
             $row['total_cost'],
             $row['reason'],
             $row['order_id'],
-        ];
+        ]);
     }
 
     public function styles(Worksheet $sheet): array

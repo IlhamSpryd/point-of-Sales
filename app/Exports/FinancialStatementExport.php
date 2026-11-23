@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exports;
 
+use App\Exports\Concerns\SanitizesSpreadsheetFormulas;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -13,6 +14,8 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class FinancialStatementExport implements FromArray, ShouldAutoSize, WithHeadings, WithStyles
 {
+    use SanitizesSpreadsheetFormulas;
+
     public function __construct(
         protected string $reportType,
         protected array $reportData,
@@ -173,7 +176,7 @@ class FinancialStatementExport implements FromArray, ShouldAutoSize, WithHeading
             $rows[] = ['Ending Cash Balance', '-', '-', $this->reportData['ending_cash'] ?? '0.00'];
         }
 
-        return $rows;
+        return array_map(fn (array $row): array => $this->sanitizeRow($row), $rows);
     }
 
     public function styles(Worksheet $sheet): array

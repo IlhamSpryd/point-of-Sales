@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Exports;
 
 use App\Core\Context\TenantContext;
+use App\Exports\Concerns\SanitizesSpreadsheetFormulas;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
@@ -20,6 +21,8 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class CategoriesExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithStyles
 {
+    use SanitizesSpreadsheetFormulas;
+
     public function __construct(protected Builder $query) {}
 
     public function collection(): Collection
@@ -55,35 +58,19 @@ class CategoriesExport implements FromCollection, ShouldAutoSize, WithHeadings, 
         ];
     }
 
-    /**
-     * Mencegah CSV Formula Injection (Excel / LibreOffice injection).
-     */
-    private function sanitizeFormula(?string $value): ?string
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        if (preg_match('/^[\=\+\-\@\t\r]/', $value)) {
-            return "'".$value;
-        }
-
-        return $value;
-    }
-
     public function map($category): array
     {
         $parentName = $category->parent ? $category->parent->category_name : '-';
 
-        return [
+        return $this->sanitizeRow([
             $category->id,
-            $this->sanitizeFormula($category->category_name),
-            $this->sanitizeFormula($parentName),
+            $category->category_name,
+            $parentName,
             $category->sort_order ?? 0,
             $category->is_active ? 'Active' : 'Inactive',
             $category->products_count ?? 0,
             $category->created_at ? $category->created_at->format('d/m/Y H:i') : '-',
-        ];
+        ]);
     }
 
     public function styles(Worksheet $sheet): array

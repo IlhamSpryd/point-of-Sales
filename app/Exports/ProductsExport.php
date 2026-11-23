@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Exports;
 
 use App\Core\Context\TenantContext;
+use App\Exports\Concerns\SanitizesSpreadsheetFormulas;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
@@ -20,6 +21,8 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class ProductsExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithStyles
 {
+    use SanitizesSpreadsheetFormulas;
+
     public function __construct(protected Builder $query) {}
 
     public function collection(): Collection
@@ -86,24 +89,24 @@ class ProductsExport implements FromCollection, ShouldAutoSize, WithHeadings, Wi
         $uomName = $product->baseUom ? $product->baseUom->name : '-';
         $taxName = $product->taxClass ? $product->taxClass->name : '-';
 
-        return [
+        return $this->sanitizeRow([
             $product->id,
-            $this->sanitizeFormula($product->product_code ?? $product->sku ?? null),
-            $this->sanitizeFormula($product->product_name),
-            $this->sanitizeFormula($product->barcode),
-            $this->sanitizeFormula($categoryName),
-            $this->sanitizeFormula($brandName),
-            $this->sanitizeFormula($uomName),
+            $product->product_code ?? $product->sku ?? null,
+            $product->product_name,
+            $product->barcode,
+            $categoryName,
+            $brandName,
+            $uomName,
             $product->product_type ?? 'standard',
             $product->product_price,
             $product->costing_method ?? 'standard',
             $product->standard_cost ?? 0.00,
-            $this->sanitizeFormula($taxName),
+            $taxName,
             $product->is_tax_inclusive ? 'Yes' : 'No',
             $product->track_inventory ? 'Yes' : 'No',
             $product->stock,
             ucfirst((string) ($product->status ?? ($product->is_active ? 'Active' : 'Inactive'))),
-        ];
+        ]);
     }
 
     public function styles(Worksheet $sheet): array
