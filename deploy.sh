@@ -30,6 +30,8 @@ fi
 
 # 3. Pull latest base images and build containers
 echo "[+] Step 1/6: Building and starting production containers..."
+# Tag previous app image for instant rollback capability
+docker tag apeiron-pos-app:latest apeiron-pos-app:previous >/dev/null 2>&1 || true
 $COMPOSE pull db redis web || true
 $COMPOSE build app worker scheduler reverb
 

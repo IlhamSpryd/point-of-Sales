@@ -29,7 +29,7 @@
         "maatwebsite/excel": "^4.0",
         "midtrans/midtrans-php": "^2.6",
         "mike42/escpos-php": "^5.0",
-        "predis/predis": "*",
+        "predis/predis": "^3.0",
         "simplesoftwareio/simple-qrcode": "^4.2"
     },
     "suggest": {

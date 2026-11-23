@@ -34,12 +34,26 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // PATCH FOR S-04: jangan percaya semua proxy. Isi TRUSTED_PROXIES=IP_LB di produksi (default '*' di balik reverse-proxy/Cloudflare).
+        // PATCH FOR S-04 & CFG-01: jangan percaya semua proxy tanpa seleksi.
+        // Konfigurasi daftar CIDR/IP tepercaya (misal reverse proxy Docker/Cloudflare).
+        $trustedProxies = env('TRUSTED_PROXIES', '172.16.0.0/12,10.0.0.0/8,127.0.0.1');
         $middleware->trustProxies(
-            at: env('TRUSTED_PROXIES', '*'),
-            headers: Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_HOST
-                   | Request::HEADER_X_FORWARDED_PORT | Request::HEADER_X_FORWARDED_PROTO,
+            at: $trustedProxies === '*' ? '*' : array_filter(array_map('trim', explode(',', (string) $trustedProxies))),
+            headers: Request::HEADER_X_FORWARDED_FOR
+                   | Request::HEADER_X_FORWARDED_PORT
+                   | Request::HEADER_X_FORWARDED_PROTO,
         );
+
+        $middleware->trustHosts(at: function () {
+            $configuredHosts = array_filter(array_map('trim', explode(',', (string) env('TRUSTED_HOSTS', 'app.apeironsystem.web.id'))));
+            $defaultHosts = ['localhost', '127.0.0.1'];
+            $appUrlHost = parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST);
+            if ($appUrlHost) {
+                $defaultHosts[] = $appUrlHost;
+            }
+
+            return array_values(array_unique(array_merge($configuredHosts, $defaultHosts)));
+        }, subdomains: false);
 
         // PATCH FOR P-11: security headers global.
         $middleware->prepend(AssignCorrelationId::class);

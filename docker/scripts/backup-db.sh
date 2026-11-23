@@ -52,8 +52,8 @@ CHECKSUM_FILE="${BACKUP_FILE}.sha256"
 
 echo "[+] Step 1/4: Dumping database '${DB_NAME}' via ${DUMP_BIN} (single-transaction, zero-lock)..."
 # All 232 tables, 57 triggers, routines, and events dumped without write lock contention
-docker exec -i "${DB_CONTAINER}" "${DUMP_BIN}" \
-    -u root -p"${DB_ROOT_PASSWORD}" \
+docker exec -i -e MYSQL_PWD="${DB_ROOT_PASSWORD}" "${DB_CONTAINER}" "${DUMP_BIN}" \
+    -u root \
     --triggers \
     --routines \
     --events \

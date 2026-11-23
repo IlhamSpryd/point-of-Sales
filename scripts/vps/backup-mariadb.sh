@@ -38,9 +38,8 @@ SHA_FILE="${BACKUP_FILE}.sha256"
 # Execute single-transaction backup via running docker container or local host client
 if command -v docker >/dev/null 2>&1 && docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     echo "${LOG_TAG} Running mysqldump inside Docker container '${CONTAINER_NAME}'..."
-    docker exec "${CONTAINER_NAME}" mariadb-dump \
+    docker exec -e MYSQL_PWD="${DB_PASS}" "${CONTAINER_NAME}" mariadb-dump \
         -u"${DB_USER}" \
-        -p"${DB_PASS}" \
         --single-transaction \
         --quick \
         --routines \
@@ -49,9 +48,8 @@ if command -v docker >/dev/null 2>&1 && docker ps --format '{{.Names}}' | grep -
         "${DB_NAME}" | gzip -9 > "${BACKUP_FILE}"
 elif command -v mariadb-dump >/dev/null 2>&1; then
     echo "${LOG_TAG} Running host mariadb-dump client..."
-    mariadb-dump \
+    MYSQL_PWD="${DB_PASS}" mariadb-dump \
         -u"${DB_USER}" \
-        -p"${DB_PASS}" \
         --single-transaction \
         --quick \
         --routines \
@@ -60,9 +58,8 @@ elif command -v mariadb-dump >/dev/null 2>&1; then
         "${DB_NAME}" | gzip -9 > "${BACKUP_FILE}"
 elif command -v mysqldump >/dev/null 2>&1; then
     echo "${LOG_TAG} Running host mysqldump client..."
-    mysqldump \
+    MYSQL_PWD="${DB_PASS}" mysqldump \
         -u"${DB_USER}" \
-        -p"${DB_PASS}" \
         --single-transaction \
         --quick \
         --routines \

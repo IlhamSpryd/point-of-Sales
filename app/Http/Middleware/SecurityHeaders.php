@@ -28,11 +28,12 @@ class SecurityHeaders
         }
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 
-        // CSP Enforced:
+        // CSP & HSTS Enforced:
         if (app()->isProduction()) {
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
             $response->headers->set(
                 'Content-Security-Policy',
-                "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://app.sandbox.midtrans.com https://app.midtrans.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob:; connect-src 'self' wss: https://app.sandbox.midtrans.com https://app.midtrans.com wss://localhost:8181 wss://localhost:8282; frame-src 'self' https://app.sandbox.midtrans.com https://app.midtrans.com;"
+                "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://app.sandbox.midtrans.com https://app.midtrans.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob:; connect-src 'self' wss: https://app.sandbox.midtrans.com https://app.midtrans.com wss://app.apeironsystem.web.id; frame-src 'self' https://app.sandbox.midtrans.com https://app.midtrans.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self';"
             );
         }
 

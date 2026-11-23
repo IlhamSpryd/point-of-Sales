@@ -99,3 +99,10 @@ Schedule::command('database:create-monthly-partitions')
     ->monthlyOn(25, '00:00')
     ->withoutOverlapping(30)
     ->onOneServer();
+
+// CFG-03 & SEC: Prune expired Sanctum personal access tokens daily
+Schedule::command('sanctum:prune-expired --hours=24')
+    ->daily()
+    ->withoutOverlapping(30)
+    ->onOneServer()
+    ->runInBackground();
