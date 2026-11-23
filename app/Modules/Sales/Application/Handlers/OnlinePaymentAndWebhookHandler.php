@@ -245,6 +245,10 @@ class OnlinePaymentAndWebhookHandler
                 $order = Order::withoutGlobalScopes()->where('id', $attempt->order_id)->lockForUpdate()->firstOrFail();
                 $lockedAttempt = PaymentAttempt::withoutGlobalScopes()->where('id', $attempt->id)->lockForUpdate()->firstOrFail();
 
+                if ((int) $lockedAttempt->tenant_id !== (int) $order->tenant_id) {
+                    throw new DomainException('Cross-tenant payment attempt settlement rejected.');
+                }
+
                 if ($lockedAttempt->status === PaymentAttemptStatus::Succeeded && $lockedAttempt->payment_id) {
                     return Payment::withoutGlobalScopes()->findOrFail($lockedAttempt->payment_id);
                 }
@@ -388,6 +392,15 @@ class OnlinePaymentAndWebhookHandler
 
         if (! $order) {
             Log::warning('handleMidtransWebhook: Order tidak ditemukan untuk payload:', ['order_id' => $orderId]);
+
+            return;
+        }
+
+        if ($attempt && (int) $attempt->tenant_id !== (int) $order->tenant_id) {
+            Log::warning('handleMidtransWebhook: Cross-tenant mismatch antara attempt dan order.', [
+                'attempt_tenant' => $attempt->tenant_id,
+                'order_tenant' => $order->tenant_id,
+            ]);
 
             return;
         }

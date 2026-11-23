@@ -47,6 +47,10 @@ class PaymentNotificationController extends Controller
             return response()->json(['message' => 'Order not found.'], 404);
         }
 
+        if ($attempt && (int) $attempt->tenant_id !== (int) $order->tenant_id) {
+            return response()->json(['message' => 'cross-tenant spoofing detected'], 403);
+        }
+
         $tenantContext = app(TenantContext::class);
         $prevTenantId = $tenantContext->getTenantId();
         $prevStoreId = $tenantContext->getStoreId();

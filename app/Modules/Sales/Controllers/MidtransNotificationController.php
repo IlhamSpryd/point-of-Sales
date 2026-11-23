@@ -68,7 +68,7 @@ class MidtransNotificationController extends Controller
         if ($serverKey === '') {
             Log::critical('Midtrans notification DITOLAK: MIDTRANS_SERVER_KEY kosong.');
 
-            return response()->json(['message' => 'server misconfigured'], 500);
+            return response()->json(['message' => 'server misconfigured'], 401);
         }
 
         // Zero-Trust: JANGAN PERNAH percaya transaction_status dari payload
@@ -128,6 +128,15 @@ class MidtransNotificationController extends Controller
                 Log::warning('Midtrans notification: order tidak memiliki tenant_id.', ['order_id' => $orderId]);
 
                 return response()->json(['message' => 'invalid order tenancy'], 422);
+            }
+
+            if ($attempt && (int) $attempt->tenant_id !== (int) $order->tenant_id) {
+                Log::warning('Midtrans notification: cross-tenant attempt mismatch.', [
+                    'attempt_tenant' => $attempt->tenant_id,
+                    'order_tenant' => $order->tenant_id,
+                ]);
+
+                return response()->json(['message' => 'cross-tenant spoofing detected'], 403);
             }
 
             $tenantContext->setTenantId((int) $order->tenant_id);
