@@ -29,9 +29,7 @@
                         <button
                             type="button"
                             @click="currentPeriod = '{{ $p }}'; $dispatch('period-changed', '{{ $p }}')"
-                            :class="currentPeriod === '{{ $p }}'
-                                ? 'bg-card text-foreground font-semibold shadow-xs'
-                                : 'text-muted-foreground hover:text-foreground'"
+                            :class="currentPeriod === '{{ $p }}' ? 'bg-card text-foreground font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground'"
                             class="px-2.5 py-1 rounded-lg text-xs font-medium transition-all duration-150 cursor-pointer">
                             {{ $p }}
                         </button>

@@ -3,24 +3,24 @@
 
     <!-- Flash Notifications -->
     @if (session()->has('success'))
-        <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-sm flex items-center justify-between">
+        <div class="p-4 rounded-xl bg-positive border border-positive/20 text-positive text-sm flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <span class="material-symbols-rounded text-lg">check_circle</span>
                 <span>{{ session('success') }}</span>
             </div>
-            <button type="button" @click="$el.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700">
+            <button type="button" @click="$el.parentElement.remove()" class="text-positive hover:text-positive">
                 <span class="material-symbols-rounded text-sm">close</span>
             </button>
         </div>
     @endif
 
     @if (session()->has('error'))
-        <div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-sm flex items-center justify-between">
+        <div class="p-4 rounded-xl bg-destructive border border-destructive/20 text-destructive text-sm flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <span class="material-symbols-rounded text-lg">error</span>
                 <span>{{ session('error') }}</span>
             </div>
-            <button type="button" @click="$el.parentElement.remove()" class="text-rose-500 hover:text-rose-700">
+            <button type="button" @click="$el.parentElement.remove()" class="text-destructive hover:text-destructive">
                 <span class="material-symbols-rounded text-sm">close</span>
             </button>
         </div>
@@ -61,12 +61,12 @@
             <table class="w-full text-left text-xs">
                 <thead class="bg-muted/50 text-muted-foreground font-semibold border-b border-border">
                     <tr>
-                        <th class="px-4 py-3">Period Code</th>
-                        <th class="px-4 py-3">Period / Month</th>
-                        <th class="px-4 py-3">Date Range</th>
-                        <th class="px-4 py-3 text-center">Period Status</th>
-                        <th class="px-4 py-3">Posting Permission</th>
-                        <th class="px-4 py-3 text-right">Cycle Actions</th>
+                        <th scope="col" class="px-4 py-3">Period Code</th>
+                        <th scope="col" class="px-4 py-3">Period / Month</th>
+                        <th scope="col" class="px-4 py-3">Date Range</th>
+                        <th scope="col" class="px-4 py-3 text-center">Period Status</th>
+                        <th scope="col" class="px-4 py-3">Posting Permission</th>
+                        <th scope="col" class="px-4 py-3 text-right">Cycle Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -97,7 +97,7 @@
                             </td>
                             <td class="px-4 py-3">
                                 @if ($period->status->isPostingAllowed())
-                                    <span class="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                                    <span class="inline-flex items-center gap-1 text-[11px] text-positive font-medium">
                                         <span class="material-symbols-rounded text-sm">lock_open</span> Allowed
                                     </span>
                                 @else
@@ -207,11 +207,11 @@
                     <div class="p-3 rounded-xl border border-border flex items-center justify-between text-xs bg-muted/30">
                         <span class="font-medium text-foreground">{{ ucwords(str_replace('_', ' ', (string) $gate)) }}</span>
                         @if (is_array($result) ? ($result['passed'] ?? false) : (bool) $result)
-                            <span class="px-2 py-0.5 rounded-full text-2xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1">
+                            <span class="px-2 py-0.5 rounded-full text-2xs font-bold bg-positive text-positive inline-flex items-center gap-1">
                                 <span class="material-symbols-rounded text-xs">check</span> PASSED
                             </span>
                         @else
-                            <span class="px-2 py-0.5 rounded-full text-2xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 inline-flex items-center gap-1">
+                            <span class="px-2 py-0.5 rounded-full text-2xs font-bold bg-warning text-warning inline-flex items-center gap-1">
                                 <span class="material-symbols-rounded text-xs">warning</span> PENDING
                             </span>
                         @endif

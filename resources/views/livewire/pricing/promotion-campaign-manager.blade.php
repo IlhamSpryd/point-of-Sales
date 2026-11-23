@@ -21,8 +21,8 @@
     </div>
 
     @if (session()->has('success'))
-        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 text-emerald-800 text-sm font-medium">
-            <span class="material-symbols-rounded text-emerald-600 text-[20px]">check_circle</span>
+        <div class="p-4 bg-positive-muted border border-positive rounded-xl flex items-center gap-3 text-positive text-sm font-medium">
+            <span class="material-symbols-rounded text-positive text-[20px]">check_circle</span>
             {{ session('success') }}
         </div>
     @endif
@@ -60,12 +60,12 @@
             <table class="w-full text-left text-sm text-foreground divide-y divide-border">
                 <thead class="bg-muted/50 text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
                     <tr>
-                        <th class="px-6 py-3.5">Code & Campaign Name</th>
-                        <th class="px-6 py-3.5">Type & Schedule</th>
-                        <th class="px-6 py-3.5">Priority</th>
-                        <th class="px-6 py-3.5">Quota / Used</th>
-                        <th class="px-6 py-3.5">Status</th>
-                        <th class="px-6 py-3.5 text-right">Actions</th>
+                        <th scope="col" class="px-6 py-3.5">Code & Campaign Name</th>
+                        <th scope="col" class="px-6 py-3.5">Type & Schedule</th>
+                        <th scope="col" class="px-6 py-3.5">Priority</th>
+                        <th scope="col" class="px-6 py-3.5">Quota / Used</th>
+                        <th scope="col" class="px-6 py-3.5">Status</th>
+                        <th scope="col" class="px-6 py-3.5 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -80,7 +80,7 @@
                                     {{ str_replace('_', ' ', $campaign->type) }}
                                 </span>
                                 @if($campaign->type === 'HAPPY_HOUR' && $campaign->start_time && $campaign->end_time)
-                                    <div class="text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium flex items-center gap-1">
+                                    <div class="text-xs text-warning mt-1 font-medium flex items-center gap-1">
                                         <span class="material-symbols-rounded text-sm">schedule</span>
                                         {{ substr($campaign->start_time, 0, 5) }} - {{ substr($campaign->end_time, 0, 5) }}
                                     </div>
@@ -190,16 +190,16 @@
                 </div>
 
                 @if ($type === 'HAPPY_HOUR')
-                    <div class="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-3">
-                        <span class="text-xs font-bold text-amber-600 dark:text-amber-400 block">Happy Hour Schedule Settings</span>
+                    <div class="p-3 bg-warning border border-warning/20 rounded-xl space-y-3">
+                        <span class="text-xs font-bold text-warning block">Happy Hour Schedule Settings</span>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-2xs font-semibold text-amber-700 dark:text-amber-300 mb-1">Start Time</label>
-                                <input type="time" wire:model="startTime" class="w-full text-xs px-2.5 py-1.5 bg-background border border-amber-500/30 rounded-lg text-foreground" />
+                                <label class="block text-2xs font-semibold text-warning mb-1">Start Time</label>
+                                <input type="time" wire:model="startTime" class="w-full text-xs px-2.5 py-1.5 bg-background border border-warning/30 rounded-lg text-foreground" />
                             </div>
                             <div>
-                                <label class="block text-2xs font-semibold text-amber-700 dark:text-amber-300 mb-1">End Time</label>
-                                <input type="time" wire:model="endTime" class="w-full text-xs px-2.5 py-1.5 bg-background border border-amber-500/30 rounded-lg text-foreground" />
+                                <label class="block text-2xs font-semibold text-warning mb-1">End Time</label>
+                                <input type="time" wire:model="endTime" class="w-full text-xs px-2.5 py-1.5 bg-background border border-warning/30 rounded-lg text-foreground" />
                             </div>
                         </div>
                     </div>

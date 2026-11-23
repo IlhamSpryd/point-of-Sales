@@ -84,13 +84,13 @@
             <table class="w-full text-left text-sm text-foreground divide-y divide-border">
                 <thead class="bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     <tr>
-                        <th class="px-6 py-3.5">Batch Number</th>
-                        <th class="px-6 py-3.5">Payroll Period</th>
-                        <th class="px-6 py-3.5">Total Staff</th>
-                        <th class="px-6 py-3.5">Total Gross Earnings</th>
-                        <th class="px-6 py-3.5">Total Net Pay</th>
-                        <th class="px-6 py-3.5">Status</th>
-                        <th class="px-6 py-3.5 text-right">Actions</th>
+                        <th scope="col" class="px-6 py-3.5">Batch Number</th>
+                        <th scope="col" class="px-6 py-3.5">Payroll Period</th>
+                        <th scope="col" class="px-6 py-3.5">Total Staff</th>
+                        <th scope="col" class="px-6 py-3.5">Total Gross Earnings</th>
+                        <th scope="col" class="px-6 py-3.5">Total Net Pay</th>
+                        <th scope="col" class="px-6 py-3.5">Status</th>
+                        <th scope="col" class="px-6 py-3.5 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -216,12 +216,12 @@
             <table class="w-full text-left text-sm text-foreground divide-y divide-border">
                 <thead class="bg-muted/50 text-xs font-semibold text-muted-foreground uppercase">
                     <tr>
-                        <th class="px-4 py-2.5">Employee</th>
-                        <th class="px-4 py-2.5">Gross Earnings</th>
-                        <th class="px-4 py-2.5">PPh 21 TER</th>
-                        <th class="px-4 py-2.5">Employee BPJS</th>
-                        <th class="px-4 py-2.5">Net Pay</th>
-                        <th class="px-4 py-2.5 text-right">Access Token</th>
+                        <th scope="col" class="px-4 py-2.5">Employee</th>
+                        <th scope="col" class="px-4 py-2.5">Gross Earnings</th>
+                        <th scope="col" class="px-4 py-2.5">PPh 21 TER</th>
+                        <th scope="col" class="px-4 py-2.5">Employee BPJS</th>
+                        <th scope="col" class="px-4 py-2.5">Net Pay</th>
+                        <th scope="col" class="px-4 py-2.5 text-right">Access Token</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border text-xs tabular-nums">
@@ -231,16 +231,16 @@
                                 <div class="font-semibold text-foreground">{{ $rec->full_name_snapshot }}</div>
                                 <div class="text-[11px] text-muted-foreground tabular-nums">{{ $rec->employee_number_snapshot }}</div>
                             </td>
-                            <td class="px-4 py-3">
+                            <td class="tabular-nums px-4 py-3">
                                 Rp {{ number_format((float) $rec->gross_earnings_amount, 2, ',', '.') }}
                             </td>
-                            <td class="px-4 py-3 text-rose-600 font-medium">
+                            <td class="px-4 py-3 text-destructive font-medium">
                                 - Rp {{ number_format((float) $rec->tax_pph21_amount, 2, ',', '.') }}
                             </td>
-                            <td class="px-4 py-3 text-rose-600 font-medium">
+                            <td class="px-4 py-3 text-destructive font-medium">
                                 - Rp {{ number_format((float) ($rec->bpjs_ks_employee_amount + $rec->bpjs_tk_employee_amount), 2, ',', '.') }}
                             </td>
-                            <td class="px-4 py-3 font-bold text-emerald-600">
+                            <td class="tabular-nums px-4 py-3 font-bold text-positive">
                                 Rp {{ number_format((float) $rec->net_pay_amount, 2, ',', '.') }}
                             </td>
                             <td class="px-4 py-3 text-right">

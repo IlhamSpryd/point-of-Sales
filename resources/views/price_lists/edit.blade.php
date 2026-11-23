@@ -135,7 +135,7 @@
                 <div class="flex items-center gap-2 pt-2 md:col-span-2">
                     <input type="hidden" name="is_active" value="0">
                     <input type="checkbox" id="is_active" name="is_active" value="1" {{ old('is_active', $priceList->is_active) ? 'checked' : '' }}
-                        class="rounded border-gray-300 text-foreground focus:ring-ring">
+                        class="rounded border-border text-foreground focus:ring-ring">
                     <label for="is_active" class="text-sm font-medium text-foreground">This price list is active</label>
                 </div>
             </div>
@@ -157,10 +157,10 @@
                     <table class="table-standard w-full min-w-full text-left text-sm">
                         <thead class="bg-muted border-b border-border text-xs text-muted-foreground uppercase">
                             <tr>
-                                <th class="px-4 py-3">Product</th>
-                                <th class="px-4 py-3 w-40 text-right">Min. Purchase (Qty)</th>
-                                <th class="px-4 py-3 w-48 text-right">Unit Price (Rp)</th>
-                                <th class="px-4 py-3 w-16 text-center">Actions</th>
+                                <th scope="col" class="px-4 py-3">Product</th>
+                                <th scope="col" class="px-4 py-3 w-40 text-right">Min. Purchase (Qty)</th>
+                                <th scope="col" class="px-4 py-3 w-48 text-right">Unit Price (Rp)</th>
+                                <th scope="col" class="px-4 py-3 w-16 text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-border">

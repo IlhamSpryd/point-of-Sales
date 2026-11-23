@@ -53,9 +53,9 @@
                 </x-slot:head>
 
                 @foreach($invitations as $invitation)
-                    <tr class="hover:bg-zinc-50/70 dark:hover:bg-zinc-800/50 transition-colors duration-150">
-                        <td class="px-6 py-4 font-semibold text-foreground dark:text-zinc-100 text-sm">{{ $invitation->name }}</td>
-                        <td class="px-6 py-4 text-sm text-zinc-600 dark:text-zinc-300">{{ $invitation->email }}</td>
+                    <tr class="hover:bg-secondary/70 transition-colors duration-150">
+                        <td class="px-6 py-4 font-semibold text-foreground text-sm">{{ $invitation->name }}</td>
+                        <td class="px-6 py-4 text-sm text-muted-foreground">{{ $invitation->email }}</td>
                         <td class="px-6 py-4 text-sm">
                             <div class="flex flex-col gap-1 items-start">
                                 <span class="text-xs text-foreground font-medium">{{ $invitation->role->name ?? 'Staff' }}</span>
@@ -85,7 +85,7 @@
                                 {{ $statusLabel }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-sm text-zinc-500">
+                        <td class="px-6 py-4 text-sm text-muted-foreground">
                             {{ $invitation->expires_at ? $invitation->expires_at->format('M d, Y H:i') : '—' }}
                         </td>
                         <td class="px-6 py-4 text-right whitespace-nowrap">

@@ -26,7 +26,7 @@
                        placeholder="Enter product name" required
                        class="{{ $errors->has('product_name') ? 'input-error' : '' }}" />
                 @error('product_name')
-                    <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                 @enderror
             </div>
 
@@ -39,7 +39,7 @@
                            placeholder="e.g. PRD-001"
                            class="{{ $errors->has('product_code') ? 'input-error' : '' }}" />
                     @error('product_code')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -50,7 +50,7 @@
                            placeholder="Product barcode (optional)"
                            class="{{ $errors->has('barcode') ? 'input-error' : '' }}" />
                     @error('barcode')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
@@ -74,7 +74,7 @@
                         </div>
                     </div>
                     @error('category_id')
-                    <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                 @enderror
                 </div>
 
@@ -97,7 +97,7 @@
                         </div>
                     </div>
                     @error('brand_id')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
@@ -119,7 +119,7 @@
                         </div>
                     </div>
                     @error('product_type')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -138,7 +138,7 @@
                         </div>
                     </div>
                     @error('status')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
@@ -164,7 +164,7 @@
                         </div>
                     </div>
                     @error('base_uom_id')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -187,7 +187,7 @@
                         </div>
                     </div>
                     @error('tax_class_id')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
@@ -201,7 +201,7 @@
                            placeholder="0.00"
                            class="{{ $errors->has('standard_cost') ? 'input-error' : '' }}" />
                     @error('standard_cost')
-                    <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                 @enderror
                 </div>
 
@@ -219,7 +219,7 @@
                         </div>
                     </div>
                     @error('costing_method')
-                    <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                 @enderror
                 </div>
             </div>
@@ -233,7 +233,7 @@
                            placeholder="0" required 
                            class="{{ $errors->has('product_price') ? 'input-error' : '' }}" />
                     @error('product_price')
-                    <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                 @enderror
                 </div>
 
@@ -244,7 +244,7 @@
                            placeholder="0" required 
                            class="{{ $errors->has('stock') ? 'input-error' : '' }}" />
                     @error('stock')
-                    <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                 @enderror
                 </div>
             </div>
@@ -258,7 +258,7 @@
                            placeholder="e.g. Supplier raw material price revision"
                            class="{{ $errors->has('cost_change_reason') ? 'input-error' : '' }}" />
                     @error('cost_change_reason')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -271,7 +271,7 @@
                         </label>
                     </div>
                     @error('is_tax_inclusive')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
@@ -288,7 +288,7 @@
                           class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground placeholder-primary-400 focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('product_description') ? 'input-error' : '' }}" 
                           placeholder="Enter product description (optional)">{{ old('product_description', $product->product_description) }}</textarea>
                 @error('product_description')
-                    <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                 @enderror
             </div>
 
@@ -335,7 +335,7 @@
                             <div class="w-32">
                                 <input type="number" step="0.0001" x-model="item.quantity" :name="'ingredients['+index+'][quantity]'" placeholder="Quantity" class="form-input w-full px-3 py-2 rounded-xl border border-border bg-white text-foreground text-sm focus:ring-2 focus:ring-ring focus:border-primary shadow-sm" required>
                             </div>
-                            <button type="button" @click="removeItem(index)" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors" title="Remove row">
+                            <button type="button" @click="removeItem(index)" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-destructive hover:bg-destructive-muted border border-transparent hover:border-destructive transition-colors" title="Remove row">
                                 <span class="material-symbols-rounded text-[20px]">close</span>
                             </button>
                         </div>
@@ -382,7 +382,7 @@
                                     </template>
                                 </select>
                             </div>
-                            <button type="button" @click="removeGroup(index)" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors" title="Remove row">
+                            <button type="button" @click="removeGroup(index)" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-destructive hover:bg-destructive-muted border border-transparent hover:border-destructive transition-colors" title="Remove row">
                                 <span class="material-symbols-rounded text-[20px]">close</span>
                             </button>
                         </div>
@@ -417,7 +417,7 @@
                     </div>
                 </div>
                 @error('product_photo')
-                    <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                 @enderror
             </div>
 
@@ -444,7 +444,7 @@
                         <img src="{{ asset('storage/' . $m->file_path) }}" alt="{{ $m->alt_text ?? $product->product_name }}" class="w-full h-full object-cover rounded-lg absolute inset-0">
                         <div class="relative z-10 flex justify-between items-start">
                             @if($m->is_primary)
-                                <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-md bg-emerald-500 text-white shadow-sm">Primary</span>
+                                <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-md bg-positive text-white shadow-sm">Primary</span>
                             @else
                                 <form action="{{ route('products.media.set-primary', [$product->id, $m->id]) }}" method="POST">
                                     @csrf
@@ -456,7 +456,7 @@
                             <form action="{{ route('products.media.destroy', [$product->id, $m->id]) }}" method="POST" onsubmit="return confirm('Delete this media?')">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="p-1 rounded-md bg-rose-500/80 hover:bg-rose-600 text-white transition-colors shadow-sm" title="Delete photo">
+                                <button type="submit" class="p-1 rounded-md bg-destructive hover:bg-destructive text-white transition-colors shadow-sm" title="Delete photo">
                                     <span class="material-symbols-rounded text-[14px]">delete</span>
                                 </button>
                             </form>
@@ -481,11 +481,11 @@
                 <table class="table-standard w-full min-w-full text-left text-sm text-foreground">
                     <thead class="bg-muted text-xs uppercase font-semibold text-muted-foreground border-b border-border">
                         <tr>
-                            <th class="px-4 py-2.5">Effective Time</th>
-                            <th class="px-4 py-2.5">Method</th>
-                            <th class="px-4 py-2.5 text-right">Previous Cost</th>
-                            <th class="px-4 py-2.5 text-right">New Cost</th>
-                            <th class="px-4 py-2.5">Revision Reason</th>
+                            <th scope="col" class="px-4 py-2.5">Effective Time</th>
+                            <th scope="col" class="px-4 py-2.5">Method</th>
+                            <th scope="col" class="px-4 py-2.5 text-right">Previous Cost</th>
+                            <th scope="col" class="px-4 py-2.5 text-right">New Cost</th>
+                            <th scope="col" class="px-4 py-2.5">Revision Reason</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border">
@@ -494,7 +494,7 @@
                                 <td class="px-4 py-2.5 text-xs text-muted-foreground">{{ $ch->effective_at ? $ch->effective_at->format('d M Y H:i') : $ch->created_at->format('d M Y H:i') }}</td>
                                 <td class="px-4 py-2.5 font-sans text-xs uppercase">{{ $ch->costing_method }}</td>
                                 <td class="px-4 py-2.5 text-right font-sans tabular-nums">Rp {{ number_format((float) $ch->old_cost, 2, ',', '.') }}</td>
-                                <td class="px-4 py-2.5 text-right font-sans font-semibold text-emerald-600 tabular-nums">Rp {{ number_format((float) $ch->new_cost, 2, ',', '.') }}</td>
+                                <td class="px-4 py-2.5 text-right font-sans font-semibold text-positive tabular-nums">Rp {{ number_format((float) $ch->new_cost, 2, ',', '.') }}</td>
                                 <td class="px-4 py-2.5 text-xs text-muted-foreground">{{ $ch->reason ?? '-' }}</td>
                             </tr>
                         @endforeach

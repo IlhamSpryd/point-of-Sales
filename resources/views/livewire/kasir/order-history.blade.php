@@ -100,14 +100,14 @@
                             default => 'bg-neutral'
                         };
                     @endphp
-                    <tr wire:key="order-{{ $order->id }}" class="hover:bg-gray-50/70 transition-colors">
+                    <tr wire:key="order-{{ $order->id }}" class="hover:bg-secondary/70 transition-colors">
                         <td class="px-6 py-4">
                             <div class="font-sans font-bold text-foreground text-xs">{{ $order->order_code }}</div>
-                            <div class="text-[11px] text-gray-400 mt-0.5">{{ $order->created_at->format('d M Y, H:i') }}</div>
+                            <div class="text-[11px] text-muted-foreground mt-0.5">{{ $order->created_at->format('d M Y, H:i') }}</div>
                         </td>
                         <td class="px-6 py-4">
                             <div class="text-xs font-bold text-foreground">{{ $order->user->name ?? 'Self-Order' }}</div>
-                            <div class="text-[11px] text-gray-500 mt-0.5 flex items-center gap-1">
+                            <div class="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1">
                                 <span class="material-symbols-rounded text-[14px]">
                                     @if ($order->order_type?->value === 'takeaway')
                                         shopping_bag
@@ -133,15 +133,15 @@
                             </div>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="text-xs text-gray-700 max-w-[200px] truncate font-medium">
+                            <div class="text-xs text-foreground max-w-[200px] truncate font-medium">
                                 {{ $order->orderItems->pluck('product.product_name')->filter()->take(2)->implode(', ') }}
                                 @if ($order->order_items_count > 2)
-                                    <span class="text-gray-400">+{{ $order->order_items_count - 2 }} more</span>
+                                    <span class="text-muted-foreground">+{{ $order->order_items_count - 2 }} more</span>
                                 @endif
                             </div>
-                            <div class="text-[11px] text-gray-400 mt-0.5">{{ $order->order_items_count }} item(s)</div>
+                            <div class="text-[11px] text-muted-foreground mt-0.5">{{ $order->order_items_count }} item(s)</div>
                         </td>
-                        <td class="px-6 py-4 text-xs font-medium text-gray-600">
+                        <td class="px-6 py-4 text-xs font-medium text-muted-foreground">
                             {{ $order->customer->name ?? '—' }}
                         </td>
                         <td class="px-6 py-4">
@@ -149,7 +149,7 @@
                                 {{ $order->payment_method?->label() ?? '-' }}
                             </span>
                             @if ($order->payments->count() > 1)
-                                <span class="block text-[10px] font-bold text-blue-600 mt-0.5 uppercase tracking-wider">
+                                <span class="block text-[10px] font-bold text-accent mt-0.5 uppercase tracking-wider">
                                     Split {{ $order->payments->count() }} Methods
                                 </span>
                             @endif
@@ -194,7 +194,7 @@
                     };
                 @endphp
                 <div wire:key="order-card-{{ $order->id }}"
-                    class="p-4 rounded-xl border border-border bg-white hover:bg-gray-50 transition-colors cursor-pointer shadow-xs"
+                    class="p-4 rounded-xl border border-border bg-white hover:bg-secondary transition-colors cursor-pointer shadow-xs"
                     wire:click="viewDetail({{ $order->id }})">
                     <div class="flex justify-between items-start">
                         <span class="font-sans font-bold text-xs text-foreground">{{ $order->order_code }}</span>
@@ -205,8 +205,8 @@
                     </div>
                     <div class="flex justify-between items-end mt-2.5 pt-2 border-t border-border">
                         <div class="flex flex-col">
-                            <span class="text-[11px] text-gray-400">{{ $order->created_at->format('d M, H:i') }}</span>
-                            <span class="text-xs font-bold text-gray-700">{{ $order->user->name ?? 'Self-Order' }}</span>
+                            <span class="text-[11px] text-muted-foreground">{{ $order->created_at->format('d M, H:i') }}</span>
+                            <span class="text-xs font-bold text-foreground">{{ $order->user->name ?? 'Self-Order' }}</span>
                         </div>
                         <span class="font-black tabular-nums text-sm text-foreground">
                             Rp {{ number_format($order->order_amount, 0, ',', '.') }}
@@ -214,11 +214,11 @@
                     </div>
                 </div>
             @empty
-                <div class="py-8 text-center text-gray-400 text-xs flex flex-col items-center justify-center">
-                    <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-2 border border-border">
-                        <span class="material-symbols-rounded text-[24px] text-gray-400">receipt_long</span>
+                <div class="py-8 text-center text-muted-foreground text-xs flex flex-col items-center justify-center">
+                    <div class="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center mb-2 border border-border">
+                        <span class="material-symbols-rounded text-[24px] text-muted-foreground">receipt_long</span>
                     </div>
-                    <p class="font-bold text-gray-600">No orders found.</p>
+                    <p class="font-bold text-muted-foreground">No orders found.</p>
                 </div>
             @endforelse
         </div>
@@ -490,7 +490,7 @@
                                             <option value="write_off_waste">Write-Off (Damaged / Waste)</option>
                                         </select>
                                         @if (!empty($item['is_recipe_product']))
-                                            <span class="text-[10px] text-amber-700 dark:text-amber-400 block mt-0.5 font-medium">*F&amp;B Recipe: Restock Restricted</span>
+                                            <span class="text-[10px] text-warning block mt-0.5 font-medium">*F&amp;B Recipe: Restock Restricted</span>
                                         @endif
                                     </div>
                                     <div>
@@ -571,7 +571,7 @@
                 <button type="button" wire:click="processReturn"
                     wire:loading.attr="disabled" wire:target="processReturn"
                     x-on:click="window.erpMotion?.pulseHighlight($el)"
-                    class="px-5 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold hover:bg-amber-700 shadow-sm disabled:opacity-50 flex items-center gap-2">
+                    class="px-5 py-2 rounded-xl bg-warning text-white text-xs font-bold hover:bg-warning shadow-sm disabled:opacity-50 flex items-center gap-2">
                     <span wire:loading wire:target="processReturn" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
                     <span wire:loading.remove wire:target="processReturn">Process Return &amp; Refund</span>
                     <span wire:loading wire:target="processReturn">Processing...</span>
@@ -591,7 +591,7 @@
         </x-slot:header>
 
         <div class="space-y-4 text-xs">
-            <div class="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-900 dark:text-amber-300">
+            <div class="p-3 bg-warning border border-warning/20 rounded-xl text-xs text-warning">
                 This receipt has already been printed <strong>{{ $reprintOrderPrintCount }} time(s)</strong>. The subsequent print will bear watermark <strong>*** COPY / REPRINT #{{ $reprintOrderPrintCount + 1 }} ***</strong> and will be logged in the audit trail.
             </div>
 

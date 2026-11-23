@@ -39,11 +39,11 @@
     @endif
 
     <!-- Filter & Toolbar -->
-    <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-border dark:border-zinc-800">
+    <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-border">
         <div class="flex-1 max-w-md">
             <div class="relative">
-                <span class="material-symbols-rounded absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search name, code, company, phone, email..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-ring/20">
+                <span class="material-symbols-rounded absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">search</span>
+                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search name, code, company, phone, email..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-border bg-card focus:outline-hidden focus:ring-2 focus:ring-ring/20">
             </div>
         </div>
         <div class="flex flex-wrap items-center gap-3">
@@ -91,9 +91,9 @@
         @foreach($customers as $c)
                     <tr wire:key="customer-row-{{ $c->id }}" class="hover:bg-muted/40 transition-colors">
                         <td class="px-6 py-4">
-                            <div class="font-semibold text-foreground dark:text-white">{{ $c->name }}</div>
+                            <div class="font-semibold text-foreground">{{ $c->name }}</div>
                             <div class="flex items-center gap-2 mt-0.5">
-                                <span class="text-xs font-sans text-zinc-400">{{ $c->customer_code }}</span>
+                                <span class="text-xs font-sans text-muted-foreground">{{ $c->customer_code }}</span>
                                 @if($c->isCompany() && $c->company_name)
                                     <span class="text-xs text-muted-foreground font-medium">({{ $c->company_name }})</span>
                                 @endif
@@ -103,26 +103,26 @@
                             <div class="flex flex-col gap-1">
                                 <span class="text-xs text-foreground font-medium">{{ $c->isCompany() ? 'B2B (Company)' : 'B2C (Individual)' }}</span>
                                 @if($c->group)
-                                    <span class="text-xs text-zinc-500 font-medium">{{ $c->group->name }}</span>
+                                    <span class="text-xs text-muted-foreground font-medium">{{ $c->group->name }}</span>
                                 @endif
                             </div>
                         </td>
                         <td class="px-6 py-4">
                             <div class="text-xs space-y-0.5">
                                 @if($c->phone)
-                                    <div class="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-200 font-sans">
-                                        <span class="material-symbols-rounded text-xs text-zinc-400">call</span>
+                                    <div class="flex items-center gap-1.5 text-foreground font-sans">
+                                        <span class="material-symbols-rounded text-xs text-muted-foreground">call</span>
                                         {{ $c->phone }}
                                     </div>
                                 @endif
                                 @if($c->email)
-                                    <div class="flex items-center gap-1.5 text-zinc-500 font-sans">
-                                        <span class="material-symbols-rounded text-xs text-zinc-400">mail</span>
+                                    <div class="flex items-center gap-1.5 text-muted-foreground font-sans">
+                                        <span class="material-symbols-rounded text-xs text-muted-foreground">mail</span>
                                         {{ $c->email }}
                                     </div>
                                 @endif
                                 @if(!$c->phone && !$c->email)
-                                    <span class="text-zinc-400 italic">-</span>
+                                    <span class="text-muted-foreground italic">-</span>
                                 @endif
                             </div>
                         </td>
@@ -131,11 +131,11 @@
                                 $addr = $c->defaultShippingAddress ?? $c->defaultBillingAddress ?? $c->addresses->first();
                             @endphp
                             @if($addr)
-                                <div class="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2">
+                                <div class="text-xs text-muted-foreground line-clamp-2">
                                     {{ $addr->address_line1 }}{{ $addr->city ? ', '.$addr->city : '' }}
                                 </div>
                             @else
-                                <span class="text-xs text-zinc-400 italic">No address yet</span>
+                                <span class="text-xs text-muted-foreground italic">No address yet</span>
                             @endif
                         </td>
                         <td class="px-6 py-4">
@@ -193,7 +193,7 @@
                             <option value="INDIVIDUAL">Individual (B2C / Retail)</option>
                             <option value="COMPANY">Company / Business Entity (B2B)</option>
                         </x-ui.select>
-                        @error('customer_type') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('customer_type') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     <div>
@@ -204,7 +204,7 @@
                                 <option value="{{ $grp->id }}">{{ $grp->name }} ({{ $grp->default_discount_rate }}% Discount)</option>
                             @endforeach
                         </x-ui.select>
-                        @error('customer_group_id') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('customer_group_id') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="{{ $customer_type === 'COMPANY' ? 'md:col-span-1' : 'md:col-span-2' }}">
@@ -212,59 +212,59 @@
                             {{ $customer_type === 'COMPANY' ? 'Contact Name / PIC *' : 'Customer Full Name *' }}
                         </x-ui.label>
                         <x-ui.input type="text" id="name" wire:model="name" placeholder="e.g. John Doe" />
-                        @error('name') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('name') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     @if($customer_type === 'COMPANY')
                     <div>
                         <x-ui.label for="company_name">Company / Business Name</x-ui.label>
                         <x-ui.input type="text" id="company_name" wire:model="company_name" placeholder="e.g. Acme Corp LLC" />
-                        @error('company_name') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('company_name') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     <div>
                         <x-ui.label for="tax_id">Tax ID (NPWP)</x-ui.label>
                         <x-ui.input type="text" id="tax_id" wire:model="tax_id" placeholder="e.g. 01.234.567.8-901.000" />
-                        @error('tax_id') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('tax_id') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     <div>
                         <x-ui.label for="business_registration_no">Business Registration No. (NIB)</x-ui.label>
                         <x-ui.input type="text" id="business_registration_no" wire:model="business_registration_no" placeholder="Business License / Registration Number" />
-                        @error('business_registration_no') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('business_registration_no') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
                     @endif
 
                     <div>
                         <x-ui.label for="phone">Phone Number / WhatsApp</x-ui.label>
                         <x-ui.input type="text" id="phone" wire:model="phone" placeholder="e.g. +628123456789" />
-                        @error('phone') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('phone') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     <div>
                         <x-ui.label for="email">Email Address</x-ui.label>
                         <x-ui.input type="email" id="email" wire:model="email" placeholder="e.g. customer@domain.com" />
-                        @error('email') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('email') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     @if($customer_type === 'INDIVIDUAL')
                     <div>
                         <x-ui.label for="date_of_birth">Date of Birth (For Birthday Promotions)</x-ui.label>
                         <x-ui.input type="date" id="date_of_birth" wire:model="date_of_birth" />
-                        @error('date_of_birth') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('date_of_birth') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
                     @endif
                 </div>
 
-                <div class="pt-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-6">
+                <div class="pt-3 border-t border-border flex items-center gap-6">
                     <label class="inline-flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" wire:model="is_active" class="rounded border-zinc-300 text-primary shadow-xs focus:ring-ring">
-                        <span class="text-xs font-medium text-zinc-700 dark:text-zinc-300">Active Account Status</span>
+                        <input type="checkbox" wire:model="is_active" class="rounded border-border text-primary shadow-xs focus:ring-ring">
+                        <span class="text-xs font-medium text-foreground">Active Account Status</span>
                     </label>
 
                     <label class="inline-flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" wire:model="is_loyalty_eligible" class="rounded border-zinc-300 text-primary shadow-xs focus:ring-ring">
-                        <span class="text-xs font-medium text-zinc-700 dark:text-zinc-300">Eligible for Loyalty Points</span>
+                        <input type="checkbox" wire:model="is_loyalty_eligible" class="rounded border-border text-primary shadow-xs focus:ring-ring">
+                        <span class="text-xs font-medium text-foreground">Eligible for Loyalty Points</span>
                     </label>
                 </div>
             </form>
@@ -291,8 +291,8 @@
         <x-slot:content>
             @if($activeCustomer)
             <div class="space-y-6">
-                <div class="text-xs text-zinc-500 -mt-2">
-                    Customer: <strong class="text-zinc-800 dark:text-zinc-200">{{ $activeCustomer->name }}</strong> ({{ $activeCustomer->customer_code }})
+                <div class="text-xs text-muted-foreground -mt-2">
+                    Customer: <strong class="text-foreground">{{ $activeCustomer->name }}</strong> ({{ $activeCustomer->customer_code }})
                 </div>
 
                 @if (session()->has('address_message'))
@@ -303,13 +303,13 @@
 
                 <!-- Saved Addresses List -->
                 <div class="space-y-3">
-                    <h4 class="text-xs font-semibold text-zinc-500 uppercase">Saved Addresses</h4>
+                    <h4 class="text-xs font-semibold text-muted-foreground uppercase">Saved Addresses</h4>
                     <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
                         @forelse($activeAddresses as $addr)
                         <div wire:key="addr-item-{{ $addr->id }}" class="p-3 rounded-xl border border-border bg-muted/30 flex items-start justify-between gap-3">
                             <div>
                                 <div class="flex items-center gap-2">
-                                    <span class="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{{ $addr->label ?: 'Address' }}</span>
+                                    <span class="text-xs font-semibold text-foreground">{{ $addr->label ?: 'Address' }}</span>
                                     <span class="text-xs text-muted-foreground font-medium">({{ $addr->address_type }})</span>
                                     @if($addr->is_default_shipping)
                                         <span class="text-xs text-muted-foreground font-medium">(Default Shipping)</span>
@@ -318,29 +318,29 @@
                                         <span class="text-xs text-muted-foreground font-medium">(Default Billing)</span>
                                     @endif
                                 </div>
-                                <p class="text-xs text-zinc-600 dark:text-zinc-400 mt-1">{{ $addr->formatted_address }}</p>
+                                <p class="text-xs text-muted-foreground mt-1">{{ $addr->formatted_address }}</p>
                                 @if($addr->recipient_name)
-                                    <p class="text-[11px] text-zinc-500 mt-0.5">Recipient: {{ $addr->recipient_name }} ({{ $addr->phone }})</p>
+                                    <p class="text-[11px] text-muted-foreground mt-0.5">Recipient: {{ $addr->recipient_name }} ({{ $addr->phone }})</p>
                                 @endif
                             </div>
                             <div class="flex items-center gap-1">
-                                <button wire:click="editAddress({{ $addr->id }})" class="p-1 text-zinc-400 hover:text-blue-600">
+                                <button wire:click="editAddress({{ $addr->id }})" class="p-1 text-muted-foreground hover:text-accent">
                                     <span class="material-symbols-rounded text-sm">edit</span>
                                 </button>
-                                <button wire:click="deleteAddress({{ $addr->id }})" wire:confirm="Delete this address?" class="p-1 text-zinc-400 hover:text-rose-600">
+                                <button wire:click="deleteAddress({{ $addr->id }})" wire:confirm="Delete this address?" class="p-1 text-muted-foreground hover:text-destructive">
                                     <span class="material-symbols-rounded text-sm">delete</span>
                                 </button>
                             </div>
                         </div>
                         @empty
-                        <p class="text-xs text-zinc-400 italic">No saved addresses yet.</p>
+                        <p class="text-xs text-muted-foreground italic">No saved addresses yet.</p>
                         @endforelse
                     </div>
                 </div>
 
                 <!-- Form Add/Edit Address -->
-                <div class="pt-4 border-t border-zinc-200 dark:border-zinc-800 space-y-3">
-                    <h4 class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                <div class="pt-4 border-t border-border space-y-3">
+                    <h4 class="text-xs font-semibold text-foreground">
                         {{ $addressId ? 'Edit Address' : 'Add New Address' }}
                     </h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -358,8 +358,8 @@
                         </div>
                         <div class="md:col-span-2">
                             <x-ui.label for="address_line1">Address Line *</x-ui.label>
-                            <textarea id="address_line1" wire:model="address_line1" rows="2" placeholder="Street address, building number, suite/unit" class="w-full text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-2 text-zinc-800 dark:text-zinc-200"></textarea>
-                            @error('address_line1') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                            <textarea id="address_line1" wire:model="address_line1" rows="2" placeholder="Street address, building number, suite/unit" class="w-full text-xs rounded-xl border border-border bg-card p-2 text-foreground"></textarea>
+                            @error('address_line1') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                         </div>
                         <div>
                             <x-ui.label for="city">City / District</x-ui.label>
@@ -372,12 +372,12 @@
                     </div>
 
                     <div class="flex items-center gap-4 pt-2">
-                        <label class="inline-flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400">
-                            <input type="checkbox" wire:model="is_default_shipping" class="rounded border-zinc-300 text-primary">
+                        <label class="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <input type="checkbox" wire:model="is_default_shipping" class="rounded border-border text-primary">
                             Default Shipping
                         </label>
-                        <label class="inline-flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400">
-                            <input type="checkbox" wire:model="is_default_billing" class="rounded border-zinc-300 text-primary">
+                        <label class="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <input type="checkbox" wire:model="is_default_billing" class="rounded border-border text-primary">
                             Default Billing
                         </label>
                     </div>
@@ -413,8 +413,8 @@
         <x-slot:content>
             @if($activeCustomer)
             <div class="space-y-6">
-                <div class="text-xs text-zinc-500 -mt-2">
-                    Customer: <strong class="text-zinc-800 dark:text-zinc-200">{{ $activeCustomer->name }}</strong> ({{ $activeCustomer->company_name }})
+                <div class="text-xs text-muted-foreground -mt-2">
+                    Customer: <strong class="text-foreground">{{ $activeCustomer->name }}</strong> ({{ $activeCustomer->company_name }})
                 </div>
 
                 @if (session()->has('contact_message'))
@@ -425,13 +425,13 @@
 
                 <!-- Contact List -->
                 <div class="space-y-3">
-                    <h4 class="text-xs font-semibold text-zinc-500 uppercase">Contact Persons List</h4>
+                    <h4 class="text-xs font-semibold text-muted-foreground uppercase">Contact Persons List</h4>
                     <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
                         @forelse($activeContacts as $contact)
                         <div wire:key="contact-item-{{ $contact->id }}" class="p-3 rounded-xl border border-border bg-muted/30 flex items-center justify-between gap-3">
                             <div>
                                 <div class="flex items-center gap-2">
-                                    <span class="text-xs font-bold text-zinc-800 dark:text-zinc-200">{{ $contact->name }}</span>
+                                    <span class="text-xs font-bold text-foreground">{{ $contact->name }}</span>
                                     @if($contact->role_title)
                                         <span class="text-xs text-muted-foreground font-medium">({{ $contact->role_title }})</span>
                                     @endif
@@ -439,36 +439,36 @@
                                         <span class="text-xs text-muted-foreground font-medium">(Primary)</span>
                                     @endif
                                 </div>
-                                <div class="text-[11px] text-zinc-500 flex items-center gap-3 mt-1 font-sans">
+                                <div class="text-[11px] text-muted-foreground flex items-center gap-3 mt-1 font-sans">
                                     @if($contact->phone) <span>{{ $contact->phone }}</span> @endif
                                     @if($contact->email) <span>{{ $contact->email }}</span> @endif
                                 </div>
                             </div>
                             <div class="flex items-center gap-1">
-                                <button wire:click="editContact({{ $contact->id }})" class="p-1 text-zinc-400 hover:text-blue-600">
+                                <button wire:click="editContact({{ $contact->id }})" class="p-1 text-muted-foreground hover:text-accent">
                                     <span class="material-symbols-rounded text-sm">edit</span>
                                 </button>
-                                <button wire:click="deleteContact({{ $contact->id }})" wire:confirm="Delete this contact person?" class="p-1 text-zinc-400 hover:text-rose-600">
+                                <button wire:click="deleteContact({{ $contact->id }})" wire:confirm="Delete this contact person?" class="p-1 text-muted-foreground hover:text-destructive">
                                     <span class="material-symbols-rounded text-sm">delete</span>
                                 </button>
                             </div>
                         </div>
                         @empty
-                        <p class="text-xs text-zinc-400 italic">No contact persons saved yet.</p>
+                        <p class="text-xs text-muted-foreground italic">No contact persons saved yet.</p>
                         @endforelse
                     </div>
                 </div>
 
                 <!-- Contact Form -->
-                <div class="pt-4 border-t border-zinc-200 dark:border-zinc-800 space-y-3">
-                    <h4 class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                <div class="pt-4 border-t border-border space-y-3">
+                    <h4 class="text-xs font-semibold text-foreground">
                         {{ $contactId ? 'Edit Contact' : 'Add New Contact' }}
                     </h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
                             <x-ui.label for="contact_name">Contact Person Name *</x-ui.label>
                             <x-ui.input type="text" id="contact_name" wire:model="contact_name" placeholder="e.g. Jane Smith" />
-                            @error('contact_name') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                            @error('contact_name') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                         </div>
                         <div>
                             <x-ui.label for="contact_role_title">Job Title / Role</x-ui.label>
@@ -485,8 +485,8 @@
                     </div>
 
                     <div class="pt-2">
-                        <label class="inline-flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400">
-                            <input type="checkbox" wire:model="contact_is_primary" class="rounded border-zinc-300 text-primary">
+                        <label class="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <input type="checkbox" wire:model="contact_is_primary" class="rounded border-border text-primary">
                             Set as Primary Contact Person (Primary PIC)
                         </label>
                     </div>
@@ -527,7 +527,7 @@
                     </x-ui.alert>
                 @endif
 
-                <div class="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs leading-relaxed">
+                <div class="p-3 rounded-xl bg-warning-muted border border-warning text-warning text-xs leading-relaxed">
                     <strong>Important Warning:</strong> The source customer will be permanently deactivated (soft-deleted). All transaction history (Orders, Addresses, Contacts, and Loyalty Points) will be atomically transferred to the selected target customer.
                 </div>
 
@@ -539,13 +539,13 @@
                             <option value="{{ $tgt->id }}">{{ $tgt->name }} ({{ $tgt->customer_code }}) - {{ $tgt->phone ?: $tgt->email }}</option>
                         @endforeach
                     </x-ui.select>
-                    @error('mergeTargetId') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                    @error('mergeTargetId') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <div>
                     <x-ui.label for="mergeReason">Merge Reason *</x-ui.label>
-                    <textarea id="mergeReason" wire:model="mergeReason" rows="3" placeholder="e.g. Duplicate account registered with old and new phone number belonging to the same individual." class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-2.5 text-zinc-800 dark:text-zinc-200"></textarea>
-                    @error('mergeReason') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                    <textarea id="mergeReason" wire:model="mergeReason" rows="3" placeholder="e.g. Duplicate account registered with old and new phone number belonging to the same individual." class="w-full text-sm rounded-xl border border-border bg-card p-2.5 text-foreground"></textarea>
+                    @error('mergeReason') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
             </div>
         </x-slot:content>
@@ -570,12 +570,12 @@
 
         <x-slot:content>
             <div class="space-y-5">
-                <div class="text-xs text-zinc-500 -mt-2">
+                <div class="text-xs text-muted-foreground -mt-2">
                     Receivable transactions history, invoices, payments, and running balance.
                 </div>
 
                 <!-- Date Filter Bar & Export -->
-                <div class="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-border dark:border-zinc-800">
+                <div class="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl bg-secondary /60 border border-border">
                     <div class="flex flex-wrap items-center gap-3">
                         <div>
                             <x-ui.label for="statementStartDate">From Date</x-ui.label>
@@ -603,35 +603,35 @@
                 <!-- Balance Summary Cards -->
                 @if($statementPreview)
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="p-4 rounded-xl bg-zinc-100/70 dark:bg-zinc-800/40 border border-border dark:border-zinc-800">
-                        <div class="text-xs font-medium text-zinc-500 uppercase tracking-wider">Opening Balance (Period)</div>
-                        <div class="text-xl font-bold font-sans text-foreground dark:text-white mt-1">
+                    <div class="p-4 rounded-xl bg-secondary/70 /40 border border-border">
+                        <div class="text-xs font-medium text-muted-foreground uppercase tracking-wider">Opening Balance (Period)</div>
+                        <div class="text-xl font-bold font-sans text-foreground mt-1">
                             Rp {{ number_format((float) $statementPreview['opening_balance'], 2, ',', '.') }}
                         </div>
                     </div>
-                    <div class="p-4 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
-                        <div class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Closing Balance (Balance Due)</div>
-                        <div class="text-xl font-bold font-sans text-emerald-800 dark:text-emerald-300 mt-1">
+                    <div class="p-4 rounded-xl bg-positive-muted/70 border border-positive">
+                        <div class="text-xs font-semibold text-positive uppercase tracking-wider">Closing Balance (Balance Due)</div>
+                        <div class="text-xl font-bold font-sans text-positive mt-1">
                             Rp {{ number_format((float) $statementPreview['closing_balance'], 2, ',', '.') }}
                         </div>
                     </div>
                 </div>
 
                 <!-- Transactions Table -->
-                <div class="rounded-xl border border-border dark:border-zinc-800 overflow-hidden max-h-80 overflow-y-auto">
-                    <table class="table-standard w-full min-w-full text-left text-xs text-zinc-600 dark:text-zinc-300">
-                        <thead class="bg-zinc-50 dark:bg-zinc-900/80 text-[11px] font-semibold uppercase text-zinc-500 sticky top-0 border-b border-zinc-200 dark:border-zinc-800">
+                <div class="rounded-xl border border-border overflow-hidden max-h-80 overflow-y-auto">
+                    <table class="table-standard w-full min-w-full text-left text-xs text-muted-foreground">
+                        <thead class="bg-secondary /80 text-[11px] font-semibold uppercase text-muted-foreground sticky top-0 border-b border-border">
                             <tr>
-                                <th class="px-3 py-2.5">Date</th>
-                                <th class="px-3 py-2.5">Entry Type</th>
-                                <th class="px-3 py-2.5">Reference No.</th>
-                                <th class="px-3 py-2.5">Description</th>
-                                <th class="px-3 py-2.5 text-right">Debit</th>
-                                <th class="px-3 py-2.5 text-right">Credit</th>
-                                <th class="px-3 py-2.5 text-right">Running Balance</th>
+                                <th scope="col" class="px-3 py-2.5">Date</th>
+                                <th scope="col" class="px-3 py-2.5">Entry Type</th>
+                                <th scope="col" class="px-3 py-2.5">Reference No.</th>
+                                <th scope="col" class="px-3 py-2.5">Description</th>
+                                <th scope="col" class="px-3 py-2.5 text-right">Debit</th>
+                                <th scope="col" class="px-3 py-2.5 text-right">Credit</th>
+                                <th scope="col" class="px-3 py-2.5 text-right">Running Balance</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-border dark:divide-zinc-800">
+                        <tbody class="divide-y divide-border">
                             @forelse($statementPreview['transactions'] as $tx)
                             <tr wire:key="tx-row-{{ $loop->index }}" class="hover:bg-muted/40 transition-colors">
                                 <td class="px-3 py-2 whitespace-nowrap">{{ \Carbon\Carbon::parse($tx['entry_date'])->format('d/m/Y H:i') }}</td>
@@ -640,19 +640,19 @@
                                 </td>
                                 <td class="px-3 py-2 font-sans text-[11px]">{{ $tx['reference_number'] ?: '-' }}</td>
                                 <td class="px-3 py-2 max-w-xs truncate" title="{{ $tx['notes'] }}">{{ $tx['notes'] ?: '-' }}</td>
-                                <td class="px-3 py-2 text-right font-sans tabular-nums {{ (float) $tx['debit_amount'] > 0 ? 'text-rose-600 dark:text-rose-400 font-semibold' : 'text-zinc-400' }}">
+                                <td class="px-3 py-2 text-right font-sans tabular-nums {{ (float) $tx['debit_amount'] > 0 ? 'text-destructive font-semibold' : 'text-muted-foreground' }}">
                                     {{ (float) $tx['debit_amount'] > 0 ? 'Rp '.number_format((float) $tx['debit_amount'], 2, ',', '.') : '-' }}
                                 </td>
-                                <td class="px-3 py-2 text-right font-sans tabular-nums {{ (float) $tx['credit_amount'] > 0 ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-zinc-400' }}">
+                                <td class="px-3 py-2 text-right font-sans tabular-nums {{ (float) $tx['credit_amount'] > 0 ? 'text-positive font-semibold' : 'text-muted-foreground' }}">
                                     {{ (float) $tx['credit_amount'] > 0 ? 'Rp '.number_format((float) $tx['credit_amount'], 2, ',', '.') : '-' }}
                                 </td>
-                                <td class="px-3 py-2 text-right font-sans tabular-nums font-bold text-zinc-800 dark:text-zinc-200">
+                                <td class="px-3 py-2 text-right font-sans tabular-nums font-bold text-foreground">
                                     Rp {{ number_format((float) $tx['running_balance'], 2, ',', '.') }}
                                 </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="7" class="px-4 py-8 text-center text-zinc-400 italic">
+                                <td colspan="7" class="px-4 py-8 text-center text-muted-foreground italic">
                                     No receivable transactions in this date range.
                                 </td>
                             </tr>

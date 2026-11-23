@@ -24,7 +24,7 @@
         <x-ui.alert variant="destructive" class="mb-4">
             <div class="flex items-center justify-between w-full">
                 <span>{{ $message }}</span>
-                <button wire:click="dismissError" class="ml-4 rounded-lg p-1 hover:bg-rose-100">
+                <button wire:click="dismissError" class="ml-4 rounded-lg p-1 hover:bg-destructive-muted">
                     <span class="material-symbols-rounded text-[16px]">close</span>
                 </button>
             </div>
@@ -47,19 +47,19 @@
             <button
                 type="button"
                 wire:click="setStationFilter('kitchen')"
-                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer {{ $stationFilter === 'kitchen' ? 'bg-amber-600 text-white shadow-xs' : 'bg-muted text-muted-foreground hover:text-foreground' }}">
+                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer {{ $stationFilter === 'kitchen' ? 'bg-warning text-white shadow-xs' : 'bg-muted text-muted-foreground hover:text-foreground' }}">
                 Kitchen (Food)
             </button>
             <button
                 type="button"
                 wire:click="setStationFilter('bar')"
-                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer {{ $stationFilter === 'bar' ? 'bg-sky-600 text-white shadow-xs' : 'bg-muted text-muted-foreground hover:text-foreground' }}">
+                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer {{ $stationFilter === 'bar' ? 'bg-primary text-primary-foreground shadow-xs' : 'bg-muted text-muted-foreground hover:text-foreground' }}">
                 Bar (Drinks)
             </button>
             <button
                 type="button"
                 wire:click="setStationFilter('dessert')"
-                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer {{ $stationFilter === 'dessert' ? 'bg-pink-600 text-white shadow-xs' : 'bg-muted text-muted-foreground hover:text-foreground' }}">
+                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer {{ $stationFilter === 'dessert' ? 'bg-primary text-primary-foreground shadow-xs' : 'bg-muted text-muted-foreground hover:text-foreground' }}">
                 Dessert & Pastry
             </button>
         </div>
@@ -68,8 +68,8 @@
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3 3xl:gap-8 4xl:grid-cols-4">
 
         {{-- COLUMN 1: QUEUED --}}
-        <section aria-labelledby="kds-pending" class="bg-white border border-gray-200 rounded-2xl flex flex-col overflow-hidden shadow-xs">
-            <header class="flex items-center justify-between border-b border-gray-100 bg-gray-50/70 px-5 py-3.5">
+        <section aria-labelledby="kds-pending" class="bg-white border border-border rounded-2xl flex flex-col overflow-hidden shadow-xs">
+            <header class="flex items-center justify-between border-b border-border bg-secondary/70 px-5 py-3.5">
                 <h3 id="kds-pending" class="flex items-center gap-2 font-bold text-sm text-foreground">
                     <span class="size-2.5 rounded-full bg-primary"></span> Queued
                 </h3>
@@ -79,9 +79,9 @@
                 @forelse ($this->pendingItems as $item)
                     @include('livewire.kds.partials.ticket', ['item' => $item, 'variant' => 'pending'])
                 @empty
-                    <div class="flex flex-col items-center py-16 text-center text-gray-400">
-                        <div class="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-50 border border-gray-100 shadow-xs">
-                            <span class="material-symbols-rounded text-[28px] text-gray-400">pending_actions</span>
+                    <div class="flex flex-col items-center py-16 text-center text-muted-foreground">
+                        <div class="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary border border-border shadow-xs">
+                            <span class="material-symbols-rounded text-[28px] text-muted-foreground">pending_actions</span>
                         </div>
                         <p class="text-xs font-semibold">No orders queued.</p>
                     </div>
@@ -90,20 +90,20 @@
         </section>
 
         {{-- COLUMN 2: IN PREPARATION --}}
-        <section aria-labelledby="kds-brewing" class="bg-white border border-gray-200 rounded-2xl flex flex-col overflow-hidden shadow-xs">
-            <header class="flex items-center justify-between border-b border-gray-100 bg-gray-50/70 px-5 py-3.5">
-                <h3 id="kds-brewing" class="flex items-center gap-2 font-bold text-sm text-amber-700">
-                    <span class="size-2.5 animate-pulse rounded-full bg-amber-500"></span> Preparing
+        <section aria-labelledby="kds-brewing" class="bg-white border border-border rounded-2xl flex flex-col overflow-hidden shadow-xs">
+            <header class="flex items-center justify-between border-b border-border bg-secondary/70 px-5 py-3.5">
+                <h3 id="kds-brewing" class="flex items-center gap-2 font-bold text-sm text-warning">
+                    <span class="size-2.5 animate-pulse rounded-full bg-warning"></span> Preparing
                 </h3>
-                <span class="rounded-lg bg-amber-600 px-2.5 py-0.5 text-xs font-black text-white tabular-nums">{{ $this->brewingItems->count() }}</span>
+                <span class="rounded-lg bg-warning px-2.5 py-0.5 text-xs font-black text-white tabular-nums">{{ $this->brewingItems->count() }}</span>
             </header>
             <div class="custom-scrollbar max-h-[70vh] flex-1 space-y-3 overflow-y-auto p-4">
                 @forelse ($this->brewingItems as $item)
                     @include('livewire.kds.partials.ticket', ['item' => $item, 'variant' => 'brewing'])
                 @empty
-                    <div class="flex flex-col items-center py-16 text-center text-gray-400">
-                        <div class="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-50 border border-gray-100 shadow-xs">
-                            <span class="material-symbols-rounded text-[28px] text-amber-500">coffee_maker</span>
+                    <div class="flex flex-col items-center py-16 text-center text-muted-foreground">
+                        <div class="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary border border-border shadow-xs">
+                            <span class="material-symbols-rounded text-[28px] text-warning">coffee_maker</span>
                         </div>
                         <p class="text-xs font-semibold">No items currently in preparation.</p>
                     </div>
@@ -112,20 +112,20 @@
         </section>
 
         {{-- COLUMN 3: READY TO SERVE --}}
-        <section aria-labelledby="kds-ready" class="bg-white border border-gray-200 rounded-2xl flex flex-col overflow-hidden shadow-xs">
-            <header class="flex items-center justify-between border-b border-gray-100 bg-gray-50/70 px-5 py-3.5">
-                <h3 id="kds-ready" class="flex items-center gap-2 font-bold text-sm text-emerald-700">
-                    <span class="size-2.5 rounded-full bg-emerald-500"></span> Ready to Serve
+        <section aria-labelledby="kds-ready" class="bg-white border border-border rounded-2xl flex flex-col overflow-hidden shadow-xs">
+            <header class="flex items-center justify-between border-b border-border bg-secondary/70 px-5 py-3.5">
+                <h3 id="kds-ready" class="flex items-center gap-2 font-bold text-sm text-positive">
+                    <span class="size-2.5 rounded-full bg-positive"></span> Ready to Serve
                 </h3>
-                <span class="rounded-lg bg-emerald-600 px-2.5 py-0.5 text-xs font-black text-white tabular-nums">{{ $this->readyItems->count() }}</span>
+                <span class="rounded-lg bg-positive px-2.5 py-0.5 text-xs font-black text-white tabular-nums">{{ $this->readyItems->count() }}</span>
             </header>
             <div class="custom-scrollbar max-h-[70vh] flex-1 space-y-3 overflow-y-auto p-4">
                 @forelse ($this->readyItems as $item)
                     @include('livewire.kds.partials.ticket', ['item' => $item, 'variant' => 'ready'])
                 @empty
-                    <div class="flex flex-col items-center py-16 text-center text-gray-400">
-                        <div class="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-50 border border-gray-100 shadow-xs">
-                            <span class="material-symbols-rounded text-[28px] text-emerald-500">check_circle</span>
+                    <div class="flex flex-col items-center py-16 text-center text-muted-foreground">
+                        <div class="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary border border-border shadow-xs">
+                            <span class="material-symbols-rounded text-[28px] text-positive">check_circle</span>
                         </div>
                         <p class="text-xs font-semibold">No items ready yet today.</p>
                     </div>

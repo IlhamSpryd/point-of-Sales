@@ -84,9 +84,9 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right tabular-nums">
                                 @if($movement->quantity > 0)
-                                    <span class="text-sm font-semibold text-emerald-600">+{{ number_format($movement->quantity, 2) }} {{ $movement->ingredient->unit ?? '' }}</span>
+                                    <span class="text-sm font-semibold text-positive">+{{ number_format($movement->quantity, 2) }} {{ $movement->ingredient->unit ?? '' }}</span>
                                 @else
-                                    <span class="text-sm font-semibold text-rose-600">{{ number_format($movement->quantity, 2) }} {{ $movement->ingredient->unit ?? '' }}</span>
+                                    <span class="text-sm font-semibold text-destructive">{{ number_format($movement->quantity, 2) }} {{ $movement->ingredient->unit ?? '' }}</span>
                                 @endif
                             </td>
                             <td class="px-6 py-4">

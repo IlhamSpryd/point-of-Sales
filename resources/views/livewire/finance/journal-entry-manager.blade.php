@@ -3,12 +3,12 @@
 
     <!-- Flash Notifications -->
     @if (session()->has('success'))
-        <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-sm flex items-center justify-between">
+        <div class="p-4 rounded-xl bg-positive border border-positive/20 text-positive text-sm flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <span class="material-symbols-rounded text-lg">check_circle</span>
                 <span>{{ session('success') }}</span>
             </div>
-            <button type="button" @click="$el.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700">
+            <button type="button" @click="$el.parentElement.remove()" class="text-positive hover:text-positive">
                 <span class="material-symbols-rounded text-sm">close</span>
             </button>
         </div>
@@ -17,12 +17,12 @@
     <!-- Header Action Bar -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-xl font-bold text-zinc-950 dark:text-white tracking-tight">General Journal (General Ledger)</h1>
-            <p class="text-xs text-zinc-500">Dual-entry general ledger, automated transaction posting, and manual adjustment workbench.</p>
+            <h1 class="text-xl font-bold text-foreground tracking-tight">General Journal (General Ledger)</h1>
+            <p class="text-xs text-muted-foreground">Dual-entry general ledger, automated transaction posting, and manual adjustment workbench.</p>
         </div>
         <button type="button"
                 wire:click="openWorkbenchModal"
-                class="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 rounded-xl transition-colors shadow-xs">
+                class="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl transition-colors shadow-xs">
             <span class="material-symbols-rounded text-base">post_add</span>
             <span>Create Manual Journal</span>
         </button>
@@ -140,64 +140,64 @@
                     <!-- General Header Information -->
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Posting Date</label>
+                            <label class="block text-xs font-semibold text-foreground mb-1">Posting Date</label>
                             <input type="date"
                                    wire:model="postingDate"
-                                   class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-sans">
-                            @error('postingDate') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                                   class="w-full px-3 py-2 text-xs rounded-xl border border-border bg-card text-foreground font-sans">
+                            @error('postingDate') <span class="text-[10px] text-destructive mt-1 block">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Journal Type</label>
+                            <label class="block text-xs font-semibold text-foreground mb-1">Journal Type</label>
                             <select wire:model="journalType"
-                                    class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
+                                    class="w-full px-3 py-2 text-xs rounded-xl border border-border bg-card text-foreground">
                                 <option value="MANUAL_ADJUSTMENT">MANUAL_ADJUSTMENT (Adjusting Journal)</option>
                                 <option value="GENERAL">GENERAL (General Journal)</option>
                                 <option value="OPENING_BALANCE">OPENING_BALANCE (Opening Balance)</option>
                             </select>
-                            @error('journalType') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                            @error('journalType') <span class="text-[10px] text-destructive mt-1 block">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Notes / Description</label>
+                            <label class="block text-xs font-semibold text-foreground mb-1">Notes / Description</label>
                             <input type="text"
                                    wire:model="notes"
                                    placeholder="e.g. Month-end operational expense adjustment..."
-                                   class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
-                            @error('notes') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                                   class="w-full px-3 py-2 text-xs rounded-xl border border-border bg-card text-foreground">
+                            @error('notes') <span class="text-[10px] text-destructive mt-1 block">{{ $message }}</span> @enderror
                         </div>
                     </div>
 
                     <!-- Journal Lines Editor Table -->
                     <div class="space-y-2 pt-2">
                         <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold text-zinc-900 dark:text-zinc-100">Journal Entry Lines</span>
+                            <span class="text-xs font-bold text-foreground">Journal Entry Lines</span>
                             <button type="button"
                                     wire:click="addLine"
-                                    class="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold text-zinc-800 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-lg transition-colors">
+                                    class="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold text-foreground bg-secondary hover:bg-muted rounded-lg transition-colors">
                                 <span class="material-symbols-rounded text-sm">add</span>
                                 <span>Add Line</span>
                             </button>
                         </div>
 
                         @error('lines')
-                            <div class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs">
+                            <div class="p-3 rounded-xl bg-destructive border border-destructive/20 text-destructive text-xs">
                                 {{ $message }}
                             </div>
                         @enderror
 
-                        <div class="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden">
+                        <div class="border border-border rounded-xl overflow-hidden">
                             <table class="w-full text-left text-xs">
-                                <thead class="bg-zinc-50 dark:bg-zinc-900/60 text-zinc-500 font-semibold border-b border-zinc-200 dark:border-zinc-800">
+                                <thead class="bg-secondary /60 text-muted-foreground font-semibold border-b border-border">
                                     <tr>
-                                        <th class="px-3 py-2.5 w-1/3">COA Account</th>
-                                        <th class="px-3 py-2.5 w-1/4">Line Description</th>
-                                        <th class="px-3 py-2.5 text-right w-1/6">Debit (Rp)</th>
-                                        <th class="px-3 py-2.5 text-right w-1/6">Credit (Rp)</th>
-                                        <th class="px-2 py-2.5 text-center w-10"></th>
+                                        <th scope="col" class="px-3 py-2.5 w-1/3">COA Account</th>
+                                        <th scope="col" class="px-3 py-2.5 w-1/4">Line Description</th>
+                                        <th scope="col" class="px-3 py-2.5 text-right w-1/6">Debit (Rp)</th>
+                                        <th scope="col" class="px-3 py-2.5 text-right w-1/6">Credit (Rp)</th>
+                                        <th scope="col" class="px-2 py-2.5 text-center w-10"></th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+                                <tbody class="divide-y border-border">
                                     @foreach ($lines as $index => $line)
                                         <tr wire:key="journal-line-input-{{ $index }}">
                                             <td class="p-2">
@@ -218,29 +218,29 @@
                                                 <input type="text"
                                                        wire:model="lines.{{ $index }}.description"
                                                        placeholder="Line description (optional)"
-                                                       class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
+                                                       class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-border bg-card text-foreground">
                                             </td>
                                             <td class="p-2">
                                                 <input type="number"
                                                        step="0.01"
                                                        min="0"
                                                        wire:model.live.debounce.300ms="lines.{{ $index }}.debit_amount"
-                                                       class="w-full px-2.5 py-1.5 text-xs text-right font-sans rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-semibold">
-                                                @error("lines.{$index}.debit_amount") <span class="text-[10px] text-rose-500 block text-right">{{ $message }}</span> @enderror
+                                                       class="w-full px-2.5 py-1.5 text-xs text-right font-sans rounded-lg border border-border bg-card text-foreground font-semibold">
+                                                @error("lines.{$index}.debit_amount") <span class="text-[10px] text-destructive block text-right">{{ $message }}</span> @enderror
                                             </td>
                                             <td class="p-2">
                                                 <input type="number"
                                                        step="0.01"
                                                        min="0"
                                                        wire:model.live.debounce.300ms="lines.{{ $index }}.credit_amount"
-                                                       class="w-full px-2.5 py-1.5 text-xs text-right font-sans rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-semibold">
-                                                @error("lines.{$index}.credit_amount") <span class="text-[10px] text-rose-500 block text-right">{{ $message }}</span> @enderror
+                                                       class="w-full px-2.5 py-1.5 text-xs text-right font-sans rounded-lg border border-border bg-card text-foreground font-semibold">
+                                                @error("lines.{$index}.credit_amount") <span class="text-[10px] text-destructive block text-right">{{ $message }}</span> @enderror
                                             </td>
                                             <td class="p-2 text-center">
                                                 @if (count($lines) > 2)
                                                     <button type="button"
                                                             wire:click="removeLine({{ $index }})"
-                                                            class="p-1 rounded text-zinc-400 hover:text-rose-500 transition-colors">
+                                                            class="p-1 rounded text-muted-foreground hover:text-destructive transition-colors">
                                                         <span class="material-symbols-rounded text-sm">delete</span>
                                                     </button>
                                                 @endif
@@ -254,16 +254,16 @@
 
                     <!-- Real-Time Balancing Summary Banner -->
                     @php $balance = $this->balanceSummary; @endphp
-                    <div class="p-4 rounded-xl border {{ $balance['isBalanced'] ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-rose-500/5 border-rose-500/20' }} flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="p-4 rounded-xl border {{ $balance['isBalanced'] ? 'bg-positive border-positive/20' : 'bg-destructive border-destructive/20' }} flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg {{ $balance['isBalanced'] ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/20 text-rose-600 dark:text-rose-400' }} flex items-center justify-center">
+                            <div class="w-8 h-8 rounded-lg {{ $balance['isBalanced'] ? 'bg-positive text-positive ' : 'bg-destructive text-destructive ' }} flex items-center justify-center">
                                 <span class="material-symbols-rounded text-lg">{{ $balance['isBalanced'] ? 'check_circle' : 'warning' }}</span>
                             </div>
                             <div>
-                                <span class="text-xs font-bold {{ $balance['isBalanced'] ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
+                                <span class="text-xs font-bold {{ $balance['isBalanced'] ? 'text-positive ' : 'text-destructive ' }}">
                                     {{ $balance['isBalanced'] ? 'Journal Balanced (Ready to Post)' : 'Journal Unbalanced' }}
                                 </span>
-                                <span class="text-[11px] text-zinc-500 block font-sans">
+                                <span class="text-[11px] text-muted-foreground block font-sans">
                                     Difference: Rp {{ number_format((float) abs((float) $balance['difference']), 2) }}
                                 </span>
                             </div>
@@ -271,12 +271,12 @@
 
                         <div class="flex items-center gap-6 font-sans text-xs">
                             <div class="text-right">
-                                <span class="text-[10px] text-zinc-400 block uppercase">Total Debit</span>
-                                <span class="font-bold text-zinc-950 dark:text-white">Rp {{ number_format((float) $balance['totalDebit'], 2) }}</span>
+                                <span class="text-[10px] text-muted-foreground block uppercase">Total Debit</span>
+                                <span class="font-bold text-foreground">Rp {{ number_format((float) $balance['totalDebit'], 2) }}</span>
                             </div>
                             <div class="text-right">
-                                <span class="text-[10px] text-zinc-400 block uppercase">Total Credit</span>
-                                <span class="font-bold text-zinc-950 dark:text-white">Rp {{ number_format((float) $balance['totalCredit'], 2) }}</span>
+                                <span class="text-[10px] text-muted-foreground block uppercase">Total Credit</span>
+                                <span class="font-bold text-foreground">Rp {{ number_format((float) $balance['totalCredit'], 2) }}</span>
                             </div>
                         </div>
                     </div>
@@ -337,11 +337,11 @@
                     <table class="w-full text-left text-xs">
                         <thead class="bg-muted/50 text-muted-foreground font-semibold border-b border-border">
                             <tr>
-                                <th class="px-3 py-2">Account Code</th>
-                                <th class="px-3 py-2">Account Name</th>
-                                <th class="px-3 py-2">Line Description</th>
-                                <th class="px-3 py-2 text-right">Debit</th>
-                                <th class="px-3 py-2 text-right">Credit</th>
+                                <th scope="col" class="px-3 py-2">Account Code</th>
+                                <th scope="col" class="px-3 py-2">Account Name</th>
+                                <th scope="col" class="px-3 py-2">Line Description</th>
+                                <th scope="col" class="px-3 py-2 text-right">Debit</th>
+                                <th scope="col" class="px-3 py-2 text-right">Credit</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-border">
@@ -362,8 +362,8 @@
                         <tfoot class="bg-muted/50 font-sans font-bold text-xs border-t border-border">
                             <tr>
                                 <td colspan="3" class="px-3 py-2 text-right">Total</td>
-                                <td class="px-3 py-2 text-right">Rp {{ number_format((float) $selectedJournal->total_debit, 2) }}</td>
-                                <td class="px-3 py-2 text-right">Rp {{ number_format((float) $selectedJournal->total_credit, 2) }}</td>
+                                <td class="tabular-nums px-3 py-2 text-right">Rp {{ number_format((float) $selectedJournal->total_debit, 2) }}</td>
+                                <td class="tabular-nums px-3 py-2 text-right">Rp {{ number_format((float) $selectedJournal->total_credit, 2) }}</td>
                             </tr>
                         </tfoot>
                     </table>

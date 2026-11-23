@@ -91,9 +91,9 @@
             <table class="w-full text-left text-sm text-foreground divide-y divide-border">
                 <thead class="bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     <tr>
-                        <th class="px-5 py-3.5 w-64">Employee Name</th>
+                        <th scope="col" class="px-5 py-3.5 w-64">Employee Name</th>
                         @foreach ($days as $day)
-                            <th class="px-3 py-3.5 text-center {{ $day->isToday() ? 'bg-primary/10 text-primary font-bold' : '' }}">
+                            <th scope="col" class="px-3 py-3.5 text-center {{ $day->isToday() ? 'bg-primary/10 text-primary font-bold' : '' }}">
                                 <div>{{ $day->format('D') }}</div>
                                 <div class="text-xs font-normal tabular-nums">{{ $day->format('d/m') }}</div>
                             </th>

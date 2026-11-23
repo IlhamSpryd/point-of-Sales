@@ -33,11 +33,11 @@
     @endif
 
     <!-- Filter & Toolbar -->
-    <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-border dark:border-zinc-800">
+    <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-border">
         <div class="flex-1 max-w-md">
             <div class="relative">
-                <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search SO No., Customer PO, name..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-ring/20 text-zinc-800 dark:text-zinc-100">
+                <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">search</span>
+                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search SO No., Customer PO, name..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-border bg-card focus:outline-hidden focus:ring-2 focus:ring-ring/20 text-foreground">
             </div>
         </div>
         <div class="flex flex-wrap items-center gap-3">
@@ -61,44 +61,44 @@
     </div>
 
     <!-- Table -->
-    <div class="card-surface overflow-hidden rounded-2xl border border-border dark:border-zinc-800 shadow-xs">
+    <div class="card-surface overflow-hidden rounded-2xl border border-border shadow-xs">
         <div class="overflow-x-auto">
             <table class="table-standard min-w-full text-left border-collapse text-sm">
                 <thead>
-                    <tr class="border-b border-border dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-                        <th class="py-3.5 px-6">Sales Order No.</th>
-                        <th class="py-3.5 px-6">Customer & PO</th>
-                        <th class="py-3.5 px-6">Order Date</th>
-                        <th class="py-3.5 px-6 text-right">Total Amount</th>
-                        <th class="py-3.5 px-6">Order Status</th>
-                        <th class="py-3.5 px-6">Fulfillment</th>
-                        <th class="py-3.5 px-6 text-right">Action</th>
+                    <tr class="border-b border-border bg-secondary/50 /50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        <th scope="col" class="py-3.5 px-6">Sales Order No.</th>
+                        <th scope="col" class="py-3.5 px-6">Customer & PO</th>
+                        <th scope="col" class="py-3.5 px-6">Order Date</th>
+                        <th scope="col" class="py-3.5 px-6 text-right">Total Amount</th>
+                        <th scope="col" class="py-3.5 px-6">Order Status</th>
+                        <th scope="col" class="py-3.5 px-6">Fulfillment</th>
+                        <th scope="col" class="py-3.5 px-6 text-right">Action</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-border dark:divide-zinc-800/70">
+                <tbody class="divide-y divide-border">
                     @forelse($salesOrders as $so)
                         <tr wire:key="so-row-{{ $so->id }}" class="hover:bg-muted/40 transition-colors">
                             <td class="py-4 px-6">
-                                <div class="font-medium text-foreground dark:text-white flex items-center gap-1.5 font-sans">
+                                <div class="font-medium text-foreground flex items-center gap-1.5 font-sans">
                                     <span>{{ $so->so_number }}</span>
                                 </div>
-                                <div class="text-xs text-zinc-400 mt-0.5">Source: {{ $so->order_source }}</div>
+                                <div class="text-xs text-muted-foreground mt-0.5">Source: {{ $so->order_source }}</div>
                             </td>
                             <td class="py-4 px-6">
-                                <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $so->customer?->name }}</div>
+                                <div class="font-medium text-foreground">{{ $so->customer?->name }}</div>
                                 @if($so->customer_po_number)
-                                    <div class="text-xs text-indigo-600 dark:text-indigo-400 font-sans">PO: {{ $so->customer_po_number }}</div>
+                                    <div class="text-xs text-primary font-sans">PO: {{ $so->customer_po_number }}</div>
                                 @else
-                                    <div class="text-xs text-zinc-400 font-sans">{{ $so->customer?->customer_code }}</div>
+                                    <div class="text-xs text-muted-foreground font-sans">{{ $so->customer?->customer_code }}</div>
                                 @endif
                             </td>
                             <td class="py-4 px-6">
-                                <div class="text-zinc-800 dark:text-zinc-200">{{ $so->order_date->format('d/m/Y') }}</div>
+                                <div class="text-foreground">{{ $so->order_date->format('d/m/Y') }}</div>
                                 @if($so->expected_delivery_date)
-                                    <div class="text-xs text-zinc-500">Delivery: {{ $so->expected_delivery_date->format('d/m/Y') }}</div>
+                                    <div class="text-xs text-muted-foreground">Delivery: {{ $so->expected_delivery_date->format('d/m/Y') }}</div>
                                 @endif
                             </td>
-                            <td class="py-4 px-6 text-right font-medium text-zinc-900 dark:text-white tabular-nums">
+                            <td class="py-4 px-6 text-right font-medium text-foreground tabular-nums">
                                 Rp {{ number_format((float) $so->total_amount, 2, ',', '.') }}
                             </td>
                             <td class="py-4 px-6">
@@ -143,7 +143,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="py-12 text-center text-zinc-400">
+                            <td colspan="7" class="py-12 text-center text-muted-foreground">
                                 <span class="material-symbols-rounded text-4xl block mb-2">shopping_cart</span>
                                 No Sales Order data available.
                             </td>
@@ -153,7 +153,7 @@
             </table>
         </div>
         @if($salesOrders->hasPages())
-            <div class="p-4 border-t border-border dark:border-zinc-800">
+            <div class="p-4 border-t border-border">
                 {{ $salesOrders->links() }}
             </div>
         @endif
@@ -177,20 +177,20 @@
         <x-slot:content>
             @if($selectedSO)
             <div class="space-y-6">
-                <div class="text-xs text-zinc-500 -mt-2">
+                <div class="text-xs text-muted-foreground -mt-2">
                     Created by: {{ $selectedSO->createdBy?->name }} | Date: {{ $selectedSO->order_date->format('d/m/Y') }}
                 </div>
 
                 <!-- Status & Action Toolbar -->
-                <div class="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-border dark:border-zinc-700/80 flex flex-wrap items-center justify-between gap-3">
+                <div class="p-4 rounded-xl bg-secondary /40 border border-border/80 flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center gap-4">
                         <div>
-                            <span class="text-xs font-semibold text-zinc-500 uppercase block">Order Status</span>
-                            <span class="font-bold text-zinc-900 dark:text-white">{{ $selectedSO->status->value }}</span>
+                            <span class="text-xs font-semibold text-muted-foreground uppercase block">Order Status</span>
+                            <span class="font-bold text-foreground">{{ $selectedSO->status->value }}</span>
                         </div>
-                        <div class="border-l border-zinc-300 dark:border-zinc-700 pl-4">
-                            <span class="text-xs font-semibold text-zinc-500 uppercase block">Fulfillment</span>
-                            <span class="font-semibold text-zinc-800 dark:text-zinc-200">{{ $selectedSO->fulfillment_status->value }}</span>
+                        <div class="border-l border-border pl-4">
+                            <span class="text-xs font-semibold text-muted-foreground uppercase block">Fulfillment</span>
+                            <span class="font-semibold text-foreground">{{ $selectedSO->fulfillment_status->value }}</span>
                         </div>
                     </div>
 
@@ -230,55 +230,55 @@
 
                 <!-- Snapshot Info -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                    <div class="p-4 rounded-xl border border-zinc-200 dark:border-zinc-700 space-y-1">
-                        <h4 class="font-bold text-zinc-900 dark:text-white mb-2 text-sm">Customer</h4>
-                        <p><span class="text-zinc-500">Name:</span> <strong class="text-zinc-800 dark:text-zinc-200">{{ $selectedSO->customer?->name }}</strong></p>
-                        <p><span class="text-zinc-500">Code:</span> <span class="font-sans">{{ $selectedSO->customer?->customer_code }}</span></p>
-                        <p><span class="text-zinc-500">Terms:</span> {{ $selectedSO->payment_terms_days }} Days</p>
+                    <div class="p-4 rounded-xl border border-border space-y-1">
+                        <h4 class="font-bold text-foreground mb-2 text-sm">Customer</h4>
+                        <p><span class="text-muted-foreground">Name:</span> <strong class="text-foreground">{{ $selectedSO->customer?->name }}</strong></p>
+                        <p><span class="text-muted-foreground">Code:</span> <span class="font-sans">{{ $selectedSO->customer?->customer_code }}</span></p>
+                        <p><span class="text-muted-foreground">Terms:</span> {{ $selectedSO->payment_terms_days }} Days</p>
                     </div>
-                    <div class="p-4 rounded-xl border border-zinc-200 dark:border-zinc-700 space-y-1">
-                        <h4 class="font-bold text-zinc-900 dark:text-white mb-2 text-sm">Fulfillment History</h4>
-                        <p><span class="text-zinc-500">Order Execution Documents:</span> {{ $selectedSO->orders->count() }} transactions</p>
+                    <div class="p-4 rounded-xl border border-border space-y-1">
+                        <h4 class="font-bold text-foreground mb-2 text-sm">Fulfillment History</h4>
+                        <p><span class="text-muted-foreground">Order Execution Documents:</span> {{ $selectedSO->orders->count() }} transactions</p>
                         @foreach($selectedSO->orders as $ord)
-                            <p class="font-sans text-emerald-600 dark:text-emerald-400">#{{ $ord->order_code }} ({{ $ord->order_date }}) - Status: {{ $ord->order_status }}</p>
+                            <p class="font-sans text-positive">#{{ $ord->order_code }} ({{ $ord->order_date }}) - Status: {{ $ord->order_status }}</p>
                         @endforeach
                     </div>
                 </div>
 
                 <!-- Lines Table -->
-                <div class="border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden">
+                <div class="border border-border rounded-xl overflow-hidden">
                     <table class="table-standard min-w-full text-left text-xs">
-                        <thead class="bg-zinc-50 dark:bg-zinc-800 text-zinc-500 uppercase font-semibold">
+                        <thead class="bg-secondary text-muted-foreground uppercase font-semibold">
                             <tr>
-                                <th class="p-3">#</th>
-                                <th class="p-3">Product</th>
-                                <th class="p-3 text-right">Ordered</th>
-                                <th class="p-3 text-right">Reserved</th>
-                                <th class="p-3 text-right">Fulfilled</th>
-                                <th class="p-3 text-right">Cancelled</th>
-                                <th class="p-3 text-right">Remaining</th>
-                                <th class="p-3 text-right">Total Value</th>
+                                <th scope="col" class="p-3">#</th>
+                                <th scope="col" class="p-3">Product</th>
+                                <th scope="col" class="p-3 text-right">Ordered</th>
+                                <th scope="col" class="p-3 text-right">Reserved</th>
+                                <th scope="col" class="p-3 text-right">Fulfilled</th>
+                                <th scope="col" class="p-3 text-right">Cancelled</th>
+                                <th scope="col" class="p-3 text-right">Remaining</th>
+                                <th scope="col" class="p-3 text-right">Total Value</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800 font-sans">
+                        <tbody class="divide-y border-border font-sans">
                             @foreach($selectedSO->lines as $line)
                                 <tr wire:key="so-detail-line-{{ $line->id }}">
-                                    <td class="p-3 text-zinc-400">{{ $line->line_number }}</td>
+                                    <td class="p-3 text-muted-foreground">{{ $line->line_number }}</td>
                                     <td class="p-3 font-sans">
-                                        <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $line->description ?: ($line->product?->product_name ?? $line->product?->name) }}</div>
-                                        <div class="text-[10px] text-zinc-400 font-sans flex items-center gap-1.5">
+                                        <div class="font-medium text-foreground">{{ $line->description ?: ($line->product?->product_name ?? $line->product?->name) }}</div>
+                                        <div class="text-[10px] text-muted-foreground font-sans flex items-center gap-1.5">
                                             <span>{{ $line->product?->product_code ?? $line->product?->sku }}</span>
                                             @if($line->uom)
                                                 <span class="text-[10px] uppercase font-medium text-muted-foreground">({{ $line->uom->code ?? $line->uom->name }})</span>
                                             @endif
                                         </div>
                                     </td>
-                                    <td class="p-3 text-right tabular-nums">{{ number_format((float) $line->ordered_qty, 2) }} <span class="text-[10px] text-zinc-400">{{ $line->uom?->code }}</span></td>
-                                    <td class="p-3 text-right text-blue-600 tabular-nums">{{ number_format((float) $line->reserved_qty, 2) }}</td>
-                                    <td class="p-3 text-right text-emerald-600 tabular-nums">{{ number_format((float) $line->fulfilled_qty, 2) }}</td>
-                                    <td class="p-3 text-right text-rose-600 tabular-nums">{{ number_format((float) $line->cancelled_qty, 2) }}</td>
-                                    <td class="p-3 text-right font-bold text-amber-600 tabular-nums">{{ number_format((float) $line->getRemainingQty(), 2) }}</td>
-                                    <td class="p-3 text-right font-bold text-zinc-900 dark:text-white tabular-nums">Rp {{ number_format((float) $line->line_total, 2, ',', '.') }}</td>
+                                    <td class="p-3 text-right tabular-nums">{{ number_format((float) $line->ordered_qty, 2) }} <span class="text-[10px] text-muted-foreground">{{ $line->uom?->code }}</span></td>
+                                    <td class="p-3 text-right text-accent tabular-nums">{{ number_format((float) $line->reserved_qty, 2) }}</td>
+                                    <td class="p-3 text-right text-positive tabular-nums">{{ number_format((float) $line->fulfilled_qty, 2) }}</td>
+                                    <td class="p-3 text-right text-destructive tabular-nums">{{ number_format((float) $line->cancelled_qty, 2) }}</td>
+                                    <td class="p-3 text-right font-bold text-warning tabular-nums">{{ number_format((float) $line->getRemainingQty(), 2) }}</td>
+                                    <td class="p-3 text-right font-bold text-foreground tabular-nums">Rp {{ number_format((float) $line->line_total, 2, ',', '.') }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -306,7 +306,7 @@
         <x-slot:content>
             @if($selectedSO)
             <div class="space-y-4">
-                <p class="text-xs text-zinc-500">Specify item quantities to be shipped/fulfilled in this delivery. Physical branch stock will be safely deducted via InventoryLedger.</p>
+                <p class="text-xs text-muted-foreground">Specify item quantities to be shipped/fulfilled in this delivery. Physical branch stock will be safely deducted via InventoryLedger.</p>
 
                 <div class="space-y-3 max-h-60 overflow-y-auto">
                     @foreach($selectedSO->lines as $line)
@@ -314,8 +314,8 @@
                         @if($rem > 0)
                             <div wire:key="so-fulfill-line-{{ $line->id }}" class="p-3 rounded-xl border border-border flex items-center justify-between gap-4">
                                 <div class="flex-1">
-                                    <div class="font-semibold text-xs text-zinc-800 dark:text-zinc-200">{{ $line->description ?: ($line->product?->product_name ?? $line->product?->name) }}</div>
-                                    <div class="text-[11px] text-zinc-400">Remaining to ship: <strong>{{ number_format($rem, 2) }}</strong></div>
+                                    <div class="font-semibold text-xs text-foreground">{{ $line->description ?: ($line->product?->product_name ?? $line->product?->name) }}</div>
+                                    <div class="text-[11px] text-muted-foreground">Remaining to ship: <strong>{{ number_format($rem, 2) }}</strong></div>
                                 </div>
                                 <div class="w-32">
                                     <x-ui.input type="number" step="0.0001" max="{{ $rem }}" min="0" wire:model="fulfillmentQuantities.{{ $line->id }}" class="text-right font-sans text-xs" />
@@ -348,11 +348,11 @@
 
         <x-slot:content>
             <div class="space-y-4">
-                <p class="text-xs text-zinc-500">All unfulfilled quantities will be cancelled and stock reservations will be released.</p>
+                <p class="text-xs text-muted-foreground">All unfulfilled quantities will be cancelled and stock reservations will be released.</p>
                 <div>
                     <x-ui.label for="cancelReason">Cancellation Reason *</x-ui.label>
-                    <textarea id="cancelReason" wire:model="cancelReason" rows="3" placeholder="Enter reason for order cancellation..." class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 text-zinc-800 dark:text-zinc-100"></textarea>
-                    @error('cancelReason') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                    <textarea id="cancelReason" wire:model="cancelReason" rows="3" placeholder="Enter reason for order cancellation..." class="w-full text-sm rounded-xl border border-border bg-card p-2.5 text-foreground"></textarea>
+                    @error('cancelReason') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
             </div>
         </x-slot:content>

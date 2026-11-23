@@ -12,11 +12,11 @@
 @endphp
 
 <article wire:key="{{ $variant }}-{{ $item->id }}" data-gsap="kds-card"
-         class="rounded-2xl border border-gray-200 bg-white p-4 shadow-xs transition-all duration-200 hover:shadow-md hover:border-gray-300">
+         class="rounded-2xl border border-border bg-white p-4 shadow-xs transition-all duration-200 hover:shadow-md hover:border-border">
 
     <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
-            <p class="font-sans text-[10px] 3xl:text-xs font-bold uppercase tracking-widest text-gray-400">{{ $order->order_code }}</p>
+            <p class="font-sans text-[10px] 3xl:text-xs font-bold uppercase tracking-widest text-muted-foreground">{{ $order->order_code }}</p>
             <p class="mt-0.5 truncate text-base font-black text-foreground leading-tight">{{ $place }}</p>
         </div>
         <div class="flex items-center gap-1.5 shrink-0">
@@ -34,21 +34,21 @@
     </div>
 
     <div class="mt-2.5 flex items-baseline gap-2">
-        <span class="rounded-lg border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs font-black text-foreground tabular-nums">{{ $item->qty }}×</span>
+        <span class="rounded-lg border border-border bg-secondary px-2 py-0.5 text-xs font-black text-foreground tabular-nums">{{ $item->qty }}×</span>
         <span class="text-sm 3xl:text-base font-bold leading-snug text-foreground">{{ $item->product->product_name }}</span>
     </div>
 
     @if ($variant !== 'ready' && $options->isNotEmpty())
         <div class="mt-2 flex flex-wrap gap-1">
             @foreach ($options as $opt)
-                <span class="rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] font-semibold text-gray-600">{{ $opt['name'] ?? $opt['modifier_name'] ?? '' }}</span>
+                <span class="rounded-md border border-border bg-secondary px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">{{ $opt['name'] ?? $opt['modifier_name'] ?? '' }}</span>
             @endforeach
         </div>
     @endif
 
     @if ($variant !== 'ready' && $item->notes)
-        <p class="mt-2 flex gap-1.5 rounded-xl border border-amber-200 bg-amber-50/60 px-3 py-1.5 text-xs font-medium text-amber-900">
-            <span class="material-symbols-rounded text-[14px] text-amber-700 mt-0.5">sticky_note_2</span>
+        <p class="mt-2 flex gap-1.5 rounded-xl border border-warning bg-warning-muted/60 px-3 py-1.5 text-xs font-medium text-warning">
+            <span class="material-symbols-rounded text-[14px] text-warning mt-0.5">sticky_note_2</span>
             <span>{{ $item->notes }}</span>
         </p>
     @endif
@@ -66,14 +66,14 @@
         @endif
 
         @if ($variant !== 'pending')
-            <span class="inline-flex items-center gap-1 text-gray-500 text-[11px]">
+            <span class="inline-flex items-center gap-1 text-muted-foreground text-[11px]">
                 <span class="material-symbols-rounded text-[14px]">person</span>
                 {{ $item->processedBy->name ?? '-' }}
             </span>
         @endif
 
         @if ($variant === 'ready')
-            <span class="inline-flex items-center gap-1 text-emerald-600 font-bold text-[11px]">
+            <span class="inline-flex items-center gap-1 text-positive font-bold text-[11px]">
                 <span class="material-symbols-rounded text-[14px]">check</span>
                 {{ $item->updated_at->format('H:i') }}
             </span>
@@ -99,7 +99,7 @@
                 @if ($isMine)
                     <button type="button" wire:click="markReady({{ $item->id }})" wire:loading.attr="disabled" wire:target="markReady({{ $item->id }})"
                             x-on:click="window.erpMotion?.pulseHighlight($el)"
-                            class="flex min-h-10 flex-1 items-center justify-center rounded-xl bg-emerald-600 text-xs font-bold text-white shadow-sm transition-all duration-200 hover:bg-emerald-700 active:scale-[0.98] disabled:cursor-wait disabled:opacity-60">
+                            class="flex min-h-10 flex-1 items-center justify-center rounded-xl bg-positive text-xs font-bold text-white shadow-sm transition-all duration-200 hover:bg-positive active:scale-[0.98] disabled:cursor-wait disabled:opacity-60">
                         <span wire:loading.remove wire:target="markReady({{ $item->id }})" class="flex items-center gap-1.5">
                             <span class="material-symbols-rounded text-[16px]">check_circle</span> Complete
                         </span>
@@ -111,26 +111,26 @@
                 <button type="button" wire:click="release({{ $item->id }})" wire:loading.attr="disabled" wire:target="release({{ $item->id }})"
                         x-on:click="window.erpMotion?.pulseHighlight($el)"
                         title="Release item" aria-label="Release item"
-                        class="flex min-h-10 min-w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 shadow-sm transition-all duration-200 hover:bg-gray-50 active:scale-[0.98] disabled:cursor-wait disabled:opacity-60 {{ $isMine ? '' : 'flex-1 gap-1.5 text-xs font-bold' }}">
+                        class="flex min-h-10 min-w-10 items-center justify-center rounded-xl border border-border bg-white text-muted-foreground shadow-sm transition-all duration-200 hover:bg-secondary active:scale-[0.98] disabled:cursor-wait disabled:opacity-60 {{ $isMine ? '' : 'flex-1 gap-1.5 text-xs font-bold' }}">
                     <span wire:loading.remove wire:target="release({{ $item->id }})" class="flex items-center gap-1">
                         <span class="material-symbols-rounded text-[20px]">undo</span>
                         @unless ($isMine) Release @endunless
                     </span>
-                    <span wire:loading wire:target="release({{ $item->id }})" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-400 border-t-gray-700"></span>
+                    <span wire:loading wire:target="release({{ $item->id }})" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-border border-t-gray-700"></span>
                 </button>
             </div>
         @else
-            <p class="mt-3.5 text-center text-xs font-medium text-gray-400">Being prepared by {{ $item->processedBy->name ?? 'another staff' }}</p>
+            <p class="mt-3.5 text-center text-xs font-medium text-muted-foreground">Being prepared by {{ $item->processedBy->name ?? 'another staff' }}</p>
         @endif
     @elseif ($variant === 'ready')
         @if ($canProcess && ($isMine || $canOverride))
             <button type="button" wire:click="recall({{ $item->id }})" wire:loading.attr="disabled" wire:target="recall({{ $item->id }})"
                     x-on:click="window.erpMotion?.pulseHighlight($el)"
-                    class="mt-3.5 flex min-h-10 w-full items-center justify-center rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:bg-gray-50 active:scale-[0.98] disabled:cursor-wait disabled:opacity-60 text-xs font-bold text-gray-700">
+                    class="mt-3.5 flex min-h-10 w-full items-center justify-center rounded-xl border border-border bg-white shadow-sm transition-all duration-200 hover:bg-secondary active:scale-[0.98] disabled:cursor-wait disabled:opacity-60 text-xs font-bold text-foreground">
                 <span wire:loading.remove wire:target="recall({{ $item->id }})" class="flex items-center gap-1.5">
                     <span class="material-symbols-rounded text-[20px]">undo</span> Recall to Prep
                 </span>
-                <span wire:loading wire:target="recall({{ $item->id }})" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-400 border-t-gray-700"></span>
+                <span wire:loading wire:target="recall({{ $item->id }})" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-border border-t-gray-700"></span>
             </button>
         @endif
     @endif

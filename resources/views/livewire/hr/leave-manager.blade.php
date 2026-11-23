@@ -93,12 +93,12 @@
                 <table class="w-full text-left text-sm text-foreground divide-y divide-border">
                     <thead class="bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         <tr>
-                            <th class="px-6 py-3.5">Request & Employee</th>
-                            <th class="px-6 py-3.5">Leave Type</th>
-                            <th class="px-6 py-3.5">Date Range</th>
-                            <th class="px-6 py-3.5">Duration</th>
-                            <th class="px-6 py-3.5">Status</th>
-                            <th class="px-6 py-3.5 text-right">Actions</th>
+                            <th scope="col" class="px-6 py-3.5">Request & Employee</th>
+                            <th scope="col" class="px-6 py-3.5">Leave Type</th>
+                            <th scope="col" class="px-6 py-3.5">Date Range</th>
+                            <th scope="col" class="px-6 py-3.5">Duration</th>
+                            <th scope="col" class="px-6 py-3.5">Status</th>
+                            <th scope="col" class="px-6 py-3.5 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border">
@@ -169,12 +169,12 @@
                 <table class="w-full text-left text-sm text-foreground divide-y divide-border">
                     <thead class="bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         <tr>
-                            <th class="px-6 py-3.5">Employee</th>
-                            <th class="px-6 py-3.5">Leave Policy</th>
-                            <th class="px-6 py-3.5">Year</th>
-                            <th class="px-6 py-3.5">Allocated Days</th>
-                            <th class="px-6 py-3.5">Used Days</th>
-                            <th class="px-6 py-3.5">Remaining Balance</th>
+                            <th scope="col" class="px-6 py-3.5">Employee</th>
+                            <th scope="col" class="px-6 py-3.5">Leave Policy</th>
+                            <th scope="col" class="px-6 py-3.5">Year</th>
+                            <th scope="col" class="px-6 py-3.5">Allocated Days</th>
+                            <th scope="col" class="px-6 py-3.5">Used Days</th>
+                            <th scope="col" class="px-6 py-3.5">Remaining Balance</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border">
@@ -192,10 +192,10 @@
                                 <td class="px-6 py-4 tabular-nums text-foreground">
                                     {{ (float) $bal->allocated_days }} Days
                                 </td>
-                                <td class="px-6 py-4 text-rose-600 font-semibold tabular-nums">
+                                <td class="px-6 py-4 text-destructive font-semibold tabular-nums">
                                     {{ (float) $bal->used_days }} Days
                                 </td>
-                                <td class="px-6 py-4 text-emerald-600 font-bold tabular-nums">
+                                <td class="px-6 py-4 text-positive font-bold tabular-nums">
                                     {{ (float) $bal->remaining_days }} Days
                                 </td>
                             </tr>

@@ -30,7 +30,7 @@
         
         <div class="flex items-center gap-3">
             <div class="hidden md:flex items-center gap-2 px-3 py-1.5 bg-secondary border border-border rounded-lg shadow-sm text-sm font-bold">
-                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                <span class="w-2 h-2 rounded-full bg-positive animate-pulse"></span>
                 Connected
             </div>
             <div class="px-3 py-1.5 bg-primary text-card-foreground rounded-lg text-sm font-bold tabular-nums shadow-sm">

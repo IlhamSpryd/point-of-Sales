@@ -20,8 +20,8 @@
     </div>
 
     @if (session()->has('message'))
-        <div class="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-3 text-emerald-600 dark:text-emerald-400 text-sm font-medium">
-            <span class="material-symbols-rounded text-emerald-500 text-[20px]">check_circle</span>
+        <div class="p-4 bg-positive border border-positive/20 rounded-xl flex items-center gap-3 text-positive text-sm font-medium">
+            <span class="material-symbols-rounded text-positive text-[20px]">check_circle</span>
             {{ session('message') }}
         </div>
     @endif
@@ -56,12 +56,12 @@
             <table class="w-full text-left text-sm text-foreground">
                 <thead class="bg-muted/50 text-muted-foreground font-semibold text-2xs uppercase tracking-wider border-b border-border">
                     <tr>
-                        <th class="px-6 py-3.5">Nomor Perintah Kerja</th>
-                        <th class="px-6 py-3.5">Target Produk / Prep Item</th>
-                        <th class="px-6 py-3.5">Target Jumlah</th>
-                        <th class="px-6 py-3.5">Jumlah Selesai</th>
-                        <th class="px-6 py-3.5">Status</th>
-                        <th class="px-6 py-3.5 text-right">Tindakan</th>
+                        <th scope="col" class="px-6 py-3.5">Nomor Perintah Kerja</th>
+                        <th scope="col" class="px-6 py-3.5">Target Produk / Prep Item</th>
+                        <th scope="col" class="px-6 py-3.5">Target Jumlah</th>
+                        <th scope="col" class="px-6 py-3.5">Jumlah Selesai</th>
+                        <th scope="col" class="px-6 py-3.5">Status</th>
+                        <th scope="col" class="px-6 py-3.5 text-right">Tindakan</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -73,9 +73,9 @@
                             <td class="px-6 py-4 font-medium text-foreground">
                                 @if ($mo->destination_type === 'ingredient')
                                     <div class="flex items-center gap-1.5">
-                                        <span class="material-symbols-rounded text-amber-500 text-[18px]">blender</span>
+                                        <span class="material-symbols-rounded text-warning text-[18px]">blender</span>
                                         <span>{{ $mo->destinationIngredient?->name ?? 'Prep #' . $mo->destination_ingredient_id }}</span>
-                                        <span class="text-2xs text-amber-600 dark:text-amber-400 font-semibold">(Prep)</span>
+                                        <span class="text-2xs text-warning font-semibold">(Prep)</span>
                                     </div>
                                 @else
                                     <div class="flex items-center gap-1.5">
@@ -93,11 +93,11 @@
                             <td class="px-6 py-4">
                                 @php
                                     $moDot = match($mo->status) {
-                                        'COMPLETED' => 'bg-emerald-500',
-                                        'IN_PROGRESS' => 'bg-sky-500',
-                                        'PLANNED' => 'bg-amber-500',
+                                        'COMPLETED' => 'bg-positive',
+                                        'IN_PROGRESS' => 'bg-accent',
+                                        'PLANNED' => 'bg-warning',
                                         'CANCELLED' => 'bg-destructive',
-                                        default => 'bg-neutral-500',
+                                        default => 'bg-neutral',
                                     };
                                     $moLabel = match($mo->status) {
                                         'COMPLETED' => 'Selesai',

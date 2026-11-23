@@ -20,13 +20,7 @@
 )) }}>
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div class="flex items-center gap-3">
-            <div class="size-10 rounded-xl flex items-center justify-center shrink-0 border {{
-                $isEmpty
-                    ? 'bg-muted text-muted-foreground border-border'
-                    : ($isBalanced
-                        ? 'bg-success-muted text-success border-success-border'
-                        : 'bg-destructive-muted text-destructive border-destructive-border')
-            }}">
+            <div class="size-10 rounded-xl flex items-center justify-center shrink-0 border {{ $isEmpty ? 'bg-muted text-muted-foreground border-border' : ($isBalanced ? 'bg-success-muted text-success border-success-border' : 'bg-destructive-muted text-destructive border-destructive-border') }}">
                 <span class="material-symbols-rounded text-2xl">
                     {{ $isEmpty ? 'account_balance_wallet' : ($isBalanced ? 'check_circle' : 'error') }}
                 </span>

@@ -6,7 +6,7 @@
             <a href="{{ route('transaction.create') }}"
                class="px-4 py-2 rounded border" wire:navigate>New Order</a>
             <button onclick="window.print()"
-                    class="px-4 py-2 rounded bg-blue-600 text-white font-bold">
+                    class="px-4 py-2 rounded bg-primary text-primary-foreground font-bold">
                 🖨 Print Receipt
             </button>
         </div>
@@ -73,7 +73,7 @@
                     </div>
 
                     @if (($item->item_discount_amount ?? 0) > 0)
-                        <div class="pl-4 text-[9px] text-gray-700 flex justify-between">
+                        <div class="pl-4 text-[9px] text-foreground flex justify-between">
                             <span>* Item Discount</span>
                             <span>-{{ number_format($item->item_discount_amount, 0, ',', '.') }}</span>
                         </div>
@@ -81,7 +81,7 @@
 
                     {{-- Modifiers indented below parent product --}}
                     @foreach ($item->options ?? [] as $mod)
-                        <div class="pl-4 text-[9px] text-gray-700">
+                        <div class="pl-4 text-[9px] text-foreground">
                             + {{ $mod['name'] ?? $mod['modifier_name'] ?? '-' }}
                             @if (($mod['extra_price'] ?? 0) > 0)
                                 (+{{ number_format($mod['extra_price'], 0, ',', '.') }})
@@ -90,7 +90,7 @@
                     @endforeach
 
                     @if ($item->notes)
-                        <div class="pl-4 text-[9px] italic text-gray-700">
+                        <div class="pl-4 text-[9px] italic text-foreground">
                             Note: {{ $item->notes }}
                         </div>
                     @endif
@@ -103,7 +103,7 @@
                 <span>Subtotal</span><span>{{ number_format($order->subtotal_amount, 0, ',', '.') }}</span>
             </div>
             @if (($order->discount_amount ?? 0) > 0)
-                <div class="flex justify-between text-gray-800">
+                <div class="flex justify-between text-foreground">
                     <span>Order Discount</span><span>-{{ number_format($order->discount_amount, 0, ',', '.') }}</span>
                 </div>
             @endif
@@ -122,7 +122,7 @@
             </div>
 
             @if ($order->payments && $order->payments->count() > 0)
-                <div class="mt-1 pt-1 border-t border-dotted border-gray-400">
+                <div class="mt-1 pt-1 border-t border-dotted border-border">
                     @foreach ($order->payments as $payment)
                         @php
                             $pmLabel = $payment->payment_method instanceof \App\Enums\PaymentMethod

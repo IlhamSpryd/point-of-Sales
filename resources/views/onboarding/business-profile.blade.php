@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-slate-50">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-secondary">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,23 +7,23 @@
     <x-favicon />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="h-full font-sans antialiased text-slate-800 bg-slate-50 min-h-screen lg:h-screen lg:overflow-hidden flex flex-col justify-between">
+<body class="h-full font-sans antialiased text-foreground bg-secondary min-h-screen lg:h-screen lg:overflow-hidden flex flex-col justify-between">
     <div class="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex flex-col flex-1 justify-between">
         {{-- Header & Stepper --}}
-        <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80">
+        <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
             <div class="flex items-center gap-3">
-                <x-brand-logo variant="wordmark" class="h-7 w-auto text-slate-900" />
+                <x-brand-logo variant="wordmark" class="h-7 w-auto text-foreground" />
             </div>
 
             {{-- Minimalist Progress Indicator (Apple / Google Style) --}}
             <div class="w-full sm:w-72">
                 <div class="flex items-center justify-between text-xs mb-1.5">
-                    <span class="font-semibold text-slate-900">1. Operational Standards</span>
-                    <span class="text-slate-400">2. Initial Branch</span>
+                    <span class="font-semibold text-foreground">1. Operational Standards</span>
+                    <span class="text-muted-foreground">2. Initial Branch</span>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <div class="h-1 bg-zinc-900 rounded-full"></div>
-                    <div class="h-1 bg-slate-200 rounded-full"></div>
+                    <div class="h-1 bg-card rounded-full"></div>
+                    <div class="h-1 bg-muted rounded-full"></div>
                 </div>
             </div>
         </header>
@@ -31,10 +31,10 @@
         {{-- Main Viewport Container (Centered, 2-Column Split on PC) --}}
         <main class="my-auto py-4 sm:py-6">
             <div class="mb-5 text-center sm:text-left">
-                <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+                <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                     Set up operational standards
                 </h1>
-                <p class="mt-1 text-xs sm:text-sm text-slate-600">
+                <p class="mt-1 text-xs sm:text-sm text-muted-foreground">
                     Confirm your registered workspace details and select your operating parameters.
                 </p>
             </div>
@@ -42,33 +42,33 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 {{-- Left Column: Registered Account Details (Google / Apple Style) --}}
                 <div class="lg:col-span-5">
-                    <div class="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs">
-                        <div class="bg-slate-50/75 px-4 py-3 border-b border-slate-200/90 flex items-center justify-between">
-                            <h2 class="text-xs font-semibold text-slate-700 uppercase tracking-wide">Registered Account Details</h2>
-                            <span class="text-[11px] text-slate-400 font-normal">Verified via signup</span>
+                    <div class="overflow-hidden rounded-2xl border border-border bg-white shadow-xs">
+                        <div class="bg-secondary/75 px-4 py-3 border-b border-border flex items-center justify-between">
+                            <h2 class="text-xs font-semibold text-foreground uppercase tracking-wide">Registered Account Details</h2>
+                            <span class="text-[11px] text-muted-foreground font-normal">Verified via signup</span>
                         </div>
-                        <dl class="divide-y divide-slate-100 text-sm">
+                        <dl class="divide-y border-border text-sm">
                             <div class="px-4 py-2.5 flex items-center justify-between">
-                                <dt class="text-xs font-medium text-slate-500">Business / Brand</dt>
-                                <dd class="text-xs sm:text-sm font-semibold text-slate-900 truncate max-w-[200px] text-right">{{ $businessName }}</dd>
+                                <dt class="text-xs font-medium text-muted-foreground">Business / Brand</dt>
+                                <dd class="text-xs sm:text-sm font-semibold text-foreground truncate max-w-[200px] text-right">{{ $businessName }}</dd>
                             </div>
                             <div class="px-4 py-2.5 flex items-center justify-between">
-                                <dt class="text-xs font-medium text-slate-500">Account Owner</dt>
-                                <dd class="text-xs sm:text-sm text-slate-800 truncate max-w-[200px] text-right">{{ $user->name }}</dd>
+                                <dt class="text-xs font-medium text-muted-foreground">Account Owner</dt>
+                                <dd class="text-xs sm:text-sm text-foreground truncate max-w-[200px] text-right">{{ $user->name }}</dd>
                             </div>
                             <div class="px-4 py-2.5 flex items-center justify-between">
-                                <dt class="text-xs font-medium text-slate-500">Email Address</dt>
-                                <dd class="text-xs sm:text-sm text-slate-800 truncate max-w-[200px] text-right">{{ $user->email }}</dd>
+                                <dt class="text-xs font-medium text-muted-foreground">Email Address</dt>
+                                <dd class="text-xs sm:text-sm text-foreground truncate max-w-[200px] text-right">{{ $user->email }}</dd>
                             </div>
                             @if (!empty($ownerPhone))
                             <div class="px-4 py-2.5 flex items-center justify-between">
-                                <dt class="text-xs font-medium text-slate-500">Phone / WhatsApp</dt>
-                                <dd class="text-xs sm:text-sm text-slate-800 font-sans text-right">{{ $ownerPhone }}</dd>
+                                <dt class="text-xs font-medium text-muted-foreground">Phone / WhatsApp</dt>
+                                <dd class="text-xs sm:text-sm text-foreground font-sans text-right">{{ $ownerPhone }}</dd>
                             </div>
                             @endif
                             <div class="px-4 py-2.5 flex items-center justify-between">
-                                <dt class="text-xs font-medium text-slate-500">Region & Currency</dt>
-                                <dd class="text-xs sm:text-sm text-slate-800 text-right">
+                                <dt class="text-xs font-medium text-muted-foreground">Region & Currency</dt>
+                                <dd class="text-xs sm:text-sm text-foreground text-right">
                                     {{ $countryCode === 'ID' ? 'Indonesia' : $countryCode }} &bull; {{ $defaultCurrency }}
                                 </dd>
                             </div>
@@ -77,21 +77,21 @@
                 </div>
 
                 {{-- Right Column: Form Card --}}
-                <div class="lg:col-span-7 bg-white p-5 sm:p-6 shadow-sm ring-1 ring-slate-900/5 rounded-2xl">
+                <div class="lg:col-span-7 bg-white p-5 sm:p-6 shadow-sm ring-1 ring-ring rounded-2xl">
                     @if (session('success'))
-                        <div class="mb-4 rounded-xl bg-zinc-50 p-3 border border-zinc-200 text-xs font-medium text-zinc-900" role="status">
+                        <div class="mb-4 rounded-xl bg-secondary p-3 border border-border text-xs font-medium text-foreground" role="status">
                             {{ session('success') }}
                         </div>
                     @endif
 
                     @if (session('info'))
-                        <div class="mb-4 rounded-xl bg-blue-50 p-3 border border-blue-200 text-xs font-medium text-blue-800" role="status">
+                        <div class="mb-4 rounded-xl bg-accent/10 p-3 border border-accent text-xs font-medium text-accent" role="status">
                             {{ session('info') }}
                         </div>
                     @endif
 
                     @if ($errors->any())
-                        <div class="mb-4 rounded-xl bg-rose-50 p-3 border border-rose-200 text-xs text-rose-700" role="alert">
+                        <div class="mb-4 rounded-xl bg-destructive-muted p-3 border border-destructive text-xs text-destructive" role="alert">
                             <ul class="list-disc list-inside space-y-0.5">
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>
@@ -111,12 +111,12 @@
 
                         {{-- Business Category --}}
                         <div>
-                            <label for="business_category" class="block text-xs font-semibold text-slate-900 uppercase tracking-wide">
-                                Business Category <span class="text-rose-500" aria-hidden="true">*</span>
+                            <label for="business_category" class="block text-xs font-semibold text-foreground uppercase tracking-wide">
+                                Business Category <span class="text-destructive" aria-hidden="true">*</span>
                             </label>
                             <div class="mt-1.5">
                                 <select name="business_category" id="business_category" required
-                                    class="block w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-slate-900 focus:border-zinc-950 focus:outline-none focus:ring-1 focus:ring-zinc-950 text-sm shadow-xs transition-all bg-white">
+                                    class="block w-full rounded-xl border border-border px-3.5 py-2.5 text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring text-sm shadow-xs transition-all bg-white">
                                     <option value="fnb_cafe" @selected(old('business_category', $businessCategory) === 'fnb_cafe')>Cafe & Coffee Shop</option>
                                     <option value="fnb_restaurant" @selected(old('business_category', $businessCategory) === 'fnb_restaurant')>Restaurant & Dining</option>
                                     <option value="fnb_bakery" @selected(old('business_category', $businessCategory) === 'fnb_bakery')>Bakery & Pastry</option>
@@ -124,29 +124,29 @@
                                     <option value="retail_other" @selected(old('business_category', $businessCategory) === 'retail_other')>Retail & Other Services</option>
                                 </select>
                             </div>
-                            <p class="mt-1 text-[11px] text-slate-500">Configures initial catalog templates, order type flows, and kitchen ticket handling.</p>
+                            <p class="mt-1 text-[11px] text-muted-foreground">Configures initial catalog templates, order type flows, and kitchen ticket handling.</p>
                         </div>
 
                         {{-- Primary Operating Timezone --}}
                         <div>
-                            <label for="tenant_timezone" class="block text-xs font-semibold text-slate-900 uppercase tracking-wide">
-                                Primary Operating Timezone <span class="text-rose-500" aria-hidden="true">*</span>
+                            <label for="tenant_timezone" class="block text-xs font-semibold text-foreground uppercase tracking-wide">
+                                Primary Operating Timezone <span class="text-destructive" aria-hidden="true">*</span>
                             </label>
                             <div class="mt-1.5">
                                 <select name="tenant_timezone" id="tenant_timezone" required
-                                    class="block w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-slate-900 focus:border-zinc-950 focus:outline-none focus:ring-1 focus:ring-zinc-950 text-sm shadow-xs transition-all bg-white">
+                                    class="block w-full rounded-xl border border-border px-3.5 py-2.5 text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring text-sm shadow-xs transition-all bg-white">
                                     <option value="Asia/Jakarta" @selected(old('tenant_timezone', $tenantTimezone) === 'Asia/Jakarta')>Western Indonesia Time (WIB) — Asia/Jakarta</option>
                                     <option value="Asia/Makassar" @selected(old('tenant_timezone', $tenantTimezone) === 'Asia/Makassar')>Central Indonesia Time (WITA) — Asia/Makassar</option>
                                     <option value="Asia/Jayapura" @selected(old('tenant_timezone', $tenantTimezone) === 'Asia/Jayapura')>Eastern Indonesia Time (WIT) — Asia/Jayapura</option>
                                 </select>
                             </div>
-                            <p class="mt-1 text-[11px] text-slate-500">New branch cash registers and daily shift cutoffs will follow this timezone.</p>
+                            <p class="mt-1 text-[11px] text-muted-foreground">New branch cash registers and daily shift cutoffs will follow this timezone.</p>
                         </div>
 
                         {{-- Submit Button --}}
                         <div class="pt-2">
                             <button type="submit"
-                                class="w-full flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 transition-all cursor-pointer">
+                                class="w-full flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 transition-all cursor-pointer">
                                 <span>Save & continue to initial branch</span>
                             </button>
                         </div>
@@ -156,11 +156,11 @@
         </main>
 
         {{-- Footer Bar --}}
-        <footer class="flex items-center justify-between text-xs text-slate-400 pt-3 border-t border-slate-200/80">
+        <footer class="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border">
             <span>&copy; {{ date('Y') }} Apeiron</span>
             <form action="{{ route('logout') }}" method="POST" class="inline">
                 @csrf
-                <button type="submit" class="hover:text-slate-700 underline focus:outline-none cursor-pointer">
+                <button type="submit" class="hover:text-foreground underline focus:outline-none cursor-pointer">
                     Sign out temporarily (progress is saved)
                 </button>
             </form>

@@ -23,13 +23,13 @@
                     <form wire:submit.prevent="saveGroup" class="p-6 md:p-8 space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <x-form-label for="group_name">Group Name <span class="text-rose-500">*</span></x-form-label>
+                                <x-form-label for="group_name">Group Name <span class="text-destructive">*</span></x-form-label>
                                 <x-form-input type="text" id="group_name" wire:model="groupForm.name" placeholder="e.g. Milk Options" required class="{{ $errors->has('groupForm.name') ? 'input-error' : '' }}" />
-                                @error('groupForm.name') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
+                                @error('groupForm.name') <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p> @enderror
                             </div>
                             
                             <div>
-                                <x-form-label for="selection_type">Selection Type <span class="text-rose-500">*</span></x-form-label>
+                                <x-form-label for="selection_type">Selection Type <span class="text-destructive">*</span></x-form-label>
                                 <div class="relative">
                                     <select id="selection_type" wire:model="groupForm.selection_type" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('groupForm.selection_type') ? 'input-error' : '' }}" required>
                                         <option value="single">Single (Choose 1 option)</option>
@@ -39,7 +39,7 @@
                                         <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                                     </div>
                                 </div>
-                                @error('groupForm.selection_type') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
+                                @error('groupForm.selection_type') <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p> @enderror
                             </div>
                         </div>
 
@@ -87,15 +87,15 @@
                     <form wire:submit.prevent="saveModifier" class="p-6 md:p-8 space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <x-form-label for="modifier_name">Modifier Name <span class="text-rose-500">*</span></x-form-label>
+                                <x-form-label for="modifier_name">Modifier Name <span class="text-destructive">*</span></x-form-label>
                                 <x-form-input type="text" id="modifier_name" wire:model="modifierForm.name" placeholder="e.g. Oat Milk" required class="{{ $errors->has('modifierForm.name') ? 'input-error' : '' }}" />
-                                @error('modifierForm.name') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
+                                @error('modifierForm.name') <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p> @enderror
                             </div>
                             
                             <div>
-                                <x-form-label for="extra_price">Extra Price (Rp) <span class="text-rose-500">*</span></x-form-label>
+                                <x-form-label for="extra_price">Extra Price (Rp) <span class="text-destructive">*</span></x-form-label>
                                 <x-form-input type="number" id="extra_price" wire:model="modifierForm.extra_price" placeholder="0" required class="{{ $errors->has('modifierForm.extra_price') ? 'input-error' : '' }}" />
-                                @error('modifierForm.extra_price') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
+                                @error('modifierForm.extra_price') <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p> @enderror
                             </div>
                         </div>
 
@@ -149,7 +149,7 @@
                                         <div class="w-32">
                                             <input type="number" step="0.0001" x-model="ing.quantity" placeholder="Quantity" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm" required>
                                         </div>
-                                        <button type="button" @click="removeIngredient(index)" class="inline-flex items-center justify-center w-[46px] h-[46px] rounded-xl text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors" title="Remove line">
+                                        <button type="button" @click="removeIngredient(index)" class="inline-flex items-center justify-center w-[46px] h-[46px] rounded-xl text-destructive hover:bg-destructive-muted border border-transparent hover:border-destructive transition-colors" title="Remove line">
                                             <span class="material-symbols-rounded text-[20px]">close</span>
                                         </button>
                                     </div>
@@ -201,7 +201,7 @@
                         </p>
                     </div>
                     <div class="flex space-x-2">
-                        <button wire:click="editGroup({{ $group->id }})" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors" title="Edit Group">
+                        <button wire:click="editGroup({{ $group->id }})" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-accent hover:bg-accent/10 transition-colors" title="Edit Group">
                             <span class="material-symbols-rounded text-[20px]">edit</span>
                         </button>
                         <button type="button"
@@ -270,7 +270,7 @@
                 </div>
             </div>
             @empty
-            <x-empty-state 
+            <x-ui.empty-state 
                 icon="tune" 
                 title="No Modifiers Available" 
                 description="Add modifier groups such as 'Cup Size' or 'Toppings' to configure product options." 

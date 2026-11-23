@@ -57,42 +57,42 @@
     <!-- Data Table -->
     <div class="card-surface rounded-2xl overflow-hidden border border-border shadow-sm">
         <div class="overflow-x-auto">
-            <table class="table-standard w-full min-w-full text-left text-sm text-zinc-600 dark:text-zinc-300">
-                <thead class="bg-zinc-50 dark:bg-zinc-900/50 text-xs font-semibold uppercase text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
+            <table class="table-standard w-full min-w-full text-left text-sm text-muted-foreground">
+                <thead class="bg-secondary /50 text-xs font-semibold uppercase text-muted-foreground border-b border-border">
                     <tr>
-                        <th class="px-6 py-4">Return Number & Date</th>
-                        <th class="px-6 py-4">Supplier & Warehouse</th>
-                        <th class="px-6 py-4">GRN Reference</th>
-                        <th class="px-6 py-4">Return Reason</th>
-                        <th class="px-6 py-4 text-center">Debit Note (DN)</th>
-                        <th class="px-6 py-4 text-center">Return Status</th>
-                        <th class="px-6 py-4 text-right">Actions</th>
+                        <th scope="col" class="px-6 py-4">Return Number & Date</th>
+                        <th scope="col" class="px-6 py-4">Supplier & Warehouse</th>
+                        <th scope="col" class="px-6 py-4">GRN Reference</th>
+                        <th scope="col" class="px-6 py-4">Return Reason</th>
+                        <th scope="col" class="px-6 py-4 text-center">Debit Note (DN)</th>
+                        <th scope="col" class="px-6 py-4 text-center">Return Status</th>
+                        <th scope="col" class="px-6 py-4 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+                <tbody class="divide-y border-border">
                     @forelse($returns as $ret)
-                    <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
+                    <tr class="hover:bg-secondary/50 transition-colors">
                         <td class="px-6 py-4">
-                            <div class="font-bold text-zinc-900 dark:text-white font-sans">{{ $ret->return_number }}</div>
-                            <div class="text-xs text-zinc-500">{{ \Carbon\Carbon::parse($ret->created_at)->format('d M Y') }}</div>
+                            <div class="font-bold text-foreground font-sans">{{ $ret->return_number }}</div>
+                            <div class="text-xs text-muted-foreground">{{ \Carbon\Carbon::parse($ret->created_at)->format('d M Y') }}</div>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $ret->supplier?->name ?? 'Vendor' }}</div>
-                            <div class="text-xs text-zinc-400">{{ $ret->store?->name ?? 'All Branches' }}</div>
+                            <div class="font-medium text-foreground">{{ $ret->supplier?->name ?? 'Vendor' }}</div>
+                            <div class="text-xs text-muted-foreground">{{ $ret->store?->name ?? 'All Branches' }}</div>
                         </td>
                         <td class="px-6 py-4 font-sans text-xs">
-                            <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $ret->goodsReceivedNote?->grn_number ?? 'GRN #' . $ret->goods_received_note_id }}</div>
-                            <div class="text-zinc-400">DO: {{ $ret->goodsReceivedNote?->delivery_order_number }}</div>
+                            <div class="font-medium text-foreground">{{ $ret->goodsReceivedNote?->grn_number ?? 'GRN #' . $ret->goods_received_note_id }}</div>
+                            <div class="text-muted-foreground">DO: {{ $ret->goodsReceivedNote?->delivery_order_number }}</div>
                         </td>
                         <td class="px-6 py-4">
-                            <span class="text-xs font-medium text-zinc-700 dark:text-zinc-300">{{ $ret->reason?->label() ?? $ret->reason ?? '-' }}</span>
+                            <span class="text-xs font-medium text-foreground">{{ $ret->reason?->label() ?? $ret->reason ?? '-' }}</span>
                         </td>
                         <td class="px-6 py-4 text-center">
                             @if($ret->debitNote)
-                                <div class="font-sans text-xs font-bold text-emerald-600 dark:text-emerald-400">{{ $ret->debitNote->debit_note_number }}</div>
-                                <div class="text-[11px] text-zinc-500">Rp {{ number_format((float) $ret->debitNote->total_amount, 2) }}</div>
+                                <div class="font-sans text-xs font-bold text-positive">{{ $ret->debitNote->debit_note_number }}</div>
+                                <div class="text-[11px] text-muted-foreground">Rp {{ number_format((float) $ret->debitNote->total_amount, 2) }}</div>
                             @else
-                                <span class="text-xs text-zinc-400 italic">Not Issued</span>
+                                <span class="text-xs text-muted-foreground italic">Not Issued</span>
                             @endif
                         </td>
                         <td class="px-6 py-4">
@@ -132,9 +132,9 @@
                     <tr>
                         <td colspan="7" class="px-6 py-12 text-center">
                             <div class="flex flex-col items-center justify-center">
-                                <span class="material-symbols-rounded text-5xl text-zinc-300 dark:text-zinc-700">keyboard_return</span>
-                                <h3 class="mt-2 text-sm font-semibold text-zinc-900 dark:text-white">No purchase returns found</h3>
-                                <p class="mt-1 text-xs text-zinc-500">Create goods returns to suppliers for damaged or non-conforming items.</p>
+                                <span class="material-symbols-rounded text-5xl text-foreground">keyboard_return</span>
+                                <h3 class="mt-2 text-sm font-semibold text-foreground">No purchase returns found</h3>
+                                <p class="mt-1 text-xs text-muted-foreground">Create goods returns to suppliers for damaged or non-conforming items.</p>
                             </div>
                         </td>
                     </tr>
@@ -144,7 +144,7 @@
         </div>
 
         @if($returns->hasPages())
-        <div class="px-6 py-4 border-t border-zinc-200 dark:border-zinc-800">
+        <div class="px-6 py-4 border-t border-border">
             {{ $returns->links() }}
         </div>
         @endif
@@ -159,7 +159,7 @@
         <x-slot:content>
             <form id="createReturnForm" wire:submit="saveDraftReturn" class="space-y-6">
                 <!-- Info Header -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl bg-secondary /40 border border-border">
                     <div class="md:col-span-2">
                         <x-ui.label for="selectedGrnId">Select Source Goods Received Note (GRN) *</x-ui.label>
                         <x-ui.select id="selectedGrnId" wire:model.live="selectedGrnId" required>
@@ -187,31 +187,31 @@
                 <!-- Lines Table -->
                 @if(count($returnLines) > 0)
                 <div class="space-y-3">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-500">Specify Item Return Quantities</h4>
-                    <div class="overflow-x-auto border border-zinc-200 dark:border-zinc-800 rounded-xl">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Specify Item Return Quantities</h4>
+                    <div class="overflow-x-auto border border-border rounded-xl">
                         <table class="table-standard w-full min-w-full text-left text-xs">
-                            <thead class="bg-zinc-100 dark:bg-zinc-800/80 font-semibold text-zinc-600 dark:text-zinc-300">
+                            <thead class="bg-secondary /80 font-semibold text-muted-foreground">
                                 <tr>
-                                    <th class="px-3 py-2">Item Name</th>
-                                    <th class="px-3 py-2 w-20">Unit</th>
-                                    <th class="px-3 py-2 w-28 text-right">GRN Received Qty</th>
-                                    <th class="px-3 py-2 w-32 text-right">Return Qty *</th>
-                                    <th class="px-3 py-2 w-32 text-right">Unit Cost</th>
+                                    <th scope="col" class="px-3 py-2">Item Name</th>
+                                    <th scope="col" class="px-3 py-2 w-20">Unit</th>
+                                    <th scope="col" class="px-3 py-2 w-28 text-right">GRN Received Qty</th>
+                                    <th scope="col" class="px-3 py-2 w-32 text-right">Return Qty *</th>
+                                    <th scope="col" class="px-3 py-2 w-32 text-right">Unit Cost</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+                            <tbody class="divide-y border-border">
                                 @foreach($returnLines as $i => $line)
                                 <tr>
                                     <td class="px-3 py-2">
-                                        <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $line['item_name'] }}</div>
-                                        <div class="text-[10px] text-zinc-400 uppercase">{{ $line['item_type'] }}</div>
+                                        <div class="font-medium text-foreground">{{ $line['item_name'] }}</div>
+                                        <div class="text-[10px] text-muted-foreground uppercase">{{ $line['item_type'] }}</div>
                                     </td>
                                     <td class="px-3 py-2 font-sans uppercase">{{ $line['purchase_uom'] }}</td>
-                                    <td class="px-3 py-2 text-right font-medium text-emerald-600 tabular-nums">{{ (float) $line['accepted_qty'] }}</td>
+                                    <td class="px-3 py-2 text-right font-medium text-positive tabular-nums">{{ (float) $line['accepted_qty'] }}</td>
                                     <td class="px-3 py-2 text-right">
-                                        <input type="number" step="0.0001" min="0" max="{{ $line['accepted_qty'] }}" wire:model="returnLines.{{ $i }}.return_quantity" class="w-full text-xs rounded-lg border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 py-1 text-right font-bold text-rose-600 tabular-nums" />
+                                        <input type="number" step="0.0001" min="0" max="{{ $line['accepted_qty'] }}" wire:model="returnLines.{{ $i }}.return_quantity" class="w-full text-xs rounded-lg border-border bg-card py-1 text-right font-bold text-destructive tabular-nums" />
                                     </td>
-                                    <td class="px-3 py-2 text-right font-sans tabular-nums text-zinc-500">
+                                    <td class="px-3 py-2 text-right font-sans tabular-nums text-muted-foreground">
                                         Rp {{ number_format((float) $line['unit_cost'], 2) }}
                                     </td>
                                 </tr>
@@ -221,14 +221,14 @@
                     </div>
                 </div>
                 @elseif($selectedGrnId)
-                <div class="p-6 text-center text-xs text-zinc-400 border border-dashed rounded-xl">
+                <div class="p-6 text-center text-xs text-muted-foreground border border-dashed rounded-xl">
                     This GRN document has no returnable items.
                 </div>
                 @endif
 
                 <div>
                     <x-ui.label for="notes">Return Notes & Remarks</x-ui.label>
-                    <textarea id="notes" wire:model="notes" rows="2" placeholder="Return tracking number, damage inspection report..." class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm"></textarea>
+                    <textarea id="notes" wire:model="notes" rows="2" placeholder="Return tracking number, damage inspection report..." class="mt-1 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm"></textarea>
                 </div>
             </form>
         </x-slot:content>
@@ -264,48 +264,48 @@
             @if($selectedReturn)
             <div class="space-y-6">
                 <!-- Info Header -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 text-xs">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-xl bg-secondary /50 border border-border text-xs">
                     <div>
-                        <div class="text-zinc-400 uppercase font-bold text-[10px]">Supplier</div>
-                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5">{{ $selectedReturn->supplier?->name }}</div>
-                        <div class="text-zinc-500 font-sans">{{ $selectedReturn->supplier?->code }}</div>
+                        <div class="text-muted-foreground uppercase font-bold text-[10px]">Supplier</div>
+                        <div class="font-semibold text-foreground mt-0.5">{{ $selectedReturn->supplier?->name }}</div>
+                        <div class="text-muted-foreground font-sans">{{ $selectedReturn->supplier?->code }}</div>
                     </div>
                     <div>
-                        <div class="text-zinc-400 uppercase font-bold text-[10px]">GRN Document</div>
-                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5 font-sans">{{ $selectedReturn->goodsReceivedNote?->grn_number }}</div>
+                        <div class="text-muted-foreground uppercase font-bold text-[10px]">GRN Document</div>
+                        <div class="font-semibold text-foreground mt-0.5 font-sans">{{ $selectedReturn->goodsReceivedNote?->grn_number }}</div>
                     </div>
                     <div>
-                        <div class="text-zinc-400 uppercase font-bold text-[10px]">Reason</div>
-                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5">{{ $selectedReturn->reason?->label() ?? $selectedReturn->reason }}</div>
+                        <div class="text-muted-foreground uppercase font-bold text-[10px]">Reason</div>
+                        <div class="font-semibold text-foreground mt-0.5">{{ $selectedReturn->reason?->label() ?? $selectedReturn->reason }}</div>
                     </div>
                     <div>
-                        <div class="text-zinc-400 uppercase font-bold text-[10px]">Branch / Warehouse</div>
-                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5">{{ $selectedReturn->store?->name }}</div>
+                        <div class="text-muted-foreground uppercase font-bold text-[10px]">Branch / Warehouse</div>
+                        <div class="font-semibold text-foreground mt-0.5">{{ $selectedReturn->store?->name }}</div>
                     </div>
                 </div>
 
                 <!-- Lines Table -->
                 <div class="space-y-2">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-500">Returned Item Details</h4>
-                    <div class="overflow-x-auto border border-zinc-200 dark:border-zinc-800 rounded-xl">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Returned Item Details</h4>
+                    <div class="overflow-x-auto border border-border rounded-xl">
                         <table class="table-standard w-full min-w-full text-left text-xs">
-                            <thead class="bg-zinc-50 dark:bg-zinc-900/50 font-semibold text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
+                            <thead class="bg-secondary /50 font-semibold text-muted-foreground border-b border-border">
                                 <tr>
-                                    <th class="px-4 py-2.5">Item</th>
-                                    <th class="px-4 py-2.5">Unit</th>
-                                    <th class="px-4 py-2.5 text-right">Return Quantity</th>
-                                    <th class="px-4 py-2.5 text-right">Unit Cost</th>
-                                    <th class="px-4 py-2.5 text-right">Subtotal</th>
+                                    <th scope="col" class="px-4 py-2.5">Item</th>
+                                    <th scope="col" class="px-4 py-2.5">Unit</th>
+                                    <th scope="col" class="px-4 py-2.5 text-right">Return Quantity</th>
+                                    <th scope="col" class="px-4 py-2.5 text-right">Unit Cost</th>
+                                    <th scope="col" class="px-4 py-2.5 text-right">Subtotal</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+                            <tbody class="divide-y border-border">
                                 @foreach($selectedReturn->lines as $line)
                                 <tr>
-                                    <td class="px-4 py-2.5 font-medium text-zinc-800 dark:text-zinc-200">
+                                    <td class="px-4 py-2.5 font-medium text-foreground">
                                         {{ $line->purchasable?->product_name ?? $line->purchasable?->name ?? 'Item #' . $line->purchasable_id }}
                                     </td>
                                     <td class="px-4 py-2.5 font-sans uppercase">{{ $line->purchase_uom }}</td>
-                                    <td class="px-4 py-2.5 text-right font-bold text-rose-600 tabular-nums">{{ (float) $line->return_quantity }}</td>
+                                    <td class="px-4 py-2.5 text-right font-bold text-destructive tabular-nums">{{ (float) $line->return_quantity }}</td>
                                     <td class="px-4 py-2.5 text-right tabular-nums">Rp {{ number_format((float) $line->unit_cost, 2) }}</td>
                                     <td class="px-4 py-2.5 text-right font-semibold tabular-nums">Rp {{ number_format((float) $line->subtotal, 2) }}</td>
                                 </tr>
@@ -317,19 +317,19 @@
 
                 <!-- Debit Note Section -->
                 @if($selectedReturn->debitNote)
-                <div class="p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 space-y-2">
+                <div class="p-4 rounded-xl bg-positive-muted/50 border border-positive space-y-2">
                     <div class="flex items-center justify-between">
                         <div>
-                            <span class="text-xs font-bold uppercase text-emerald-800 dark:text-emerald-300">Debit Note Issued</span>
-                            <div class="font-sans text-sm font-bold text-emerald-900 dark:text-emerald-200">{{ $selectedReturn->debitNote->debit_note_number }}</div>
+                            <span class="text-xs font-bold uppercase text-positive">Debit Note Issued</span>
+                            <div class="font-sans text-sm font-bold text-positive">{{ $selectedReturn->debitNote->debit_note_number }}</div>
                         </div>
                         <div class="text-right">
-                            <span class="text-xs text-zinc-500">Total Credit Amount:</span>
-                            <div class="text-base font-bold text-emerald-700 dark:text-emerald-400">Rp {{ number_format((float) $selectedReturn->debitNote->total_amount, 2) }}</div>
+                            <span class="text-xs text-muted-foreground">Total Credit Amount:</span>
+                            <div class="text-base font-bold text-positive">Rp {{ number_format((float) $selectedReturn->debitNote->total_amount, 2) }}</div>
                         </div>
                     </div>
 
-                    <div class="text-xs text-emerald-700 dark:text-emerald-400">
+                    <div class="text-xs text-positive">
                         Unapplied Balance: <strong>Rp {{ number_format((float) $selectedReturn->debitNote->getRemainingUnappliedAmount(), 2) }}</strong>
                     </div>
 
@@ -369,7 +369,7 @@
         <x-slot:content>
             @if($selectedDebitNote)
             <div class="space-y-4">
-                <p class="text-xs text-zinc-600 dark:text-zinc-300">
+                <p class="text-xs text-muted-foreground">
                     Select the vendor invoice to apply credit from Debit Note <strong>{{ $selectedDebitNote->debit_note_number }}</strong>.
                 </p>
 

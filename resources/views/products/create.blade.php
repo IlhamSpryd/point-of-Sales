@@ -24,7 +24,7 @@
                     <x-form-input type="text" id="product_name" name="product_name" value="{{ old('product_name') }}" 
                            placeholder="Enter product name" required class="{{ $errors->has('product_name') ? 'input-error' : '' }}" />
                     @error('product_name')
-                    <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                 @enderror
                 </div>
 
@@ -45,7 +45,7 @@
                         </div>
                     </div>
                     @error('category_id')
-                    <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                 @enderror
                 </div>
             </div>
@@ -69,7 +69,7 @@
                         </div>
                     </div>
                     @error('brand_id')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -90,7 +90,7 @@
                         </div>
                     </div>
                     @error('base_uom_id')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
@@ -102,7 +102,7 @@
                     <x-form-input type="text" id="product_code" name="product_code" value="{{ old('product_code') }}"
                            placeholder="Generated automatically if left empty" class="{{ $errors->has('product_code') ? 'input-error' : '' }}" />
                     @error('product_code')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -111,7 +111,7 @@
                     <x-form-input type="text" id="barcode" name="barcode" value="{{ old('barcode') }}"
                            placeholder="e.g. 899123456789" class="{{ $errors->has('barcode') ? 'input-error' : '' }}" />
                     @error('barcode')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
@@ -133,7 +133,7 @@
                         </div>
                     </div>
                     @error('product_type')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -152,7 +152,7 @@
                         </div>
                     </div>
                     @error('status')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
@@ -173,7 +173,7 @@
                         </div>
                     </div>
                     @error('costing_method')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -182,7 +182,7 @@
                     <x-form-input type="number" id="standard_cost" name="standard_cost" value="{{ old('standard_cost', 0) }}" min="0" step="0.01"
                            placeholder="0.00" class="{{ $errors->has('standard_cost') ? 'input-error' : '' }}" />
                     @error('standard_cost')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
@@ -194,7 +194,7 @@
                     <x-form-input type="number" id="product_price" name="product_price" value="{{ old('product_price') }}" min="0" step="1"
                            placeholder="0" required class="{{ $errors->has('product_price') ? 'input-error' : '' }}" />
                     @error('product_price')
-                    <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                 @enderror
                 </div>
 
@@ -203,7 +203,7 @@
                     <x-form-input type="number" id="stock" name="stock" value="{{ old('stock') }}" min="0" step="1"
                            placeholder="0" required class="{{ $errors->has('stock') ? 'input-error' : '' }}" />
                     @error('stock')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
@@ -229,7 +229,7 @@
                         </div>
                     </div>
                     @error('tax_class_id')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -242,7 +242,7 @@
                         </label>
                     </div>
                     @error('is_tax_inclusive')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
@@ -259,7 +259,7 @@
                           class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground placeholder-primary-400 focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('product_description') ? 'input-error' : '' }}" 
                           placeholder="Enter product description (optional)">{{ old('product_description') }}</textarea>
                 @error('product_description')
-                    <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                 @enderror
             </div>
 
@@ -298,7 +298,7 @@
                             <div class="w-32">
                                 <input type="number" step="0.0001" x-model="item.quantity" :name="'ingredients['+index+'][quantity]'" placeholder="Quantity" class="form-input w-full px-3 py-2 rounded-xl border border-border bg-white text-foreground text-sm focus:ring-2 focus:ring-ring focus:border-primary shadow-sm" required>
                             </div>
-                            <button type="button" @click="removeItem(index)" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors" title="Remove row">
+                            <button type="button" @click="removeItem(index)" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-destructive hover:bg-destructive-muted border border-transparent hover:border-destructive transition-colors" title="Remove row">
                                 <span class="material-symbols-rounded text-[20px]">close</span>
                             </button>
                         </div>
@@ -342,7 +342,7 @@
                                     </template>
                                 </select>
                             </div>
-                            <button type="button" @click="removeGroup(index)" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors" title="Remove row">
+                            <button type="button" @click="removeGroup(index)" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-destructive hover:bg-destructive-muted border border-transparent hover:border-destructive transition-colors" title="Remove row">
                                 <span class="material-symbols-rounded text-[20px]">close</span>
                             </button>
                         </div>
@@ -371,7 +371,7 @@
                     </div>
                 </div>
                 @error('product_photo')
-                    <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                 @enderror
             </div>
 

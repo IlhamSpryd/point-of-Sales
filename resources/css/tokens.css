@@ -311,6 +311,8 @@
 
     --color-destructive: var(--destructive);
     --color-destructive-foreground: var(--destructive-foreground);
+    --color-destructive-muted: var(--destructive-muted);
+    --color-destructive-border: var(--destructive-border);
 
     --color-success: var(--success);
     --color-success-foreground: var(--success-foreground);
@@ -319,6 +321,8 @@
 
     --color-positive: var(--positive);
     --color-positive-foreground: var(--positive-foreground);
+    --color-positive-muted: var(--success-muted);
+    --color-positive-border: var(--success-border);
 
     --color-warning: var(--warning);
     --color-warning-foreground: var(--warning-foreground);

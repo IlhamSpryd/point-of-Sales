@@ -4,12 +4,12 @@
 
 @section('content')
     <div class="space-y-6">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-secondary text-primary border border-border">
             <span class="material-symbols-rounded text-3xl">search_off</span>
         </div>
 
         <div>
-            <span class="text-xs font-sans font-semibold tracking-wider uppercase text-indigo-600 dark:text-indigo-400">Error 404 • Not Found</span>
+            <span class="text-xs font-sans font-semibold tracking-wider uppercase text-primary">Error 404 • Not Found</span>
             <h1 class="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                 Page Not Found
             </h1>

@@ -125,7 +125,7 @@
         @hasSection('panel')
             @yield('panel')
         @else
-            <div class="hidden md:flex md:col-span-1 lg:col-span-5 text-white p-8 sm:p-10 lg:p-12 xl:p-14 flex-col justify-between select-none relative overflow-hidden bg-zinc-950 h-full max-h-screen max-h-[100dvh]" id="anim-panel-right" aria-hidden="true">
+            <div class="hidden md:flex md:col-span-1 lg:col-span-5 text-white p-8 sm:p-10 lg:p-12 xl:p-14 flex-col justify-between select-none relative overflow-hidden bg-card h-full max-h-screen max-h-[100dvh]" id="anim-panel-right" aria-hidden="true">
                 <div class="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-luminosity pointer-events-none"
                     style="background-image: url('{{ asset('assets/images/auth/panelKananLogin.avif') }}');"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-zinc-950/30 pointer-events-none"></div>
@@ -138,12 +138,12 @@
                     <p class="text-[20px] lg:text-[22px] font-medium tracking-tight text-white leading-[1.45]">
                         Point of sale, inventory ledger, and shift reconciliation built for multi-branch hospitality.
                     </p>
-                    <p class="text-xs text-zinc-300 leading-relaxed font-normal">
+                    <p class="text-xs text-foreground leading-relaxed font-normal">
                         Every order, stock movement, and cash drawer event is recorded with strict branch isolation.
                     </p>
                 </div>
 
-                <div class="relative z-10 flex items-center justify-between text-xs text-zinc-400 pt-6 border-t border-zinc-800 shrink-0">
+                <div class="relative z-10 flex items-center justify-between text-xs text-muted-foreground pt-6 border-t border-border shrink-0">
                     <span>Enterprise Point of Sale</span>
                     <span>© {{ date('Y') }}</span>
                 </div>

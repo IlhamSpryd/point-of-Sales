@@ -16,7 +16,7 @@
             </x-slot:actions>
         </x-erp.page-header>
 
-        <div class="card-surface overflow-hidden w-full rounded-2xl border border-border dark:border-zinc-800 shadow-xs">
+        <div class="card-surface overflow-hidden w-full rounded-2xl border border-border shadow-xs">
             <form action="{{ route('users.update', $user->id) }}" method="POST" x-data="{ submitting: false }" @submit="submitting = true" class="p-6 md:p-8 space-y-6">
                 @csrf
                 @method('PUT')
@@ -28,7 +28,7 @@
                         <x-form-input type="text" id="name" name="name" value="{{ old('name', $user->name) }}" 
                                placeholder="Enter full name" required autocomplete="name" class="{{ $errors->has('name') ? 'input-error' : '' }}" />
                         @error('name')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -37,7 +37,7 @@
                         <x-form-input type="email" id="email" name="email" value="{{ old('email', $user->email) }}" 
                                placeholder="example@domain.com" required autocomplete="username" class="{{ $errors->has('email') ? 'input-error' : '' }}" />
                         @error('email')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
                     
@@ -46,7 +46,7 @@
                         <x-form-input type="text" id="phone_number" name="phone_number" value="{{ old('phone_number', $user->phone_number) }}" 
                                placeholder="+62 812 3456 7890" class="{{ $errors->has('phone_number') ? 'input-error' : '' }}" />
                         @error('phone_number')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -55,18 +55,18 @@
                         <x-form-input type="date" id="join_date" name="join_date" value="{{ old('join_date', $user->join_date?->format('Y-m-d')) }}" 
                                class="{{ $errors->has('join_date') ? 'input-error' : '' }}" />
                         @error('join_date')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
 
                 <!-- Role & Status Row -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border dark:border-zinc-800">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
                     <div>
                         <x-form-label for="role_id">Select Role</x-form-label>
                         <div class="relative">
                             <select id="role_id" name="role_id" 
-                                    class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground dark:text-zinc-100 appearance-none focus:outline-hidden focus:ring-2 focus:ring-ring/20 transition-all duration-200 shadow-xs {{ $errors->has('role_id') ? 'input-error' : '' }}" required>
+                                    class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-card text-foreground appearance-none focus:outline-hidden focus:ring-2 focus:ring-ring/20 transition-all duration-200 shadow-xs {{ $errors->has('role_id') ? 'input-error' : '' }}" required>
                                 <option value="">Select Role</option>
                                 @foreach($roles as $role)
                                     <option value="{{ $role->id }}" {{ old('role_id', $user->role_id) == $role->id ? 'selected' : '' }}>
@@ -74,20 +74,20 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-zinc-400">
+                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-muted-foreground">
                                 <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                             </div>
                         </div>
                         @error('role_id')
-                            <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                            <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div class="flex items-center pt-8">
                         <label class="flex items-center gap-3 cursor-pointer">
                             <input type="hidden" name="is_active" value="0">
-                            <input type="checkbox" name="is_active" value="1" {{ old('is_active', $user->is_active) ? 'checked' : '' }} class="w-5 h-5 rounded border-zinc-300 dark:border-zinc-700 text-primary focus:ring-ring/20 transition-colors">
-                            <span class="text-sm font-medium text-foreground dark:text-zinc-200">Active Employee</span>
+                            <input type="checkbox" name="is_active" value="1" {{ old('is_active', $user->is_active) ? 'checked' : '' }} class="w-5 h-5 rounded border-border text-primary focus:ring-ring/20 transition-colors">
+                            <span class="text-sm font-medium text-foreground">Active Employee</span>
                         </label>
                     </div>
                 </div>
@@ -96,7 +96,7 @@
                     @php
                         $assignedStoreIds = (array) old('store_ids', $user->stores->pluck('id')->all());
                     @endphp
-                    <div class="pt-4 border-t border-border dark:border-zinc-800">
+                    <div class="pt-4 border-t border-border">
                         <div class="mb-3">
                             <x-form-label>Assigned Branches & Outlets (Store Scope)</x-form-label>
                             <p class="text-xs text-muted-foreground mt-0.5">Select the physical store branches this employee is authorized to operate in.</p>
@@ -116,19 +116,19 @@
                             @endforeach
                         </div>
                         @error('store_ids')
-                            <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                            <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
                 @endif
 
                 <!-- Security Row -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-border dark:border-zinc-800">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-border">
                     <div>
                         <x-form-label for="pin_code">New Cashier PIN (Optional)</x-form-label>
                         <x-form-input type="password" id="pin_code" name="pin_code" 
                                placeholder="Leave blank to keep unchanged" class="{{ $errors->has('pin_code') ? 'input-error' : '' }}" />
                         @error('pin_code')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -137,7 +137,7 @@
                         <x-form-input type="password" id="password" name="password" 
                                placeholder="Leave blank to keep unchanged" autocomplete="new-password" class="{{ $errors->has('password') ? 'input-error' : '' }}" />
                         @error('password')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -148,7 +148,7 @@
                     </div>
                 </div>
 
-                <div class="pt-6 border-t border-border dark:border-zinc-800 flex justify-end">
+                <div class="pt-6 border-t border-border flex justify-end">
                     <x-ui.button type="submit" variant="primary" class="gap-2" x-bind:disabled="submitting" x-bind:class="submitting ? 'opacity-60 cursor-not-allowed' : ''">
                         <span x-show="!submitting" class="inline-flex items-center gap-1.5">
                             <span class="material-symbols-rounded text-base">save</span> Update User

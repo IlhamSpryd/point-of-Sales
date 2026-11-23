@@ -21,8 +21,8 @@
     </div>
 
     @if (session()->has('message'))
-        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 text-emerald-800 text-sm font-medium">
-            <span class="material-symbols-rounded text-emerald-600 text-[20px]">check_circle</span>
+        <div class="p-4 bg-positive-muted border border-positive rounded-xl flex items-center gap-3 text-positive text-sm font-medium">
+            <span class="material-symbols-rounded text-positive text-[20px]">check_circle</span>
             {{ session('message') }}
         </div>
     @endif
@@ -49,12 +49,12 @@
             <table class="w-full text-left text-sm text-foreground">
                 <thead class="bg-muted/50 text-muted-foreground font-semibold text-2xs uppercase tracking-wider border-b border-border">
                     <tr>
-                        <th class="px-6 py-3.5">Batch Number</th>
-                        <th class="px-6 py-3.5">Product Name</th>
-                        <th class="px-6 py-3.5">Barcode</th>
-                        <th class="px-6 py-3.5">Price Snapshot</th>
-                        <th class="px-6 py-3.5">Status</th>
-                        <th class="px-6 py-3.5 text-right">Action</th>
+                        <th scope="col" class="px-6 py-3.5">Batch Number</th>
+                        <th scope="col" class="px-6 py-3.5">Product Name</th>
+                        <th scope="col" class="px-6 py-3.5">Barcode</th>
+                        <th scope="col" class="px-6 py-3.5">Price Snapshot</th>
+                        <th scope="col" class="px-6 py-3.5">Status</th>
+                        <th scope="col" class="px-6 py-3.5 text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -69,7 +69,7 @@
                             <td class="px-6 py-4 font-mono text-muted-foreground text-xs">
                                 {{ $label->variant?->barcode ?? $label->product?->barcode ?? '-' }}
                             </td>
-                            <td class="px-6 py-4 font-semibold text-foreground">
+                            <td class="tabular-nums px-6 py-4 font-semibold text-foreground">
                                 Rp {{ number_format((float) $label->new_price, 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-4">

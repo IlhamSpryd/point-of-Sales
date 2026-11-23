@@ -3,12 +3,12 @@
 
     <!-- Flash Notifications -->
     @if (session()->has('success'))
-        <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-sm flex items-center justify-between">
+        <div class="p-4 rounded-xl bg-positive border border-positive/20 text-positive text-sm flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <span class="material-symbols-rounded text-lg">check_circle</span>
                 <span>{{ session('success') }}</span>
             </div>
-            <button type="button" @click="$el.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700">
+            <button type="button" @click="$el.parentElement.remove()" class="text-positive hover:text-positive">
                 <span class="material-symbols-rounded text-sm">close</span>
             </button>
         </div>
@@ -17,12 +17,12 @@
     <!-- Header Action Bar -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-xl font-bold text-zinc-950 dark:text-white tracking-tight">Chart of Accounts</h1>
-            <p class="text-xs text-zinc-500">Multi-tenant dual-entry general ledger chart of accounts hierarchy.</p>
+            <h1 class="text-xl font-bold text-foreground tracking-tight">Chart of Accounts</h1>
+            <p class="text-xs text-muted-foreground">Multi-tenant dual-entry general ledger chart of accounts hierarchy.</p>
         </div>
         <button type="button"
                 wire:click="openCreateModal"
-                class="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 rounded-xl transition-colors shadow-xs">
+                class="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl transition-colors shadow-xs">
             <span class="material-symbols-rounded text-base">add</span>
             <span>Add Account</span>
         </button>
@@ -50,27 +50,27 @@
     <div class="card-surface rounded-2xl border border-border overflow-hidden shadow-xs">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-xs">
-                <thead class="bg-zinc-50 dark:bg-zinc-900/60 text-zinc-500 font-semibold border-b border-zinc-200 dark:border-zinc-800">
+                <thead class="bg-secondary /60 text-muted-foreground font-semibold border-b border-border">
                     <tr>
-                        <th class="px-4 py-3">Account Code</th>
-                        <th class="px-4 py-3">Account Name</th>
-                        <th class="px-4 py-3">Classification Type</th>
-                        <th class="px-4 py-3">Normal Balance</th>
-                        <th class="px-4 py-3">Postable</th>
-                        <th class="px-4 py-3">Status</th>
-                        <th class="px-4 py-3 text-right">Actions</th>
+                        <th scope="col" class="px-4 py-3">Account Code</th>
+                        <th scope="col" class="px-4 py-3">Account Name</th>
+                        <th scope="col" class="px-4 py-3">Classification Type</th>
+                        <th scope="col" class="px-4 py-3">Normal Balance</th>
+                        <th scope="col" class="px-4 py-3">Postable</th>
+                        <th scope="col" class="px-4 py-3">Status</th>
+                        <th scope="col" class="px-4 py-3 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+                <tbody class="divide-y border-border">
                     @forelse ($accounts as $acc)
-                        <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/30 transition-colors {{ ! $acc->is_active ? 'opacity-50' : '' }}">
-                            <td class="px-4 py-3 font-sans font-medium text-zinc-900 dark:text-zinc-100">
+                        <tr class="hover:bg-secondary/60 transition-colors {{ ! $acc->is_active ? 'opacity-50' : '' }}">
+                            <td class="px-4 py-3 font-sans font-medium text-foreground">
                                 {{ $acc->account_code }}
                             </td>
-                            <td class="px-4 py-3 text-zinc-950 dark:text-white font-medium">
+                            <td class="px-4 py-3 text-foreground font-medium">
                                 <span style="margin-left: {{ max(0, ($acc->level - 1) * 1.5) }}rem" class="inline-flex items-center gap-1.5">
                                     @if ($acc->level > 1)
-                                        <span class="text-zinc-400">└─</span>
+                                        <span class="text-muted-foreground">└─</span>
                                     @endif
                                     <span>{{ $acc->account_name }}</span>
                                 </span>
@@ -81,17 +81,17 @@
                                 </span>
                             </td>
                             <td class="px-4 py-3">
-                                <span class="font-sans text-[11px] {{ $acc->normal_balance->value === 'DEBIT' ? 'text-indigo-600 dark:text-indigo-400' : 'text-teal-600 dark:text-teal-400' }}">
+                                <span class="font-sans text-[11px] {{ $acc->normal_balance->value === 'DEBIT' ? 'text-primary' : 'text-primary' }}">
                                     {{ $acc->normal_balance->value }}
                                 </span>
                             </td>
                             <td class="px-4 py-3">
                                 @if ($acc->is_postable)
-                                    <span class="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400">
+                                    <span class="inline-flex items-center gap-1 text-[11px] text-positive">
                                         <span class="material-symbols-rounded text-sm">check</span> Postable
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center gap-1 text-[11px] text-zinc-400">
+                                    <span class="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
                                         <span class="material-symbols-rounded text-sm">folder</span> Header/Parent
                                     </span>
                                 @endif
@@ -119,8 +119,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-4 py-12 text-center text-zinc-400">
-                                <span class="material-symbols-rounded text-3xl mb-1 text-zinc-300">account_tree</span>
+                            <td colspan="7" class="px-4 py-12 text-center text-muted-foreground">
+                                <span class="material-symbols-rounded text-3xl mb-1 text-foreground">account_tree</span>
                                 <p class="text-xs">No accounts matching the search criteria found.</p>
                             </td>
                         </tr>
@@ -130,7 +130,7 @@
         </div>
 
         @if ($accounts->hasPages())
-            <div class="p-3 border-t border-zinc-200 dark:border-zinc-800">
+            <div class="p-3 border-t border-border">
                 {{ $accounts->links() }}
             </div>
         @endif

@@ -180,11 +180,7 @@
                     @click="item.unread = false">
                     {{-- Icon Container with Soft Pastel Accent --}}
                     <div class="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center border"
-                        :class="{
-                            'bg-success-muted/40 text-success border-success-border/40': item.variant === 'emerald',
-                            'bg-info-muted/40 text-info border-info-border/40': item.variant === 'blue',
-                            'bg-warning-muted/40 text-warning border-warning-border/40': item.variant === 'amber'
-                        }">
+                        :class="{ 'bg-success-muted/40 text-success border-success-border/40': item.variant === 'emerald', 'bg-info-muted/40 text-info border-info-border/40': item.variant === 'blue', 'bg-warning-muted/40 text-warning border-warning-border/40': item.variant === 'amber' }">
                         <span class="material-symbols-rounded text-[16px]" x-text="item.icon"></span>
                     </div>
 

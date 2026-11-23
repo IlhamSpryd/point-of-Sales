@@ -90,7 +90,7 @@
                 <div class="relative z-10">
                     <span
                         class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/20 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider mb-3 shadow-sm border border-white/10">
-                        <span class="material-symbols-rounded text-[14px] text-amber-300">stars</span> Today's Specials
+                        <span class="material-symbols-rounded text-[14px] text-warning">stars</span> Today's Specials
                     </span>
                     <h2 class="font-bold text-xl leading-tight mb-1.5 text-white">Explore Our Featured Menu</h2>
                     <p class="text-xs text-white/70 font-medium">Check available promotional discounts at checkout.</p>
@@ -101,7 +101,7 @@
                     class="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none">
                 </div>
                 <div
-                    class="absolute -top-10 -right-5 w-24 h-24 bg-amber-500/20 rounded-full blur-xl pointer-events-none">
+                    class="absolute -top-10 -right-5 w-24 h-24 bg-warning rounded-full blur-xl pointer-events-none">
                 </div>
             </div>
 
@@ -115,17 +115,14 @@
             <div class="flex gap-2.5 overflow-x-auto scrollbar-hide px-4 py-2 items-center">
                 <button type="button" @click="activeCategory = 'all'"
                     :aria-pressed="(activeCategory === 'all').toString()"
-                    :class="activeCategory === 'all' ? 'bg-primary text-white border-foreground shadow-sm' :
-                        'bg-white text-gray-500 border-border hover:bg-gray-50'"
+                    :class="activeCategory === 'all' ? 'bg-primary text-white border-foreground shadow-sm' : 'bg-white text-muted-foreground border-border hover:bg-secondary'"
                     class="shrink-0 flex items-center justify-center h-10 px-4 rounded-xl border text-sm font-medium whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     All Items
                 </button>
                 @foreach ($visibleCategories as $cat)
                     <button type="button" @click="activeCategory = '{{ $cat->id }}'"
                         :aria-pressed="(activeCategory === '{{ $cat->id }}').toString()"
-                        :class="activeCategory === '{{ $cat->id }}' ?
-                            'bg-primary text-white border-foreground shadow-sm' :
-                            'bg-white text-gray-500 border-border hover:bg-gray-50'"
+                        :class="activeCategory === '{{ $cat->id }}' ? 'bg-primary text-white border-foreground shadow-sm' : 'bg-white text-muted-foreground border-border hover:bg-secondary'"
                         class="shrink-0 flex items-center justify-center h-10 px-4 rounded-xl border text-sm font-medium whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                         {{ $cat->category_name }}
                     </button>
@@ -186,7 +183,7 @@
 
                                 {{-- Deskripsi Singkat --}}
                                 <span
-                                    class="mb-3 line-clamp-2 text-[10px] leading-snug text-gray-500 font-medium">{{ $desc }}</span>
+                                    class="mb-3 line-clamp-2 text-[10px] leading-snug text-muted-foreground font-medium">{{ $desc }}</span>
 
                                 {{-- Harga & Tombol --}}
                                 <span class="mt-auto flex items-center justify-between pt-1 w-full">

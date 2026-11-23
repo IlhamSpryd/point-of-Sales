@@ -136,18 +136,18 @@
                 @csrf
 
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Store / Branch Name <span class="text-rose-500">*</span></label>
-                    <input type="text" name="name" value="{{ old('name') }}" required placeholder="e.g., Apeiron Coffee Downtown" class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Store / Branch Name <span class="text-destructive">*</span></label>
+                    <input type="text" name="name" value="{{ old('name') }}" required placeholder="e.g., Apeiron Coffee Downtown" class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Store Code (Optional)</label>
-                    <input type="text" name="code" value="{{ old('code') }}" placeholder="Auto-generated if left blank (STR-001)" class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Store Code (Optional)</label>
+                    <input type="text" name="code" value="{{ old('code') }}" placeholder="Auto-generated if left blank (STR-001)" class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Operational Timezone <span class="text-rose-500">*</span></label>
-                    <select name="timezone" required class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Operational Timezone <span class="text-destructive">*</span></label>
+                    <select name="timezone" required class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
                         <option value="Asia/Jakarta" selected>WIB — Western Indonesia Time (Asia/Jakarta)</option>
                         <option value="Asia/Makassar">WITA — Central Indonesia Time (Asia/Makassar)</option>
                         <option value="Asia/Jayapura">WIT — Eastern Indonesia Time (Asia/Jayapura)</option>
@@ -155,13 +155,13 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Contact Phone Number</label>
-                    <input type="tel" name="phone" value="{{ old('phone') }}" placeholder="08123456789" class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Contact Phone Number</label>
+                    <input type="tel" name="phone" value="{{ old('phone') }}" placeholder="08123456789" class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Physical Store Address</label>
-                    <textarea name="address" rows="3" placeholder="e.g., 45 Downtown Boulevard, Suite 100..." class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">{{ old('address') }}</textarea>
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Physical Store Address</label>
+                    <textarea name="address" rows="3" placeholder="e.g., 45 Downtown Boulevard, Suite 100..." class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">{{ old('address') }}</textarea>
                 </div>
             </form>
 

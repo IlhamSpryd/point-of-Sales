@@ -26,49 +26,49 @@
     @endif
 
     <!-- Toolbar & Search -->
-    <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-border dark:border-zinc-800">
+    <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-border">
         <div class="relative w-full sm:w-80">
-            <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search discounts..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-ring/20 text-zinc-800 dark:text-zinc-100">
+            <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">search</span>
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search discounts..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-border bg-card focus:outline-hidden focus:ring-2 focus:ring-ring/20 text-foreground">
         </div>
     </div>
 
     <!-- Data Table -->
-    <div class="card-surface overflow-hidden rounded-2xl border border-border dark:border-zinc-800 shadow-xs">
+    <div class="card-surface overflow-hidden rounded-2xl border border-border shadow-xs">
         <div class="overflow-x-auto">
             <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
                 <thead>
-                    <tr class="border-b border-border dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-                        <th class="px-6 py-4">Name & Code</th>
-                        <th class="px-6 py-4 text-right">Type & Value</th>
-                        <th class="px-6 py-4 text-right">Min. Spend Requirement</th>
-                        <th class="px-6 py-4 text-center">Quota & Stackable</th>
-                        <th class="px-6 py-4 text-center">Status & Validity</th>
-                        <th class="px-6 py-4 text-right">Actions</th>
+                    <tr class="border-b border-border bg-secondary/50 /50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        <th scope="col" class="px-6 py-4">Name & Code</th>
+                        <th scope="col" class="px-6 py-4 text-right">Type & Value</th>
+                        <th scope="col" class="px-6 py-4 text-right">Min. Spend Requirement</th>
+                        <th scope="col" class="px-6 py-4 text-center">Quota & Stackable</th>
+                        <th scope="col" class="px-6 py-4 text-center">Status & Validity</th>
+                        <th scope="col" class="px-6 py-4 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-border dark:divide-zinc-800/70">
+                <tbody class="divide-y divide-border">
                     @forelse($discounts as $discount)
-                        <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
+                        <tr class="hover:bg-secondary/60 transition">
                             <td class="px-6 py-4">
-                                <div class="font-semibold text-foreground dark:text-white">{{ $discount->name }}</div>
-                                <div class="text-xs text-zinc-400 font-sans mt-0.5">{{ $discount->code ?? 'No Code' }}</div>
+                                <div class="font-semibold text-foreground">{{ $discount->name }}</div>
+                                <div class="text-xs text-muted-foreground font-sans mt-0.5">{{ $discount->code ?? 'No Code' }}</div>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <div class="font-semibold text-zinc-900 dark:text-white font-sans tabular-nums">
+                                <div class="font-semibold text-foreground font-sans tabular-nums">
                                     {{ $discount->type === 'percentage' ? $discount->value . '%' : 'Rp ' . number_format((float) $discount->value, 0, ',', '.') }}
                                 </div>
                                 @if($discount->type === 'percentage' && $discount->max_discount_amount)
-                                    <div class="text-[11px] text-zinc-400 font-sans tabular-nums mt-0.5">
+                                    <div class="text-[11px] text-muted-foreground font-sans tabular-nums mt-0.5">
                                         Max: Rp {{ number_format((float) $discount->max_discount_amount, 0, ',', '.') }}
                                     </div>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-right text-xs text-zinc-600 dark:text-zinc-400 font-sans tabular-nums">
+                            <td class="px-6 py-4 text-right text-xs text-muted-foreground font-sans tabular-nums">
                                 Rp {{ number_format((float) $discount->min_purchase_amount, 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <div class="text-xs font-sans font-bold text-zinc-800 dark:text-zinc-200">
+                                <div class="text-xs font-sans font-bold text-foreground">
                                     {{ $discount->redemptions_count }} / {{ $discount->usage_limit ?? '∞' }}
                                 </div>
                                 <div class="mt-1">
@@ -83,7 +83,7 @@
                                     {{ $discount->is_active ? 'Active' : 'Inactive' }}
                                 </span>
                                 @if($discount->valid_from || $discount->valid_until)
-                                    <div class="text-[11px] text-zinc-400 mt-1">
+                                    <div class="text-[11px] text-muted-foreground mt-1">
                                         {{ $discount->valid_from ? $discount->valid_from->format('d/m/y') : '∞' }} – {{ $discount->valid_until ? $discount->valid_until->format('d/m/y') : '∞' }}
                                     </div>
                                 @endif
@@ -115,7 +115,7 @@
             </table>
         </div>
         @if($discounts->hasPages())
-            <div class="p-4 border-t border-border dark:border-zinc-800">
+            <div class="p-4 border-t border-border">
                 {{ $discounts->links() }}
             </div>
         @endif
@@ -133,14 +133,14 @@
                     <div class="col-span-1 md:col-span-2">
                         <x-ui.label for="discount-name">Discount Name *</x-ui.label>
                         <x-ui.input id="discount-name" type="text" wire:model="name" placeholder="e.g., Loyal Customer Discount" />
-                        @error('name') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('name') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     <div>
                         <x-ui.label for="discount-code">Voucher Code</x-ui.label>
                         <x-ui.input id="discount-code" type="text" wire:model="code" placeholder="Leave empty if not a voucher" class="uppercase font-sans" />
-                        @error('code') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
-                        <p class="text-[11px] text-zinc-400 mt-1">Leave empty for automatic or manual cashier discounts.</p>
+                        @error('code') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
+                        <p class="text-[11px] text-muted-foreground mt-1">Leave empty for automatic or manual cashier discounts.</p>
                     </div>
 
                     <div>
@@ -149,63 +149,63 @@
                             <option value="percentage">Percentage (%)</option>
                             <option value="fixed">Fixed Amount (Rp)</option>
                         </x-ui.select>
-                        @error('type') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('type') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     <div>
                         <x-ui.label for="discount-value">Discount Value *</x-ui.label>
                         <x-ui.input id="discount-value" type="number" wire:model="value" />
-                        @error('value') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('value') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     @if($type === 'percentage')
                     <div>
                         <x-ui.label for="discount-max">Max Discount (Rp)</x-ui.label>
                         <x-ui.input id="discount-max" type="number" wire:model="max_discount_amount" placeholder="Leave empty for unlimited" />
-                        @error('max_discount_amount') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('max_discount_amount') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
                     @endif
 
                     <div>
                         <x-ui.label for="discount-min">Min. Spend (Rp)</x-ui.label>
                         <x-ui.input id="discount-min" type="number" wire:model="min_purchase_amount" />
-                        @error('min_purchase_amount') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('min_purchase_amount') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     <div>
                         <x-ui.label for="discount-usage-limit">Usage Limit (Quota)</x-ui.label>
                         <x-ui.input id="discount-usage-limit" type="number" min="1" wire:model="usage_limit" placeholder="Leave empty for unlimited" />
-                        @error('usage_limit') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('usage_limit') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     <div>
                         <x-ui.label for="discount-from">Valid From</x-ui.label>
                         <x-ui.input id="discount-from" type="datetime-local" wire:model="valid_from" />
-                        @error('valid_from') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('valid_from') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     <div>
                         <x-ui.label for="discount-until">Valid Until</x-ui.label>
                         <x-ui.input id="discount-until" type="datetime-local" wire:model="valid_until" />
-                        @error('valid_until') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('valid_until') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="col-span-1 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                        <label class="flex items-center gap-3 p-3.5 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer">
+                        <label class="flex items-center gap-3 p-3.5 bg-secondary rounded-xl border border-border cursor-pointer">
                             <input wire:model="is_stackable" id="is_stackable" type="checkbox"
-                                class="rounded border-zinc-300 text-primary shadow-xs focus:ring-ring">
+                                class="rounded border-border text-primary shadow-xs focus:ring-ring">
                             <div>
-                                <span class="block text-xs font-semibold text-zinc-900 dark:text-zinc-100">Stackable Discount</span>
-                                <span class="block text-[11px] text-zinc-500">Allow discount to be combined with other promotions.</span>
+                                <span class="block text-xs font-semibold text-foreground">Stackable Discount</span>
+                                <span class="block text-[11px] text-muted-foreground">Allow discount to be combined with other promotions.</span>
                             </div>
                         </label>
 
-                        <label class="flex items-center gap-3 p-3.5 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer">
+                        <label class="flex items-center gap-3 p-3.5 bg-secondary rounded-xl border border-border cursor-pointer">
                             <input wire:model="is_active" id="is_active" type="checkbox"
-                                class="rounded border-zinc-300 text-primary shadow-xs focus:ring-ring">
+                                class="rounded border-border text-primary shadow-xs focus:ring-ring">
                             <div>
-                                <span class="block text-xs font-semibold text-zinc-900 dark:text-zinc-100">Active Status</span>
-                                <span class="block text-[11px] text-zinc-500">Discount is available for transaction redemption.</span>
+                                <span class="block text-xs font-semibold text-foreground">Active Status</span>
+                                <span class="block text-[11px] text-muted-foreground">Discount is available for transaction redemption.</span>
                             </div>
                         </label>
                     </div>

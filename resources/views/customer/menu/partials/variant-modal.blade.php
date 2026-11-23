@@ -98,10 +98,7 @@
                                         <span x-show="mod.extra_price > 0" class="mt-0.5 block text-[12px] font-medium text-muted-foreground" x-text="'+' + rupiah(mod.extra_price)"></span>
                                     </span>
                                     <span class="flex h-6 w-6 shrink-0 items-center justify-center border-[1.5px] transition-all duration-200"
-                                          :class="[
-                                              group.selection_type === 'single' ? 'rounded-full' : 'rounded-md',
-                                              isSelected(group, mod.id) ? 'border-foreground bg-primary text-white' : 'border-primary-300 text-transparent'
-                                          ]">
+                                          :class="[ group.selection_type === 'single' ? 'rounded-full' : 'rounded-md', isSelected(group, mod.id) ? 'border-foreground bg-primary text-white' : 'border-primary-300 text-transparent' ]">
                                         <span class="material-symbols-rounded text-[16px]">check</span>
                                     </span>
                                 </button>
@@ -121,7 +118,7 @@
 
         {{-- Footer --}}
         <div x-show="product && !error && !loading" x-cloak class="shrink-0 border-t border-border bg-white px-5 pt-4 pb-safe">
-            <p x-show="missing.length" x-cloak class="mb-3 text-xs font-medium text-rose-600"
+            <p x-show="missing.length" x-cloak class="mb-3 text-xs font-medium text-destructive"
                x-text="'Please complete required selections: ' + missing.join(', ')"></p>
             
             <div class="flex flex-col gap-3">

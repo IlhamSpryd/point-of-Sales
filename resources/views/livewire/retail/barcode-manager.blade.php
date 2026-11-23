@@ -13,8 +13,8 @@
     </div>
 
     @if (session()->has('message'))
-        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 text-emerald-800 text-sm font-medium">
-            <span class="material-symbols-rounded text-emerald-600 text-[20px]">check_circle</span>
+        <div class="p-4 bg-positive-muted border border-positive rounded-xl flex items-center gap-3 text-positive text-sm font-medium">
+            <span class="material-symbols-rounded text-positive text-[20px]">check_circle</span>
             {{ session('message') }}
         </div>
     @endif
@@ -33,7 +33,7 @@
             </button>
         </div>
         @if ($isValidEan13 !== null)
-            <div class="p-3 rounded-xl text-sm font-medium {{ $isValidEan13 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-red-50 text-red-800 border border-red-200' }}">
+            <div class="p-3 rounded-xl text-sm font-medium {{ $isValidEan13 ? 'bg-positive-muted text-positive border border-positive' : 'bg-destructive-muted text-destructive border border-destructive' }}">
                 @if ($isValidEan13)
                     <span class="flex items-center gap-2"><span class="material-symbols-rounded text-[20px]">verified</span> Valid EAN-13 barcode format and checksum.</span>
                 @else
@@ -56,11 +56,11 @@
             <table class="w-full text-left text-sm text-foreground">
                 <thead class="bg-muted text-muted-foreground font-semibold text-xs uppercase tracking-wider border-b border-border">
                     <tr>
-                        <th class="px-6 py-3">Product Name</th>
-                        <th class="px-6 py-3">Variant Name</th>
-                        <th class="px-6 py-3">SKU</th>
-                        <th class="px-6 py-3">Current Barcode</th>
-                        <th class="px-6 py-3 text-right">Action</th>
+                        <th scope="col" class="px-6 py-3">Product Name</th>
+                        <th scope="col" class="px-6 py-3">Variant Name</th>
+                        <th scope="col" class="px-6 py-3">SKU</th>
+                        <th scope="col" class="px-6 py-3">Current Barcode</th>
+                        <th scope="col" class="px-6 py-3 text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">

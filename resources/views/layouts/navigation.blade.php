@@ -67,12 +67,7 @@
             }
         }
     "
-    :class="[
-        isMobile
-            ? (sidebarMobileOpen ? 'fixed inset-y-0 left-0 translate-x-0 shadow-2xl z-40' : 'fixed inset-y-0 left-0 -translate-x-full z-40')
-            : 'relative translate-x-0 z-30',
-        wide ? (isMobile ? 'w-72' : 'w-64') : 'w-16'
-    ]"
+    :class="[ isMobile ? (sidebarMobileOpen ? 'fixed inset-y-0 left-0 translate-x-0 shadow-2xl z-40' : 'fixed inset-y-0 left-0 -translate-x-full z-40') : 'relative translate-x-0 z-30', wide ? (isMobile ? 'w-72' : 'w-64') : 'w-16' ]"
     class="h-full flex flex-col bg-shell text-shell-foreground select-none overflow-x-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
 
     {{-- Header: DEMURE Luxury Brand Logo + Circular Collapse/Expand Toggle --}}

@@ -98,7 +98,7 @@
                                         placeholder="Nominal Rp"
                                         class="form-input flex-1 p-2 rounded-lg border border-border text-xs font-semibold font-sans tabular-nums">
                                     @if (count($splitBillAmounts) > 2)
-                                        <button type="button" wire:click="removeSplitBillAmountPart({{ $idx }})" class="text-muted-foreground hover:text-rose-600 p-1">
+                                        <button type="button" wire:click="removeSplitBillAmountPart({{ $idx }})" class="text-muted-foreground hover:text-destructive p-1">
                                             <span class="material-symbols-rounded text-[18px]">delete</span>
                                         </button>
                                     @endif

@@ -13,15 +13,15 @@
     </div>
 
     @if (session()->has('message'))
-        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 text-emerald-800 text-sm font-medium">
-            <span class="material-symbols-rounded text-emerald-600 text-[20px]">check_circle</span>
+        <div class="p-4 bg-positive-muted border border-positive rounded-xl flex items-center gap-3 text-positive text-sm font-medium">
+            <span class="material-symbols-rounded text-positive text-[20px]">check_circle</span>
             {{ session('message') }}
         </div>
     @endif
 
     @if (session()->has('error'))
-        <div class="p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-800 text-sm font-medium">
-            <span class="material-symbols-rounded text-red-600 text-[20px]">error</span>
+        <div class="p-4 bg-destructive-muted border border-destructive rounded-xl flex items-center gap-3 text-destructive text-sm font-medium">
+            <span class="material-symbols-rounded text-destructive text-[20px]">error</span>
             {{ session('error') }}
         </div>
     @endif

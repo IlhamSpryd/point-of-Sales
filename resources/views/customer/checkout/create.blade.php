@@ -18,7 +18,7 @@
 
 
             @if (session('error'))
-                <div role="alert" class="mb-5 flex items-start gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+                <div role="alert" class="mb-5 flex items-start gap-2 rounded-2xl border border-destructive bg-destructive-muted px-4 py-3 text-sm font-medium text-destructive">
                     <span class="material-symbols-rounded text-[20px] mt-0.5">error</span>
                     <span>{{ session('error') }}</span>
                 </div>
@@ -55,7 +55,7 @@
             <section aria-labelledby="loyalty" class="mb-5">
                 <h2 id="loyalty" class="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Member & Loyalty (Optional)</h2>
                 <div class="card-surface p-4">
-                    <label for="customer_phone" class="block text-[13px] font-semibold text-gray-700 mb-1.5">Mobile Number</label>
+                    <label for="customer_phone" class="block text-[13px] font-semibold text-foreground mb-1.5">Mobile Number</label>
                     <input type="tel" name="customer_phone" id="customer_phone" value="{{ old('customer_phone') }}"
                            placeholder="e.g. 08123456789"
                            class="w-full rounded-xl border-border bg-white px-4 py-2.5 text-[14px] focus:border-primary focus:ring-1 focus:ring-ring outline-none transition-all" />

@@ -275,10 +275,7 @@
                     @click="select(opt)"
                     @mouseenter="focusedIndex = idx"
                     class="px-2.5 py-1.5 rounded-control text-xs sm:text-sm cursor-pointer flex items-center justify-between gap-2 text-foreground transition-colors select-none"
-                    :class="{
-                        'bg-muted font-medium': focusedIndex === idx,
-                        'text-primary font-semibold': isSelected(opt.value)
-                    }"
+                    :class="{ 'bg-muted font-medium': focusedIndex === idx, 'text-primary font-semibold': isSelected(opt.value) }"
                 >
                     <span class="truncate" x-text="opt.label"></span>
 

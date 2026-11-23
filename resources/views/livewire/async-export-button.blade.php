@@ -63,7 +63,7 @@
         x-show="!taskId || status === 'failed'" 
         @click="if (status === 'failed') { $wire.resetExport(); status = 'idle'; errorMessage = ''; } $wire.requestExport()"
         type="button"
-        class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition shadow-xs w-full sm:w-auto"
+        class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border border-border bg-card text-foreground hover:bg-secondary transition shadow-xs w-full sm:w-auto"
     >
         <span class="material-symbols-rounded text-base">download</span>
         Export to Excel (.xlsx)
@@ -74,7 +74,7 @@
         x-show="status === 'processing'" 
         disabled
         type="button"
-        class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 text-zinc-400 dark:text-zinc-500 opacity-75 cursor-not-allowed w-full sm:w-auto"
+        class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border border-border bg-secondary /60 text-muted-foreground opacity-75 cursor-not-allowed w-full sm:w-auto"
     >
         <svg class="animate-spin h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -87,7 +87,7 @@
     <a 
         x-show="status === 'completed'" 
         x-bind:href="downloadUrl"
-        class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-xs w-full sm:w-auto"
+        class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-positive text-white hover:bg-positive transition shadow-xs w-full sm:w-auto"
         download
     >
         <span class="material-symbols-rounded text-base">check_circle</span>
@@ -95,26 +95,26 @@
     </a>
 
     <!-- Polling Error Message -->
-    <div x-show="errorMessage" class="text-xs text-rose-600 dark:text-rose-400 mt-1.5 flex items-center gap-1 font-medium" x-cloak>
+    <div x-show="errorMessage" class="text-xs text-destructive mt-1.5 flex items-center gap-1 font-medium" x-cloak>
         <span class="material-symbols-rounded text-[14px]">error</span>
         <span x-text="errorMessage"></span>
     </div>
 
     <!-- Livewire Validation Errors -->
     @error('range')
-        <div class="text-xs text-rose-600 dark:text-rose-400 mt-1.5 flex items-center gap-1 font-medium">
+        <div class="text-xs text-destructive mt-1.5 flex items-center gap-1 font-medium">
             <span class="material-symbols-rounded text-[14px]">error</span>
             <span>{{ $message }}</span>
         </div>
     @enderror
     @error('startDate')
-        <div class="text-xs text-rose-600 dark:text-rose-400 mt-1.5 flex items-center gap-1 font-medium">
+        <div class="text-xs text-destructive mt-1.5 flex items-center gap-1 font-medium">
             <span class="material-symbols-rounded text-[14px]">error</span>
             <span>{{ $message }}</span>
         </div>
     @enderror
     @error('endDate')
-        <div class="text-xs text-rose-600 dark:text-rose-400 mt-1.5 flex items-center gap-1 font-medium">
+        <div class="text-xs text-destructive mt-1.5 flex items-center gap-1 font-medium">
             <span class="material-symbols-rounded text-[14px]">error</span>
             <span>{{ $message }}</span>
         </div>

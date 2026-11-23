@@ -27,7 +27,7 @@
                     <span class="material-symbols-rounded text-[14px] text-muted-foreground">confirmation_number</span>
                     Voucher: {{ $voucherCode }}
                 </span>
-                <button type="button" wire:click.prevent="removeVoucher" class="text-muted-foreground hover:text-rose-600 font-bold p-1 text-sm leading-none cursor-pointer" title="Remove Voucher">&times;</button>
+                <button type="button" wire:click.prevent="removeVoucher" class="text-muted-foreground hover:text-destructive font-bold p-1 text-sm leading-none cursor-pointer" title="Remove Voucher">&times;</button>
             </div>
         @elseif (!$pendingOrderId)
             <div x-show="!openPromo" class="flex items-center justify-between text-xs px-0.5">
@@ -50,7 +50,7 @@
                     </button>
                 </div>
                 @if ($voucherError)
-                    <span class="text-xs text-rose-600 block">{{ $voucherError }}</span>
+                    <span class="text-xs text-destructive block">{{ $voucherError }}</span>
                 @endif
                 @if (count($this->activeDiscounts) > 0)
                     <div class="relative">
@@ -78,7 +78,7 @@
                 <span class="font-semibold text-foreground">Manual Discount: Rp {{ number_format($appliedManualDiscount, 0, ',', '.') }}</span>
                 <span class="text-xs text-muted-foreground block truncate">{{ $appliedManualDiscountReason }}</span>
             </div>
-            <button type="button" wire:click.prevent="removeManualDiscount" class="text-muted-foreground hover:text-rose-600 font-bold p-1 text-sm leading-none cursor-pointer" title="Remove Manual Discount">&times;</button>
+            <button type="button" wire:click.prevent="removeManualDiscount" class="text-muted-foreground hover:text-destructive font-bold p-1 text-sm leading-none cursor-pointer" title="Remove Manual Discount">&times;</button>
         </div>
     @endif
 
@@ -186,13 +186,13 @@
 
     {{-- Error messages & Shift Alert --}}
     @error('cart')
-        <div class="p-2 bg-rose-50 text-rose-600 rounded-lg text-xs font-bold flex items-center gap-1.5">
+        <div class="p-2 bg-destructive-muted text-destructive rounded-lg text-xs font-bold flex items-center gap-1.5">
             <span class="material-symbols-rounded text-[14px]">error</span> {{ $message }}
         </div>
     @enderror
 
     @if(!$this->canCheckout && count($this->cartLines) > 0)
-        <div class="p-2 bg-rose-50 text-rose-700 rounded-lg text-xs font-bold flex items-center gap-1.5">
+        <div class="p-2 bg-destructive-muted text-destructive rounded-lg text-xs font-bold flex items-center gap-1.5">
             <span class="material-symbols-rounded text-[16px]">lock</span>
             <span>{{ !$this->activeShift ? 'Shift not open. Please open a cashier shift first.' : 'Shift handover in progress.' }}</span>
         </div>

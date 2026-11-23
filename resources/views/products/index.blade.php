@@ -308,7 +308,7 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <input type="checkbox" id="bulk_is_available" name="is_available" value="1" checked
-                                class="rounded border-gray-300 text-foreground focus:ring-ring">
+                                class="rounded border-border text-foreground focus:ring-ring">
                             <label for="bulk_is_available" class="text-sm font-medium text-foreground">Available at this branch</label>
                         </div>
                     </div>

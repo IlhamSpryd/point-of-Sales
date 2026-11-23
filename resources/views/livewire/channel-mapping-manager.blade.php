@@ -37,7 +37,7 @@
                 <div>
                     <x-ui.label for="mapping-external-id">Provider SKU (External Product ID) *</x-ui.label>
                     <x-ui.input id="mapping-external-id" type="text" wire:model="externalProductId" placeholder="e.g., GF-1234 or SKU-GF-CHICKEN" class="font-sans text-sm" />
-                    @error('externalProductId') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                    @error('externalProductId') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <div>
@@ -48,7 +48,7 @@
                             <option value="{{ $product->id }}">{{ $product->product_name }}</option>
                         @endforeach
                     </x-ui.select>
-                    @error('productId') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                    @error('productId') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <x-ui.button type="submit" variant="primary" class="mt-2 w-full justify-center" wire:loading.attr="disabled" wire:target="saveMapping">
@@ -64,30 +64,30 @@
                 <h2 class="text-sm font-bold text-foreground tracking-tight">
                     Active Channel Mappings
                 </h2>
-                <span class="text-xs text-zinc-400">Total: {{ $mappings->total() }} SKUs</span>
+                <span class="text-xs text-muted-foreground">Total: {{ $mappings->total() }} SKUs</span>
             </div>
             <div class="overflow-x-auto flex-1">
                 <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
                     <thead>
-                        <tr class="border-b border-border dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-900/30 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-                            <th class="px-6 py-3.5">Provider</th>
-                            <th class="px-6 py-3.5">External SKU</th>
-                            <th class="px-6 py-3.5">Internal Product</th>
-                            <th class="px-6 py-3.5 text-right">Actions</th>
+                        <tr class="border-b border-border bg-secondary/30 /30 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            <th scope="col" class="px-6 py-3.5">Provider</th>
+                            <th scope="col" class="px-6 py-3.5">External SKU</th>
+                            <th scope="col" class="px-6 py-3.5">Internal Product</th>
+                            <th scope="col" class="px-6 py-3.5 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-border dark:divide-zinc-800/70">
+                    <tbody class="divide-y divide-border">
                         @forelse($mappings as $mapping)
-                            <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
+                            <tr class="hover:bg-secondary/60 transition">
                                 <td class="px-6 py-4">
                                     <span class="text-xs text-foreground font-medium font-sans">
                                         {{ strtoupper($mapping->provider) }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 font-sans font-semibold text-zinc-900 dark:text-white text-xs">
+                                <td class="px-6 py-4 font-sans font-semibold text-foreground text-xs">
                                     {{ $mapping->external_product_id }}
                                 </td>
-                                <td class="px-6 py-4 text-sm text-zinc-700 dark:text-zinc-300">
+                                <td class="px-6 py-4 text-sm text-foreground">
                                     {{ $mapping->product->product_name ?? 'Product Deleted' }}
                                 </td>
                                 <td class="px-6 py-4 text-right whitespace-nowrap">
@@ -103,7 +103,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-12 text-center text-zinc-400">
+                                <td colspan="4" class="px-6 py-12 text-center text-muted-foreground">
                                     <span class="material-symbols-rounded text-4xl block mb-2">link_off</span>
                                     No external channel SKU mappings registered.
                                 </td>
@@ -113,7 +113,7 @@
                 </table>
             </div>
             @if($mappings->hasPages())
-                <div class="p-4 border-t border-border dark:border-zinc-800">
+                <div class="p-4 border-t border-border">
                     {{ $mappings->links() }}
                 </div>
             @endif

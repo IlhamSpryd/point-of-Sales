@@ -18,9 +18,9 @@
 
             <x-slot:actions>
                 <form method="GET" action="{{ route('assortments.index') }}" class="flex items-center gap-2">
-                    <span class="text-xs font-semibold text-zinc-500 whitespace-nowrap">Select Branch:</span>
+                    <span class="text-xs font-semibold text-muted-foreground whitespace-nowrap">Select Branch:</span>
                     <select id="store_filter" name="store_id" onchange="this.form.submit()"
-                        class="h-10 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 text-sm bg-white dark:bg-zinc-800 font-medium text-zinc-800 dark:text-zinc-200 focus:outline-hidden focus:ring-2 focus:ring-ring/20">
+                        class="h-10 px-3 rounded-xl border border-border text-sm bg-card font-medium text-foreground focus:outline-hidden focus:ring-2 focus:ring-ring/20">
                         @foreach ($stores as $s)
                             <option value="{{ $s->id }}" {{ (string)$selectedStoreId === (string)$s->id ? 'selected' : '' }}>
                                 {{ $s->name }}

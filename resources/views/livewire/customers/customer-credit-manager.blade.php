@@ -56,7 +56,7 @@
     </div>
 
     <!-- Filter & Toolbar -->
-    <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-border dark:border-zinc-800">
+    <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-border">
         <div class="flex-1 max-w-md">
             <x-ui.input
                 type="text"
@@ -80,13 +80,13 @@
             <table class="table-standard w-full min-w-full text-left border-collapse text-sm text-foreground">
                 <thead>
                     <tr class="border-b border-border bg-muted/30 text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        <th class="py-3 px-4">Customer</th>
-                        <th class="py-3 px-4 text-right">Credit Limit</th>
-                        <th class="py-3 px-4 text-center">Terms &amp; Grace</th>
-                        <th class="py-3 px-4 text-right">Reserved SO</th>
-                        <th class="py-3 px-4 text-right">Available Limit</th>
-                        <th class="py-3 px-4">Credit Status</th>
-                        <th class="py-3 px-4 text-right">Actions</th>
+                        <th scope="col" class="py-3 px-4">Customer</th>
+                        <th scope="col" class="py-3 px-4 text-right">Credit Limit</th>
+                        <th scope="col" class="py-3 px-4 text-center">Terms &amp; Grace</th>
+                        <th scope="col" class="py-3 px-4 text-right">Reserved SO</th>
+                        <th scope="col" class="py-3 px-4 text-right">Available Limit</th>
+                        <th scope="col" class="py-3 px-4">Credit Status</th>
+                        <th scope="col" class="py-3 px-4 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -171,33 +171,33 @@
         <x-slot:content>
             @if($selectedCustomer)
             <div class="space-y-4 text-xs">
-                <p class="text-xs text-zinc-500">Customer: <strong class="text-zinc-800 dark:text-zinc-200">{{ $selectedCustomer->name }}</strong> ({{ $selectedCustomer->customer_code }})</p>
+                <p class="text-xs text-muted-foreground">Customer: <strong class="text-foreground">{{ $selectedCustomer->name }}</strong> ({{ $selectedCustomer->customer_code }})</p>
 
                 <div>
                     <x-ui.label for="creditLimit">Credit Limit Ceiling (Rp) *</x-ui.label>
                     <x-ui.input type="number" step="1000" min="0" id="creditLimit" wire:model="creditLimit" class="font-sans text-sm" />
-                    @error('creditLimit') <span class="text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                    @error('creditLimit') <span class="text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <x-ui.label for="paymentTermsDays">Payment Terms (Days) *</x-ui.label>
                         <x-ui.input type="number" min="0" max="365" id="paymentTermsDays" wire:model="paymentTermsDays" class="font-sans text-sm" />
-                        <span class="text-[10px] text-zinc-400 mt-0.5 block">0 = Cash on Delivery / COD, 30 = Net 30</span>
-                        @error('paymentTermsDays') <span class="text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        <span class="text-[10px] text-muted-foreground mt-0.5 block">0 = Cash on Delivery / COD, 30 = Net 30</span>
+                        @error('paymentTermsDays') <span class="text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
                     <div>
                         <x-ui.label for="gracePeriodDays">Grace Period (Days) *</x-ui.label>
                         <x-ui.input type="number" min="0" max="90" id="gracePeriodDays" wire:model="gracePeriodDays" class="font-sans text-sm" />
-                        <span class="text-[10px] text-zinc-400 mt-0.5 block">Tolerance days before automatic credit hold</span>
-                        @error('gracePeriodDays') <span class="text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        <span class="text-[10px] text-muted-foreground mt-0.5 block">Tolerance days before automatic credit hold</span>
+                        @error('gracePeriodDays') <span class="text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
                 </div>
 
                 <div>
                     <x-ui.label for="limitChangeReason">Reason for Change *</x-ui.label>
-                    <textarea id="limitChangeReason" wire:model="limitChangeReason" rows="2" placeholder="e.g., Adjustment following Q1 credit risk assessment..." class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 text-zinc-800 dark:text-zinc-100 text-xs focus:ring-2 focus:ring-ring/20"></textarea>
-                    @error('limitChangeReason') <span class="text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                    <textarea id="limitChangeReason" wire:model="limitChangeReason" rows="2" placeholder="e.g., Adjustment following Q1 credit risk assessment..." class="w-full rounded-xl border border-border bg-card p-2.5 text-foreground text-xs focus:ring-2 focus:ring-ring/20"></textarea>
+                    @error('limitChangeReason') <span class="text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
             </div>
             @endif
@@ -224,7 +224,7 @@
         <x-slot:content>
             @if($selectedCustomer)
             <div class="space-y-4 text-xs">
-                <p class="text-xs text-zinc-500">Customer: <strong class="text-zinc-800 dark:text-zinc-200">{{ $selectedCustomer->name }}</strong></p>
+                <p class="text-xs text-muted-foreground">Customer: <strong class="text-foreground">{{ $selectedCustomer->name }}</strong></p>
 
                 <div>
                     <x-ui.label for="targetStatus">Select New Status *</x-ui.label>
@@ -237,8 +237,8 @@
 
                 <div>
                     <x-ui.label for="statusChangeReason">Reason for Status Change *</x-ui.label>
-                    <textarea id="statusChangeReason" wire:model="statusChangeReason" rows="3" placeholder="Enter reason for status change..." class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 text-zinc-800 dark:text-zinc-100 text-xs focus:ring-2 focus:ring-ring/20"></textarea>
-                    @error('statusChangeReason') <span class="text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                    <textarea id="statusChangeReason" wire:model="statusChangeReason" rows="3" placeholder="Enter reason for status change..." class="w-full rounded-xl border border-border bg-card p-2.5 text-foreground text-xs focus:ring-2 focus:ring-ring/20"></textarea>
+                    @error('statusChangeReason') <span class="text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
             </div>
             @endif
@@ -270,16 +270,16 @@
             @if($selectedCustomer)
             <div class="p-2 space-y-3 max-h-[60vh] overflow-y-auto">
                 @forelse($selectedCustomer->creditLogs as $log)
-                    <div class="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs flex flex-col gap-1.5 bg-zinc-50/50 dark:bg-zinc-800/30">
+                    <div class="p-3.5 rounded-xl border border-border text-xs flex flex-col gap-1.5 bg-secondary/50 /30">
                         <div class="flex items-center justify-between">
-                            <span class="font-bold text-zinc-900 dark:text-white uppercase tracking-wider font-sans">{{ $log->event_type }}</span>
-                            <span class="text-zinc-400 text-[11px]">{{ $log->created_at->format('d/m/Y H:i:s') }}</span>
+                            <span class="font-bold text-foreground uppercase tracking-wider font-sans">{{ $log->event_type }}</span>
+                            <span class="text-muted-foreground text-[11px]">{{ $log->created_at->format('d/m/Y H:i:s') }}</span>
                         </div>
-                        <p class="text-zinc-600 dark:text-zinc-300">{{ $log->reason }}</p>
-                        <div class="text-[11px] text-zinc-400">Processed by: <strong>{{ $log->actor?->name ?? 'System' }}</strong></div>
+                        <p class="text-muted-foreground">{{ $log->reason }}</p>
+                        <div class="text-[11px] text-muted-foreground">Processed by: <strong>{{ $log->actor?->name ?? 'System' }}</strong></div>
                     </div>
                 @empty
-                    <div class="py-8 text-center text-zinc-400 text-xs">No credit audit trail entries recorded.</div>
+                    <div class="py-8 text-center text-muted-foreground text-xs">No credit audit trail entries recorded.</div>
                 @endforelse
             </div>
             @endif

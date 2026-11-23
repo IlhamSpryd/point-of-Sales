@@ -20,16 +20,16 @@
     </div>
 
     @if (session()->has('message'))
-        <div class="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center gap-3 text-emerald-700 dark:text-emerald-300 text-sm font-medium">
-            <span class="material-symbols-rounded text-emerald-600 dark:text-emerald-400 text-[20px]">check_circle</span>
+        <div class="p-4 bg-positive border border-positive/30 rounded-xl flex items-center gap-3 text-positive text-sm font-medium">
+            <span class="material-symbols-rounded text-positive text-[20px]">check_circle</span>
             {{ session('message') }}
         </div>
     @endif
 
     @if ($pendingUpgradeRequest)
-        <div class="p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-amber-800 dark:text-amber-300 text-sm font-medium">
+        <div class="p-4 bg-warning border border-warning/30 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-warning text-sm font-medium">
             <div class="flex items-center gap-3">
-                <span class="material-symbols-rounded text-amber-600 dark:text-amber-400 text-[24px]">hourglass_top</span>
+                <span class="material-symbols-rounded text-warning text-[24px]">hourglass_top</span>
                 <div>
                     <p class="font-bold">Permintaan Upgrade Paket Sedang Diproses</p>
                     <p class="text-xs text-muted-foreground mt-0.5">
@@ -37,7 +37,7 @@
                     </p>
                 </div>
             </div>
-            <span class="inline-flex self-start sm:self-auto px-2.5 py-1 text-xs font-bold rounded-lg bg-amber-500/20 text-amber-700 dark:text-amber-300 uppercase tracking-wide">
+            <span class="inline-flex self-start sm:self-auto px-2.5 py-1 text-xs font-bold rounded-lg bg-warning text-warning uppercase tracking-wide">
                 {{ $pendingUpgradeRequest->status }}
             </span>
         </div>
@@ -49,7 +49,7 @@
             <div>
                 <span class="text-xs font-semibold uppercase tracking-wider text-primary">Active Plan</span>
                 <h2 class="text-2xl font-extrabold text-foreground mt-1">{{ $activePlan?->name ?? 'Starter Tier' }}</h2>
-                <p class="text-xs text-muted-foreground mt-0.5">Billing Status: <span class="font-semibold text-emerald-600 uppercase">{{ $subscription?->status ?? 'ACTIVE' }}</span></p>
+                <p class="text-xs text-muted-foreground mt-0.5">Billing Status: <span class="font-semibold text-positive uppercase">{{ $subscription?->status ?? 'ACTIVE' }}</span></p>
             </div>
             <div class="text-right">
                 <span class="text-xs text-muted-foreground">Monthly Fee</span>

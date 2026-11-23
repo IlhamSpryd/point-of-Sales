@@ -21,7 +21,7 @@
                         <span>
                             <strong>Negative Margin Warning:</strong> This promotion yields negative margins on specific items or in aggregate.
                             @if ($canPublish)
-                                <span class="text-emerald-600 dark:text-emerald-400 font-semibold">(Owner Authorized: Publishing Permitted)</span>
+                                <span class="text-positive font-semibold">(Owner Authorized: Publishing Permitted)</span>
                             @else
                                 <span class="font-bold text-destructive">Publishing blocked unless approved by Owner.</span>
                             @endif
@@ -43,16 +43,16 @@
                     </div>
                     <div class="bg-card p-4 rounded-xl border border-border shadow-xs">
                         <span class="text-xs text-muted-foreground font-medium">Estimated Gross Profit</span>
-                        <div class="text-lg font-bold @if($simulation->proposedGrossProfit < 0) text-destructive @else text-emerald-600 dark:text-emerald-400 @endif mt-1">
+                        <div class="text-lg font-bold @if($simulation->proposedGrossProfit < 0) text-destructive @else text-positive @endif mt-1">
                             Rp {{ number_format($simulation->proposedGrossProfit, 0, ',', '.') }}
                         </div>
-                        <span class="text-2xs @if($simulation->profitVariance < 0) text-destructive @else text-emerald-600 dark:text-emerald-400 @endif">
+                        <span class="text-2xs @if($simulation->profitVariance < 0) text-destructive @else text-positive @endif">
                             Var: Rp {{ number_format($simulation->profitVariance, 0, ',', '.') }}
                         </span>
                     </div>
                     <div class="bg-card p-4 rounded-xl border border-border shadow-xs">
                         <span class="text-xs text-muted-foreground font-medium">Gross Margin %</span>
-                        <div class="text-lg font-bold @if($simulation->proposedMarginPercent < 0) text-destructive @else text-emerald-600 dark:text-emerald-400 @endif mt-1">
+                        <div class="text-lg font-bold @if($simulation->proposedMarginPercent < 0) text-destructive @else text-positive @endif mt-1">
                             {{ number_format($simulation->proposedMarginPercent, 1) }}%
                         </div>
                         <span class="text-2xs text-muted-foreground">Baseline: {{ number_format($simulation->baselineMarginPercent, 1) }}%</span>
@@ -64,24 +64,24 @@
                     <table class="w-full text-left text-xs">
                         <thead class="bg-muted/50 text-muted-foreground uppercase border-b border-border">
                             <tr>
-                                <th class="px-3 py-2">Product</th>
-                                <th class="px-3 py-2 text-right">Regular Price</th>
-                                <th class="px-3 py-2 text-right">Unit Discount</th>
-                                <th class="px-3 py-2 text-right">Promo Price</th>
-                                <th class="px-3 py-2 text-right">COGS</th>
-                                <th class="px-3 py-2 text-right">Margin %</th>
-                                <th class="px-3 py-2 text-center">Status</th>
+                                <th scope="col" class="px-3 py-2">Product</th>
+                                <th scope="col" class="px-3 py-2 text-right">Regular Price</th>
+                                <th scope="col" class="px-3 py-2 text-right">Unit Discount</th>
+                                <th scope="col" class="px-3 py-2 text-right">Promo Price</th>
+                                <th scope="col" class="px-3 py-2 text-right">COGS</th>
+                                <th scope="col" class="px-3 py-2 text-right">Margin %</th>
+                                <th scope="col" class="px-3 py-2 text-center">Status</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-border">
                             @foreach ($simulation->itemSimulations as $item)
                                 <tr class="@if($item['is_negative_margin']) bg-destructive/5 @endif">
                                     <td class="px-3 py-2.5 font-medium text-foreground">{{ $item['product_name'] }}</td>
-                                    <td class="px-3 py-2.5 text-right text-muted-foreground">Rp {{ number_format($item['unit_price'], 0, ',', '.') }}</td>
-                                    <td class="px-3 py-2.5 text-right text-amber-600 dark:text-amber-400 font-medium">-Rp {{ number_format($item['discount_amount'], 0, ',', '.') }}</td>
-                                    <td class="px-3 py-2.5 text-right font-semibold text-foreground">Rp {{ number_format($item['discounted_price'], 0, ',', '.') }}</td>
-                                    <td class="px-3 py-2.5 text-right text-muted-foreground">Rp {{ number_format($item['standard_cost'], 0, ',', '.') }}</td>
-                                    <td class="px-3 py-2.5 text-right font-bold @if($item['is_negative_margin']) text-destructive @else text-emerald-600 dark:text-emerald-400 @endif">
+                                    <td class="tabular-nums px-3 py-2.5 text-right text-muted-foreground">Rp {{ number_format($item['unit_price'], 0, ',', '.') }}</td>
+                                    <td class="px-3 py-2.5 text-right text-warning font-medium">-Rp {{ number_format($item['discount_amount'], 0, ',', '.') }}</td>
+                                    <td class="tabular-nums px-3 py-2.5 text-right font-semibold text-foreground">Rp {{ number_format($item['discounted_price'], 0, ',', '.') }}</td>
+                                    <td class="tabular-nums px-3 py-2.5 text-right text-muted-foreground">Rp {{ number_format($item['standard_cost'], 0, ',', '.') }}</td>
+                                    <td class="px-3 py-2.5 text-right font-bold @if($item['is_negative_margin']) text-destructive @else text-positive @endif">
                                         {{ number_format($item['proposed_margin_percent'], 1) }}%
                                     </td>
                                     <td class="px-3 py-2.5">

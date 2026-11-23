@@ -16,7 +16,7 @@
             </x-slot:actions>
         </x-erp.page-header>
 
-        <div class="card-surface overflow-hidden w-full rounded-2xl border border-border dark:border-zinc-800 shadow-xs">
+        <div class="card-surface overflow-hidden w-full rounded-2xl border border-border shadow-xs">
             <form action="{{ route('stores.store') }}" method="POST" x-data="{ submitting: false }" @submit="submitting = true" class="p-6 md:p-8 space-y-6">
                 @csrf
 
@@ -26,7 +26,7 @@
                         <x-form-input type="text" id="name" name="name" value="{{ old('name') }}" 
                                placeholder="e.g. Apeiron Coffee Downtown" required :class="$errors->has('name') ? 'input-error' : ''" />
                         @error('name')
-                            <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                            <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -35,24 +35,24 @@
                         <x-form-input type="text" id="code" name="code" value="{{ old('code') }}" 
                                placeholder="Auto-generated if blank (e.g. STR-001)" :class="$errors->has('code') ? 'input-error' : ''" />
                         @error('code')
-                            <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                            <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
                         <x-form-label for="timezone">Operational Timezone</x-form-label>
                         <div class="relative">
-                            <select id="timezone" name="timezone" class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground dark:text-zinc-100 text-sm appearance-none focus:outline-hidden focus:ring-2 focus:ring-ring/20 transition-all duration-200 shadow-xs {{ $errors->has('timezone') ? 'border-rose-300 focus:ring-rose-500' : '' }}" required>
+                            <select id="timezone" name="timezone" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-card text-foreground text-sm appearance-none focus:outline-hidden focus:ring-2 focus:ring-ring/20 transition-all duration-200 shadow-xs {{ $errors->has('timezone') ? 'border-destructive focus:ring-destructive' : '' }}" required>
                                 <option value="Asia/Jakarta" {{ old('timezone', 'Asia/Jakarta') === 'Asia/Jakarta' ? 'selected' : '' }}>WIB — Western Indonesia Time (Asia/Jakarta)</option>
                                 <option value="Asia/Makassar" {{ old('timezone') === 'Asia/Makassar' ? 'selected' : '' }}>WITA — Central Indonesia Time (Asia/Makassar)</option>
                                 <option value="Asia/Jayapura" {{ old('timezone') === 'Asia/Jayapura' ? 'selected' : '' }}>WIT — Eastern Indonesia Time (Asia/Jayapura)</option>
                             </select>
-                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-zinc-400">
+                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-muted-foreground">
                                 <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                             </div>
                         </div>
                         @error('timezone')
-                            <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                            <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -61,20 +61,20 @@
                         <x-form-input type="text" id="phone" name="phone" value="{{ old('phone') }}" 
                                placeholder="e.g. +62 812 3456 7890" :class="$errors->has('phone') ? 'input-error' : ''" />
                         @error('phone')
-                            <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                            <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div class="md:col-span-2">
                         <x-form-label for="address">Complete Store Address</x-form-label>
-                        <textarea id="address" name="address" rows="3" class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground dark:text-zinc-100 text-sm focus:outline-hidden focus:ring-2 focus:ring-ring/20 transition-all duration-200 shadow-xs {{ $errors->has('address') ? 'border-rose-300 focus:ring-rose-500' : '' }}" placeholder="e.g. 45 Main Avenue, Financial District, South Jakarta">{{ old('address') }}</textarea>
+                        <textarea id="address" name="address" rows="3" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-card text-foreground text-sm focus:outline-hidden focus:ring-2 focus:ring-ring/20 transition-all duration-200 shadow-xs {{ $errors->has('address') ? 'border-destructive focus:ring-destructive' : '' }}" placeholder="e.g. 45 Main Avenue, Financial District, South Jakarta">{{ old('address') }}</textarea>
                         @error('address')
-                            <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                            <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
 
-                <div class="pt-4 border-t border-border dark:border-zinc-800 flex justify-end">
+                <div class="pt-4 border-t border-border flex justify-end">
                     <x-ui.button type="submit" variant="primary" class="gap-2" x-bind:disabled="submitting" x-bind:class="submitting ? 'opacity-60 cursor-not-allowed' : ''">
                         <span x-show="!submitting" class="inline-flex items-center gap-1.5">
                             <span class="material-symbols-rounded text-base">save</span> Save Store Branch

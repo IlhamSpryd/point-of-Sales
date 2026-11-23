@@ -21,8 +21,8 @@
     </div>
 
     @if (session()->has('success'))
-        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 text-emerald-800 text-sm font-medium">
-            <span class="material-symbols-rounded text-emerald-600 text-[20px]">check_circle</span>
+        <div class="p-4 bg-positive-muted border border-positive rounded-xl flex items-center gap-3 text-positive text-sm font-medium">
+            <span class="material-symbols-rounded text-positive text-[20px]">check_circle</span>
             {{ session('success') }}
         </div>
     @endif
@@ -50,13 +50,13 @@
             <table class="w-full text-left text-sm text-foreground divide-y divide-border">
                 <thead class="bg-muted/50 text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
                     <tr>
-                        <th class="px-6 py-3.5">Code & Voucher Name</th>
-                        <th class="px-6 py-3.5">Discount Value</th>
-                        <th class="px-6 py-3.5">Min. Spend</th>
-                        <th class="px-6 py-3.5">Quota Usage</th>
-                        <th class="px-6 py-3.5">Validity Period</th>
-                        <th class="px-6 py-3.5">Status</th>
-                        <th class="px-6 py-3.5 text-right">Actions</th>
+                        <th scope="col" class="px-6 py-3.5">Code & Voucher Name</th>
+                        <th scope="col" class="px-6 py-3.5">Discount Value</th>
+                        <th scope="col" class="px-6 py-3.5">Min. Spend</th>
+                        <th scope="col" class="px-6 py-3.5">Quota Usage</th>
+                        <th scope="col" class="px-6 py-3.5">Validity Period</th>
+                        <th scope="col" class="px-6 py-3.5">Status</th>
+                        <th scope="col" class="px-6 py-3.5 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -84,7 +84,7 @@
                                     Rp {{ number_format((float) $voucher->discount_value, 0, ',', '.') }}
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-xs font-medium text-muted-foreground">
+                            <td class="tabular-nums px-6 py-4 text-xs font-medium text-muted-foreground">
                                 Rp {{ number_format((float) $voucher->min_order_amount, 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-4">
@@ -96,7 +96,7 @@
                                 </div>
                                 @if ($voucher->max_uses > 0)
                                     <div class="w-28 h-1.5 bg-muted rounded-full overflow-hidden">
-                                        <div class="h-full {{ $percentUsed >= 100 ? 'bg-destructive' : ($percentUsed >= 80 ? 'bg-amber-500' : 'bg-primary') }}" style="width: {{ $percentUsed }}%"></div>
+                                        <div class="h-full {{ $percentUsed >= 100 ? 'bg-destructive' : ($percentUsed >= 80 ? 'bg-warning' : 'bg-primary') }}" style="width: {{ $percentUsed }}%"></div>
                                     </div>
                                 @endif
                             </td>

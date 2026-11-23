@@ -4,12 +4,12 @@
 
 @section('content')
     <div class="space-y-6">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-warning text-warning border border-warning/20">
             <span class="material-symbols-rounded text-3xl">lock</span>
         </div>
 
         <div>
-            <span class="text-xs font-sans font-semibold tracking-wider uppercase text-amber-600 dark:text-amber-400">Error 403 • Access Denied</span>
+            <span class="text-xs font-sans font-semibold tracking-wider uppercase text-warning">Error 403 • Access Denied</span>
             <h1 class="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                 Insufficient Permissions
             </h1>

@@ -16,7 +16,7 @@
             </x-slot:actions>
         </x-erp.page-header>
 
-        <div class="card-surface overflow-hidden w-full rounded-2xl border border-border dark:border-zinc-800 shadow-xs">
+        <div class="card-surface overflow-hidden w-full rounded-2xl border border-border shadow-xs">
             <form action="{{ route('devices.update', $device) }}" method="POST" x-data="{ submitting: false }" @submit="submitting = true" class="p-6 md:p-8 space-y-6">
                 @csrf
                 @method('PUT')
@@ -27,50 +27,50 @@
                         <x-form-input type="text" id="device_name" name="device_name" value="{{ old('device_name', $device->device_name) }}" 
                                required :class="$errors->has('device_name') ? 'input-error' : ''" />
                         @error('device_name')
-                            <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                            <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
                         <x-form-label for="device_code">Device Code</x-form-label>
                         <x-form-input type="text" id="device_code" name="device_code" value="{{ $device->device_code }}" 
-                               disabled class="bg-zinc-100 dark:bg-zinc-800 cursor-not-allowed opacity-80" />
+                               disabled class="bg-secondary cursor-not-allowed opacity-80" />
                     </div>
 
                     <div>
                         <x-form-label for="device_type">Physical Device Type</x-form-label>
                         <div class="relative">
-                            <select id="device_type" name="device_type" class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground dark:text-zinc-100 text-sm appearance-none focus:outline-hidden focus:ring-2 focus:ring-ring/20 transition-all duration-200 shadow-xs {{ $errors->has('device_type') ? 'border-rose-300 focus:ring-rose-500' : '' }}" required>
+                            <select id="device_type" name="device_type" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-card text-foreground text-sm appearance-none focus:outline-hidden focus:ring-2 focus:ring-ring/20 transition-all duration-200 shadow-xs {{ $errors->has('device_type') ? 'border-destructive focus:ring-destructive' : '' }}" required>
                                 <option value="pos_terminal" {{ old('device_type', $device->device_type) === 'pos_terminal' ? 'selected' : '' }}>POS Cashier Terminal</option>
                                 <option value="kds_display" {{ old('device_type', $device->device_type) === 'kds_display' ? 'selected' : '' }}>Kitchen Display System (KDS)</option>
                                 <option value="waiter_tablet" {{ old('device_type', $device->device_type) === 'waiter_tablet' ? 'selected' : '' }}>Server / Order-Taking Tablet</option>
                             </select>
-                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-zinc-400">
+                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-muted-foreground">
                                 <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                             </div>
                         </div>
                         @error('device_type')
-                            <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                            <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
                         <x-form-label for="store_name">Registered Branch</x-form-label>
                         <x-form-input type="text" id="store_name" name="store_name" value="{{ $device->store?->name }} ({{ $device->store?->code }})" 
-                               disabled class="bg-zinc-100 dark:bg-zinc-800 cursor-not-allowed opacity-80" />
-                        <p class="text-xs text-zinc-500 mt-1">Branch binding is immutable in accordance with composite foreign key integrity.</p>
+                               disabled class="bg-secondary cursor-not-allowed opacity-80" />
+                        <p class="text-xs text-muted-foreground mt-1">Branch binding is immutable in accordance with composite foreign key integrity.</p>
                     </div>
                 </div>
 
                 <div>
                     <label class="flex items-center gap-3 cursor-pointer">
                         <input type="hidden" name="is_active" value="0">
-                        <input type="checkbox" name="is_active" value="1" {{ old('is_active', $device->is_active) ? 'checked' : '' }} class="w-5 h-5 rounded border-zinc-300 dark:border-zinc-700 text-primary focus:ring-ring/20 transition-colors">
-                        <span class="text-sm font-medium text-foreground dark:text-zinc-200">Active Device (Available for cashier operations)</span>
+                        <input type="checkbox" name="is_active" value="1" {{ old('is_active', $device->is_active) ? 'checked' : '' }} class="w-5 h-5 rounded border-border text-primary focus:ring-ring/20 transition-colors">
+                        <span class="text-sm font-medium text-foreground">Active Device (Available for cashier operations)</span>
                     </label>
                 </div>
 
-                <div class="pt-4 border-t border-border dark:border-zinc-800 flex justify-end">
+                <div class="pt-4 border-t border-border flex justify-end">
                     <x-ui.button type="submit" variant="primary" class="gap-2" x-bind:disabled="submitting" x-bind:class="submitting ? 'opacity-60 cursor-not-allowed' : ''">
                         <span x-show="!submitting" class="inline-flex items-center gap-1.5">
                             <span class="material-symbols-rounded text-base">save</span> Update Device

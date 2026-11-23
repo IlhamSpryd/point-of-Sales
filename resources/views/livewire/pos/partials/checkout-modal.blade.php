@@ -61,7 +61,7 @@
                 <div class="flex items-center gap-2">
                     <button type="button" wire:click="$set('isManualDiscountModalOpen', true)"
                         class="px-3 py-1.5 rounded-lg bg-white border border-border text-foreground hover:bg-muted text-xs font-medium flex items-center gap-1.5 transition-colors">
-                        <span class="material-symbols-rounded text-[16px] text-amber-500">sell</span>
+                        <span class="material-symbols-rounded text-[16px] text-warning">sell</span>
                         <span>Apply Discount</span>
                     </button>
                 </div>
@@ -106,7 +106,7 @@
 
                 <!-- Change Display Box -->
                 <div class="p-3.5 rounded-xl border flex items-center justify-between transition-colors"
-                    :class="changePreview >= 0 ? 'border-border bg-muted text-foreground' : 'border-rose-200 bg-rose-50 text-rose-700'">
+                    :class="changePreview >= 0 ? 'border-border bg-muted text-foreground' : 'border-destructive bg-destructive-muted text-destructive'">
                     <span class="text-sm font-semibold" x-text="changePreview >= 0 ? 'Change Due:' : 'Amount Underpaid:'"></span>
                     <span class="tabular-nums font-bold text-lg" x-text="'Rp ' + formatRupiah(Math.abs(changePreview))"></span>
                 </div>
@@ -267,7 +267,7 @@
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-medium text-foreground">Split Payment Allocation</span>
                     <span class="tabular-nums text-xs font-bold"
-                        :class="remaining > 0 ? 'text-rose-600' : 'text-emerald-600'"
+                        :class="remaining > 0 ? 'text-destructive' : 'text-positive'"
                         x-text="remaining > 0 ? 'Remaining: Rp ' + formatRupiah(remaining) : 'Fully Allocated'"></span>
                 </div>
 
@@ -283,7 +283,7 @@
                                 </div>
                             </div>
                             <button type="button" x-on:click="removeLeg(leg.uid)"
-                                class="text-muted-foreground hover:text-rose-600 transition-colors p-1">
+                                class="text-muted-foreground hover:text-destructive transition-colors p-1">
                                 <span class="material-symbols-rounded text-[16px]">close</span>
                             </button>
                         </div>
@@ -320,7 +320,7 @@
             </div>
 
             <!-- Error message if any -->
-            <p x-show="errorMsg" x-cloak class="text-xs font-semibold text-rose-600 bg-rose-50 p-2.5 rounded-lg border border-rose-100" x-text="errorMsg"></p>
+            <p x-show="errorMsg" x-cloak class="text-xs font-semibold text-destructive bg-destructive-muted p-2.5 rounded-lg border border-destructive" x-text="errorMsg"></p>
         </div>
 
         <!-- Receipt Fallback State (FE-UX-02 / Browser Popup Blocked Protection) -->

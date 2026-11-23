@@ -12,7 +12,7 @@
 
     <div class="space-y-3">
         @if ($errors->has('cart'))
-            <div class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs flex items-center gap-2" role="alert">
+            <div class="p-3 rounded-xl bg-destructive-muted border border-destructive text-destructive text-xs flex items-center gap-2" role="alert">
                 <span class="material-symbols-rounded text-[18px] shrink-0">error</span>
                 <span>{{ $errors->first('cart') }}</span>
             </div>
@@ -54,7 +54,7 @@
                             Resume Order
                         </button>
                         <button type="button" wire:click="discardHeldCart({{ $pc->id }})"
-                            class="p-1.5 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer" title="Discard Order">
+                            class="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive-muted transition-colors cursor-pointer" title="Discard Order">
                             <span class="material-symbols-rounded text-[18px] block">close</span>
                         </button>
                     </div>

@@ -25,7 +25,7 @@
                            value="{{ old('category_code', $category->category_code) }}"
                            placeholder="e.g. BEV, FOOD" class="{{ $errors->has('category_code') ? 'input-error' : '' }}" />
                     @error('category_code')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -36,7 +36,7 @@
                            placeholder="Enter category name" required
                            class="{{ $errors->has('category_name') ? 'input-error' : '' }}" />
                     @error('category_name')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
@@ -44,7 +44,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <x-form-label for="parent_id">Parent Category (Optional)</x-form-label>
-                    <select id="parent_id" name="parent_id" class="w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm text-foreground focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 {{ $errors->has('parent_id') ? 'border-rose-500' : '' }}">
+                    <select id="parent_id" name="parent_id" class="w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm text-foreground focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 {{ $errors->has('parent_id') ? 'border-destructive' : '' }}">
                         <option value="">-- No Parent (Root Category) --</option>
                         @foreach($parentCategories as $parent)
                             <option value="{{ $parent->id }}" {{ old('parent_id', $category->parent_id) == $parent->id ? 'selected' : '' }}>
@@ -53,7 +53,7 @@
                         @endforeach
                     </select>
                     @error('parent_id')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -63,7 +63,7 @@
                            value="{{ old('sort_order', $category->sort_order ?? 0) }}"
                            min="0" class="{{ $errors->has('sort_order') ? 'input-error' : '' }}" />
                     @error('sort_order')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
@@ -71,10 +71,10 @@
             <div>
                 <x-form-label for="description">Description (Optional)</x-form-label>
                 <textarea id="description" name="description" rows="3"
-                          class="w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm text-foreground focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 {{ $errors->has('description') ? 'border-rose-500' : '' }}"
+                          class="w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm text-foreground focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 {{ $errors->has('description') ? 'border-destructive' : '' }}"
                           placeholder="Category description...">{{ old('description', $category->description) }}</textarea>
                 @error('description')
-                    <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                 @enderror
             </div>
 

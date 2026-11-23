@@ -50,40 +50,40 @@
     <!-- Data Table -->
     <div class="card-surface rounded-2xl overflow-hidden border border-border shadow-sm">
         <div class="overflow-x-auto">
-            <table class="table-standard min-w-full text-left text-sm text-zinc-600 dark:text-zinc-300">
-                <thead class="bg-zinc-50 dark:bg-zinc-900/50 text-xs font-semibold uppercase text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
+            <table class="table-standard min-w-full text-left text-sm text-muted-foreground">
+                <thead class="bg-secondary /50 text-xs font-semibold uppercase text-muted-foreground border-b border-border">
                     <tr>
-                        <th class="px-6 py-4">Code & Name</th>
-                        <th class="px-6 py-4">Primary Contact</th>
-                        <th class="px-6 py-4">Payment Terms</th>
-                        <th class="px-6 py-4 text-center">Item Catalog</th>
-                        <th class="px-6 py-4 text-center">Status</th>
-                        <th class="px-6 py-4 text-right">Actions</th>
+                        <th scope="col" class="px-6 py-4">Code & Name</th>
+                        <th scope="col" class="px-6 py-4">Primary Contact</th>
+                        <th scope="col" class="px-6 py-4">Payment Terms</th>
+                        <th scope="col" class="px-6 py-4 text-center">Item Catalog</th>
+                        <th scope="col" class="px-6 py-4 text-center">Status</th>
+                        <th scope="col" class="px-6 py-4 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+                <tbody class="divide-y border-border">
                     @forelse($suppliers as $supplier)
-                    <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
+                    <tr class="hover:bg-secondary/50 transition-colors">
                         <td class="px-6 py-4">
-                            <div class="font-bold text-zinc-900 dark:text-white">{{ $supplier->name }}</div>
-                            <div class="text-xs text-zinc-500 font-sans">{{ $supplier->code }}</div>
+                            <div class="font-bold text-foreground">{{ $supplier->name }}</div>
+                            <div class="text-xs text-muted-foreground font-sans">{{ $supplier->code }}</div>
                             @if($supplier->tax_id)
-                                <div class="text-[11px] text-zinc-400 mt-0.5">Tax ID: {{ $supplier->tax_id }}</div>
+                                <div class="text-[11px] text-muted-foreground mt-0.5">Tax ID: {{ $supplier->tax_id }}</div>
                             @endif
                         </td>
                         <td class="px-6 py-4">
                             @if($supplier->primaryContact)
-                                <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $supplier->primaryContact->name }}</div>
-                                <div class="text-xs text-zinc-500">{{ $supplier->primaryContact->phone ?: $supplier->primaryContact->email }}</div>
+                                <div class="font-medium text-foreground">{{ $supplier->primaryContact->name }}</div>
+                                <div class="text-xs text-muted-foreground">{{ $supplier->primaryContact->phone ?: $supplier->primaryContact->email }}</div>
                             @elseif($supplier->email || $supplier->phone)
-                                <div class="text-xs text-zinc-500">{{ $supplier->phone ?: $supplier->email }}</div>
+                                <div class="text-xs text-muted-foreground">{{ $supplier->phone ?: $supplier->email }}</div>
                             @else
-                                <span class="text-xs text-zinc-400 italic">No contact recorded</span>
+                                <span class="text-xs text-muted-foreground italic">No contact recorded</span>
                             @endif
                         </td>
                         <td class="px-6 py-4">
-                            <span class="font-medium text-zinc-800 dark:text-zinc-200 tabular-nums">{{ $supplier->payment_terms_days }} Days</span>
-                            <span class="text-xs text-zinc-400 ml-1">({{ $supplier->currency_code }})</span>
+                            <span class="font-medium text-foreground tabular-nums">{{ $supplier->payment_terms_days }} Days</span>
+                            <span class="text-xs text-muted-foreground ml-1">({{ $supplier->currency_code }})</span>
                         </td>
                         <td class="px-6 py-4 text-center">
                             <button wire:click="openCatalog({{ $supplier->id }})" class="inline-flex items-center gap-1.5 text-xs font-medium text-foreground hover:text-primary transition-colors cursor-pointer">
@@ -128,9 +128,9 @@
                     <tr>
                         <td colspan="6" class="px-6 py-12 text-center">
                             <div class="flex flex-col items-center justify-center">
-                                <span class="material-symbols-rounded text-5xl text-zinc-300 dark:text-zinc-700">store_mall_directory</span>
-                                <h3 class="mt-2 text-sm font-semibold text-zinc-900 dark:text-white">No suppliers found</h3>
-                                <p class="mt-1 text-xs text-zinc-500">Get started by adding a new supplier for procurement.</p>
+                                <span class="material-symbols-rounded text-5xl text-foreground">store_mall_directory</span>
+                                <h3 class="mt-2 text-sm font-semibold text-foreground">No suppliers found</h3>
+                                <p class="mt-1 text-xs text-muted-foreground">Get started by adding a new supplier for procurement.</p>
                             </div>
                         </td>
                     </tr>
@@ -140,7 +140,7 @@
         </div>
 
         @if($suppliers->hasPages())
-        <div class="px-6 py-4 border-t border-zinc-200 dark:border-zinc-800">
+        <div class="px-6 py-4 border-t border-border">
             {{ $suppliers->links() }}
         </div>
         @endif
@@ -205,13 +205,13 @@
 
                 <div>
                     <x-ui.label for="address">Address</x-ui.label>
-                    <textarea id="address" wire:model="address" rows="2" placeholder="Office or warehouse address..." class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-primary"></textarea>
+                    <textarea id="address" wire:model="address" rows="2" placeholder="Office or warehouse address..." class="mt-1 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-primary"></textarea>
                     <x-input-error :messages="$errors->get('address')" class="mt-1" />
                 </div>
 
                 <div>
                     <x-ui.label for="notes">Additional Notes</x-ui.label>
-                    <textarea id="notes" wire:model="notes" rows="2" placeholder="Special terms, warranty conditions, notes..." class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-primary"></textarea>
+                    <textarea id="notes" wire:model="notes" rows="2" placeholder="Special terms, warranty conditions, notes..." class="mt-1 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-primary"></textarea>
                     <x-input-error :messages="$errors->get('notes')" class="mt-1" />
                 </div>
             </form>
@@ -234,7 +234,7 @@
             <div>
                 <span>Supplier Contacts</span>
                 @if($activeSupplierName)
-                    <p class="text-xs text-zinc-500 mt-0.5">Supplier: {{ $activeSupplierName }}</p>
+                    <p class="text-xs text-muted-foreground mt-0.5">Supplier: {{ $activeSupplierName }}</p>
                 @endif
             </div>
         </x-slot:title>
@@ -248,7 +248,7 @@
                 @endif
 
                 <!-- New / Edit Contact Form -->
-                <form wire:submit="saveContact" class="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 space-y-3 border border-zinc-200 dark:border-zinc-800">
+                <form wire:submit="saveContact" class="p-4 rounded-xl bg-secondary /50 space-y-3 border border-border">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
                             <x-ui.label for="contactName">Contact Name *</x-ui.label>
@@ -273,8 +273,8 @@
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <input type="checkbox" id="contactIsPrimary" wire:model="contactIsPrimary" class="rounded border-zinc-300 dark:border-zinc-700 text-zinc-900 shadow-xs focus:ring-2 focus:ring-zinc-900/20">
-                        <label for="contactIsPrimary" class="text-xs text-zinc-700 dark:text-zinc-300 font-medium">Set as Primary Contact</label>
+                        <input type="checkbox" id="contactIsPrimary" wire:model="contactIsPrimary" class="rounded border-border text-foreground shadow-xs focus:ring-2 focus:ring-ring">
+                        <label for="contactIsPrimary" class="text-xs text-foreground font-medium">Set as Primary Contact</label>
                     </div>
 
                     <div class="flex justify-end gap-2 pt-2">
@@ -285,33 +285,33 @@
 
                 <!-- Current Contacts List -->
                 <div class="space-y-2 mt-4">
-                    <h4 class="text-xs font-bold uppercase text-zinc-400">Contact List</h4>
-                    <div class="divide-y divide-zinc-200 dark:divide-zinc-800 max-h-56 overflow-y-auto">
+                    <h4 class="text-xs font-bold uppercase text-muted-foreground">Contact List</h4>
+                    <div class="divide-y border-border max-h-56 overflow-y-auto">
                         @forelse($activeContacts as $contact)
                         <div class="py-2.5 flex items-center justify-between">
                             <div>
-                                <div class="font-medium text-sm text-zinc-900 dark:text-white flex items-center gap-2">
+                                <div class="font-medium text-sm text-foreground flex items-center gap-2">
                                     {{ $contact->name }}
                                     @if($contact->is_primary)
                                         <span class="text-xs text-muted-foreground font-medium">(Primary)</span>
                                     @endif
                                     @if($contact->title)
-                                        <span class="text-xs text-zinc-400">({{ $contact->title }})</span>
+                                        <span class="text-xs text-muted-foreground">({{ $contact->title }})</span>
                                     @endif
                                 </div>
-                                <div class="text-xs text-zinc-500">{{ $contact->phone }} &bull; {{ $contact->email }}</div>
+                                <div class="text-xs text-muted-foreground">{{ $contact->phone }} &bull; {{ $contact->email }}</div>
                             </div>
                             <div class="flex items-center gap-1">
                                 <x-ui.button size="icon" variant="ghost" wire:click="editContact({{ $contact->id }})" aria-label="Edit">
                                     <span class="material-symbols-rounded text-sm">edit</span>
                                 </x-ui.button>
                                 <x-ui.button size="icon" variant="ghost" wire:click="deleteContact({{ $contact->id }})" aria-label="Delete">
-                                    <span class="material-symbols-rounded text-sm text-rose-500">delete</span>
+                                    <span class="material-symbols-rounded text-sm text-destructive">delete</span>
                                 </x-ui.button>
                             </div>
                         </div>
                         @empty
-                        <p class="text-xs text-zinc-400 py-3 text-center">No contacts registered yet.</p>
+                        <p class="text-xs text-muted-foreground py-3 text-center">No contacts registered yet.</p>
                         @endforelse
                     </div>
                 </div>
@@ -331,7 +331,7 @@
             <div>
                 <span>Supplier Item & Price Catalog</span>
                 @if($activeSupplierName)
-                    <p class="text-xs text-zinc-500 mt-0.5">Supplier: {{ $activeSupplierName }}</p>
+                    <p class="text-xs text-muted-foreground mt-0.5">Supplier: {{ $activeSupplierName }}</p>
                 @endif
             </div>
         </x-slot:title>
@@ -345,7 +345,7 @@
                 @endif
 
                 <!-- Add / Edit Catalog Item Form -->
-                <form wire:submit="saveCatalogItem" class="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 space-y-3 border border-zinc-200 dark:border-zinc-800">
+                <form wire:submit="saveCatalogItem" class="p-4 rounded-xl bg-secondary /50 space-y-3 border border-border">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div>
                             <x-ui.label for="catalogPurchasableType">Item Type *</x-ui.label>
@@ -407,12 +407,12 @@
 
                     <div class="flex items-center gap-4">
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" wire:model="catalogIsPreferred" class="rounded border-zinc-300 dark:border-zinc-700 text-zinc-900 shadow-xs focus:ring-2 focus:ring-zinc-900/20">
-                            <span class="text-xs text-zinc-700 dark:text-zinc-300 font-medium">Preferred Supplier</span>
+                            <input type="checkbox" wire:model="catalogIsPreferred" class="rounded border-border text-foreground shadow-xs focus:ring-2 focus:ring-ring">
+                            <span class="text-xs text-foreground font-medium">Preferred Supplier</span>
                         </label>
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" wire:model="catalogIsActive" class="rounded border-zinc-300 dark:border-zinc-700 text-zinc-900 shadow-xs focus:ring-2 focus:ring-zinc-900/20">
-                            <span class="text-xs text-zinc-700 dark:text-zinc-300 font-medium">Active</span>
+                            <input type="checkbox" wire:model="catalogIsActive" class="rounded border-border text-foreground shadow-xs focus:ring-2 focus:ring-ring">
+                            <span class="text-xs text-foreground font-medium">Active</span>
                         </label>
                     </div>
 
@@ -424,30 +424,30 @@
 
                 <!-- Tabel Katalog Saat Ini -->
                 <div class="space-y-2 mt-4">
-                    <h4 class="text-xs font-bold uppercase text-zinc-400">Registered Catalog Items</h4>
-                    <div class="divide-y divide-zinc-200 dark:divide-zinc-800 max-h-56 overflow-y-auto">
+                    <h4 class="text-xs font-bold uppercase text-muted-foreground">Registered Catalog Items</h4>
+                    <div class="divide-y border-border max-h-56 overflow-y-auto">
                         @forelse($activeCatalogItems as $item)
                         <div class="py-2.5 flex items-center justify-between text-xs">
                             <div>
-                                <div class="font-medium text-zinc-900 dark:text-white flex items-center gap-1.5">
+                                <div class="font-medium text-foreground flex items-center gap-1.5">
                                     {{ $item->purchasable?->name ?? 'Item #' . $item->purchasable_id }}
                                     <span class="text-xs text-muted-foreground font-medium">({{ strtoupper($item->purchasable_type) }})</span>
                                     @if($item->is_preferred)
                                         <span class="text-xs text-muted-foreground font-medium">(Preferred)</span>
                                     @endif
                                 </div>
-                                <div class="text-zinc-500 mt-0.5">
-                                    UOM: <span class="font-semibold text-zinc-700 dark:text-zinc-300">{{ $item->purchase_uom }}</span> (x{{ (float) $item->uom_conversion_factor }}) &bull;
-                                    Price: <span class="font-semibold text-zinc-700 dark:text-zinc-300">Rp {{ number_format((float) $item->standard_price, 2) }}</span> &bull;
+                                <div class="text-muted-foreground mt-0.5">
+                                    UOM: <span class="font-semibold text-foreground">{{ $item->purchase_uom }}</span> (x{{ (float) $item->uom_conversion_factor }}) &bull;
+                                    Price: <span class="font-semibold text-foreground">Rp {{ number_format((float) $item->standard_price, 2) }}</span> &bull;
                                     Lead Time: {{ $item->lead_time_days }} days
                                 </div>
                             </div>
                             <x-ui.button size="icon" variant="ghost" wire:click="deleteCatalogItem({{ $item->id }})" aria-label="Delete">
-                                <span class="material-symbols-rounded text-sm text-rose-500">delete</span>
+                                <span class="material-symbols-rounded text-sm text-destructive">delete</span>
                             </x-ui.button>
                         </div>
                         @empty
-                        <p class="text-xs text-zinc-400 py-3 text-center">No items in this supplier's catalog.</p>
+                        <p class="text-xs text-muted-foreground py-3 text-center">No items in this supplier's catalog.</p>
                         @endforelse
                     </div>
                 </div>

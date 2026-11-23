@@ -180,14 +180,14 @@
                 <div class="pt-2">
                     <div class="flex items-center justify-between mb-2">
                         <h5 class="text-sm font-bold text-foreground">Received Items</h5>
-                        <button type="button" wire:click="addItemLine" class="text-xs font-semibold text-emerald-600 hover:text-emerald-800 flex items-center gap-1">
+                        <button type="button" wire:click="addItemLine" class="text-xs font-semibold text-positive hover:text-positive flex items-center gap-1">
                             <span class="material-symbols-rounded text-[16px]">add_circle</span> Add Row
                         </button>
                     </div>
 
                     <div class="space-y-3">
                         @foreach ($items as $index => $item)
-                            <div class="p-3 rounded-2xl border border-border bg-slate-50/50 space-y-2">
+                            <div class="p-3 rounded-2xl border border-border bg-secondary/50 space-y-2">
                                 <div class="grid grid-cols-12 gap-2 items-center">
                                     <div class="col-span-12 sm:col-span-2">
                                         <select wire:model.live="items.{{ $index }}.item_type" class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-white">
@@ -225,7 +225,7 @@
                                     </div>
 
                                     <div class="col-span-12 sm:col-span-1 text-right">
-                                        <button type="button" wire:click="removeItemLine({{ $index }})" class="text-rose-500 hover:text-rose-700">
+                                        <button type="button" wire:click="removeItemLine({{ $index }})" class="text-destructive hover:text-destructive">
                                             <span class="material-symbols-rounded text-[20px]">delete</span>
                                         </button>
                                     </div>
@@ -239,7 +239,7 @@
                                     </div>
                                     <div class="col-span-12 sm:col-span-6">
                                         <input type="date" wire:model="items.{{ $index }}.expiry_date" placeholder="Expiry Date"
-                                               class="w-full text-xs py-1 px-2 rounded-lg border border-border bg-white text-slate-700">
+                                               class="w-full text-xs py-1 px-2 rounded-lg border border-border bg-white text-foreground">
                                     </div>
                                 </div>
                             </div>
@@ -272,7 +272,7 @@
         <x-slot:content>
             @if ($selectedReceipt)
                 <div class="py-2 space-y-4">
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-50 text-xs">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-secondary text-xs">
                         <div>
                             <span class="text-muted-foreground block mb-0.5">Status:</span>
                             <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
@@ -295,14 +295,14 @@
                     </div>
 
                     @if($selectedReceipt->notes)
-                        <div class="text-xs text-foreground p-3 rounded-xl bg-slate-50 border border-border">
+                        <div class="text-xs text-foreground p-3 rounded-xl bg-secondary border border-border">
                             <span class="font-semibold block text-muted-foreground">Notes:</span>
                             {{ $selectedReceipt->notes }}
                         </div>
                     @endif
 
                     @if($selectedReceipt->isReversed())
-                        <div class="text-xs text-rose-800 p-3 rounded-xl bg-rose-50 border border-rose-200">
+                        <div class="text-xs text-destructive p-3 rounded-xl bg-destructive-muted border border-destructive">
                             <span class="font-bold block">Reversed by: {{ $selectedReceipt->reverser->name ?? 'User' }} at {{ $selectedReceipt->reversed_at?->format('d M Y H:i') }}</span>
                             Reason: {{ $selectedReceipt->reversal_reason }}
                         </div>
@@ -310,14 +310,14 @@
 
                     <div class="overflow-x-auto border border-border rounded-2xl">
                         <table class="table-standard min-w-full divide-y divide-border text-xs">
-                            <thead class="bg-slate-50 text-muted-foreground uppercase">
+                            <thead class="bg-secondary text-muted-foreground uppercase">
                                 <tr>
-                                    <th class="px-4 py-3 text-left">Type</th>
-                                    <th class="px-4 py-3 text-left">Item Name</th>
-                                    <th class="px-4 py-3 text-right">Quantity</th>
-                                    <th class="px-4 py-3 text-right">Unit Cost</th>
-                                    <th class="px-4 py-3 text-right">Subtotal</th>
-                                    <th class="px-4 py-3 text-left">Batch / Expiry</th>
+                                    <th scope="col" class="px-4 py-3 text-left">Type</th>
+                                    <th scope="col" class="px-4 py-3 text-left">Item Name</th>
+                                    <th scope="col" class="px-4 py-3 text-right">Quantity</th>
+                                    <th scope="col" class="px-4 py-3 text-right">Unit Cost</th>
+                                    <th scope="col" class="px-4 py-3 text-right">Subtotal</th>
+                                    <th scope="col" class="px-4 py-3 text-left">Batch / Expiry</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border">
@@ -336,7 +336,7 @@
                                     </tr>
                                 @endforeach
                             </tbody>
-                            <tfoot class="bg-slate-50 font-bold">
+                            <tfoot class="bg-secondary font-bold">
                                 <tr>
                                     <td colspan="4" class="px-4 py-3 text-right text-foreground uppercase">Total Document Value:</td>
                                     <td class="px-4 py-3 text-right text-foreground tabular-nums">Rp {{ number_format((float) $selectedReceipt->calculateTotalValue(), 2, ',', '.') }}</td>
@@ -359,11 +359,11 @@
     {{-- Modal Reversal --}}
     <x-ui.modal wire:model="showReverseModal" maxWidth="md">
         <x-slot:header>
-            <h3 class="text-lg font-bold text-rose-700">Goods Receipt Reversal</h3>
+            <h3 class="text-lg font-bold text-destructive">Goods Receipt Reversal</h3>
         </x-slot:header>
         <x-slot:content>
             <div class="py-2 space-y-3">
-                <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-800">
+                <div class="p-3 bg-warning-muted rounded-xl border border-warning text-xs text-warning">
                     <p class="font-bold mb-1">Notice (Inventory Rule OD-05):</p>
                     This reversal will deduct the warehouse stock balance corresponding to the received quantities. If current on-hand stock is lower than received quantities, the reversal will be rejected.
                 </div>
@@ -372,7 +372,7 @@
                     <label class="block text-xs font-semibold text-muted-foreground mb-1">Reversal Reason *</label>
                     <textarea wire:model="reversal_reason" rows="3" placeholder="Explain the reason for reversal..."
                               class="form-input w-full px-3 py-2 rounded-xl border border-border text-sm"></textarea>
-                    @error('reversal_reason') <span class="text-xs text-rose-600">{{ $message }}</span> @enderror
+                    @error('reversal_reason') <span class="text-xs text-destructive">{{ $message }}</span> @enderror
                 </div>
             </div>
 

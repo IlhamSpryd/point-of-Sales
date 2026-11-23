@@ -70,13 +70,13 @@
         :colspan="7"
     >
         <x-slot:head>
-            <th class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Return #</th>
-            <th class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Return Date</th>
-            <th class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Supplier</th>
-            <th class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Reference</th>
-            <th class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
-            <th class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Created / Posted By</th>
-            <th class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
+            <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Return #</th>
+            <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Return Date</th>
+            <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Supplier</th>
+            <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Reference</th>
+            <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+            <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Created / Posted By</th>
+            <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
         </x-slot:head>
 
         @foreach ($returns as $ret)
@@ -119,7 +119,7 @@
                             <td class="px-6 py-4 text-xs text-muted-foreground">
                                 <div>Created: {{ $ret->creator?->name ?? 'System' }}</div>
                                 @if($ret->poster)
-                                    <div class="text-[11px] text-emerald-600">Posted: {{ $ret->poster->name }}</div>
+                                    <div class="text-[11px] text-positive">Posted: {{ $ret->poster->name }}</div>
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-right whitespace-nowrap">
@@ -171,7 +171,7 @@
                         <label class="block text-xs font-bold text-foreground uppercase mb-1">Supplier Name</label>
                         <input type="text" wire:model="supplier_name" placeholder="e.g. Acme Corp"
                                class="form-input w-full px-3 py-2 rounded-xl border border-border text-sm">
-                        @error('supplier_name') <span class="text-rose-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        @error('supplier_name') <span class="text-destructive text-xs mt-1 block">{{ $message }}</span> @enderror
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-foreground uppercase mb-1">GRN Reference (Optional)</label>
@@ -181,13 +181,13 @@
                                 <option value="{{ $rec->id }}">{{ $rec->receipt_number }} ({{ $rec->supplier_reference ?? 'Vendor' }})</option>
                             @endforeach
                         </select>
-                        @error('goods_receipt_id') <span class="text-rose-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        @error('goods_receipt_id') <span class="text-destructive text-xs mt-1 block">{{ $message }}</span> @enderror
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-foreground uppercase mb-1">Return Date</label>
                         <input type="datetime-local" wire:model="returned_at"
                                class="form-input w-full px-3 py-2 rounded-xl border border-border text-sm">
-                        @error('returned_at') <span class="text-rose-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        @error('returned_at') <span class="text-destructive text-xs mt-1 block">{{ $message }}</span> @enderror
                     </div>
                 </div>
 
@@ -196,13 +196,13 @@
                         <label class="block text-xs font-bold text-foreground uppercase mb-1">Return Reason</label>
                         <input type="text" wire:model="reason" placeholder="e.g. Defective items, expired, or packaging damaged"
                                class="form-input w-full px-3 py-2 rounded-xl border border-border text-sm">
-                        @error('reason') <span class="text-rose-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        @error('reason') <span class="text-destructive text-xs mt-1 block">{{ $message }}</span> @enderror
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-foreground uppercase mb-1">Additional Notes</label>
                         <input type="text" wire:model="notes" placeholder="Internal notes on return dispatch..."
                                class="form-input w-full px-3 py-2 rounded-xl border border-border text-sm">
-                        @error('notes') <span class="text-rose-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        @error('notes') <span class="text-destructive text-xs mt-1 block">{{ $message }}</span> @enderror
                     </div>
                 </div>
 
@@ -219,12 +219,12 @@
                         <table class="table-standard w-full min-w-full text-left text-xs">
                             <thead class="bg-secondary text-muted-foreground font-bold border-b border-border">
                                 <tr>
-                                    <th class="px-3 py-2">Type</th>
-                                    <th class="px-3 py-2">Item</th>
-                                    <th class="px-3 py-2 w-28 text-right">Quantity</th>
-                                    <th class="px-3 py-2 w-32 text-right">Unit Cost (Rp)</th>
-                                    <th class="px-3 py-2">Notes</th>
-                                    <th class="px-3 py-2 w-10 text-center"></th>
+                                    <th scope="col" class="px-3 py-2">Type</th>
+                                    <th scope="col" class="px-3 py-2">Item</th>
+                                    <th scope="col" class="px-3 py-2 w-28 text-right">Quantity</th>
+                                    <th scope="col" class="px-3 py-2 w-32 text-right">Unit Cost (Rp)</th>
+                                    <th scope="col" class="px-3 py-2">Notes</th>
+                                    <th scope="col" class="px-3 py-2 w-10 text-center"></th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border">
@@ -266,7 +266,7 @@
                                                    class="w-full text-xs rounded-lg border-border">
                                         </td>
                                         <td class="p-2 text-center">
-                                            <button type="button" wire:click="removeItemRow({{ $index }})" class="text-rose-500 hover:text-rose-700">
+                                            <button type="button" wire:click="removeItemRow({{ $index }})" class="text-destructive hover:text-destructive">
                                                 <span class="material-symbols-rounded text-[20px]">delete</span>
                                             </button>
                                         </td>
@@ -321,7 +321,7 @@
                     </div>
 
                     @if($selectedReturn->reason)
-                        <div class="text-xs p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800">
+                        <div class="text-xs p-3 rounded-xl bg-warning-muted border border-warning text-warning">
                             <strong>Return Reason:</strong> {{ $selectedReturn->reason }}
                         </div>
                     @endif
@@ -331,11 +331,11 @@
                         <table class="table-standard w-full min-w-full text-left text-xs">
                             <thead class="bg-secondary text-muted-foreground font-bold border-b border-border">
                                 <tr>
-                                    <th class="px-4 py-2">Item</th>
-                                    <th class="px-4 py-2 text-right">Quantity</th>
-                                    <th class="px-4 py-2 text-right">Unit Cost (Rp)</th>
-                                    <th class="px-4 py-2 text-right">Total (Rp)</th>
-                                    <th class="px-4 py-2">Notes</th>
+                                    <th scope="col" class="px-4 py-2">Item</th>
+                                    <th scope="col" class="px-4 py-2 text-right">Quantity</th>
+                                    <th scope="col" class="px-4 py-2 text-right">Unit Cost (Rp)</th>
+                                    <th scope="col" class="px-4 py-2 text-right">Total (Rp)</th>
+                                    <th scope="col" class="px-4 py-2">Notes</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border">
@@ -350,7 +350,7 @@
                                         <td class="px-4 py-2.5 text-right font-sans">
                                             {{ number_format((float) $it->unit_cost, 2) }}
                                         </td>
-                                        <td class="px-4 py-2.5 text-right font-sans font-bold text-emerald-700">
+                                        <td class="px-4 py-2.5 text-right font-sans font-bold text-positive">
                                             {{ number_format((float) bcmul((string) $it->quantity, (string) $it->unit_cost, 2), 2) }}
                                         </td>
                                         <td class="px-4 py-2.5 text-muted-foreground">
@@ -384,7 +384,7 @@
                 <label class="block text-xs font-bold text-foreground uppercase mb-1">Reversal Reason</label>
                 <textarea wire:model="reversal_reason" rows="3" placeholder="State the reason for this reversal..."
                           class="form-input w-full p-3 rounded-xl border border-border text-sm"></textarea>
-                @error('reversal_reason') <span class="text-rose-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                @error('reversal_reason') <span class="text-destructive text-xs mt-1 block">{{ $message }}</span> @enderror
             </div>
 
             <div class="flex items-center justify-end gap-3 pt-4 border-t border-border">

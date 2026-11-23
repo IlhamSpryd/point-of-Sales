@@ -67,12 +67,12 @@
     </div>
 
     <!-- Navigation Tabs -->
-    <div class="flex items-center border-b border-zinc-200 dark:border-zinc-800 gap-6">
-        <button wire:click="$set('activeTab', 'invoices')" class="pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 {{ $activeTab === 'invoices' ? 'border-primary text-primary dark:text-white' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300' }}">
+    <div class="flex items-center border-b border-border gap-6">
+        <button wire:click="$set('activeTab', 'invoices')" class="pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 {{ $activeTab === 'invoices' ? 'border-primary text-primary ' : 'border-transparent text-muted-foreground hover:text-foreground ' }}">
             <span class="material-symbols-rounded text-lg">receipt_long</span>
             Invoices
         </button>
-        <button wire:click="$set('activeTab', 'statement')" class="pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 {{ $activeTab === 'statement' ? 'border-primary text-primary dark:text-white' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300' }}">
+        <button wire:click="$set('activeTab', 'statement')" class="pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 {{ $activeTab === 'statement' ? 'border-primary text-primary ' : 'border-transparent text-muted-foreground hover:text-foreground ' }}">
             <span class="material-symbols-rounded text-lg">list_alt</span>
             Statement of Account
         </button>
@@ -81,11 +81,11 @@
     <!-- TAB 1: INVOICE LIST -->
     @if($activeTab === 'invoices')
         <!-- Filter Bar -->
-        <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-border dark:border-zinc-800">
+        <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-border">
             <div class="flex-1 max-w-md">
                 <div class="relative">
-                    <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search invoice number, customer PO, or company name..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-ring/20 text-zinc-800 dark:text-zinc-100">
+                    <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">search</span>
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search invoice number, customer PO, or company name..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-border bg-card focus:outline-hidden focus:ring-2 focus:ring-ring/20 text-foreground">
                 </div>
             </div>
             <div class="flex items-center gap-3">
@@ -101,52 +101,52 @@
         </div>
 
         <!-- Table Invoices -->
-        <div class="card-surface overflow-hidden rounded-2xl border border-border dark:border-zinc-800 shadow-xs">
+        <div class="card-surface overflow-hidden rounded-2xl border border-border shadow-xs">
             <div class="overflow-x-auto">
                 <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
                     <thead>
-                        <tr class="border-b border-border dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-                            <th class="py-3.5 px-6">Invoice Number</th>
-                            <th class="py-3.5 px-6">Customer</th>
-                            <th class="py-3.5 px-6">Issue / Due Date</th>
-                            <th class="py-3.5 px-6 text-right">Total Amount</th>
-                            <th class="py-3.5 px-6 text-right">Amount Paid</th>
-                            <th class="py-3.5 px-6 text-right">Balance Due</th>
-                            <th class="py-3.5 px-6">Status</th>
-                            <th class="py-3.5 px-6 text-right">Action</th>
+                        <tr class="border-b border-border bg-secondary/50 /50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            <th scope="col" class="py-3.5 px-6">Invoice Number</th>
+                            <th scope="col" class="py-3.5 px-6">Customer</th>
+                            <th scope="col" class="py-3.5 px-6">Issue / Due Date</th>
+                            <th scope="col" class="py-3.5 px-6 text-right">Total Amount</th>
+                            <th scope="col" class="py-3.5 px-6 text-right">Amount Paid</th>
+                            <th scope="col" class="py-3.5 px-6 text-right">Balance Due</th>
+                            <th scope="col" class="py-3.5 px-6">Status</th>
+                            <th scope="col" class="py-3.5 px-6 text-right">Action</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-border dark:divide-zinc-800/70">
+                    <tbody class="divide-y divide-border">
                         @forelse($invoices as $inv)
-                            <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-900/40 transition">
-                                <td class="py-4 px-6 font-sans font-bold text-xs text-foreground dark:text-white">
+                            <tr class="hover:bg-secondary/60 transition">
+                                <td class="py-4 px-6 font-sans font-bold text-xs text-foreground">
                                     {{ $inv->invoice_number }}
                                     @if($inv->customer_po_number)
-                                        <div class="text-[11px] font-sans font-normal text-zinc-400">PO: {{ $inv->customer_po_number }}</div>
+                                        <div class="text-[11px] font-sans font-normal text-muted-foreground">PO: {{ $inv->customer_po_number }}</div>
                                     @endif
                                 </td>
                                 <td class="py-4 px-6">
-                                    <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $inv->customer?->name }}</div>
+                                    <div class="font-medium text-foreground">{{ $inv->customer?->name }}</div>
                                     @if($inv->customer?->company_name)
-                                        <div class="text-xs text-zinc-400">{{ $inv->customer->company_name }}</div>
+                                        <div class="text-xs text-muted-foreground">{{ $inv->customer->company_name }}</div>
                                     @endif
                                 </td>
-                                <td class="py-4 px-6 text-xs text-zinc-600 dark:text-zinc-400">
+                                <td class="py-4 px-6 text-xs text-muted-foreground">
                                     <div>{{ $inv->invoice_date?->format('d/m/Y') }}</div>
-                                    <div class="font-semibold {{ $inv->isOverdue() ? 'text-rose-600 dark:text-rose-400' : 'text-zinc-500' }}">
+                                    <div class="font-semibold {{ $inv->isOverdue() ? 'text-destructive ' : 'text-muted-foreground' }}">
                                         Due: {{ $inv->due_date?->format('d/m/Y') }}
                                         @if($inv->isOverdue())
                                             <span class="inline-block ml-1 text-destructive font-semibold text-[10px]">(Overdue by {{ $inv->daysOverdue() }}d)</span>
                                         @endif
                                     </div>
                                 </td>
-                                <td class="py-4 px-6 text-right font-sans tabular-nums font-medium text-xs text-zinc-900 dark:text-white">
+                                <td class="py-4 px-6 text-right font-sans tabular-nums font-medium text-xs text-foreground">
                                     Rp {{ number_format((float) $inv->total_amount, 2, ',', '.') }}
                                 </td>
-                                <td class="py-4 px-6 text-right font-sans tabular-nums text-xs text-emerald-600 dark:text-emerald-400">
+                                <td class="py-4 px-6 text-right font-sans tabular-nums text-xs text-positive">
                                     Rp {{ number_format((float) $inv->paid_amount, 2, ',', '.') }}
                                 </td>
-                                <td class="py-4 px-6 text-right font-sans tabular-nums font-bold text-xs {{ (float) $inv->balance_due > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-zinc-400' }}">
+                                <td class="py-4 px-6 text-right font-sans tabular-nums font-bold text-xs {{ (float) $inv->balance_due > 0 ? 'text-destructive ' : 'text-muted-foreground' }}">
                                     Rp {{ number_format((float) $inv->balance_due, 2, ',', '.') }}
                                 </td>
                                 <td class="py-4 px-6">
@@ -185,8 +185,8 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="py-12 text-center text-zinc-400">
-                                    <span class="material-symbols-rounded text-4xl mb-2 text-zinc-300 block">receipt_long</span>
+                                <td colspan="8" class="py-12 text-center text-muted-foreground">
+                                    <span class="material-symbols-rounded text-4xl mb-2 text-foreground block">receipt_long</span>
                                     <div>No sales invoices recorded yet.</div>
                                 </td>
                             </tr>
@@ -195,7 +195,7 @@
                 </table>
             </div>
             @if($invoices->hasPages())
-                <div class="p-4 border-t border-border dark:border-zinc-800">
+                <div class="p-4 border-t border-border">
                     {{ $invoices->links() }}
                 </div>
             @endif
@@ -218,17 +218,17 @@
                             <option value="{{ $c->id }}">{{ $c->name }} ({{ $c->customer_code }})</option>
                         @endforeach
                     </x-ui.select>
-                    @error('statementCustomerId') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                    @error('statementCustomerId') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
                 <div>
                     <x-ui.label for="statementStartDate">Start Date</x-ui.label>
                     <x-ui.input type="date" id="statementStartDate" wire:model="statementStartDate" />
-                    @error('statementStartDate') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                    @error('statementStartDate') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
                 <div>
                     <x-ui.label for="statementEndDate">End Date</x-ui.label>
                     <x-ui.input type="date" id="statementEndDate" wire:model="statementEndDate" />
-                    @error('statementEndDate') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                    @error('statementEndDate') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
             </div>
 
@@ -240,55 +240,55 @@
             </div>
 
             @if($statementData)
-                <div class="pt-6 border-t border-border dark:border-zinc-800 space-y-4">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 gap-4">
+                <div class="pt-6 border-t border-border space-y-4">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-secondary /60 border border-border gap-4">
                         <div>
-                            <span class="text-xs font-medium text-zinc-500">Opening Balance:</span>
-                            <div class="text-base font-sans font-bold text-zinc-800 dark:text-zinc-200">
+                            <span class="text-xs font-medium text-muted-foreground">Opening Balance:</span>
+                            <div class="text-base font-sans font-bold text-foreground">
                                 Rp {{ number_format((float) $statementData['opening_balance'], 2, ',', '.') }}
                             </div>
                         </div>
                         <div>
-                            <span class="text-xs font-medium text-zinc-500">Closing Balance:</span>
-                            <div class="text-lg font-sans font-extrabold text-emerald-600 dark:text-emerald-400">
+                            <span class="text-xs font-medium text-muted-foreground">Closing Balance:</span>
+                            <div class="text-lg font-sans font-extrabold text-positive">
                                 Rp {{ number_format((float) $statementData['closing_balance'], 2, ',', '.') }}
                             </div>
                         </div>
                     </div>
 
-                    <div class="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800">
+                    <div class="overflow-x-auto rounded-xl border border-border">
                         <table class="table-standard w-full min-w-full text-left text-sm border-collapse">
                             <thead>
-                                <tr class="bg-zinc-50/80 dark:bg-zinc-900 text-xs font-semibold text-zinc-500 uppercase tracking-wider border-b border-zinc-200 dark:border-zinc-800">
-                                    <th class="py-3 px-4">Date</th>
-                                    <th class="py-3 px-4">Transaction Type</th>
-                                    <th class="py-3 px-4">Doc / Reference No.</th>
-                                    <th class="py-3 px-4 text-right">Debit (Charges)</th>
-                                    <th class="py-3 px-4 text-right">Credit (Payments)</th>
-                                    <th class="py-3 px-4 text-right">Running Balance</th>
+                                <tr class="bg-secondary/80 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                                    <th scope="col" class="py-3 px-4">Date</th>
+                                    <th scope="col" class="py-3 px-4">Transaction Type</th>
+                                    <th scope="col" class="py-3 px-4">Doc / Reference No.</th>
+                                    <th scope="col" class="py-3 px-4 text-right">Debit (Charges)</th>
+                                    <th scope="col" class="py-3 px-4 text-right">Credit (Payments)</th>
+                                    <th scope="col" class="py-3 px-4 text-right">Running Balance</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+                            <tbody class="divide-y border-border">
                                 @forelse($statementData['transactions'] as $tx)
-                                    <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30">
+                                    <tr class="hover:bg-secondary/50">
                                         <td class="py-2.5 px-4 font-sans text-xs">{{ \Carbon\Carbon::parse($tx['entry_date'])->format('d/m/Y H:i') }}</td>
                                         <td class="py-2.5 px-4 text-xs font-medium">
                                             <span class="text-xs text-muted-foreground font-medium">{{ $tx['entry_type_label'] }}</span>
                                         </td>
-                                        <td class="py-2.5 px-4 font-sans text-xs text-zinc-600 dark:text-zinc-300">{{ $tx['reference_number'] }}</td>
-                                        <td class="py-2.5 px-4 text-right font-sans tabular-nums text-xs text-rose-600 font-semibold">
+                                        <td class="py-2.5 px-4 font-sans text-xs text-muted-foreground">{{ $tx['reference_number'] }}</td>
+                                        <td class="py-2.5 px-4 text-right font-sans tabular-nums text-xs text-destructive font-semibold">
                                             {{ (float) $tx['debit_amount'] > 0 ? 'Rp '.number_format((float) $tx['debit_amount'], 2, ',', '.') : '-' }}
                                         </td>
-                                        <td class="py-2.5 px-4 text-right font-sans tabular-nums text-xs text-emerald-600 font-semibold">
+                                        <td class="py-2.5 px-4 text-right font-sans tabular-nums text-xs text-positive font-semibold">
                                             {{ (float) $tx['credit_amount'] > 0 ? 'Rp '.number_format((float) $tx['credit_amount'], 2, ',', '.') : '-' }}
                                         </td>
-                                        <td class="py-2.5 px-4 text-right font-sans tabular-nums font-bold text-xs text-zinc-900 dark:text-white">
+                                        <td class="py-2.5 px-4 text-right font-sans tabular-nums font-bold text-xs text-foreground">
                                             Rp {{ number_format((float) $tx['running_balance'], 2, ',', '.') }}
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="py-8 text-center text-zinc-400">No receivable transactions found for this period.</td>
+                                        <td colspan="6" class="py-8 text-center text-muted-foreground">No receivable transactions found for this period.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -321,52 +321,52 @@
                 <!-- Info Header -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                     <div>
-                        <span class="text-zinc-500">Customer:</span>
-                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5">{{ $selectedInvoice->customer?->name }}</div>
-                        <div class="text-[11px] text-zinc-400">{{ $selectedInvoice->customer?->company_name }}</div>
+                        <span class="text-muted-foreground">Customer:</span>
+                        <div class="font-semibold text-foreground mt-0.5">{{ $selectedInvoice->customer?->name }}</div>
+                        <div class="text-[11px] text-muted-foreground">{{ $selectedInvoice->customer?->company_name }}</div>
                     </div>
                     <div>
-                        <span class="text-zinc-500">Issue / Due Date:</span>
-                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5">{{ $selectedInvoice->invoice_date?->format('d M Y') }}</div>
-                        <div class="text-zinc-500">Due: {{ $selectedInvoice->due_date?->format('d M Y') }} ({{ $selectedInvoice->payment_terms_days }} days)</div>
+                        <span class="text-muted-foreground">Issue / Due Date:</span>
+                        <div class="font-semibold text-foreground mt-0.5">{{ $selectedInvoice->invoice_date?->format('d M Y') }}</div>
+                        <div class="text-muted-foreground">Due: {{ $selectedInvoice->due_date?->format('d M Y') }} ({{ $selectedInvoice->payment_terms_days }} days)</div>
                     </div>
                     <div>
-                        <span class="text-zinc-500">Customer PO Number:</span>
-                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5">{{ $selectedInvoice->customer_po_number ?: '-' }}</div>
+                        <span class="text-muted-foreground">Customer PO Number:</span>
+                        <div class="font-semibold text-foreground mt-0.5">{{ $selectedInvoice->customer_po_number ?: '-' }}</div>
                     </div>
                     <div>
-                        <span class="text-zinc-500">Posted By:</span>
-                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5">{{ $selectedInvoice->postedBy?->name ?: '-' }}</div>
-                        <div class="text-[11px] text-zinc-400">{{ $selectedInvoice->posted_at?->format('d/m/Y H:i') }}</div>
+                        <span class="text-muted-foreground">Posted By:</span>
+                        <div class="font-semibold text-foreground mt-0.5">{{ $selectedInvoice->postedBy?->name ?: '-' }}</div>
+                        <div class="text-[11px] text-muted-foreground">{{ $selectedInvoice->posted_at?->format('d/m/Y H:i') }}</div>
                     </div>
                 </div>
 
                 <!-- Items Table -->
                 <div>
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">Invoice Line Items</h4>
-                    <div class="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Invoice Line Items</h4>
+                    <div class="overflow-x-auto rounded-xl border border-border">
                         <table class="table-standard w-full min-w-full text-left text-xs border-collapse">
                             <thead>
-                                <tr class="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-zinc-500">
-                                    <th class="py-2.5 px-3">#</th>
-                                    <th class="py-2.5 px-3">Item Description</th>
-                                    <th class="py-2.5 px-3 text-right">Quantity</th>
-                                    <th class="py-2.5 px-3 text-right">Unit Price</th>
-                                    <th class="py-2.5 px-3 text-right">Discount</th>
-                                    <th class="py-2.5 px-3 text-right">Tax</th>
-                                    <th class="py-2.5 px-3 text-right">Line Total</th>
+                                <tr class="bg-secondary border-b border-border text-muted-foreground">
+                                    <th scope="col" class="py-2.5 px-3">#</th>
+                                    <th scope="col" class="py-2.5 px-3">Item Description</th>
+                                    <th scope="col" class="py-2.5 px-3 text-right">Quantity</th>
+                                    <th scope="col" class="py-2.5 px-3 text-right">Unit Price</th>
+                                    <th scope="col" class="py-2.5 px-3 text-right">Discount</th>
+                                    <th scope="col" class="py-2.5 px-3 text-right">Tax</th>
+                                    <th scope="col" class="py-2.5 px-3 text-right">Line Total</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+                            <tbody class="divide-y border-border">
                                 @foreach($selectedInvoice->lines as $line)
                                     <tr>
-                                        <td class="py-2.5 px-3 font-sans text-zinc-400">{{ $line->line_number }}</td>
-                                        <td class="py-2.5 px-3 font-medium text-zinc-800 dark:text-zinc-200">{{ $line->description }}</td>
+                                        <td class="py-2.5 px-3 font-sans text-muted-foreground">{{ $line->line_number }}</td>
+                                        <td class="py-2.5 px-3 font-medium text-foreground">{{ $line->description }}</td>
                                         <td class="py-2.5 px-3 text-right font-sans tabular-nums">{{ number_format((float) $line->quantity, 2, ',', '.') }}</td>
                                         <td class="py-2.5 px-3 text-right font-sans tabular-nums">Rp {{ number_format((float) $line->unit_price, 2, ',', '.') }}</td>
-                                        <td class="py-2.5 px-3 text-right font-sans tabular-nums text-amber-600">Rp {{ number_format((float) $line->discount_amount, 2, ',', '.') }}</td>
-                                        <td class="py-2.5 px-3 text-right font-sans tabular-nums text-zinc-500">Rp {{ number_format((float) $line->tax_amount, 2, ',', '.') }}</td>
-                                        <td class="py-2.5 px-3 text-right font-sans tabular-nums font-bold text-zinc-900 dark:text-zinc-100">Rp {{ number_format((float) $line->line_total, 2, ',', '.') }}</td>
+                                        <td class="py-2.5 px-3 text-right font-sans tabular-nums text-warning">Rp {{ number_format((float) $line->discount_amount, 2, ',', '.') }}</td>
+                                        <td class="py-2.5 px-3 text-right font-sans tabular-nums text-muted-foreground">Rp {{ number_format((float) $line->tax_amount, 2, ',', '.') }}</td>
+                                        <td class="py-2.5 px-3 text-right font-sans tabular-nums font-bold text-foreground">Rp {{ number_format((float) $line->line_total, 2, ',', '.') }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -377,27 +377,27 @@
                 <!-- Financial Summary -->
                 <div class="flex justify-end">
                     <div class="w-full md:w-80 space-y-1.5 text-xs">
-                        <div class="flex justify-between py-1 text-zinc-600 dark:text-zinc-400">
+                        <div class="flex justify-between py-1 text-muted-foreground">
                             <span>Subtotal:</span>
                             <span class="font-sans">Rp {{ number_format((float) $selectedInvoice->subtotal, 2, ',', '.') }}</span>
                         </div>
-                        <div class="flex justify-between py-1 text-zinc-600 dark:text-zinc-400">
+                        <div class="flex justify-between py-1 text-muted-foreground">
                             <span>Discount:</span>
-                            <span class="font-sans text-amber-600">- Rp {{ number_format((float) $selectedInvoice->discount_amount, 2, ',', '.') }}</span>
+                            <span class="font-sans text-warning">- Rp {{ number_format((float) $selectedInvoice->discount_amount, 2, ',', '.') }}</span>
                         </div>
-                        <div class="flex justify-between py-1 text-zinc-600 dark:text-zinc-400">
+                        <div class="flex justify-between py-1 text-muted-foreground">
                             <span>Tax (VAT):</span>
                             <span class="font-sans">Rp {{ number_format((float) $selectedInvoice->tax_amount, 2, ',', '.') }}</span>
                         </div>
-                        <div class="flex justify-between py-1 border-t border-zinc-200 dark:border-zinc-800 font-bold text-sm text-zinc-900 dark:text-zinc-100">
+                        <div class="flex justify-between py-1 border-t border-border font-bold text-sm text-foreground">
                             <span>Total Invoice:</span>
                             <span class="font-sans">Rp {{ number_format((float) $selectedInvoice->total_amount, 2, ',', '.') }}</span>
                         </div>
-                        <div class="flex justify-between py-1 text-emerald-600 dark:text-emerald-400 font-semibold">
+                        <div class="flex justify-between py-1 text-positive font-semibold">
                             <span>Amount Paid:</span>
                             <span class="font-sans">Rp {{ number_format((float) $selectedInvoice->paid_amount, 2, ',', '.') }}</span>
                         </div>
-                        <div class="flex justify-between py-1.5 border-t border-zinc-200 dark:border-zinc-800 font-extrabold text-sm text-rose-600 dark:text-rose-400">
+                        <div class="flex justify-between py-1.5 border-t border-border font-extrabold text-sm text-destructive">
                             <span>Balance Due:</span>
                             <span class="font-sans">Rp {{ number_format((float) $selectedInvoice->balance_due, 2, ',', '.') }}</span>
                         </div>
@@ -406,26 +406,26 @@
 
                 <!-- Payment Allocation History -->
                 @if($selectedInvoice->allocations->count() > 0)
-                    <div class="border-t border-border dark:border-zinc-800 pt-4">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">Settlement Allocation History</h4>
-                        <div class="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800">
+                    <div class="border-t border-border pt-4">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Settlement Allocation History</h4>
+                        <div class="overflow-x-auto rounded-xl border border-border">
                             <table class="table-standard w-full min-w-full text-left text-xs border-collapse">
                                 <thead>
-                                    <tr class="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-zinc-500">
-                                        <th class="py-2 px-3">Date</th>
-                                        <th class="py-2 px-3">Payment Reference</th>
-                                        <th class="py-2 px-3">Recorded By</th>
-                                        <th class="py-2 px-3 text-right">Allocated Amount</th>
-                                        <th class="py-2 px-3 text-center">Status</th>
+                                    <tr class="bg-secondary border-b border-border text-muted-foreground">
+                                        <th scope="col" class="py-2 px-3">Date</th>
+                                        <th scope="col" class="py-2 px-3">Payment Reference</th>
+                                        <th scope="col" class="py-2 px-3">Recorded By</th>
+                                        <th scope="col" class="py-2 px-3 text-right">Allocated Amount</th>
+                                        <th scope="col" class="py-2 px-3 text-center">Status</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+                                <tbody class="divide-y border-border">
                                     @foreach($selectedInvoice->allocations as $alloc)
                                         <tr>
                                             <td class="py-2 px-3 font-sans">{{ $alloc->allocated_at?->format('d/m/Y H:i') }}</td>
-                                            <td class="py-2 px-3 font-sans text-zinc-600 dark:text-zinc-300">{{ $alloc->payment_reference ?: '-' }}</td>
+                                            <td class="py-2 px-3 font-sans text-muted-foreground">{{ $alloc->payment_reference ?: '-' }}</td>
                                             <td class="py-2 px-3">{{ $alloc->allocatedBy?->name }}</td>
-                                            <td class="py-2 px-3 text-right font-sans font-bold text-emerald-600 tabular-nums">Rp {{ number_format((float) $alloc->allocated_amount, 2, ',', '.') }}</td>
+                                            <td class="py-2 px-3 text-right font-sans font-bold text-positive tabular-nums">Rp {{ number_format((float) $alloc->allocated_amount, 2, ',', '.') }}</td>
                                             <td class="py-2 px-3">
                                                 <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
                                                     <span class="w-1.5 h-1.5 rounded-full {{ $alloc->is_reversed ? 'bg-destructive' : 'bg-success' }}"></span>
@@ -460,7 +460,7 @@
 
         <x-slot:content>
             <div class="space-y-6">
-                <p class="text-xs text-zinc-500 -mt-2">Record incoming payment and allocate to outstanding customer invoices.</p>
+                <p class="text-xs text-muted-foreground -mt-2">Record incoming payment and allocate to outstanding customer invoices.</p>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="md:col-span-2">
@@ -471,12 +471,12 @@
                                 <option value="{{ $c->id }}">{{ $c->name }} ({{ $c->customer_code }})</option>
                             @endforeach
                         </x-ui.select>
-                        @error('paymentCustomerId') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('paymentCustomerId') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
                     <div>
                         <x-ui.label for="paymentAmount">Total Payment Received (Rp) *</x-ui.label>
                         <x-ui.input type="number" step="0.01" id="paymentAmount" wire:model="paymentAmount" placeholder="0.00" class="font-sans font-bold" />
-                        @error('paymentAmount') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('paymentAmount') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
                     <div>
                         <x-ui.label for="paymentMethod">Payment Method</x-ui.label>
@@ -490,31 +490,31 @@
                     <div class="md:col-span-2">
                         <x-ui.label for="paymentReference">Reference / Transfer Receipt Number *</x-ui.label>
                         <x-ui.input type="text" id="paymentReference" wire:model="paymentReference" placeholder="e.g. TRF-BCA-20270105-0982" class="font-sans" />
-                        @error('paymentReference') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('paymentReference') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                     </div>
                 </div>
 
                 <!-- Customer Open Invoices List -->
                 @if($paymentCustomerId && count($openCustomerInvoices) > 0)
                     <div class="space-y-2">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-500">Select & Allocate to Open Invoices</h4>
-                        <div class="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Select & Allocate to Open Invoices</h4>
+                        <div class="overflow-x-auto rounded-xl border border-border">
                             <table class="table-standard w-full min-w-full text-left text-xs border-collapse">
                                 <thead>
-                                    <tr class="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-zinc-500">
-                                        <th class="py-2.5 px-3">Invoice</th>
-                                        <th class="py-2.5 px-3">Due Date</th>
-                                        <th class="py-2.5 px-3 text-right">Balance Due</th>
-                                        <th class="py-2.5 px-3 text-right w-44">Payment Allocation (Rp)</th>
-                                        <th class="py-2.5 px-3 text-center w-24">Action</th>
+                                    <tr class="bg-secondary border-b border-border text-muted-foreground">
+                                        <th scope="col" class="py-2.5 px-3">Invoice</th>
+                                        <th scope="col" class="py-2.5 px-3">Due Date</th>
+                                        <th scope="col" class="py-2.5 px-3 text-right">Balance Due</th>
+                                        <th scope="col" class="py-2.5 px-3 text-right w-44">Payment Allocation (Rp)</th>
+                                        <th scope="col" class="py-2.5 px-3 text-center w-24">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+                                <tbody class="divide-y border-border">
                                     @foreach($openCustomerInvoices as $openInv)
                                         <tr>
                                             <td class="py-2 px-3 font-sans font-bold">{{ $openInv->invoice_number }}</td>
-                                            <td class="py-2 px-3 text-zinc-600 dark:text-zinc-400">{{ $openInv->due_date?->format('d/m/Y') }}</td>
-                                            <td class="py-2 px-3 text-right font-sans font-semibold text-rose-600 tabular-nums">
+                                            <td class="py-2 px-3 text-muted-foreground">{{ $openInv->due_date?->format('d/m/Y') }}</td>
+                                            <td class="py-2 px-3 text-right font-sans font-semibold text-destructive tabular-nums">
                                                 Rp {{ number_format((float) $openInv->balance_due, 2, ',', '.') }}
                                             </td>
                                             <td class="py-2 px-3 text-right">
@@ -532,7 +532,7 @@
                         </div>
                     </div>
                 @elseif($paymentCustomerId)
-                    <div class="p-6 text-center text-xs text-zinc-400 bg-zinc-50 dark:bg-zinc-900 rounded-xl">
+                    <div class="p-6 text-center text-xs text-muted-foreground bg-secondary rounded-xl">
                         This customer has no unpaid invoices. Payment will be recorded as Unapplied Credit.
                     </div>
                 @endif
@@ -560,13 +560,13 @@
         <x-slot:content>
             @if($selectedInvoice)
             <div class="space-y-4">
-                <p class="text-xs text-zinc-500">
-                    You are about to void invoice <strong class="font-sans text-zinc-800 dark:text-zinc-200">{{ $selectedInvoice->invoice_number }}</strong> valued at <strong class="font-sans text-zinc-800 dark:text-zinc-200">Rp {{ number_format((float) $selectedInvoice->total_amount, 2, ',', '.') }}</strong>. This action reverses receivable journal entries and restores credit exposure to the original Sales Order.
+                <p class="text-xs text-muted-foreground">
+                    You are about to void invoice <strong class="font-sans text-foreground">{{ $selectedInvoice->invoice_number }}</strong> valued at <strong class="font-sans text-foreground">Rp {{ number_format((float) $selectedInvoice->total_amount, 2, ',', '.') }}</strong>. This action reverses receivable journal entries and restores credit exposure to the original Sales Order.
                 </p>
                 <div>
                     <x-ui.label for="voidReason">Void Reason *</x-ui.label>
-                    <textarea id="voidReason" wire:model="voidReason" rows="3" placeholder="Enter reason for voiding this invoice..." class="w-full text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-2.5 text-zinc-800 dark:text-zinc-100"></textarea>
-                    @error('voidReason') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                    <textarea id="voidReason" wire:model="voidReason" rows="3" placeholder="Enter reason for voiding this invoice..." class="w-full text-xs rounded-xl border border-border bg-card p-2.5 text-foreground"></textarea>
+                    @error('voidReason') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
             </div>
             @endif

@@ -28,7 +28,7 @@
     @endif
 
     <!-- Toolbar -->
-    <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-border dark:border-zinc-800">
+    <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-border">
         <div class="flex-1 max-w-md">
             <x-ui.input
                 type="text"
@@ -39,38 +39,38 @@
     </div>
 
     <!-- Data Table -->
-    <div class="card-surface rounded-2xl overflow-hidden border border-border dark:border-zinc-800 shadow-sm">
+    <div class="card-surface rounded-2xl overflow-hidden border border-border shadow-sm">
         <div class="overflow-x-auto">
-            <table class="table-standard w-full min-w-full text-left text-sm text-zinc-600 dark:text-zinc-300">
-                <thead class="bg-zinc-50 dark:bg-zinc-900/50 text-xs font-semibold uppercase text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
+            <table class="table-standard w-full min-w-full text-left text-sm text-muted-foreground">
+                <thead class="bg-secondary /50 text-xs font-semibold uppercase text-muted-foreground border-b border-border">
                     <tr>
-                        <th class="px-6 py-4">Group Code & Name</th>
-                        <th class="px-6 py-4 text-right">Default Discount</th>
-                        <th class="px-6 py-4 text-right">Customer Count</th>
-                        <th class="px-6 py-4 text-center">Status</th>
-                        <th class="px-6 py-4 text-right">Action</th>
+                        <th scope="col" class="px-6 py-4">Group Code & Name</th>
+                        <th scope="col" class="px-6 py-4 text-right">Default Discount</th>
+                        <th scope="col" class="px-6 py-4 text-right">Customer Count</th>
+                        <th scope="col" class="px-6 py-4 text-center">Status</th>
+                        <th scope="col" class="px-6 py-4 text-right">Action</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-border dark:divide-zinc-800">
+                <tbody class="divide-y divide-border">
                     @forelse($groups as $grp)
-                    <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition">
+                    <tr class="hover:bg-secondary/50 transition">
                         <td class="px-6 py-4">
-                            <div class="font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                            <div class="font-semibold text-foreground flex items-center gap-2">
                                 {{ $grp->name }}
                                 @if($grp->is_b2b_default)
                                     <span class="text-xs text-muted-foreground font-medium">(Default B2B)</span>
                                 @endif
                             </div>
-                            <div class="text-xs font-sans text-zinc-400 mt-0.5">{{ $grp->code }}</div>
+                            <div class="text-xs font-sans text-muted-foreground mt-0.5">{{ $grp->code }}</div>
                             @if($grp->description)
-                                <p class="text-xs text-zinc-500 mt-1 line-clamp-1">{{ $grp->description }}</p>
+                                <p class="text-xs text-muted-foreground mt-1 line-clamp-1">{{ $grp->description }}</p>
                             @endif
                         </td>
                         <td class="px-6 py-4 text-right">
-                            <span class="font-sans font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">{{ $grp->default_discount_rate }}%</span>
+                            <span class="font-sans font-semibold text-positive tabular-nums">{{ $grp->default_discount_rate }}%</span>
                         </td>
                         <td class="px-6 py-4 text-right">
-                            <span class="text-xs text-zinc-600 dark:text-zinc-300 font-sans tabular-nums">{{ $grp->customers_count }} customers</span>
+                            <span class="text-xs text-muted-foreground font-sans tabular-nums">{{ $grp->customers_count }} customers</span>
                         </td>
                         <td class="px-6 py-4">
                             <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
@@ -93,7 +93,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-12 text-center text-zinc-400">
+                        <td colspan="5" class="px-6 py-12 text-center text-muted-foreground">
                             <span class="material-symbols-rounded text-4xl block mb-2">folder_off</span>
                             No customer groups found.
                         </td>
@@ -103,7 +103,7 @@
             </table>
         </div>
         @if($groups->hasPages())
-            <div class="px-6 py-4 border-t border-zinc-200 dark:border-zinc-800">
+            <div class="px-6 py-4 border-t border-border">
                 {{ $groups->links() }}
             </div>
         @endif
@@ -120,35 +120,35 @@
                 <div>
                     <x-ui.label for="code">Group Code *</x-ui.label>
                     <x-ui.input type="text" id="code" wire:model="code" placeholder="e.g. WHOLESALE-TIER1" class="uppercase" />
-                    @error('code') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                    @error('code') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <div>
                     <x-ui.label for="name">Group Name *</x-ui.label>
                     <x-ui.input type="text" id="name" wire:model="name" placeholder="e.g. Wholesale Tier 1 / VIP" />
-                    @error('name') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                    @error('name') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <div>
                     <x-ui.label for="default_discount_rate">Default Discount (%)</x-ui.label>
                     <x-ui.input type="number" step="0.01" min="0" max="100" id="default_discount_rate" wire:model="default_discount_rate" placeholder="0.00" />
-                    @error('default_discount_rate') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                    @error('default_discount_rate') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <div>
                     <x-ui.label for="description">Description</x-ui.label>
-                    <textarea id="description" wire:model="description" rows="2" placeholder="Group membership criteria and terms" class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ring/20"></textarea>
+                    <textarea id="description" wire:model="description" rows="2" placeholder="Group membership criteria and terms" class="w-full text-sm rounded-xl border border-border bg-card px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"></textarea>
                 </div>
 
-                <div class="pt-2 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
+                <div class="pt-2 border-t border-border space-y-2">
                     <label class="inline-flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" wire:model="is_b2b_default" class="rounded border-zinc-300 dark:border-zinc-700 text-zinc-900 shadow-xs focus:ring-2 focus:ring-zinc-900/20">
-                        <span class="text-xs font-medium text-zinc-700 dark:text-zinc-300">Set as default group for new B2B registrations</span>
+                        <input type="checkbox" wire:model="is_b2b_default" class="rounded border-border text-foreground shadow-xs focus:ring-2 focus:ring-ring">
+                        <span class="text-xs font-medium text-foreground">Set as default group for new B2B registrations</span>
                     </label>
 
                     <label class="inline-flex items-center gap-2 cursor-pointer block">
-                        <input type="checkbox" wire:model="is_active" class="rounded border-zinc-300 dark:border-zinc-700 text-zinc-900 shadow-xs focus:ring-2 focus:ring-zinc-900/20">
-                        <span class="text-xs font-medium text-zinc-700 dark:text-zinc-300">Active Status</span>
+                        <input type="checkbox" wire:model="is_active" class="rounded border-border text-foreground shadow-xs focus:ring-2 focus:ring-ring">
+                        <span class="text-xs font-medium text-foreground">Active Status</span>
                     </label>
                 </div>
             </form>

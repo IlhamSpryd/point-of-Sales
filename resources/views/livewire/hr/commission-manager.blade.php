@@ -88,12 +88,12 @@
             <table class="w-full text-left text-sm text-foreground divide-y divide-border">
                 <thead class="bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     <tr>
-                        <th class="px-6 py-3.5">Employee</th>
-                        <th class="px-6 py-3.5">Order Reference</th>
-                        <th class="px-6 py-3.5">Calculation Basis</th>
-                        <th class="px-6 py-3.5">Commission Amount</th>
-                        <th class="px-6 py-3.5">Status</th>
-                        <th class="px-6 py-3.5">Date</th>
+                        <th scope="col" class="px-6 py-3.5">Employee</th>
+                        <th scope="col" class="px-6 py-3.5">Order Reference</th>
+                        <th scope="col" class="px-6 py-3.5">Calculation Basis</th>
+                        <th scope="col" class="px-6 py-3.5">Commission Amount</th>
+                        <th scope="col" class="px-6 py-3.5">Status</th>
+                        <th scope="col" class="px-6 py-3.5">Date</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -121,7 +121,7 @@
                             <td class="px-6 py-4 text-xs tabular-nums text-foreground">
                                 Rp {{ number_format($basisAmount, 2, ',', '.') }}
                             </td>
-                            <td class="px-6 py-4 font-bold tabular-nums {{ $isReversal ? 'text-rose-600' : 'text-emerald-600' }}">
+                            <td class="px-6 py-4 font-bold tabular-nums {{ $isReversal ? 'text-destructive' : 'text-positive' }}">
                                 {{ $isReversal ? '-' : '+' }} Rp {{ number_format($amountAbs, 2, ',', '.') }}
                             </td>
                             <td class="px-6 py-4">

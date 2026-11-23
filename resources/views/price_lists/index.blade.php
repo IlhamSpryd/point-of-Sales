@@ -161,17 +161,17 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Price List Code <span class="text-rose-500">*</span></label>
+                        <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Price List Code <span class="text-destructive">*</span></label>
                         <input type="text" name="code" value="{{ old('code') }}" required maxlength="64" placeholder="e.g. PL-WHOLESALE-01" class="w-full rounded-xl border border-border px-3.5 py-2 text-sm uppercase focus:border-primary-500 focus:outline-none">
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Price Rule Name <span class="text-rose-500">*</span></label>
+                        <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Price Rule Name <span class="text-destructive">*</span></label>
                         <input type="text" name="name" value="{{ old('name') }}" required maxlength="150" placeholder="e.g. Wholesale Price Min. 10 Pcs" class="w-full rounded-xl border border-border px-3.5 py-2 text-sm focus:border-primary-500 focus:outline-none">
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Rule Type / Scope <span class="text-rose-500">*</span></label>
+                        <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Rule Type / Scope <span class="text-destructive">*</span></label>
                         <select name="type" x-model="type" required class="w-full rounded-xl border border-border bg-white px-3.5 py-2 text-sm focus:border-primary-500 focus:outline-none">
                             <option value="standard">Standard (Global / General)</option>
                             <option value="wholesale">Tiered Wholesale (Volume Qty)</option>
@@ -189,7 +189,7 @@
                 </div>
 
                 {{-- Target Fields based on Type --}}
-                <div x-show="type === 'branch'" class="p-3 bg-zinc-50 rounded-xl border border-zinc-200">
+                <div x-show="type === 'branch'" class="p-3 bg-secondary rounded-xl border border-border">
                     <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Target Branch</label>
                     <select name="store_id" class="w-full rounded-xl border border-border bg-white px-3.5 py-2 text-sm">
                         <option value="">Select Branch</option>
@@ -199,7 +199,7 @@
                     </select>
                 </div>
 
-                <div x-show="type === 'customer_specific'" class="p-3 bg-zinc-50 rounded-xl border border-zinc-200">
+                <div x-show="type === 'customer_specific'" class="p-3 bg-secondary rounded-xl border border-border">
                     <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Target Customer</label>
                     <select name="customer_id" class="w-full rounded-xl border border-border bg-white px-3.5 py-2 text-sm">
                         <option value="">Select Customer</option>
@@ -209,7 +209,7 @@
                     </select>
                 </div>
 
-                <div x-show="type === 'customer_tier'" class="p-3 bg-zinc-50 rounded-xl border border-zinc-200">
+                <div x-show="type === 'customer_tier'" class="p-3 bg-secondary rounded-xl border border-border">
                     <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Target Loyalty Tier</label>
                     <select name="loyalty_tier_id" class="w-full rounded-xl border border-border bg-white px-3.5 py-2 text-sm">
                         <option value="">Select Tier</option>
@@ -219,7 +219,7 @@
                     </select>
                 </div>
 
-                <div x-show="type === 'channel'" class="p-3 bg-zinc-50 rounded-xl border border-zinc-200">
+                <div x-show="type === 'channel'" class="p-3 bg-secondary rounded-xl border border-border">
                     <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Channel Name</label>
                     <input type="text" name="channel" placeholder="e.g. GoFood, GrabFood, ShopeeFood" class="w-full rounded-xl border border-border px-3.5 py-2 text-sm">
                 </div>
@@ -252,7 +252,7 @@
 
                     <div class="space-y-2">
                         <template x-for="(item, idx) in items" :key="idx">
-                            <div class="flex items-center gap-2 p-2 bg-zinc-50 rounded-lg border border-zinc-200">
+                            <div class="flex items-center gap-2 p-2 bg-secondary rounded-lg border border-border">
                                 <select :name="`items[${idx}][product_id]`" x-model="item.product_id" required class="flex-1 rounded-lg border border-border bg-white px-2 py-1.5 text-xs">
                                     <option value="">Select Product</option>
                                     @foreach($products as $prod)
@@ -261,7 +261,7 @@
                                 </select>
                                 <input type="number" :name="`items[${idx}][min_quantity]`" x-model="item.min_quantity" placeholder="Min. Qty" min="1" required class="w-20 rounded-lg border border-border px-2 py-1.5 text-xs text-right">
                                 <input type="number" :name="`items[${idx}][price]`" x-model="item.price" placeholder="Price (Rp)" min="0" step="100" required class="w-28 rounded-lg border border-border px-2 py-1.5 text-xs text-right">
-                                <button type="button" @click="removeItem(idx)" class="text-rose-500 hover:text-rose-700 p-1" title="Remove Row">
+                                <button type="button" @click="removeItem(idx)" class="text-destructive hover:text-destructive p-1" title="Remove Row">
                                     <span class="material-symbols-rounded text-sm">delete</span>
                                 </button>
                             </div>

@@ -18,31 +18,31 @@
                 <div>
                     <x-form-label for="ingredient_code">Material Code (Optional)</x-form-label>
                     <x-form-input type="text" id="ingredient_code" wire:model="ingredient_code" class="{{ $errors->has('ingredient_code') ? 'input-error' : '' }}" placeholder="e.g. RM-001" />
-                    @error('ingredient_code') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
+                    @error('ingredient_code') <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p> @enderror
                 </div>
                 
                 <div>
-                    <x-form-label for="name">Material Name <span class="text-rose-500">*</span></x-form-label>
+                    <x-form-label for="name">Material Name <span class="text-destructive">*</span></x-form-label>
                     <x-form-input type="text" id="name" wire:model="name" required class="{{ $errors->has('name') ? 'input-error' : '' }}" placeholder="Enter raw material name" />
-                    @error('name') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
+                    @error('name') <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p> @enderror
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                    <x-form-label for="unit">Base Unit <span class="text-rose-500">*</span></x-form-label>
+                    <x-form-label for="unit">Base Unit <span class="text-destructive">*</span></x-form-label>
                     <x-form-input type="text" id="unit" wire:model="unit" placeholder="g, ml, pcs..." required class="{{ $errors->has('unit') ? 'input-error' : '' }}" />
-                    @error('unit') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
+                    @error('unit') <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <x-form-label for="cost_per_unit">Cost per Unit (Rp) <span class="text-rose-500">*</span></x-form-label>
+                    <x-form-label for="cost_per_unit">Cost per Unit (Rp) <span class="text-destructive">*</span></x-form-label>
                     <x-form-input type="number" id="cost_per_unit" step="0.01" wire:model="cost_per_unit" required class="{{ $errors->has('cost_per_unit') ? 'input-error' : '' }}" placeholder="0" />
-                    @error('cost_per_unit') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
+                    @error('cost_per_unit') <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <x-form-label for="reorder_level">Reorder Level (Min. Threshold) <span class="text-rose-500">*</span></x-form-label>
+                    <x-form-label for="reorder_level">Reorder Level (Min. Threshold) <span class="text-destructive">*</span></x-form-label>
                     <x-form-input type="number" id="reorder_level" step="0.0001" wire:model="reorder_level" required class="{{ $errors->has('reorder_level') ? 'input-error' : '' }}" placeholder="0" />
-                    @error('reorder_level') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
+                    @error('reorder_level') <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p> @enderror
                 </div>
             </div>
 
@@ -188,14 +188,14 @@
                             @php
                                 $displayStock = (float) ($item->store_stock ?? $item->current_stock);
                             @endphp
-                            <span class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block mb-0.5">Stock: <span class="{{ $displayStock <= $item->reorder_level ? 'text-rose-600' : 'text-foreground' }}">{{ number_format($displayStock, 2) }} {{ $item->unit }}</span></span>
+                            <span class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block mb-0.5">Stock: <span class="{{ $displayStock <= $item->reorder_level ? 'text-destructive' : 'text-foreground' }}">{{ number_format($displayStock, 2) }} {{ $item->unit }}</span></span>
                             <span class="text-xs text-foreground">Rp {{ number_format($item->cost_per_unit, 0, ',', '.') }} / {{ $item->unit }}</span>
                         </div>
                         <div class="flex items-center gap-1 shrink-0">
-                            <button wire:click="adjustStock({{ $item->id }})" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Adjust Stock">
+                            <button wire:click="adjustStock({{ $item->id }})" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-positive hover:bg-positive-muted transition-colors" title="Adjust Stock">
                                 <span class="material-symbols-rounded text-[20px]">inventory</span>
                             </button>
-                            <button wire:click="edit({{ $item->id }})" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-blue-600 hover:bg-blue-50 transition-colors" title="Edit">
+                            <button wire:click="edit({{ $item->id }})" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-accent hover:bg-accent/10 transition-colors" title="Edit">
                                 <span class="material-symbols-rounded text-[20px]">edit</span>
                             </button>
                             <button type="button"
@@ -203,7 +203,7 @@
                                 data-swal-title="Delete Raw Material?"
                                 data-swal-text="Raw material &quot;{{ $item->name }}&quot; will be permanently deleted."
                                 data-wire-action="delete({{ $item->id }})"
-                                class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-rose-600 hover:bg-rose-50 transition-colors" title="Delete">
+                                class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-destructive hover:bg-destructive-muted transition-colors" title="Delete">
                                 <span class="material-symbols-rounded text-[20px]">delete</span>
                             </button>
                         </div>
@@ -211,7 +211,7 @@
                 </div>
             @empty
                 <div class="py-8 text-center">
-                    <x-empty-state icon="inventory_2" title="No Raw Materials Found" description="Add new raw materials to start tracking inventory and product recipes." />
+                    <x-ui.empty-state icon="inventory_2" title="No Raw Materials Found" description="Add new raw materials to start tracking inventory and product recipes." />
                 </div>
             @endforelse
         </div>
@@ -233,7 +233,7 @@
         <x-slot:content>
             <form wire:submit.prevent="saveAdjustment" class="space-y-5">
                 <div>
-                    <x-form-label for="adjustType">Adjustment Type <span class="text-rose-500">*</span></x-form-label>
+                    <x-form-label for="adjustType">Adjustment Type <span class="text-destructive">*</span></x-form-label>
                     <div class="relative">
                         <select id="adjustType" wire:model="adjustType" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('adjustType') ? 'input-error' : '' }}">
                             <option value="purchase_receipt">Goods Receipt (Purchase)</option>
@@ -244,19 +244,19 @@
                             <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                         </div>
                     </div>
-                    @error('adjustType') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
+                    @error('adjustType') <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <x-form-label for="adjustQuantity">Quantity <span class="text-rose-500">*</span></x-form-label>
+                    <x-form-label for="adjustQuantity">Quantity <span class="text-destructive">*</span></x-form-label>
                     <x-form-input type="number" id="adjustQuantity" step="0.0001" wire:model="adjustQuantity" placeholder="Use minus (-) for deductions if using Manual Correction" required class="{{ $errors->has('adjustQuantity') ? 'input-error' : '' }}" />
-                    @error('adjustQuantity') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
+                    @error('adjustQuantity') <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
                     <x-form-label for="adjustReason">Reason / Notes (Optional)</x-form-label>
                     <textarea id="adjustReason" wire:model="adjustReason" rows="3" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('adjustReason') ? 'input-error' : '' }}" placeholder="Additional notes..."></textarea>
-                    @error('adjustReason') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
+                    @error('adjustReason') <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">

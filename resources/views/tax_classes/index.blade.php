@@ -141,27 +141,27 @@
                     <div>
                         <x-ui.label for="tax_code">Tax Class Code *</x-ui.label>
                         <input type="text" id="tax_code" name="code" x-model="code" required
-                            class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 font-sans uppercase focus:outline-hidden focus:ring-2 focus:ring-ring/20">
+                            class="w-full text-sm rounded-xl border border-border bg-card px-3 py-2 font-sans uppercase focus:outline-hidden focus:ring-2 focus:ring-ring/20">
                     </div>
 
                     <div>
                         <x-ui.label for="tax_name">Tax Class Name *</x-ui.label>
                         <input type="text" id="tax_name" name="name" x-model="name" required
-                            class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 focus:outline-hidden focus:ring-2 focus:ring-ring/20">
+                            class="w-full text-sm rounded-xl border border-border bg-card px-3 py-2 focus:outline-hidden focus:ring-2 focus:ring-ring/20">
                     </div>
 
                     <div>
                         <x-ui.label for="tax_rate">Tax Rate (%) *</x-ui.label>
                         <input type="number" id="tax_rate" name="rate" x-model="rate" step="0.0001" min="0" max="100" required
-                            class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 font-sans focus:outline-hidden focus:ring-2 focus:ring-ring/20">
-                        <p class="text-[11px] text-zinc-400 mt-1">e.g. 11.0000 for 11% VAT, 0 for Tax-Exempt.</p>
+                            class="w-full text-sm rounded-xl border border-border bg-card px-3 py-2 font-sans focus:outline-hidden focus:ring-2 focus:ring-ring/20">
+                        <p class="text-[11px] text-muted-foreground mt-1">e.g. 11.0000 for 11% VAT, 0 for Tax-Exempt.</p>
                     </div>
 
                     <div class="flex items-center gap-2 pt-2">
                         <input type="hidden" name="is_active" value="0">
                         <input type="checkbox" id="tax_is_active" name="is_active" value="1" x-model="isActive"
-                            class="rounded border-zinc-300 text-primary shadow-xs focus:ring-ring">
-                        <label for="tax_is_active" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Active Status</label>
+                            class="rounded border-border text-primary shadow-xs focus:ring-ring">
+                        <label for="tax_is_active" class="text-sm font-medium text-foreground">Active Status</label>
                     </div>
                 </form>
             </x-slot:content>

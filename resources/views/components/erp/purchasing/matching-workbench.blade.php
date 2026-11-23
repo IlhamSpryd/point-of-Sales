@@ -79,13 +79,13 @@
             <table class="w-full text-left text-xs">
                 <thead class="border-b border-border bg-muted text-muted-foreground uppercase font-bold text-[10px] tracking-wider">
                     <tr>
-                        <th class="px-4 py-3">Item / Raw Material</th>
-                        <th class="px-3 py-3 text-right">PO Qty</th>
-                        <th class="px-3 py-3 text-right">GRN Qty</th>
-                        <th class="px-3 py-3 text-right">Invoice Qty</th>
-                        <th class="px-3 py-3 text-right">PO Unit Price</th>
-                        <th class="px-3 py-3 text-right">Invoice Unit Price</th>
-                        <th class="px-4 py-3 text-center">Status</th>
+                        <th scope="col" class="px-4 py-3">Item / Raw Material</th>
+                        <th scope="col" class="px-3 py-3 text-right">PO Qty</th>
+                        <th scope="col" class="px-3 py-3 text-right">GRN Qty</th>
+                        <th scope="col" class="px-3 py-3 text-right">Invoice Qty</th>
+                        <th scope="col" class="px-3 py-3 text-right">PO Unit Price</th>
+                        <th scope="col" class="px-3 py-3 text-right">Invoice Unit Price</th>
+                        <th scope="col" class="px-4 py-3 text-center">Status</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -111,10 +111,10 @@
                             <td class="px-3 py-3 text-right numeric font-sans font-semibold {{ $lineInvQty != $lineGrnQty ? 'text-destructive' : 'text-foreground' }}">
                                 {{ number_format($lineInvQty, 0) }}
                             </td>
-                            <td class="px-3 py-3 text-right numeric font-sans text-muted-foreground">
+                            <td class="tabular-nums px-3 py-3 text-right numeric font-sans text-muted-foreground">
                                 Rp {{ number_format($linePoPrice, 0, ',', '.') }}
                             </td>
-                            <td class="px-3 py-3 text-right numeric font-sans font-semibold {{ $lineInvPrice != $linePoPrice ? 'text-destructive' : 'text-foreground' }}">
+                            <td class="tabular-nums px-3 py-3 text-right numeric font-sans font-semibold {{ $lineInvPrice != $linePoPrice ? 'text-destructive' : 'text-foreground' }}">
                                 Rp {{ number_format($lineInvPrice, 0, ',', '.') }}
                             </td>
                             <td class="px-4 py-3">

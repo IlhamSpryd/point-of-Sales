@@ -96,7 +96,7 @@
                         <td class="px-6 py-4">
                             <span class="text-foreground font-medium">{{ $po->store?->name ?? 'All Branches' }}</span>
                         </td>
-                        <td class="px-6 py-4 text-right">
+                        <td class="tabular-nums px-6 py-4 text-right">
                             <div class="font-bold text-foreground">Rp {{ number_format((float) $po->total_amount, 2) }}</div>
                             <div class="text-[11px] text-muted-foreground">Tax: Rp {{ number_format((float) $po->tax_amount, 2) }}</div>
                         </td>
@@ -163,7 +163,7 @@
             <form id="createPoForm" wire:submit="savePurchaseOrder" class="space-y-6">
                 <x-erp.dirty-guard watch="items" />
                 <!-- Header Info -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-xl bg-secondary /40 border border-border">
                     <div>
                         <x-erp.form-field label="Supplier" required :error="$errors->first('supplierId')">
                             <x-erp.searchable-select
@@ -201,30 +201,30 @@
                 <!-- Lines Table -->
                 <div class="space-y-3">
                     <div class="flex items-center justify-between">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-500">PO Line Items</h4>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground">PO Line Items</h4>
                         <x-ui.button type="button" size="sm" variant="secondary" wire:click="addItem" icon="add">
                             Add Line
                         </x-ui.button>
                     </div>
 
-                    <div class="overflow-x-auto border border-zinc-200 dark:border-zinc-800 rounded-xl">
+                    <div class="overflow-x-auto border border-border rounded-xl">
                         <table class="table-standard w-full min-w-full text-left text-xs">
-                            <thead class="bg-zinc-100 dark:bg-zinc-800/80 font-semibold text-zinc-600 dark:text-zinc-300">
+                            <thead class="bg-secondary /80 font-semibold text-muted-foreground">
                                 <tr>
-                                    <th class="px-3 py-2 w-28">Type</th>
-                                    <th class="px-3 py-2">Master Item</th>
-                                    <th class="px-3 py-2 w-24">UOM</th>
-                                    <th class="px-3 py-2 w-20">Conversion</th>
-                                    <th class="px-3 py-2 w-24 text-right">Quantity</th>
-                                    <th class="px-3 py-2 w-32 text-right">Unit Price</th>
-                                    <th class="px-3 py-2 w-10 text-center"></th>
+                                    <th scope="col" class="px-3 py-2 w-28">Type</th>
+                                    <th scope="col" class="px-3 py-2">Master Item</th>
+                                    <th scope="col" class="px-3 py-2 w-24">UOM</th>
+                                    <th scope="col" class="px-3 py-2 w-20">Conversion</th>
+                                    <th scope="col" class="px-3 py-2 w-24 text-right">Quantity</th>
+                                    <th scope="col" class="px-3 py-2 w-32 text-right">Unit Price</th>
+                                    <th scope="col" class="px-3 py-2 w-10 text-center"></th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+                            <tbody class="divide-y border-border">
                                 @foreach($items as $i => $item)
                                 <tr wire:key="po-item-row-{{ $i }}">
                                     <td class="px-3 py-2">
-                                        <select wire:model.live="items.{{ $i }}.purchasable_type" wire:change="onItemTypeChanged({{ $i }})" class="w-full text-xs rounded-lg border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 py-1">
+                                        <select wire:model.live="items.{{ $i }}.purchasable_type" wire:change="onItemTypeChanged({{ $i }})" class="w-full text-xs rounded-lg border-border bg-card py-1">
                                             <option value="product">Retail Product</option>
                                             <option value="ingredient">Raw Material</option>
                                         </select>
@@ -243,19 +243,19 @@
                                         />
                                     </td>
                                     <td class="px-3 py-2">
-                                        <input type="text" wire:model="items.{{ $i }}.purchase_uom" class="w-full text-xs rounded-lg border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 py-1 uppercase" />
+                                        <input type="text" wire:model="items.{{ $i }}.purchase_uom" class="w-full text-xs rounded-lg border-border bg-card py-1 uppercase" />
                                     </td>
                                     <td class="px-3 py-2">
-                                        <input type="number" step="0.0001" wire:model="items.{{ $i }}.uom_conversion_factor" class="w-full text-xs rounded-lg border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 py-1 tabular-nums text-right" />
+                                        <input type="number" step="0.0001" wire:model="items.{{ $i }}.uom_conversion_factor" class="w-full text-xs rounded-lg border-border bg-card py-1 tabular-nums text-right" />
                                     </td>
                                     <td class="px-3 py-2 text-right">
-                                        <input type="number" step="0.0001" min="0.0001" wire:model="items.{{ $i }}.ordered_qty" class="w-full text-xs rounded-lg border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 py-1 text-right font-medium tabular-nums" />
+                                        <input type="number" step="0.0001" min="0.0001" wire:model="items.{{ $i }}.ordered_qty" class="w-full text-xs rounded-lg border-border bg-card py-1 text-right font-medium tabular-nums" />
                                     </td>
                                     <td class="px-3 py-2 text-right">
-                                        <input type="number" step="0.01" min="0" wire:model="items.{{ $i }}.unit_price" class="w-full text-xs rounded-lg border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 py-1 text-right font-medium tabular-nums" />
+                                        <input type="number" step="0.01" min="0" wire:model="items.{{ $i }}.unit_price" class="w-full text-xs rounded-lg border-border bg-card py-1 text-right font-medium tabular-nums" />
                                     </td>
                                     <td class="px-3 py-2 text-center">
-                                        <button type="button" wire:click="removeItem({{ $i }})" class="p-1 text-zinc-400 hover:text-rose-500">
+                                        <button type="button" wire:click="removeItem({{ $i }})" class="p-1 text-muted-foreground hover:text-destructive">
                                             <span class="material-symbols-rounded text-sm">close</span>
                                         </button>
                                     </td>
@@ -268,7 +268,7 @@
 
                 <div>
                     <x-ui.label for="notes">PO Notes</x-ui.label>
-                    <textarea id="notes" wire:model="notes" rows="2" placeholder="Delivery instructions, warehouse contact, payment terms..." class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm"></textarea>
+                    <textarea id="notes" wire:model="notes" rows="2" placeholder="Delivery instructions, warehouse contact, payment terms..." class="mt-1 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm"></textarea>
                 </div>
             </form>
         </x-slot:content>
@@ -304,23 +304,23 @@
             @if($selectedPo)
             <div class="space-y-6">
                 <!-- Info Header -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 text-xs">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-xl bg-secondary /50 border border-border text-xs">
                     <div>
-                        <div class="text-zinc-400 uppercase font-bold text-[10px]">Supplier</div>
-                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5">{{ $selectedPo->supplier?->name }}</div>
-                        <div class="text-zinc-500 font-sans">{{ $selectedPo->supplier?->code }}</div>
+                        <div class="text-muted-foreground uppercase font-bold text-[10px]">Supplier</div>
+                        <div class="font-semibold text-foreground mt-0.5">{{ $selectedPo->supplier?->name }}</div>
+                        <div class="text-muted-foreground font-sans">{{ $selectedPo->supplier?->code }}</div>
                     </div>
                     <div>
-                        <div class="text-zinc-400 uppercase font-bold text-[10px]">Branch</div>
-                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5">{{ $selectedPo->store?->name }}</div>
+                        <div class="text-muted-foreground uppercase font-bold text-[10px]">Branch</div>
+                        <div class="font-semibold text-foreground mt-0.5">{{ $selectedPo->store?->name }}</div>
                     </div>
                     <div>
-                        <div class="text-zinc-400 uppercase font-bold text-[10px]">PO Date</div>
-                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5">{{ \Carbon\Carbon::parse($selectedPo->order_date)->format('d M Y') }}</div>
+                        <div class="text-muted-foreground uppercase font-bold text-[10px]">PO Date</div>
+                        <div class="font-semibold text-foreground mt-0.5">{{ \Carbon\Carbon::parse($selectedPo->order_date)->format('d M Y') }}</div>
                     </div>
                     <div>
-                        <div class="text-zinc-400 uppercase font-bold text-[10px]">Expected Delivery</div>
-                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5">
+                        <div class="text-muted-foreground uppercase font-bold text-[10px]">Expected Delivery</div>
+                        <div class="font-semibold text-foreground mt-0.5">
                             {{ $selectedPo->expected_delivery_date ? \Carbon\Carbon::parse($selectedPo->expected_delivery_date)->format('d M Y') : '-' }}
                         </div>
                     </div>
@@ -328,40 +328,40 @@
 
                 <!-- Lines Table -->
                 <div class="space-y-2">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-500">Line Items Breakdown</h4>
-                    <div class="overflow-x-auto border border-zinc-200 dark:border-zinc-800 rounded-xl">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Line Items Breakdown</h4>
+                    <div class="overflow-x-auto border border-border rounded-xl">
                         <table class="table-standard w-full min-w-full text-left text-xs">
-                            <thead class="bg-zinc-50 dark:bg-zinc-900/50 font-semibold text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
+                            <thead class="bg-secondary /50 font-semibold text-muted-foreground border-b border-border">
                                 <tr>
-                                    <th class="px-4 py-2.5">Item</th>
-                                    <th class="px-4 py-2.5">UOM</th>
-                                    <th class="px-4 py-2.5 text-right">Ordered</th>
-                                    <th class="px-4 py-2.5 text-right">Received</th>
-                                    <th class="px-4 py-2.5 text-right">Unit Price</th>
-                                    <th class="px-4 py-2.5 text-right">Subtotal</th>
+                                    <th scope="col" class="px-4 py-2.5">Item</th>
+                                    <th scope="col" class="px-4 py-2.5">UOM</th>
+                                    <th scope="col" class="px-4 py-2.5 text-right">Ordered</th>
+                                    <th scope="col" class="px-4 py-2.5 text-right">Received</th>
+                                    <th scope="col" class="px-4 py-2.5 text-right">Unit Price</th>
+                                    <th scope="col" class="px-4 py-2.5 text-right">Subtotal</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+                            <tbody class="divide-y border-border">
                                 @foreach($selectedPo->lines as $line)
                                 <tr wire:key="po-detail-line-{{ $line->id }}">
                                     <td class="px-4 py-2.5">
-                                        <div class="font-medium text-zinc-800 dark:text-zinc-200">
+                                        <div class="font-medium text-foreground">
                                             {{ $line->purchasable?->product_name ?? $line->purchasable?->name ?? 'Item #' . $line->purchasable_id }}
                                         </div>
-                                        <div class="text-[10px] text-zinc-400 uppercase">{{ $line->purchasable_type }}</div>
+                                        <div class="text-[10px] text-muted-foreground uppercase">{{ $line->purchasable_type }}</div>
                                     </td>
                                     <td class="px-4 py-2.5 font-sans uppercase">{{ $line->purchase_uom }}</td>
                                     <td class="px-4 py-2.5 text-right font-medium tabular-nums">{{ (float) $line->ordered_qty }}</td>
-                                    <td class="px-4 py-2.5 text-right font-medium text-emerald-600 tabular-nums">{{ (float) $line->received_qty }}</td>
+                                    <td class="px-4 py-2.5 text-right font-medium text-positive tabular-nums">{{ (float) $line->received_qty }}</td>
                                     <td class="px-4 py-2.5 text-right tabular-nums">Rp {{ number_format((float) $line->unit_price, 2) }}</td>
                                     <td class="px-4 py-2.5 text-right font-semibold tabular-nums">Rp {{ number_format((float) $line->line_total, 2) }}</td>
                                 </tr>
                                 @endforeach
                             </tbody>
-                            <tfoot class="bg-zinc-50 dark:bg-zinc-900/50 font-semibold border-t border-zinc-200 dark:border-zinc-800">
+                            <tfoot class="bg-secondary /50 font-semibold border-t border-border">
                                 <tr>
-                                    <td colspan="5" class="px-4 py-2 text-right text-zinc-500">Total PO Value:</td>
-                                    <td class="px-4 py-2 text-right text-zinc-900 dark:text-white font-bold text-sm tabular-nums">
+                                    <td colspan="5" class="px-4 py-2 text-right text-muted-foreground">Total PO Value:</td>
+                                    <td class="px-4 py-2 text-right text-foreground font-bold text-sm tabular-nums">
                                         Rp {{ number_format((float) $selectedPo->total_amount, 2) }}
                                     </td>
                                 </tr>
@@ -371,7 +371,7 @@
                 </div>
 
                 @if($selectedPo->notes)
-                <div class="text-xs p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900/40 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800">
+                <div class="text-xs p-3 rounded-lg bg-secondary /40 text-muted-foreground border border-border">
                     <span class="font-bold">Notes:</span> {{ $selectedPo->notes }}
                 </div>
                 @endif
@@ -413,7 +413,7 @@
 
         <x-slot:content>
             <div class="space-y-3">
-                <p class="text-sm text-zinc-600 dark:text-zinc-300">
+                <p class="text-sm text-muted-foreground">
                     Are you sure you want to cancel this Purchase Order? This action cannot be undone.
                 </p>
                 <div>

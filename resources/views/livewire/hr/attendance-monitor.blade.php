@@ -96,12 +96,12 @@
             <table class="w-full text-left text-sm text-foreground divide-y divide-border">
                 <thead class="bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     <tr>
-                        <th class="px-6 py-3.5">Employee</th>
-                        <th class="px-6 py-3.5">Clock-in Time</th>
-                        <th class="px-6 py-3.5">Clock-out Time</th>
-                        <th class="px-6 py-3.5">Attendance Status</th>
-                        <th class="px-6 py-3.5">Notes / Corrections</th>
-                        <th class="px-6 py-3.5 text-right">Actions</th>
+                        <th scope="col" class="px-6 py-3.5">Employee</th>
+                        <th scope="col" class="px-6 py-3.5">Clock-in Time</th>
+                        <th scope="col" class="px-6 py-3.5">Clock-out Time</th>
+                        <th scope="col" class="px-6 py-3.5">Attendance Status</th>
+                        <th scope="col" class="px-6 py-3.5">Notes / Corrections</th>
+                        <th scope="col" class="px-6 py-3.5 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">

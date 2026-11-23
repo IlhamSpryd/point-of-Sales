@@ -9,7 +9,7 @@
                 <span class="text-muted-foreground">|</span>
                 <span class="capitalize text-muted-foreground">{{ $orderType === 'dine_in' ? ($tableId ? 'Table ' . ($this->activeTables->firstWhere('id', $tableId)?->table_name ?? $tableId) : 'dine in') : 'takeaway' }}</span>
             </span>
-            <button class="text-muted-foreground hover:text-rose-600 transition-colors p-1 rounded hover:bg-gray-50 disabled:opacity-30 disabled:pointer-events-none"
+            <button class="text-muted-foreground hover:text-destructive transition-colors p-1 rounded hover:bg-secondary disabled:opacity-30 disabled:pointer-events-none"
                 title="Clear Cart" type="button"
                 @if (count($this->cartLines) === 0) disabled @endif
                 x-on:click="if (confirm('Clear all items from the current cart?')) { $wire.clearCart(); }">
@@ -24,10 +24,10 @@
             @if ($customerId)
                 <div class="flex items-center justify-between gap-2 bg-muted rounded-lg px-2.5 py-1.5 border border-border">
                     <span class="flex items-center gap-1.5 text-xs font-semibold text-foreground truncate">
-                        <span class="material-symbols-rounded text-[16px] text-gray-400">person</span>
+                        <span class="material-symbols-rounded text-[16px] text-muted-foreground">person</span>
                         {{ $customerName }}
                     </span>
-                    <button type="button" wire:click="clearCustomer" class="text-gray-400 hover:text-rose-500 transition-colors">
+                    <button type="button" wire:click="clearCustomer" class="text-muted-foreground hover:text-destructive transition-colors">
                         <span class="material-symbols-rounded text-[16px] block">close</span>
                     </button>
                 </div>

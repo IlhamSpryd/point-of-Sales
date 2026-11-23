@@ -4,12 +4,12 @@
 
 @section('content')
     <div class="space-y-6">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-destructive text-destructive border border-destructive/20">
             <span class="material-symbols-rounded text-3xl">error</span>
         </div>
 
         <div>
-            <span class="text-xs font-sans font-semibold tracking-wider uppercase text-rose-600 dark:text-rose-400">Error 500 • Server Error</span>
+            <span class="text-xs font-sans font-semibold tracking-wider uppercase text-destructive">Error 500 • Server Error</span>
             <h1 class="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                 System Error Encountered
             </h1>

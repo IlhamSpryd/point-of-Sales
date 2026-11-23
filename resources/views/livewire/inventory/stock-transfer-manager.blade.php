@@ -75,11 +75,11 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                             <div class="flex items-center gap-2">
-                                <span class="font-semibold {{ $transfer->from_store_id === $currentStoreId ? 'text-amber-800' : 'text-foreground' }}">
+                                <span class="font-semibold {{ $transfer->from_store_id === $currentStoreId ? 'text-warning' : 'text-foreground' }}">
                                     {{ $transfer->fromStore->name }}
                                 </span>
                                 <span class="material-symbols-rounded text-muted-foreground text-[20px]">arrow_forward</span>
-                                <span class="font-semibold {{ $transfer->to_store_id === $currentStoreId ? 'text-emerald-800' : 'text-foreground' }}">
+                                <span class="font-semibold {{ $transfer->to_store_id === $currentStoreId ? 'text-positive' : 'text-foreground' }}">
                                     {{ $transfer->toStore->name }}
                                 </span>
                             </div>
@@ -103,10 +103,10 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-xs text-foreground">
                             @if ($transfer->shipped_at)
-                                <div>Shipped: <span class="font-medium text-amber-700">{{ $transfer->shipped_at->format('d M H:i') }}</span></div>
+                                <div>Shipped: <span class="font-medium text-warning">{{ $transfer->shipped_at->format('d M H:i') }}</span></div>
                             @endif
                             @if ($transfer->received_at)
-                                <div>Received: <span class="font-medium text-emerald-700">{{ $transfer->received_at->format('d M H:i') }}</span></div>
+                                <div>Received: <span class="font-medium text-positive">{{ $transfer->received_at->format('d M H:i') }}</span></div>
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right">
@@ -161,7 +161,7 @@
                             <option value="{{ $dest->id }}">{{ $dest->name }}</option>
                         @endforeach
                     </select>
-                    @error('to_store_id') <span class="text-xs text-rose-600 font-medium">{{ $message }}</span> @enderror
+                    @error('to_store_id') <span class="text-xs text-destructive font-medium">{{ $message }}</span> @enderror
                 </div>
 
                 {{-- Dynamic Items Table --}}
@@ -205,7 +205,7 @@
                                     <input type="number" step="0.0001" min="0.0001" wire:model="items.{{ $index }}.quantity_requested" placeholder="Qty" class="form-input w-full p-2 rounded-lg border border-border text-xs text-right font-semibold">
                                 </div>
 
-                                <button type="button" wire:click="removeItemRow({{ $index }})" class="p-1 text-rose-500 hover:text-rose-700">
+                                <button type="button" wire:click="removeItemRow({{ $index }})" class="p-1 text-destructive hover:text-destructive">
                                     <span class="material-symbols-rounded text-[20px]">delete</span>
                                 </button>
                             </div>
@@ -238,7 +238,7 @@
         </x-slot:header>
         <x-slot:content>
             @if ($activeTransfer)
-                <div class="p-3 mb-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900">
+                <div class="p-3 mb-4 rounded-2xl bg-warning-muted border border-warning text-xs text-warning">
                     <strong>Anti-Over-Receipt Policy (OD-03):</strong> Received quantity cannot exceed shipped quantity. If physical count is short, a discrepancy resolution must be designated (return to origin or write off in transit).
                 </div>
 
@@ -246,10 +246,10 @@
                     <table class="table-standard w-full min-w-full text-left text-sm">
                         <thead class="bg-secondary text-xs font-semibold text-muted-foreground uppercase">
                             <tr>
-                                <th class="p-3">Item</th>
-                                <th class="p-3 text-right">Shipped</th>
-                                <th class="p-3 text-right w-36">Received</th>
-                                <th class="p-3 w-48">Discrepancy Resolution</th>
+                                <th scope="col" class="p-3">Item</th>
+                                <th scope="col" class="p-3 text-right">Shipped</th>
+                                <th scope="col" class="p-3 text-right w-36">Received</th>
+                                <th scope="col" class="p-3 w-48">Discrepancy Resolution</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-border">
@@ -266,7 +266,7 @@
                                     </td>
                                     <td class="p-3 text-right">
                                         <input type="number" step="0.0001" min="0" max="{{ $item->quantity_shipped }}" wire:model.live.debounce.300ms="receivedQuantities.{{ $item->id }}" class="form-input w-full p-2 text-right tabular-nums rounded-lg border border-border text-sm font-semibold">
-                                        @error("receivedQuantities.{$item->id}") <span class="text-[10px] text-rose-600 block">{{ $message }}</span> @enderror
+                                        @error("receivedQuantities.{$item->id}") <span class="text-[10px] text-destructive block">{{ $message }}</span> @enderror
                                     </td>
                                     <td class="p-3">
                                         @php
@@ -274,13 +274,13 @@
                                             $hasDiscrepancy = $currReceived < (float) $item->quantity_shipped;
                                         @endphp
                                         @if ($hasDiscrepancy)
-                                            <select wire:model="discrepancyResolutions.{{ $item->id }}" class="form-input w-full p-2 rounded-lg border border-amber-300 bg-amber-50 text-xs font-medium">
+                                            <select wire:model="discrepancyResolutions.{{ $item->id }}" class="form-input w-full p-2 rounded-lg border border-warning bg-warning-muted text-xs font-medium">
                                                 <option value="NONE">-- Select Resolution --</option>
                                                 <option value="RETURN_TO_SOURCE">Return to Origin</option>
                                                 <option value="WRITE_OFF_IN_TRANSIT">Write-off In Transit</option>
                                             </select>
                                         @else
-                                            <span class="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                                            <span class="text-xs text-positive font-medium flex items-center gap-1">
                                                 <span class="material-symbols-rounded text-sm">check</span> Complete
                                             </span>
                                         @endif
@@ -339,12 +339,12 @@
                     <table class="table-standard w-full min-w-full text-left text-sm">
                         <thead class="bg-secondary text-xs font-semibold text-muted-foreground uppercase">
                             <tr>
-                                <th class="p-3">Item</th>
-                                <th class="p-3 text-right">Requested</th>
-                                <th class="p-3 text-right">Shipped</th>
-                                <th class="p-3 text-right">Received</th>
-                                <th class="p-3 text-right">Carrying Cost</th>
-                                <th class="p-3 text-center">Discrepancy Resolution</th>
+                                <th scope="col" class="p-3">Item</th>
+                                <th scope="col" class="p-3 text-right">Requested</th>
+                                <th scope="col" class="p-3 text-right">Shipped</th>
+                                <th scope="col" class="p-3 text-right">Received</th>
+                                <th scope="col" class="p-3 text-right">Carrying Cost</th>
+                                <th scope="col" class="p-3 text-center">Discrepancy Resolution</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-border">

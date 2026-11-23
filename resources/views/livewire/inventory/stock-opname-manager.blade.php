@@ -71,7 +71,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                             @if ($opname->snapshot_taken_at)
-                                <span class="font-medium text-emerald-700">{{ $opname->snapshot_taken_at->format('d M Y H:i') }}</span>
+                                <span class="font-medium text-positive">{{ $opname->snapshot_taken_at->format('d M Y H:i') }}</span>
                             @else
                                 <span class="text-xs text-muted-foreground italic">Not started</span>
                             @endif
@@ -149,7 +149,7 @@
             @endif
 
             <div class="space-y-4">
-                <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs">
+                <div class="p-4 rounded-2xl bg-warning-muted border border-warning text-warning text-xs">
                     <p class="font-bold mb-1">Cut-Off & Sequence Pinning Mechanism (OD-04):</p>
                     <p>Once the session is created and counting begins, book balances and movement IDs are pinned. Cashier sales can continue, but intervening movements will be audited prior to final approval.</p>
                 </div>
@@ -190,10 +190,10 @@
                     <table class="table-standard w-full min-w-full text-left text-sm">
                         <thead class="bg-secondary text-xs font-semibold text-muted-foreground uppercase">
                             <tr>
-                                <th class="p-3">Item</th>
-                                <th class="p-3 text-right">Snapshot Balance</th>
-                                <th class="p-3 text-right w-44">Counted Qty</th>
-                                <th class="p-3">Notes</th>
+                                <th scope="col" class="p-3">Item</th>
+                                <th scope="col" class="p-3 text-right">Snapshot Balance</th>
+                                <th scope="col" class="p-3 text-right w-44">Counted Qty</th>
+                                <th scope="col" class="p-3">Notes</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-border">
@@ -235,25 +235,25 @@
     {{-- MODAL 3: Drift Detection Alert & Item-Level Resolution (OD-04) --}}
     <x-ui.modal wire:model="showDriftModal" maxWidth="3xl">
         <x-slot:header>
-            <div class="text-rose-900">
+            <div class="text-destructive">
                 <h5 class="text-lg font-bold">Drift Detected (Intervening Transactions Occurred)</h5>
             </div>
         </x-slot:header>
         <x-slot:content>
             @if (!empty($driftedItems))
-                <div class="mb-4 text-xs text-rose-700">
+                <div class="mb-4 text-xs text-destructive">
                     Per architectural decision <strong>OD-04</strong>, automatic approval is blocked because book balances have drifted since the snapshot was pinned. A per-item resolution must be selected:
                 </div>
 
                 <div class="space-y-4 max-h-96 overflow-y-auto mb-6">
                     @foreach ($driftedItems as $d)
-                        <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-foreground flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="p-4 rounded-2xl bg-destructive-muted border border-destructive text-xs text-foreground flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div>
                                 <div class="font-bold text-sm text-foreground">{{ $d['name'] }}</div>
                                 <div class="text-muted-foreground uppercase">{{ $d['item_type'] }} #{{ $d['item_id'] }}</div>
                                 <div class="mt-2 grid grid-cols-3 gap-2">
-                                    <div>Snapshot Balance: <strong class="text-amber-800">{{ $d['snapshot_on_hand'] }}</strong></div>
-                                    <div>Current Balance: <strong class="text-rose-800">{{ $d['current_on_hand'] }}</strong></div>
+                                    <div>Snapshot Balance: <strong class="text-warning">{{ $d['snapshot_on_hand'] }}</strong></div>
+                                    <div>Current Balance: <strong class="text-destructive">{{ $d['current_on_hand'] }}</strong></div>
                                     <div>Intervening Drift: <strong>{{ $d['drift_delta'] }}</strong></div>
                                 </div>
                             </div>
@@ -261,7 +261,7 @@
                                 <button type="button" wire:click="resolveDriftItem({{ $d['item_id'] }}, 'RE_SNAPSHOT')" class="px-3 py-2 bg-white hover:bg-secondary text-foreground font-semibold rounded-xl border border-border shadow-sm">
                                     Recount (Re-Snapshot)
                                 </button>
-                                <button type="button" wire:click="resolveDriftItem({{ $d['item_id'] }}, 'REBASE_OVERRIDE')" class="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl shadow-sm">
+                                <button type="button" wire:click="resolveDriftItem({{ $d['item_id'] }}, 'REBASE_OVERRIDE')" class="px-3 py-2 bg-destructive hover:bg-destructive text-white font-semibold rounded-xl shadow-sm">
                                     Rebase Override
                                 </button>
                             </div>
@@ -311,11 +311,11 @@
                     <table class="table-standard w-full min-w-full text-left text-sm">
                         <thead class="bg-secondary text-xs font-semibold text-muted-foreground uppercase">
                             <tr>
-                                <th class="p-3">Item</th>
-                                <th class="p-3 text-right">Snapshot Balance</th>
-                                <th class="p-3 text-right">Physical Count</th>
-                                <th class="p-3 text-right">Variance</th>
-                                <th class="p-3 text-center">Drift Resolution</th>
+                                <th scope="col" class="p-3">Item</th>
+                                <th scope="col" class="p-3 text-right">Snapshot Balance</th>
+                                <th scope="col" class="p-3 text-right">Physical Count</th>
+                                <th scope="col" class="p-3 text-right">Variance</th>
+                                <th scope="col" class="p-3 text-center">Drift Resolution</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-border">
@@ -337,7 +337,7 @@
                                     <td class="p-3 text-right font-medium tabular-nums text-foreground">
                                         {{ $item->counted_quantity !== null ? number_format((float) $item->counted_quantity, 2) : '-' }}
                                     </td>
-                                    <td class="p-3 text-right font-bold tabular-nums {{ (float) $item->variance_quantity < 0 ? 'text-rose-600' : ((float) $item->variance_quantity > 0 ? 'text-emerald-600' : 'text-muted-foreground') }}">
+                                    <td class="p-3 text-right font-bold tabular-nums {{ (float) $item->variance_quantity < 0 ? 'text-destructive' : ((float) $item->variance_quantity > 0 ? 'text-positive' : 'text-muted-foreground') }}">
                                         @if ($canViewExpectedStock || in_array($selectedOpname->status, [\App\Enums\StockOpnameStatusEnum::Approved, \App\Enums\StockOpnameStatusEnum::Completed]))
                                             {{ $item->variance_quantity !== null ? number_format((float) $item->variance_quantity, 2) : '-' }}
                                         @else

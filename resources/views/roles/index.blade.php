@@ -60,19 +60,19 @@
                 </x-slot:head>
                 
                 @foreach($roles as $role)
-                    <tr class="hover:bg-zinc-50/70 dark:hover:bg-zinc-800/50 transition-colors duration-150">
+                    <tr class="hover:bg-secondary/70 transition-colors duration-150">
                         <td class="px-6 py-4 font-sans font-medium text-foreground text-sm">{{ $role->role_code }}</td>
                         <td class="px-6 py-4">
                             <div class="flex flex-col">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-sm font-semibold text-foreground dark:text-zinc-100">{{ $role->name }}</span>
+                                    <span class="text-sm font-semibold text-foreground">{{ $role->name }}</span>
                                     @if ($role->is_system_default)
                                         <span class="text-xs font-normal text-muted-foreground">(Default)</span>
                                     @else
                                         <span class="text-xs font-normal text-muted-foreground">(Custom)</span>
                                     @endif
                                 </div>
-                                <span class="text-xs text-zinc-500">{{ $role->description ?: '—' }}</span>
+                                <span class="text-xs text-muted-foreground">{{ $role->description ?: '—' }}</span>
                                 <span class="text-[11px] text-muted-foreground mt-0.5">Cockpit: <strong class="text-foreground capitalize">{{ str_replace('_', ' ', $role->dashboard_archetype ?? 'executive') }}</strong></span>
                             </div>
                         </td>
@@ -91,7 +91,7 @@
                                 </span>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-sm text-zinc-600 dark:text-zinc-300">
+                        <td class="px-6 py-4 text-sm text-muted-foreground">
                             {{ $role->users_count ?? 0 }} Users
                         </td>
                         <td class="px-6 py-4 text-right whitespace-nowrap">
@@ -200,18 +200,18 @@
                 @csrf
 
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Role Name <span class="text-rose-500">*</span></label>
-                    <input type="text" name="name" value="{{ old('name') }}" required placeholder="e.g. Supervisor, Barista, Auditor" class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Role Name <span class="text-destructive">*</span></label>
+                    <input type="text" name="name" value="{{ old('name') }}" required placeholder="e.g. Supervisor, Barista, Auditor" class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Role Description (Optional)</label>
-                    <input type="text" name="description" value="{{ old('description') }}" placeholder="Brief summary of responsibilities for this role..." class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Role Description (Optional)</label>
+                    <input type="text" name="description" value="{{ old('description') }}" placeholder="Brief summary of responsibilities for this role..." class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Default Dashboard Archetype</label>
-                    <select name="dashboard_archetype" class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none text-foreground">
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Default Dashboard Archetype</label>
+                    <select name="dashboard_archetype" class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none text-foreground">
                         <option value="executive" {{ old('dashboard_archetype', 'executive') === 'executive' ? 'selected' : '' }}>Executive BI &amp; Multi-Branch</option>
                         <option value="branch_ops" {{ old('dashboard_archetype') === 'branch_ops' ? 'selected' : '' }}>Branch Operations</option>
                         <option value="cashier_workspace" {{ old('dashboard_archetype') === 'cashier_workspace' ? 'selected' : '' }}>Cashier Workspace</option>
@@ -222,14 +222,14 @@
                     </select>
                 </div>
 
-                <div class="pt-3 border-t border-zinc-200 dark:border-zinc-800">
-                    <h5 class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">Module Access Privileges (RBAC)</h5>
+                <div class="pt-3 border-t border-border">
+                    <h5 class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Module Access Privileges (RBAC)</h5>
                     <x-erp.permission-matrix :selected="old('permissions', [])" :compact="true" />
                 </div>
 
                 <div class="flex items-center gap-2 pt-1">
                     <input type="hidden" name="is_active" value="0">
-                    <input type="checkbox" id="role_is_active" name="is_active" value="1" checked class="rounded border-zinc-300 text-primary-600 focus:ring-primary-500">
+                    <input type="checkbox" id="role_is_active" name="is_active" value="1" checked class="rounded border-border text-primary-600 focus:ring-primary-500">
                     <label for="role_is_active" class="text-sm font-medium text-foreground">Active Role</label>
                 </div>
             </form>

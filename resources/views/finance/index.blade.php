@@ -66,11 +66,11 @@
                             <table class="table-standard w-full min-w-full text-left text-sm text-foreground">
                                 <thead class="bg-muted/50 text-xs font-semibold uppercase text-muted-foreground border-b border-border">
                                     <tr>
-                                        <th class="px-5 py-3">Journal No.</th>
-                                        <th class="px-5 py-3">Posting Date</th>
-                                        <th class="px-5 py-3">Source Module</th>
-                                        <th class="px-5 py-3 text-right">Debit / Credit</th>
-                                        <th class="px-5 py-3 text-center">Status</th>
+                                        <th scope="col" class="px-5 py-3">Journal No.</th>
+                                        <th scope="col" class="px-5 py-3">Posting Date</th>
+                                        <th scope="col" class="px-5 py-3">Source Module</th>
+                                        <th scope="col" class="px-5 py-3 text-right">Debit / Credit</th>
+                                        <th scope="col" class="px-5 py-3 text-center">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-border">

@@ -25,13 +25,7 @@
                 <li class="flex items-center gap-2.5 min-w-0 {{ !$loop->last ? 'flex-1' : '' }}">
                     {{-- Step Circle Indicator --}}
                     <div class="flex items-center gap-2.5 min-w-0">
-                        <div class="size-8 sm:size-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-all duration-200 border {{
-                            $isCompleted
-                                ? 'bg-primary text-primary-foreground border-primary'
-                                : ($isActive
-                                    ? 'bg-primary text-primary-foreground border-primary ring-4 ring-ring shadow-xs'
-                                    : 'bg-muted text-muted-foreground border-border')
-                        }}">
+                        <div class="size-8 sm:size-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-all duration-200 border {{ $isCompleted ? 'bg-primary text-primary-foreground border-primary' : ($isActive ? 'bg-primary text-primary-foreground border-primary ring-4 ring-ring shadow-xs' : 'bg-muted text-muted-foreground border-border') }}">
                             @if ($isCompleted)
                                 <span class="material-symbols-rounded text-base font-bold" aria-hidden="true">check</span>
                             @else

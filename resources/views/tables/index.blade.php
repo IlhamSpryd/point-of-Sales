@@ -35,8 +35,8 @@
             <x-slot:actions>
                 <div class="flex items-center gap-3">
                     @if($activeStore)
-                        <div class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700">
-                            <span class="material-symbols-rounded text-[16px] text-zinc-500">storefront</span>
+                        <div class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-secondary text-foreground border border-border">
+                            <span class="material-symbols-rounded text-[16px] text-muted-foreground">storefront</span>
                             <span>{{ $activeStore->name }}</span>
                         </div>
                     @endif
@@ -85,13 +85,13 @@
                 @php
                     $routeToken = $table->qr_token ?? $table->secure_token;
                 @endphp
-                <tr class="hover:bg-gray-50/70 transition-colors duration-150">
+                <tr class="hover:bg-secondary/70 transition-colors duration-150">
                     <td class="px-6 py-4 font-sans font-bold text-foreground text-xs whitespace-nowrap">{{ $table->table_code }}</td>
                     <td class="px-6 py-4">
                         <div class="font-bold text-foreground text-sm">{{ $table->table_name }}</div>
-                        <div class="text-xs text-gray-500 mt-1 flex items-center gap-2">
+                        <div class="text-xs text-muted-foreground mt-1 flex items-center gap-2">
                             <span class="inline-flex items-center gap-1"><span class="material-symbols-rounded text-[14px]">chair</span> {{ $table->capacity }} pax</span>
-                            <span class="text-gray-300">&bull;</span>
+                            <span class="text-foreground">&bull;</span>
                             <span class="inline-flex items-center gap-1"><span class="material-symbols-rounded text-[14px]">map</span> {{ $table->area }}</span>
                         </div>
                     </td>
@@ -125,10 +125,10 @@
                     </td>
                     <td class="px-6 py-4">
                         <div class="flex items-center gap-3">
-                            <div class="bg-white p-2 rounded-xl border border-gray-200 inline-block shadow-xs">
+                            <div class="bg-white p-2 rounded-xl border border-border inline-block shadow-xs">
                                 {!! Cache::remember('pos:qr:table:'.$table->id, 86400, fn() => (string) QrCode::size(70)->generate(rtrim(config('app.url'), '/') . route('customer.menu.index', ['token' => $routeToken], false))) !!}
                             </div>
-                            <div class="text-xs text-gray-500">
+                            <div class="text-xs text-muted-foreground">
                                 <div class="font-bold text-foreground">Version #{{ $table->qr_token_version ?? 1 }}</div>
                                 @if($table->qr_rotated_at)
                                     <div class="text-[11px] mt-0.5">Rotated: {{ $table->qr_rotated_at->format('M d, H:i') }}</div>
@@ -188,11 +188,11 @@
                 @php
                     $routeToken = $table->qr_token ?? $table->secure_token;
                 @endphp
-                <div class="bg-white rounded-2xl border border-gray-200 p-4 shadow-xs" data-gsap="kpi-card">
+                <div class="bg-white rounded-2xl border border-border p-4 shadow-xs" data-gsap="kpi-card">
                     <div class="flex justify-between items-start mb-3">
                         <div class="flex flex-col">
                             <span class="font-bold text-foreground text-sm">{{ $table->table_name }}</span>
-                            <span class="text-xs text-gray-500 font-sans">{{ $table->table_code }} &bull; v{{ $table->qr_token_version ?? 1 }}</span>
+                            <span class="text-xs text-muted-foreground font-sans">{{ $table->table_code }} &bull; v{{ $table->qr_token_version ?? 1 }}</span>
                         </div>
                         <div class="flex flex-col items-end gap-1">
                             <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
@@ -222,36 +222,36 @@
                         </div>
                     </div>
                     
-                    <div class="flex items-center gap-4 pt-3 border-t border-gray-100">
-                        <div class="bg-white p-2 rounded-xl border border-gray-200 shadow-xs shrink-0">
+                    <div class="flex items-center gap-4 pt-3 border-t border-border">
+                        <div class="bg-white p-2 rounded-xl border border-border shadow-xs shrink-0">
                             {!! Cache::remember('pos:qr:table:'.$table->id, 86400, fn() => (string) QrCode::size(55)->generate(rtrim(config('app.url'), '/') . route('customer.menu.index', ['token' => $routeToken], false))) !!}
                         </div>
                         <div class="flex-1 min-w-0">
-                            <div class="text-xs font-semibold text-foreground flex items-center gap-1.5 mb-1"><span class="material-symbols-rounded text-[16px] text-gray-400">chair</span> {{ $table->capacity }} pax</div>
-                            <div class="text-xs font-semibold text-foreground flex items-center gap-1.5"><span class="material-symbols-rounded text-[16px] text-gray-400">map</span> {{ $table->area }}</div>
+                            <div class="text-xs font-semibold text-foreground flex items-center gap-1.5 mb-1"><span class="material-symbols-rounded text-[16px] text-muted-foreground">chair</span> {{ $table->capacity }} pax</div>
+                            <div class="text-xs font-semibold text-foreground flex items-center gap-1.5"><span class="material-symbols-rounded text-[16px] text-muted-foreground">map</span> {{ $table->area }}</div>
                         </div>
                         <div class="flex flex-col gap-1 shrink-0">
                             @if($table->operational_status === 'occupied')
                                 <form action="{{ route('tables.release', $routeToken) }}" method="POST">
                                     @csrf
-                                    <button type="submit" onclick="return confirm('Release table {{ $table->table_name }}?')" class="size-8 flex items-center justify-center rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors" aria-label="Release Table" title="Release Table">
+                                    <button type="submit" onclick="return confirm('Release table {{ $table->table_name }}?')" class="size-8 flex items-center justify-center rounded-lg text-positive hover:text-positive hover:bg-positive-muted transition-colors" aria-label="Release Table" title="Release Table">
                                         <span class="material-symbols-rounded text-[20px]">meeting_room</span>
                                     </button>
                                 </form>
                             @endif
-                            <a href="{{ route('tables.edit', $routeToken) }}" class="size-8 flex items-center justify-center rounded-lg text-gray-600 hover:text-foreground hover:bg-gray-100 transition-colors" aria-label="Edit table" wire:navigate>
+                            <a href="{{ route('tables.edit', $routeToken) }}" class="size-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" aria-label="Edit table" wire:navigate>
                                 <span class="material-symbols-rounded text-[20px]">edit</span>
                             </a>
                             <form action="{{ route('tables.rotate-qr', $routeToken) }}" method="POST">
                                 @csrf
-                                <button type="submit" onclick="return confirm('Rotate QR token for table {{ $table->table_name }}?')" class="size-8 flex items-center justify-center rounded-lg text-gray-600 hover:text-amber-600 hover:bg-amber-50 transition-colors" aria-label="Rotate QR" title="Rotate QR">
+                                <button type="submit" onclick="return confirm('Rotate QR token for table {{ $table->table_name }}?')" class="size-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-warning hover:bg-warning-muted transition-colors" aria-label="Rotate QR" title="Rotate QR">
                                     <span class="material-symbols-rounded text-[20px]">sync</span>
                                 </button>
                             </form>
                             <form id="delete-form-mobile-{{ $table->id }}" action="{{ route('tables.destroy', $routeToken) }}" method="POST">
                                 @csrf
                                 @method('DELETE')
-                                <button type="button" onclick="confirmSubmit('delete-form-mobile-{{ $table->id }}', '{{ $table->table_name }}')" class="size-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" aria-label="Delete table">
+                                <button type="button" onclick="confirmSubmit('delete-form-mobile-{{ $table->id }}', '{{ $table->table_name }}')" class="size-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive-muted transition-colors" aria-label="Delete table">
                                     <span class="material-symbols-rounded text-[20px]">delete</span>
                                 </button>
                             </form>
@@ -259,11 +259,11 @@
                     </div>
                 </div>
             @empty
-                <div class="py-8 text-center text-gray-400 text-xs flex flex-col items-center justify-center">
-                    <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-2 border border-gray-100">
-                        <span class="material-symbols-rounded text-[24px] text-gray-400">table_restaurant</span>
+                <div class="py-8 text-center text-muted-foreground text-xs flex flex-col items-center justify-center">
+                    <div class="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center mb-2 border border-border">
+                        <span class="material-symbols-rounded text-[24px] text-muted-foreground">table_restaurant</span>
                     </div>
-                    <p class="font-bold text-gray-600">No tables registered for this store branch yet.</p>
+                    <p class="font-bold text-muted-foreground">No tables registered for this store branch yet.</p>
                 </div>
             @endforelse
         </div>

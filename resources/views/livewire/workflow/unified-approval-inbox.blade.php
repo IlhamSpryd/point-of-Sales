@@ -13,8 +13,8 @@
 
     {{-- Alert Messages --}}
     @if (session()->has('message'))
-        <div class="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-3 text-emerald-600 dark:text-emerald-400 text-sm font-medium">
-            <span class="material-symbols-rounded text-emerald-500 text-[20px]">check_circle</span>
+        <div class="p-4 bg-positive border border-positive/20 rounded-xl flex items-center gap-3 text-positive text-sm font-medium">
+            <span class="material-symbols-rounded text-positive text-[20px]">check_circle</span>
             {{ session('message') }}
         </div>
     @endif
@@ -64,12 +64,12 @@
             <table class="w-full text-left text-sm text-foreground">
                 <thead class="bg-muted/50 text-muted-foreground font-semibold text-2xs uppercase tracking-wider border-b border-border">
                     <tr>
-                        <th class="px-6 py-3.5">ID & Dokumen</th>
-                        <th class="px-6 py-3.5">Diajukan Oleh</th>
-                        <th class="px-6 py-3.5">Level / Peran</th>
-                        <th class="px-6 py-3.5">Waktu Pengajuan</th>
-                        <th class="px-6 py-3.5">Status</th>
-                        <th class="px-6 py-3.5 text-right">Tindakan</th>
+                        <th scope="col" class="px-6 py-3.5">ID & Dokumen</th>
+                        <th scope="col" class="px-6 py-3.5">Diajukan Oleh</th>
+                        <th scope="col" class="px-6 py-3.5">Level / Peran</th>
+                        <th scope="col" class="px-6 py-3.5">Waktu Pengajuan</th>
+                        <th scope="col" class="px-6 py-3.5">Status</th>
+                        <th scope="col" class="px-6 py-3.5 text-right">Tindakan</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -77,9 +77,9 @@
                         @php
                             $shortType = class_basename($req->approvable_type);
                             $statusDot = match($req->status->value ?? $req->status) {
-                                'approved', 'APPROVED' => 'bg-emerald-500',
+                                'approved', 'APPROVED' => 'bg-positive',
                                 'rejected', 'REJECTED' => 'bg-destructive',
-                                default => 'bg-amber-500',
+                                default => 'bg-warning',
                             };
                             $statusText = match($req->status->value ?? $req->status) {
                                 'approved', 'APPROVED' => 'Disetujui',

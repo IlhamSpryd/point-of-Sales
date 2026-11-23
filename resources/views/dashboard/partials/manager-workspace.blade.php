@@ -100,10 +100,10 @@
                     <table class="w-full text-xs text-left">
                         <thead class="border-b border-border/80 text-muted-foreground font-semibold">
                             <tr>
-                                <th class="pb-2">Cashier</th>
-                                <th class="pb-2 text-right">Transactions</th>
-                                <th class="pb-2 text-right">Total Sales</th>
-                                <th class="pb-2 text-right">Avg Basket</th>
+                                <th scope="col" class="pb-2">Cashier</th>
+                                <th scope="col" class="pb-2 text-right">Transactions</th>
+                                <th scope="col" class="pb-2 text-right">Total Sales</th>
+                                <th scope="col" class="pb-2 text-right">Avg Basket</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-border/60">

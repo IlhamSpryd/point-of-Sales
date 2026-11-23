@@ -73,20 +73,20 @@
         :colspan="7"
     >
         @foreach($grns as $grn)
-                    <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
+                    <tr class="hover:bg-secondary/50 transition-colors">
                         <td class="px-6 py-4">
-                            <div class="font-bold text-zinc-900 dark:text-white font-sans">{{ $grn->grn_number }}</div>
-                            <div class="text-xs text-zinc-500">{{ \Carbon\Carbon::parse($grn->received_date)->format('d M Y') }}</div>
+                            <div class="font-bold text-foreground font-sans">{{ $grn->grn_number }}</div>
+                            <div class="text-xs text-muted-foreground">{{ \Carbon\Carbon::parse($grn->received_date)->format('d M Y') }}</div>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="font-medium text-zinc-800 dark:text-zinc-200 font-sans">{{ $grn->purchaseOrder?->po_number ?? 'PO #' . $grn->purchase_order_id }}</div>
-                            <div class="text-xs text-zinc-500 font-sans">DO: {{ $grn->delivery_order_number }}</div>
+                            <div class="font-medium text-foreground font-sans">{{ $grn->purchaseOrder?->po_number ?? 'PO #' . $grn->purchase_order_id }}</div>
+                            <div class="text-xs text-muted-foreground font-sans">DO: {{ $grn->delivery_order_number }}</div>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $grn->purchaseOrder?->supplier?->name ?? 'Vendor' }}</div>
+                            <div class="font-medium text-foreground">{{ $grn->purchaseOrder?->supplier?->name ?? 'Vendor' }}</div>
                         </td>
                         <td class="px-6 py-4">
-                            <span class="text-zinc-700 dark:text-zinc-300 font-medium">{{ $grn->store?->name ?? 'All Branches' }}</span>
+                            <span class="text-foreground font-medium">{{ $grn->store?->name ?? 'All Branches' }}</span>
                         </td>
                         <td class="px-6 py-4">
                             <span class="text-xs text-muted-foreground font-medium">
@@ -139,7 +139,7 @@
             <form id="createGrnForm" wire:submit="saveDraftGrn" class="space-y-6">
                 <x-erp.dirty-guard watch="lines" />
                 <!-- Info Header -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl bg-secondary /40 border border-border">
                     <div class="md:col-span-2">
                         @php
                             $poOptions = collect($availablePos)->map(fn($po) => [
@@ -183,38 +183,38 @@
                 <!-- Lines Table -->
                 @if(count($grnLines) > 0)
                 <div class="space-y-3">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-500">Physical Goods Quantity Inspection</h4>
-                    <div class="overflow-x-auto border border-zinc-200 dark:border-zinc-800 rounded-xl">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Physical Goods Quantity Inspection</h4>
+                    <div class="overflow-x-auto border border-border rounded-xl">
                         <table class="table-standard w-full min-w-full text-left text-xs">
-                            <thead class="bg-zinc-100 dark:bg-zinc-800/80 font-semibold text-zinc-600 dark:text-zinc-300">
+                            <thead class="bg-secondary /80 font-semibold text-muted-foreground">
                                 <tr>
-                                    <th class="px-3 py-2">Item Name</th>
-                                    <th class="px-3 py-2 w-20">Unit</th>
-                                    <th class="px-3 py-2 w-24 text-right">Ordered</th>
-                                    <th class="px-3 py-2 w-24 text-right">Remaining PO</th>
-                                    <th class="px-3 py-2 w-28 text-right">Physical Received</th>
-                                    <th class="px-3 py-2 w-28 text-right">Accepted (QC Pass)</th>
-                                    <th class="px-3 py-2 w-28 text-right">Rejected (Damaged)</th>
+                                    <th scope="col" class="px-3 py-2">Item Name</th>
+                                    <th scope="col" class="px-3 py-2 w-20">Unit</th>
+                                    <th scope="col" class="px-3 py-2 w-24 text-right">Ordered</th>
+                                    <th scope="col" class="px-3 py-2 w-24 text-right">Remaining PO</th>
+                                    <th scope="col" class="px-3 py-2 w-28 text-right">Physical Received</th>
+                                    <th scope="col" class="px-3 py-2 w-28 text-right">Accepted (QC Pass)</th>
+                                    <th scope="col" class="px-3 py-2 w-28 text-right">Rejected (Damaged)</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+                            <tbody class="divide-y border-border">
                                 @foreach($grnLines as $i => $line)
                                 <tr>
                                     <td class="px-3 py-2">
-                                        <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $line['item_name'] }}</div>
-                                        <div class="text-[10px] text-zinc-400 uppercase">{{ $line['item_type'] }}</div>
+                                        <div class="font-medium text-foreground">{{ $line['item_name'] }}</div>
+                                        <div class="text-[10px] text-muted-foreground uppercase">{{ $line['item_type'] }}</div>
                                     </td>
                                     <td class="px-3 py-2 font-sans uppercase">{{ $line['purchase_uom'] }}</td>
-                                    <td class="px-3 py-2 text-right font-medium text-zinc-500 tabular-nums">{{ (float) $line['ordered_qty'] }}</td>
-                                    <td class="px-3 py-2 text-right font-medium text-amber-600 tabular-nums">{{ (float) $line['remaining_qty'] }}</td>
+                                    <td class="px-3 py-2 text-right font-medium text-muted-foreground tabular-nums">{{ (float) $line['ordered_qty'] }}</td>
+                                    <td class="px-3 py-2 text-right font-medium text-warning tabular-nums">{{ (float) $line['remaining_qty'] }}</td>
                                     <td class="px-3 py-2 text-right">
-                                        <input type="number" step="0.0001" min="0" wire:model="grnLines.{{ $i }}.received_quantity" class="w-full text-xs rounded-lg border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 py-1 text-right font-medium tabular-nums" />
+                                        <input type="number" step="0.0001" min="0" wire:model="grnLines.{{ $i }}.received_quantity" class="w-full text-xs rounded-lg border-border bg-card py-1 text-right font-medium tabular-nums" />
                                     </td>
                                     <td class="px-3 py-2 text-right">
-                                        <input type="number" step="0.0001" min="0" wire:model="grnLines.{{ $i }}.accepted_quantity" class="w-full text-xs rounded-lg border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 py-1 text-right font-semibold text-emerald-600 tabular-nums" />
+                                        <input type="number" step="0.0001" min="0" wire:model="grnLines.{{ $i }}.accepted_quantity" class="w-full text-xs rounded-lg border-border bg-card py-1 text-right font-semibold text-positive tabular-nums" />
                                     </td>
                                     <td class="px-3 py-2 text-right">
-                                        <input type="number" step="0.0001" min="0" wire:model="grnLines.{{ $i }}.rejected_quantity" class="w-full text-xs rounded-lg border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 py-1 text-right text-rose-500 tabular-nums" />
+                                        <input type="number" step="0.0001" min="0" wire:model="grnLines.{{ $i }}.rejected_quantity" class="w-full text-xs rounded-lg border-border bg-card py-1 text-right text-destructive tabular-nums" />
                                     </td>
                                 </tr>
                                 @endforeach
@@ -223,14 +223,14 @@
                     </div>
                 </div>
                 @elseif($selectedPoId)
-                <div class="p-6 text-center text-xs text-zinc-400 border border-dashed rounded-xl">
+                <div class="p-6 text-center text-xs text-muted-foreground border border-dashed rounded-xl">
                     All items in this PO have been fully received.
                 </div>
                 @endif
 
                 <div>
                     <x-ui.label for="notes">Receipt Notes</x-ui.label>
-                    <textarea id="notes" wire:model="notes" rows="2" placeholder="Packaging condition, seal numbers, warehouse receiver notes..." class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm"></textarea>
+                    <textarea id="notes" wire:model="notes" rows="2" placeholder="Packaging condition, seal numbers, warehouse receiver notes..." class="mt-1 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm"></textarea>
                 </div>
             </form>
         </x-slot:content>
@@ -266,53 +266,53 @@
             @if($selectedGrn)
             <div class="space-y-6">
                 <!-- Info Header -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 text-xs">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-xl bg-secondary /50 border border-border text-xs">
                     <div>
-                        <div class="text-zinc-400 uppercase font-bold text-[10px]">PO Reference</div>
-                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5 font-sans">{{ $selectedGrn->purchaseOrder?->po_number }}</div>
-                        <div class="text-zinc-500">{{ $selectedGrn->purchaseOrder?->supplier?->name }}</div>
+                        <div class="text-muted-foreground uppercase font-bold text-[10px]">PO Reference</div>
+                        <div class="font-semibold text-foreground mt-0.5 font-sans">{{ $selectedGrn->purchaseOrder?->po_number }}</div>
+                        <div class="text-muted-foreground">{{ $selectedGrn->purchaseOrder?->supplier?->name }}</div>
                     </div>
                     <div>
-                        <div class="text-zinc-400 uppercase font-bold text-[10px]">Supplier Delivery Order</div>
-                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5 font-sans">{{ $selectedGrn->delivery_order_number }}</div>
+                        <div class="text-muted-foreground uppercase font-bold text-[10px]">Supplier Delivery Order</div>
+                        <div class="font-semibold text-foreground mt-0.5 font-sans">{{ $selectedGrn->delivery_order_number }}</div>
                     </div>
                     <div>
-                        <div class="text-zinc-400 uppercase font-bold text-[10px]">Receipt Date</div>
-                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5">{{ \Carbon\Carbon::parse($selectedGrn->received_date)->format('d M Y') }}</div>
+                        <div class="text-muted-foreground uppercase font-bold text-[10px]">Receipt Date</div>
+                        <div class="font-semibold text-foreground mt-0.5">{{ \Carbon\Carbon::parse($selectedGrn->received_date)->format('d M Y') }}</div>
                     </div>
                     <div>
-                        <div class="text-zinc-400 uppercase font-bold text-[10px]">Warehouse / Branch</div>
-                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5">{{ $selectedGrn->store?->name }}</div>
+                        <div class="text-muted-foreground uppercase font-bold text-[10px]">Warehouse / Branch</div>
+                        <div class="font-semibold text-foreground mt-0.5">{{ $selectedGrn->store?->name }}</div>
                     </div>
                 </div>
 
                 <!-- Lines Table -->
                 <div class="space-y-2">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-500">Received Item Details</h4>
-                    <div class="overflow-x-auto border border-zinc-200 dark:border-zinc-800 rounded-xl">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Received Item Details</h4>
+                    <div class="overflow-x-auto border border-border rounded-xl">
                         <table class="table-standard w-full min-w-full text-left text-xs">
-                            <thead class="bg-zinc-50 dark:bg-zinc-900/50 font-semibold text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
+                            <thead class="bg-secondary /50 font-semibold text-muted-foreground border-b border-border">
                                 <tr>
-                                    <th class="px-4 py-2.5">Item</th>
-                                    <th class="px-4 py-2.5">Unit</th>
-                                    <th class="px-4 py-2.5 text-right">Physical Received</th>
-                                    <th class="px-4 py-2.5 text-right">QC Pass (Stock In)</th>
-                                    <th class="px-4 py-2.5 text-right">Rejected</th>
+                                    <th scope="col" class="px-4 py-2.5">Item</th>
+                                    <th scope="col" class="px-4 py-2.5">Unit</th>
+                                    <th scope="col" class="px-4 py-2.5 text-right">Physical Received</th>
+                                    <th scope="col" class="px-4 py-2.5 text-right">QC Pass (Stock In)</th>
+                                    <th scope="col" class="px-4 py-2.5 text-right">Rejected</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+                            <tbody class="divide-y border-border">
                                 @foreach($selectedGrn->lines as $line)
                                 <tr>
                                     <td class="px-4 py-2.5">
-                                        <div class="font-medium text-zinc-800 dark:text-zinc-200">
+                                        <div class="font-medium text-foreground">
                                             {{ $line->purchasable?->product_name ?? $line->purchasable?->name ?? 'Item #' . $line->purchasable_id }}
                                         </div>
-                                        <div class="text-[10px] text-zinc-400 uppercase">{{ $line->purchasable_type }}</div>
+                                        <div class="text-[10px] text-muted-foreground uppercase">{{ $line->purchasable_type }}</div>
                                     </td>
                                     <td class="px-4 py-2.5 font-sans uppercase">{{ $line->purchase_uom }}</td>
                                     <td class="px-4 py-2.5 text-right font-medium tabular-nums">{{ (float) $line->received_quantity }}</td>
-                                    <td class="px-4 py-2.5 text-right font-semibold text-emerald-600 tabular-nums">{{ (float) $line->accepted_quantity }}</td>
-                                    <td class="px-4 py-2.5 text-right text-rose-500 tabular-nums">{{ (float) $line->rejected_quantity }}</td>
+                                    <td class="px-4 py-2.5 text-right font-semibold text-positive tabular-nums">{{ (float) $line->accepted_quantity }}</td>
+                                    <td class="px-4 py-2.5 text-right text-destructive tabular-nums">{{ (float) $line->rejected_quantity }}</td>
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -321,7 +321,7 @@
                 </div>
 
                 @if($selectedGrn->notes)
-                <div class="text-xs p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900/40 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800">
+                <div class="text-xs p-3 rounded-lg bg-secondary /40 text-muted-foreground border border-border">
                     <span class="font-bold">Notes:</span> {{ $selectedGrn->notes }}
                 </div>
                 @endif
@@ -358,7 +358,7 @@
 
         <x-slot:content>
             <div class="space-y-3">
-                <p class="text-sm text-zinc-600 dark:text-zinc-300">
+                <p class="text-sm text-muted-foreground">
                     Are you sure you want to reverse this GRN? Previously received stock will be deducted back from the warehouse ledger.
                 </p>
                 <div>

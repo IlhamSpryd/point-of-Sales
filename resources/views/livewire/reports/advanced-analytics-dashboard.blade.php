@@ -214,10 +214,10 @@
                             <table class="w-full text-left text-xs">
                                 <thead>
                                     <tr class="text-muted-foreground border-b border-border">
-                                        <th class="py-2">Product</th>
-                                        <th class="py-2 text-right">Qty</th>
-                                        <th class="py-2 text-right">Revenue</th>
-                                        <th class="py-2 text-right">Contribution</th>
+                                        <th scope="col" class="py-2">Product</th>
+                                        <th scope="col" class="py-2 text-right">Qty</th>
+                                        <th scope="col" class="py-2 text-right">Revenue</th>
+                                        <th scope="col" class="py-2 text-right">Contribution</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-border">
@@ -228,7 +228,7 @@
                                                 <div class="text-[11px] text-muted-foreground">{{ $tp['sku'] }} • {{ $tp['category_name'] }}</div>
                                             </td>
                                             <td class="py-2.5 text-right font-medium text-foreground">{{ number_format($tp['quantity_sold']) }}</td>
-                                            <td class="py-2.5 text-right font-semibold text-foreground">Rp {{ number_format((float) $tp['total_revenue'], 0, ',', '.') }}</td>
+                                            <td class="tabular-nums py-2.5 text-right font-semibold text-foreground">Rp {{ number_format((float) $tp['total_revenue'], 0, ',', '.') }}</td>
                                             <td class="py-2.5 text-right font-semibold text-primary">{{ $tp['contribution_pct'] }}%</td>
                                         </tr>
                                     @empty
@@ -251,9 +251,9 @@
                             <table class="w-full text-left text-xs">
                                 <thead>
                                     <tr class="text-muted-foreground border-b border-border">
-                                        <th class="py-2">Item Pair (A + B)</th>
-                                        <th class="py-2 text-right">Frequency</th>
-                                        <th class="py-2 text-right">Confidence</th>
+                                        <th scope="col" class="py-2">Item Pair (A + B)</th>
+                                        <th scope="col" class="py-2 text-right">Frequency</th>
+                                        <th scope="col" class="py-2 text-right">Confidence</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-border">
@@ -345,10 +345,10 @@
                             <table class="w-full text-left text-xs">
                                 <thead>
                                     <tr class="text-muted-foreground border-b border-border">
-                                        <th class="py-2">Item</th>
-                                        <th class="py-2 text-right">Tied Capital</th>
-                                        <th class="py-2 text-right">Days Inactive</th>
-                                        <th class="py-2 text-right">Action</th>
+                                        <th scope="col" class="py-2">Item</th>
+                                        <th scope="col" class="py-2 text-right">Tied Capital</th>
+                                        <th scope="col" class="py-2 text-right">Days Inactive</th>
+                                        <th scope="col" class="py-2 text-right">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-border">
@@ -358,7 +358,7 @@
                                                 <div>{{ $ds['product_name'] }}</div>
                                                 <div class="text-[11px] text-muted-foreground">{{ $ds['sku'] }} • Qty: {{ number_format((float) $ds['quantity'], 0) }}</div>
                                             </td>
-                                            <td class="py-2 text-right font-semibold text-foreground">
+                                            <td class="tabular-nums py-2 text-right font-semibold text-foreground">
                                                 Rp {{ number_format((float) $ds['tied_up_capital'], 0, ',', '.') }}
                                             </td>
                                             <td class="py-2 text-right text-destructive font-medium">
@@ -541,10 +541,10 @@
                             <table class="w-full text-left text-xs">
                                 <thead>
                                     <tr class="text-muted-foreground border-b border-border">
-                                        <th class="py-2">Customer</th>
-                                        <th class="py-2 text-right">Frequency</th>
-                                        <th class="py-2 text-right">Total Spend</th>
-                                        <th class="py-2 text-right">AOV</th>
+                                        <th scope="col" class="py-2">Customer</th>
+                                        <th scope="col" class="py-2 text-right">Frequency</th>
+                                        <th scope="col" class="py-2 text-right">Total Spend</th>
+                                        <th scope="col" class="py-2 text-right">AOV</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-border">
@@ -555,10 +555,10 @@
                                                 <div class="text-[11px] text-muted-foreground">{{ $tc['phone'] }}</div>
                                             </td>
                                             <td class="py-2.5 text-right font-medium text-foreground">{{ $tc['order_count'] }}x</td>
-                                            <td class="py-2.5 text-right font-semibold text-foreground">
+                                            <td class="tabular-nums py-2.5 text-right font-semibold text-foreground">
                                                 Rp {{ number_format((float) $tc['total_spend'], 0, ',', '.') }}
                                             </td>
-                                            <td class="py-2.5 text-right font-semibold text-primary">
+                                            <td class="tabular-nums py-2.5 text-right font-semibold text-primary">
                                                 Rp {{ number_format((float) $tc['average_order_value'], 0, ',', '.') }}
                                             </td>
                                         </tr>

@@ -19,19 +19,19 @@
 
     <div class="mt-6">
         @if ($twoFactorEnabled)
-            <div class="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="p-4 rounded-xl border border-positive bg-positive-muted/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                    <div class="w-10 h-10 rounded-lg bg-positive-muted text-positive flex items-center justify-center shrink-0">
                         <span class="material-symbols-rounded">verified_user</span>
                     </div>
                     <div>
                         <div class="flex items-center gap-2">
-                            <h3 class="text-sm font-semibold text-emerald-950">{{ __('2FA is Active') }}</h3>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-100 text-emerald-800">
+                            <h3 class="text-sm font-semibold text-positive">{{ __('2FA is Active') }}</h3>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-positive-muted text-positive">
                                 {{ __('Protected') }}
                             </span>
                         </div>
-                        <p class="text-xs text-emerald-700 mt-0.5">
+                        <p class="text-xs text-positive mt-0.5">
                             {{ __('Enabled on :time', ['time' => $user->two_factor_confirmed_at?->format('M d, Y H:i') ?? '-']) }}
                         </p>
                     </div>
@@ -43,9 +43,9 @@
                         @csrf
                         @method('DELETE')
                         @if (! empty($user->password_hash) || ! empty($user->password))
-                            <input type="password" name="password" placeholder="Confirm password" required class="text-xs px-3 py-1.5 rounded-lg border border-zinc-300 focus:ring-1 focus:ring-ring">
+                            <input type="password" name="password" placeholder="Confirm password" required class="text-xs px-3 py-1.5 rounded-lg border border-border focus:ring-1 focus:ring-ring">
                         @endif
-                        <button type="submit" id="btn-disable-2fa" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors cursor-pointer">
+                        <button type="submit" id="btn-disable-2fa" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-destructive text-destructive bg-destructive-muted hover:bg-destructive-muted transition-colors cursor-pointer">
                             <span class="material-symbols-rounded text-sm">lock_open</span>
                             <span>{{ __('Disable 2FA') }}</span>
                         </button>
@@ -53,64 +53,64 @@
                 </div>
             </div>
         @elseif ($setupInitiated && $sessionSecret)
-            <div class="p-6 rounded-xl border border-amber-200 bg-amber-50/50 space-y-4">
+            <div class="p-6 rounded-xl border border-warning bg-warning-muted/50 space-y-4">
                 <div class="flex items-start gap-3">
-                    <span class="material-symbols-rounded text-amber-600 mt-0.5">qr_code_scanner</span>
+                    <span class="material-symbols-rounded text-warning mt-0.5">qr_code_scanner</span>
                     <div>
-                        <h3 class="text-sm font-semibold text-amber-950">{{ __('Step 1: Connect Authenticator App') }}</h3>
-                        <p class="text-xs text-amber-800 mt-1">
+                        <h3 class="text-sm font-semibold text-warning">{{ __('Step 1: Connect Authenticator App') }}</h3>
+                        <p class="text-xs text-warning mt-1">
                             {{ __('Scan the URI below with your authenticator app, or enter the manual secret key.') }}
                         </p>
                     </div>
                 </div>
 
-                <div class="bg-white p-4 rounded-lg border border-amber-200 text-xs font-sans break-all select-all text-zinc-800">
+                <div class="bg-white p-4 rounded-lg border border-warning text-xs font-sans break-all select-all text-foreground">
                     <strong>{{ __('Secret Key:') }}</strong> {{ $sessionSecret }}<br>
-                    <span class="text-zinc-500 text-[11px]">{{ $sessionQrUri }}</span>
+                    <span class="text-muted-foreground text-[11px]">{{ $sessionQrUri }}</span>
                 </div>
 
                 @if (! empty($sessionRecoveryCodes))
                     <div class="mt-4">
-                        <h4 class="text-xs font-semibold text-amber-950 mb-2">{{ __('Store These Emergency Recovery Codes:') }}</h4>
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-white p-3 rounded-lg border border-amber-200">
+                        <h4 class="text-xs font-semibold text-warning mb-2">{{ __('Store These Emergency Recovery Codes:') }}</h4>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-white p-3 rounded-lg border border-warning">
                             @foreach ($sessionRecoveryCodes as $code)
-                                <code class="text-xs font-sans font-bold text-zinc-700 bg-zinc-50 px-2 py-1 rounded text-center">{{ $code }}</code>
+                                <code class="text-xs font-sans font-bold text-foreground bg-secondary px-2 py-1 rounded text-center">{{ $code }}</code>
                             @endforeach
                         </div>
-                        <p class="text-[11px] text-amber-700 mt-1.5">
+                        <p class="text-[11px] text-warning mt-1.5">
                             {{ __('Store these recovery codes in a secure location. Each code can only be used once if you lose access to your authenticator device.') }}
                         </p>
                     </div>
                 @endif
 
-                <div class="pt-4 border-t border-amber-200">
-                    <h3 class="text-sm font-semibold text-amber-950 mb-2">{{ __('Step 2: Confirm 6-Digit Code') }}</h3>
+                <div class="pt-4 border-t border-warning">
+                    <h3 class="text-sm font-semibold text-warning mb-2">{{ __('Step 2: Confirm 6-Digit Code') }}</h3>
                     <form method="POST" action="{{ route('two-factor.confirm') }}" class="flex flex-col sm:flex-row gap-3">
                         @csrf
-                        <input type="text" name="code" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" placeholder="123456" required class="w-full sm:w-48 text-center tracking-widest text-base font-sans px-3 py-2 rounded-lg border border-zinc-300 focus:ring-2 focus:ring-ring">
+                        <input type="text" name="code" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" placeholder="123456" required class="w-full sm:w-48 text-center tracking-widest text-base font-sans px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-ring">
                         <button type="submit" id="btn-confirm-2fa" class="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary/90 transition-all cursor-pointer">
                             {{ __('Confirm & Enable 2FA') }}
                         </button>
                     </form>
                     @error('code')
-                        <p class="text-xs text-rose-600 mt-1">{{ $message }}</p>
+                        <p class="text-xs text-destructive mt-1">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
         @else
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-zinc-200 bg-white gap-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-border bg-white gap-4">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-lg border border-zinc-200 bg-zinc-50 flex items-center justify-center shrink-0 text-zinc-500">
+                    <div class="w-10 h-10 rounded-lg border border-border bg-secondary flex items-center justify-center shrink-0 text-muted-foreground">
                         <span class="material-symbols-rounded">shield</span>
                     </div>
                     <div>
                         <div class="flex items-center gap-2">
-                            <h3 class="text-sm font-semibold text-zinc-900">{{ __('Two-Factor Authentication Not Enabled') }}</h3>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-600 border border-zinc-200">
+                            <h3 class="text-sm font-semibold text-foreground">{{ __('Two-Factor Authentication Not Enabled') }}</h3>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-secondary text-muted-foreground border border-border">
                                 {{ __('Disabled') }}
                             </span>
                         </div>
-                        <p class="text-xs text-zinc-500 mt-0.5">
+                        <p class="text-xs text-muted-foreground mt-0.5">
                             {{ __('Protect your business account from unauthorized takeovers.') }}
                         </p>
                     </div>

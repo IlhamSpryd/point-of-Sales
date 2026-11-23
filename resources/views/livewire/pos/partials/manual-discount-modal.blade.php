@@ -56,7 +56,7 @@
                         class="w-full h-10 pl-10 pr-3 bg-white border border-border rounded-lg font-sans tabular-nums font-bold text-sm text-foreground focus:outline-none focus:border-foreground transition-all"
                         placeholder="0">
                 </div>
-                @error('manualDiscountAmount') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                @error('manualDiscountAmount') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
             </div>
 
             <div>
@@ -66,7 +66,7 @@
                 <input type="text" wire:model="manualDiscountReason" required
                     class="w-full h-10 px-3 bg-white border border-border rounded-lg text-xs text-foreground focus:outline-none focus:border-foreground transition-all"
                     placeholder="e.g. VIP guest discount, service compensation...">
-                @error('manualDiscountReason') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                @error('manualDiscountReason') <span class="text-xs text-destructive mt-1 block">{{ $message }}</span> @enderror
             </div>
 
             <div class="p-3 rounded-xl bg-muted border border-border space-y-1.5">
@@ -78,7 +78,7 @@
                     class="w-full h-9 px-3 bg-white border border-border rounded-lg text-center font-sans tabular-nums font-bold text-xs tracking-widest text-foreground focus:outline-none focus:border-foreground transition-all"
                     placeholder="••••••">
                 <span class="text-xs text-muted-foreground block">Required when discount exceeds cashier authorization limit.</span>
-                @error('manualDiscountSupervisorPin') <span class="text-xs text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                @error('manualDiscountSupervisorPin') <span class="text-xs text-destructive mt-0.5 block">{{ $message }}</span> @enderror
             </div>
         </form>
     </div>

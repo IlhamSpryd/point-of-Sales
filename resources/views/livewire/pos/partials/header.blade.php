@@ -5,7 +5,7 @@
         @if ($this->activeShift && $this->activeShift->status === 'open')
             <a href="{{ route('shifts.index') }}" title="Manage Cashier Shift"
                 class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-muted text-foreground text-xs font-medium border border-border hover:bg-secondary transition-colors whitespace-nowrap">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-positive"></span>
                 <span class="font-sans tabular-nums">Shift #{{ $this->activeShift->id }}</span>
             </a>
         @endif

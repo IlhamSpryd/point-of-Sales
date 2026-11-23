@@ -27,7 +27,7 @@
         <section class="card-surface flex flex-col items-center px-6 py-10 text-center mt-6" aria-live="polite">
             <div class="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-secondary"
                  :class="isPending ? 'animate-pulse' : ''">
-                <span class="material-symbols-rounded text-[40px]" :class="view.critical ? 'text-rose-600' : ''" x-text="view.icon"></span>
+                <span class="material-symbols-rounded text-[40px]" :class="view.critical ? 'text-destructive' : ''" x-text="view.icon"></span>
             </div>
             <h1 class="text-[20px] font-bold tracking-tight" x-text="view.title"></h1>
             <p class="mt-2 max-w-xs text-[14px] text-muted-foreground" x-text="view.text"></p>
@@ -41,7 +41,7 @@
             @endif
 
             {{-- F-11 ETA --}}
-            <div x-show="status === 'paid' && eta > 0" x-cloak class="mt-4 inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800">
+            <div x-show="status === 'paid' && eta > 0" x-cloak class="mt-4 inline-flex items-center gap-1.5 rounded-md border border-warning bg-warning-muted px-2.5 py-1 text-xs font-medium text-warning">
                 <span class="material-symbols-rounded text-[16px]">timer</span>
                 <span>Estimated ready in <span x-text="eta"></span> minutes</span>
             </div>

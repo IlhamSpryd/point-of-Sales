@@ -41,10 +41,10 @@
                         @if ($customerId)
                             <div class="flex items-center justify-between gap-2 bg-white rounded-lg px-3 py-2 border border-border shadow-xs">
                                 <span class="flex items-center gap-1.5 text-xs font-semibold text-foreground truncate">
-                                    <span class="material-symbols-rounded text-[16px] text-gray-400">person</span>
+                                    <span class="material-symbols-rounded text-[16px] text-muted-foreground">person</span>
                                     {{ $customerName }}
                                 </span>
-                                <button type="button" wire:click="clearCustomer" class="text-gray-400 hover:text-rose-500 transition-colors">
+                                <button type="button" wire:click="clearCustomer" class="text-muted-foreground hover:text-destructive transition-colors">
                                     <span class="material-symbols-rounded text-[16px] block">close</span>
                                 </button>
                             </div>

@@ -275,7 +275,7 @@
                                 <span>Pilih Varian</span>
                                 <span class="text-destructive">*</span>
                             </label>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-warning text-warning border border-warning/20">
                                 Wajib • Pilih 1
                             </span>
                         </div>
@@ -293,9 +293,7 @@
                                         class="opacity-40 cursor-not-allowed bg-muted/40 border border-border text-muted-foreground p-3 rounded-xl flex flex-col justify-between text-left transition-all"
                                     @else
                                         x-on:click="selectVariant({{ $variant->id }}, false)"
-                                        :class="selectedVariantId === {{ $variant->id }}
-                                            ? 'bg-primary/5 border-2 border-primary text-foreground font-semibold shadow-xs ring-1 ring-primary/20'
-                                            : 'bg-card hover:bg-muted/50 border border-border text-foreground'"
+                                        :class="selectedVariantId === {{ $variant->id }} ? 'bg-primary/5 border-2 border-primary text-foreground font-semibold shadow-xs ring-1 ring-primary/20' : 'bg-card hover:bg-muted/50 border border-border text-foreground'"
                                         class="p-3 rounded-xl flex flex-col justify-between text-left transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                     @endif
                                 >
@@ -341,9 +339,7 @@
                                 @endphp
                                 <button type="button"
                                     x-on:click="selectUom({{ $uom['id'] }})"
-                                    :class="selectedUomId === {{ $uom['id'] }}
-                                        ? 'bg-primary/5 border-2 border-primary text-foreground font-semibold shadow-xs ring-1 ring-primary/20'
-                                        : 'bg-card hover:bg-muted/50 border border-border text-foreground'"
+                                    :class="selectedUomId === {{ $uom['id'] }} ? 'bg-primary/5 border-2 border-primary text-foreground font-semibold shadow-xs ring-1 ring-primary/20' : 'bg-card hover:bg-muted/50 border border-border text-foreground'"
                                     class="p-3 rounded-xl flex flex-col justify-between text-left transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring">
                                     <div class="flex items-start justify-between gap-1.5 w-full">
                                         <span class="text-xs font-medium truncate">{{ $uom['name'] }}</span>
@@ -379,7 +375,7 @@
                                     </label>
                                     <div>
                                         @if ($group->is_required)
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-warning text-warning border border-warning/20">
                                                 @if ($group->selection_type === 'single')
                                                     Wajib • Pilih 1
                                                 @elseif ($group->min_select && $group->min_select > 1)
@@ -407,9 +403,7 @@
                                             role="{{ $group->selection_type === 'single' ? 'radio' : 'checkbox' }}"
                                             :aria-checked="isModSelected({{ $mod->id }})"
                                             x-on:click="toggleMod({{ $mod->id }}, '{{ $group->selection_type }}', {{ $allModIds }}, {{ $maxSelectVal }}, {{ $isRequiredVal }})"
-                                            :class="isModSelected({{ $mod->id }})
-                                                ? 'bg-primary/5 border-2 border-primary text-foreground font-semibold shadow-xs ring-1 ring-primary/20'
-                                                : 'bg-card hover:bg-muted/50 border border-border text-foreground'"
+                                            :class="isModSelected({{ $mod->id }}) ? 'bg-primary/5 border-2 border-primary text-foreground font-semibold shadow-xs ring-1 ring-primary/20' : 'bg-card hover:bg-muted/50 border border-border text-foreground'"
                                             class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all duration-150 text-left cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring">
                                             <div class="flex items-center gap-2.5 min-w-0">
                                                 @if ($group->selection_type === 'single')
@@ -453,9 +447,7 @@
                             @foreach ($quickTagsList as $tag)
                                 <button type="button"
                                     x-on:click="addQuickTag('{{ $tag }}')"
-                                    :class="localNotes && localNotes.includes('{{ $tag }}')
-                                        ? 'bg-primary/10 border-primary text-primary font-bold'
-                                        : 'bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground border-border'"
+                                    :class="localNotes && localNotes.includes('{{ $tag }}') ? 'bg-primary/10 border-primary text-primary font-bold' : 'bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground border-border'"
                                     class="px-2.5 py-1 rounded-lg border text-[11px] font-medium transition-colors cursor-pointer select-none">
                                     + {{ $tag }}
                                 </button>
@@ -499,9 +491,7 @@
                         x-on:click="submitConfigurator()"
                         wire:click="confirmAddToCart"
                         :disabled="!canAddToCart()"
-                        :class="!canAddToCart()
-                            ? 'opacity-60 cursor-not-allowed bg-muted text-muted-foreground border border-border'
-                            : 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm active:scale-98 cursor-pointer'"
+                        :class="!canAddToCart() ? 'opacity-60 cursor-not-allowed bg-muted text-muted-foreground border border-border' : 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm active:scale-98 cursor-pointer'"
                         class="w-full h-11 px-5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all">
                         <span class="material-symbols-rounded text-[18px]">shopping_bag</span>
                         <template x-if="canAddToCart()">

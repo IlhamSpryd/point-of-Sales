@@ -28,16 +28,12 @@
         <button
             type="button"
             @click="setMethod('{{ $method['id'] }}')"
-            :class="selectedMethod === '{{ $method['id'] }}'
-                ? 'bg-primary text-primary-foreground border-primary shadow-sm font-semibold'
-                : 'bg-card text-foreground border-border hover:bg-muted'"
+            :class="selectedMethod === '{{ $method['id'] }}' ? 'bg-primary text-primary-foreground border-primary shadow-sm font-semibold' : 'bg-card text-foreground border-border hover:bg-muted'"
             class="h-14 min-h-[44px] p-3 rounded-xl border flex items-center gap-3 transition-all cursor-pointer text-left select-none group">
             
             <div
                 class="size-9 rounded-lg flex items-center justify-center shrink-0 transition-colors"
-                :class="selectedMethod === '{{ $method['id'] }}'
-                    ? 'bg-primary-foreground text-primary'
-                    : 'bg-muted text-foreground border border-border'">
+                :class="selectedMethod === '{{ $method['id'] }}' ? 'bg-primary-foreground text-primary' : 'bg-muted text-foreground border border-border'">
                 <span class="material-symbols-rounded text-xl">{{ $method['icon'] }}</span>
             </div>
 

@@ -143,26 +143,26 @@
                     <div>
                         <x-ui.label for="brand_code">Brand Code *</x-ui.label>
                         <input type="text" id="brand_code" name="code" x-model="code" required
-                            class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 font-sans uppercase focus:outline-hidden focus:ring-2 focus:ring-ring/20">
+                            class="w-full text-sm rounded-xl border border-border bg-card px-3 py-2 font-sans uppercase focus:outline-hidden focus:ring-2 focus:ring-ring/20">
                     </div>
 
                     <div>
                         <x-ui.label for="brand_name">Brand Name *</x-ui.label>
                         <input type="text" id="brand_name" name="name" x-model="name" required
-                            class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 focus:outline-hidden focus:ring-2 focus:ring-ring/20">
+                            class="w-full text-sm rounded-xl border border-border bg-card px-3 py-2 focus:outline-hidden focus:ring-2 focus:ring-ring/20">
                     </div>
 
                     <div>
                         <x-ui.label for="brand_desc">Description</x-ui.label>
                         <textarea id="brand_desc" name="description" x-model="description" rows="3"
-                            class="w-full p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-ring/20"></textarea>
+                            class="w-full p-2.5 rounded-xl border border-border bg-card text-sm focus:outline-hidden focus:ring-2 focus:ring-ring/20"></textarea>
                     </div>
 
                     <div class="flex items-center gap-2 pt-2">
                         <input type="hidden" name="is_active" value="0">
                         <input type="checkbox" id="brand_is_active" name="is_active" value="1" x-model="isActive"
-                            class="rounded border-zinc-300 text-primary shadow-xs focus:ring-ring">
-                        <label for="brand_is_active" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Active Status</label>
+                            class="rounded border-border text-primary shadow-xs focus:ring-ring">
+                        <label for="brand_is_active" class="text-sm font-medium text-foreground">Active Status</label>
                     </div>
                 </form>
             </x-slot:content>

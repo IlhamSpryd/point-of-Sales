@@ -172,11 +172,7 @@
                             @click="selectDay(day)"
                             x-text="day"
                             class="flex size-9 items-center justify-center rounded-medium text-sm transition-colors"
-                            :class="{
-                                'bg-primary text-primary-foreground hover:bg-primary': isSelected(day),
-                                'bg-secondary text-foreground': isToday(day) && ! isSelected(day),
-                                'text-muted-foreground hover:bg-secondary': ! isToday(day) && ! isSelected(day),
-                            }"
+                            :class="{ 'bg-primary text-primary-foreground hover:bg-primary': isSelected(day), 'bg-secondary text-foreground': isToday(day) && ! isSelected(day), 'text-muted-foreground hover:bg-secondary': ! isToday(day) && ! isSelected(day), }"
                         ></button>
                     </div>
                 </template>

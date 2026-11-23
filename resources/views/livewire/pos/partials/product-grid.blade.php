@@ -60,7 +60,7 @@
         <button type="button" @click="activeCategory = 'fav'"
             :class="activeCategory === 'fav' ? 'bg-primary text-white shadow-sm' : 'bg-white hover:bg-muted text-muted-foreground hover:text-foreground border border-border'"
             class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium shrink-0 transition-colors cursor-pointer">
-            <span class="material-symbols-rounded text-[16px] text-amber-500">star</span>
+            <span class="material-symbols-rounded text-[16px] text-warning">star</span>
             <span class="truncate">Favorites</span>
         </button>
     </div>
@@ -90,7 +90,7 @@
     <div id="top-products" class="flex-1 overflow-y-auto pr-1 pt-1.5 custom-scrollbar min-h-0">
         @if ($allProducts->isEmpty())
             <div class="h-64 flex flex-col items-center justify-center text-center p-8 select-none">
-                <div class="w-12 h-12 rounded-xl bg-muted flex items-center justify-center text-gray-400 mb-2 border border-border">
+                <div class="w-12 h-12 rounded-xl bg-muted flex items-center justify-center text-muted-foreground mb-2 border border-border">
                     <span class="material-symbols-rounded text-[28px]">search_off</span>
                 </div>
                 <p class="text-sm font-semibold text-foreground">No Products Found</p>
@@ -137,7 +137,7 @@
                         role="button" tabindex="{{ $isOutOfStock ? '-1' : '0' }}"
                         @if($isOutOfStock) aria-disabled="true" @endif
                         aria-label="{{ $isOutOfStock ? ($product->product_name . ' - Out of Stock') : ('Add ' . $product->product_name . ' to cart, price Rp ' . number_format($product->product_price, 0, ',', '.')) }}"
-                        class="{{ $isOutOfStock ? 'opacity-60 cursor-not-allowed bg-gray-50 border border-border' : 'group bg-white border border-border hover:border-foreground hover:shadow-sm cursor-pointer' }} relative flex flex-col justify-between p-3.5 rounded-xl transition-all duration-200 select-none outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        class="{{ $isOutOfStock ? 'opacity-60 cursor-not-allowed bg-secondary border border-border' : 'group bg-white border border-border hover:border-foreground hover:shadow-sm cursor-pointer' }} relative flex flex-col justify-between p-3.5 rounded-xl transition-all duration-200 select-none outline-none focus-visible:ring-2 focus-visible:ring-ring">
 
                         <div class="flex flex-col gap-2.5">
                             <div class="relative w-full h-[120px] rounded-lg overflow-hidden bg-muted flex items-center justify-center">
@@ -165,7 +165,7 @@
                                         decoding="async"
                                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                                 @else
-                                    <div class="w-full h-full flex flex-col items-center justify-center text-gray-300">
+                                    <div class="w-full h-full flex flex-col items-center justify-center text-foreground">
                                         <span class="material-symbols-rounded text-[32px]">inventory_2</span>
                                     </div>
                                 @endif
@@ -208,7 +208,7 @@
                             <span class="text-sm font-semibold text-foreground tabular-nums">
                                 Rp {{ number_format($product->product_price, 0, ',', '.') }}
                             </span>
-                            <button class="flex items-center justify-center w-7 h-7 rounded-md {{ $isOutOfStock ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-muted hover:bg-primary hover:text-white text-foreground cursor-pointer' }} transition-colors"
+                            <button class="flex items-center justify-center w-7 h-7 rounded-md {{ $isOutOfStock ? 'bg-secondary text-muted-foreground cursor-not-allowed' : 'bg-muted hover:bg-primary hover:text-white text-foreground cursor-pointer' }} transition-colors"
                                 type="button" title="{{ $isOutOfStock ? ($hasBom ? 'Insufficient ingredients (Out of stock)' : 'Product out of stock') : 'Add' }}"
                                 @if(!$isOutOfStock)
                                     x-on:click.stop="window.erpMotion?.pulseHighlight($el); $wire.{{ $clickAction }}"

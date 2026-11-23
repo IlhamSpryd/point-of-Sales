@@ -98,7 +98,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-foreground">
                             {{ $adjustment->items->count() }} items
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-foreground">
+                        <td class="tabular-nums px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-foreground">
                             Rp {{ number_format((float) $adjustment->calculateTotalValue(), 2, ',', '.') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right">
@@ -161,14 +161,14 @@
                 <div class="pt-2">
                     <div class="flex items-center justify-between mb-2">
                         <h5 class="text-sm font-bold text-foreground">Adjustment Line Items</h5>
-                        <button type="button" wire:click="addItemLine" class="text-xs font-semibold text-emerald-600 hover:text-emerald-800 flex items-center gap-1">
+                        <button type="button" wire:click="addItemLine" class="text-xs font-semibold text-positive hover:text-positive flex items-center gap-1">
                             <span class="material-symbols-rounded text-[16px]">add_circle</span> Add Line
                         </button>
                     </div>
 
                     <div class="space-y-3">
                         @foreach ($items as $index => $item)
-                            <div class="p-3 rounded-2xl border border-border bg-slate-50/50 space-y-2">
+                            <div class="p-3 rounded-2xl border border-border bg-secondary/50 space-y-2">
                                 <div class="grid grid-cols-12 gap-2 items-center">
                                     <div class="col-span-12 sm:col-span-2">
                                         <select wire:model.live="items.{{ $index }}.item_type" class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-white">
@@ -208,7 +208,7 @@
                                     </div>
 
                                     <div class="col-span-12 sm:col-span-1 text-right">
-                                        <button type="button" wire:click="removeItemLine({{ $index }})" class="text-rose-500 hover:text-rose-700">
+                                        <button type="button" wire:click="removeItemLine({{ $index }})" class="text-destructive hover:text-destructive">
                                             <span class="material-symbols-rounded text-[20px]">delete</span>
                                         </button>
                                     </div>
@@ -221,7 +221,7 @@
                                     </div>
                                     <div class="col-span-12 sm:col-span-6">
                                         <input type="number" step="0.0001" min="0" wire:model="items.{{ $index }}.unit_cost_snapshot" placeholder="Unit cost snapshot (0 = auto WAC)"
-                                               class="w-full text-xs py-1 px-2 rounded-lg border border-border bg-white text-right text-slate-700">
+                                               class="w-full text-xs py-1 px-2 rounded-lg border border-border bg-white text-right text-foreground">
                                     </div>
                                 </div>
                             </div>
@@ -254,7 +254,7 @@
         <x-slot:content>
             @if ($selectedAdjustment)
                 <div class="py-2 space-y-4">
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-50 text-xs">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-secondary text-xs">
                         <div>
                             <span class="text-muted-foreground block mb-0.5">Status:</span>
                             <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
@@ -277,7 +277,7 @@
                     </div>
 
                     @if($selectedAdjustment->notes)
-                        <div class="text-xs text-foreground p-3 rounded-xl bg-slate-50 border border-border">
+                        <div class="text-xs text-foreground p-3 rounded-xl bg-secondary border border-border">
                             <span class="font-semibold block text-muted-foreground">Notes:</span>
                             {{ $selectedAdjustment->notes }}
                         </div>
@@ -285,15 +285,15 @@
 
                     <div class="overflow-x-auto border border-border rounded-2xl">
                         <table class="table-standard min-w-full divide-y divide-border text-xs">
-                            <thead class="bg-slate-50 text-muted-foreground uppercase">
+                            <thead class="bg-secondary text-muted-foreground uppercase">
                                 <tr>
-                                    <th class="px-4 py-3 text-left">Type</th>
-                                    <th class="px-4 py-3 text-left">Item Name</th>
-                                    <th class="px-4 py-3 text-center">Direction</th>
-                                    <th class="px-4 py-3 text-right">Quantity</th>
-                                    <th class="px-4 py-3 text-right">Unit Cost</th>
-                                    <th class="px-4 py-3 text-right">Subtotal</th>
-                                    <th class="px-4 py-3 text-left">Notes</th>
+                                    <th scope="col" class="px-4 py-3 text-left">Type</th>
+                                    <th scope="col" class="px-4 py-3 text-left">Item Name</th>
+                                    <th scope="col" class="px-4 py-3 text-center">Direction</th>
+                                    <th scope="col" class="px-4 py-3 text-right">Quantity</th>
+                                    <th scope="col" class="px-4 py-3 text-right">Unit Cost</th>
+                                    <th scope="col" class="px-4 py-3 text-right">Subtotal</th>
+                                    <th scope="col" class="px-4 py-3 text-left">Notes</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border">
@@ -301,7 +301,7 @@
                                     <tr>
                                         <td class="px-4 py-2 font-medium capitalize">{{ $item->item_type }}</td>
                                         <td class="px-4 py-2 font-semibold text-foreground">{{ $item->item_name }}</td>
-                                        <td class="px-4 py-2 text-center font-bold {{ $item->direction === 'IN' ? 'text-emerald-600' : 'text-rose-600' }}">
+                                        <td class="px-4 py-2 text-center font-bold {{ $item->direction === 'IN' ? 'text-positive' : 'text-destructive' }}">
                                             {{ $item->direction }}
                                         </td>
                                         <td class="px-4 py-2 text-right font-medium tabular-nums">{{ number_format((float) $item->quantity, 4) }}</td>
@@ -311,7 +311,7 @@
                                     </tr>
                                 @endforeach
                             </tbody>
-                            <tfoot class="bg-slate-50 font-bold">
+                            <tfoot class="bg-secondary font-bold">
                                 <tr>
                                     <td colspan="5" class="px-4 py-3 text-right text-foreground uppercase">Total Adjustment Value:</td>
                                     <td class="px-4 py-3 text-right text-foreground tabular-nums">Rp {{ number_format((float) $selectedAdjustment->calculateTotalValue(), 2, ',', '.') }}</td>

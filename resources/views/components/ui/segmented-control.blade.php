@@ -56,9 +56,7 @@
             role="tab"
             @click="select('{{ $opt['value'] }}')"
             :aria-selected="(selected === '{{ $opt['value'] }}').toString()"
-            :class="selected === '{{ $opt['value'] }}'
-                ? 'bg-card text-foreground font-semibold shadow-xs border border-border'
-                : 'text-muted-foreground hover:text-foreground hover:bg-background/50 border border-transparent'"
+            :class="selected === '{{ $opt['value'] }}' ? 'bg-card text-foreground font-semibold shadow-xs border border-border' : 'text-muted-foreground hover:text-foreground hover:bg-background/50 border border-transparent'"
             class="relative rounded-lg font-medium transition-all duration-150 cursor-pointer flex items-center gap-1.5 whitespace-nowrap {{ $buttonPadding }}">
             <span>{{ $opt['label'] }}</span>
             @if (!empty($opt['badge']))

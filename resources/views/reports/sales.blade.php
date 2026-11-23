@@ -185,10 +185,10 @@
                 <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
                     <thead>
                         <tr class="border-b border-border bg-surface-table-header text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            <th class="px-6 py-3.5">Order Code</th>
-                            <th class="px-6 py-3.5">Date & Time</th>
-                            <th class="px-6 py-3.5">Cashier</th>
-                            <th class="px-6 py-3.5 text-right">Total Amount</th>
+                            <th scope="col" class="px-6 py-3.5">Order Code</th>
+                            <th scope="col" class="px-6 py-3.5">Date & Time</th>
+                            <th scope="col" class="px-6 py-3.5">Cashier</th>
+                            <th scope="col" class="px-6 py-3.5 text-right">Total Amount</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border">

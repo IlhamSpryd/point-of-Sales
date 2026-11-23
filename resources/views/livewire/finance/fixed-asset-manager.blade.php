@@ -53,13 +53,13 @@
             <table class="w-full text-left border-collapse text-sm">
                 <thead>
                     <tr class="border-b border-border bg-muted/40 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        <th class="py-3.5 px-6">Kode & Nama Aset</th>
-                        <th class="py-3.5 px-6">Kategori & Cabang</th>
-                        <th class="py-3.5 px-6">Tgl Perolehan</th>
-                        <th class="py-3.5 px-6 text-right">Nilai Perolehan</th>
-                        <th class="py-3.5 px-6 text-right">Nilai Buku Bersih</th>
-                        <th class="py-3.5 px-6">Status</th>
-                        <th class="py-3.5 px-6 text-right">Aksi</th>
+                        <th scope="col" class="py-3.5 px-6">Kode & Nama Aset</th>
+                        <th scope="col" class="py-3.5 px-6">Kategori & Cabang</th>
+                        <th scope="col" class="py-3.5 px-6">Tgl Perolehan</th>
+                        <th scope="col" class="py-3.5 px-6 text-right">Nilai Perolehan</th>
+                        <th scope="col" class="py-3.5 px-6 text-right">Nilai Buku Bersih</th>
+                        <th scope="col" class="py-3.5 px-6">Status</th>
+                        <th scope="col" class="py-3.5 px-6 text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -206,12 +206,12 @@
                         <table class="w-full text-left text-xs">
                             <thead class="bg-muted/40 border-b border-border text-muted-foreground font-semibold">
                                 <tr>
-                                    <th class="p-2.5">Bulan Ke</th>
-                                    <th class="p-2.5">Tanggal Buku</th>
-                                    <th class="p-2.5 text-right">Beban Depresiasi</th>
-                                    <th class="p-2.5 text-right">Akumulasi Depresiasi</th>
-                                    <th class="p-2.5 text-right">Nilai Buku Akhir</th>
-                                    <th class="p-2.5">Status Posting</th>
+                                    <th scope="col" class="p-2.5">Bulan Ke</th>
+                                    <th scope="col" class="p-2.5">Tanggal Buku</th>
+                                    <th scope="col" class="p-2.5 text-right">Beban Depresiasi</th>
+                                    <th scope="col" class="p-2.5 text-right">Akumulasi Depresiasi</th>
+                                    <th scope="col" class="p-2.5 text-right">Nilai Buku Akhir</th>
+                                    <th scope="col" class="p-2.5">Status Posting</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border">

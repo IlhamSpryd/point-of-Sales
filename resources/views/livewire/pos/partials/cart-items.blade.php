@@ -10,7 +10,7 @@
                 <span class="material-symbols-rounded text-[16px] text-muted-foreground">lock</span>
                 QR Settlement Mode #{{ $pendingOrderCode }}
             </span>
-            <button type="button" wire:click="cancelPendingOrderMode" aria-label="Cancel pending QR order settlement" class="text-xs font-semibold text-rose-600 hover:text-rose-800 transition-colors ml-2 shrink-0">
+            <button type="button" wire:click="cancelPendingOrderMode" aria-label="Cancel pending QR order settlement" class="text-xs font-semibold text-destructive hover:text-destructive transition-colors ml-2 shrink-0">
                 Cancel
             </button>
         </div>
@@ -36,7 +36,7 @@
 
     @if (count($this->cartLines) === 0)
         <div class="h-full min-h-[140px] flex flex-col justify-center items-center text-center py-6 px-3 space-y-1.5 select-none">
-            <div class="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-gray-400 border border-border">
+            <div class="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground border border-border">
                 <span class="material-symbols-rounded text-[24px]">shopping_cart</span>
             </div>
             <p class="text-sm font-semibold text-foreground">Cart is Empty</p>
@@ -59,7 +59,7 @@
                             <span class="text-xs text-muted-foreground leading-tight mt-0.5">
                                 {{ collect($line['options'])->pluck('name')->join(', ') }}
                                 @if ($line['notes'])
-                                    <span class="block text-gray-400 italic">{{ $line['notes'] }}</span>
+                                    <span class="block text-muted-foreground italic">{{ $line['notes'] }}</span>
                                 @endif
                             </span>
                         @endif
@@ -67,7 +67,7 @@
                     @unless ($pendingOrderId)
                         <button type="button" wire:click.prevent="removeFromCart({{ $line['index'] }})"
                             aria-label="Remove {{ $line['product_name'] }} from cart"
-                            class="text-muted-foreground hover:text-rose-600 transition-colors p-0.5 shrink-0" title="Remove">
+                            class="text-muted-foreground hover:text-destructive transition-colors p-0.5 shrink-0" title="Remove">
                             <span class="material-symbols-rounded text-[16px]">close</span>
                         </button>
                     @endunless
@@ -105,7 +105,7 @@
                             Rp {{ number_format($line['order_price'], 0, ',', '.') }}
                         </span>
                         @if (!$pendingOrderId && isset($this->cart[$line['index']]['item_discount_amount']) && $this->cart[$line['index']]['item_discount_amount'] > 0)
-                            <span class="text-xs text-rose-600 font-medium tabular-nums">
+                            <span class="text-xs text-destructive font-medium tabular-nums">
                                 -Rp {{ number_format($this->cart[$line['index']]['item_discount_amount'], 0, ',', '.') }}
                             </span>
                         @endif
