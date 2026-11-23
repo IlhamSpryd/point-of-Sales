@@ -75,19 +75,19 @@ class DashboardMetricsAndButtonsTest extends TestCase
         $response = $this->get(route('dashboard'));
         $response->assertStatus(200);
 
-        // Verify Alpine.js reactive bindings for chartType and period switching
-        $response->assertSee("chartType: 'bar'", false);
-        $response->assertSee("chartType = 'bar'", false);
-        $response->assertSee("chartType = 'spline'", false);
-        $response->assertSee("period: 'monthly'", false);
-        $response->assertSee("period = 'weekly'", false);
-        $response->assertSee("period = 'monthly'", false);
-        $response->assertSee("period = 'yearly'", false);
+        // Verify modern Wave 1.1 Business Overview and period switching
+        $response->assertSee('Business Overview', false);
+        $response->assertSee('period=today', false);
+        $response->assertSee('period=7d', false);
+        $response->assertSee('period=14d', false);
+        $response->assertSee('period=30d', false);
 
-        // Verify SVG spline element and bar chart container
-        $response->assertSee('dashboardSplineGrad', false);
-        $response->assertSee('splinePaths.line', false);
-        $response->assertSee('splinePaths.area', false);
+        // Verify modern SVG charts from dashboardCharts.js
+        $response->assertSee('Revenue Analytics', false);
+        $response->assertSee('dashboardChart', false);
+
+        // Verify legacy spline element is removed cleanly
+        $response->assertDontSee('dashboardSplineGrad', false);
     }
 
     public function test_guest_layout_contains_active_legal_modals(): void

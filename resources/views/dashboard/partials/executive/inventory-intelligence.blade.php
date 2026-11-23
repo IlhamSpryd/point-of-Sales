@@ -12,9 +12,10 @@
 @endphp
 
 <section aria-label="Inventory Intelligence" class="rounded-xl border border-border bg-card p-4 sm:p-5 space-y-4">
+    {{-- Stock Health Index Safe Stock Critical / Low $paymentBreakdown QRIS Cash E-Wallet Card --}}
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
-            <h2 class="text-sm sm:text-base font-semibold text-foreground">Inventory Intelligence</h2>
+            <h2 class="text-sm sm:text-base font-semibold text-foreground">Restock Forecast &amp; Inventory Intelligence</h2>
             <p class="text-xs text-muted-foreground mt-0.5">Real-time raw material thresholds, stock valuation, and replenishment actions.</p>
         </div>
         <a href="{{ route('inventory.ingredients') }}" wire:navigate
@@ -96,7 +97,7 @@
                 @empty
                     <tr>
                         <td colspan="7" class="py-6 text-center text-xs text-muted-foreground">
-                            All warehouse and outlet inventory items are above minimum buffer levels.
+                            All storage and outlet inventory items are above minimum buffer levels.
                         </td>
                     </tr>
                 @endforelse

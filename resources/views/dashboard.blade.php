@@ -130,65 +130,6 @@
             <x-ui.alert type="warning" dismissible>{{ session('warning') }}</x-ui.alert>
         @endif
 
-        {{-- 1. TOP HEADER & ACTIONS --}}
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-2 border-b border-border/60">
-            <div>
-                <div class="flex items-center gap-3">
-                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-                        Dashboard
-                    </h1>
-                    @if($activeArchetype === 'executive')
-                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-primary text-primary-foreground">
-                            Executive BI
-                        </span>
-                    @elseif($activeArchetype === 'branch_ops')
-                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-secondary text-secondary-foreground">
-                            Branch Ops
-                        </span>
-                    @elseif($activeArchetype === 'cashier_workspace')
-                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-accent text-accent-foreground">
-                            Cashier Workspace
-                        </span>
-                    @endif
-                </div>
-                <p class="text-xs text-muted-foreground mt-0.5">
-                    Welcome back, {{ auth()->user()?->name ?? 'User' }} · {{ auth()->user()?->tenant?->name ?? 'Apeiron Enterprise' }} · Branch: {{ $activeStoreName ?? 'All Stores' }}
-                </p>
-            </div>
-
-            <div class="flex items-center gap-3 sm:gap-4 flex-wrap">
-                {{-- Dynamic RBAC Archetype Switcher for Admins/Multi-Branch Users --}}
-                @if($canSwitchArchetype)
-                    <div class="inline-flex items-center bg-muted/70 p-1 rounded-xl border border-border text-xs font-semibold">
-                        <a href="{{ route('dashboard', ['view' => 'executive']) }}" wire:navigate
-                           class="px-3 py-1.5 rounded-lg transition-all {{ $activeArchetype === 'executive' ? 'bg-card text-foreground shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground' }}">
-                            Executive
-                        </a>
-                        <a href="{{ route('dashboard', ['view' => 'branch_ops']) }}" wire:navigate
-                           class="px-3 py-1.5 rounded-lg transition-all {{ $activeArchetype === 'branch_ops' ? 'bg-card text-foreground shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground' }}">
-                            Branch Ops
-                        </a>
-                        <a href="{{ route('dashboard', ['view' => 'cashier_workspace']) }}" wire:navigate
-                           class="px-3 py-1.5 rounded-lg transition-all {{ $activeArchetype === 'cashier_workspace' ? 'bg-card text-foreground shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground' }}">
-                            Cashier
-                        </a>
-                    </div>
-                @endif
-
-                {{-- Fast Navigation Links --}}
-                <a href="{{ route('orders.index') }}" wire:navigate
-                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-foreground bg-card border border-border hover:bg-muted shadow-xs active:scale-95 transition-all">
-                    <span class="material-symbols-rounded text-[16px]">receipt_long</span>
-                    <span>All Orders</span>
-                </a>
-                <a href="{{ route('transaction.create') }}" wire:navigate
-                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-primary-foreground bg-primary hover:opacity-90 shadow-xs active:scale-95 transition-all">
-                    <span class="material-symbols-rounded text-[16px]">point_of_sale</span>
-                    <span>POS Terminal</span>
-                </a>
-            </div>
-        </div>
-
         {{-- ========================================================================= --}}
         {{-- MODULAR WORKSPACE ARCHETYPES                                              --}}
         {{-- ========================================================================= --}}

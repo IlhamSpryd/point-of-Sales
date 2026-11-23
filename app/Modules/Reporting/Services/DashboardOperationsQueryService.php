@@ -36,55 +36,117 @@ class DashboardOperationsQueryService
             $q->where('store_id', $storeId);
         }
 
-        $raw = $q->select(DB::raw('WEEKDAY(created_at) as d_idx'), DB::raw('HOUR(created_at) as h_idx'), DB::raw('COUNT(*) as cnt'), DB::raw('COALESCE(SUM(order_amount), 0) as rev'))
-            ->groupBy('d_idx', 'h_idx')->get();
+        $driver = DB::connection()->getDriverName();
+        if ($driver === 'mysql') {
+            $timeExpr = "CONVERT_TZ(created_at, '+00:00', '+07:00')";
+            $dayExpr = "WEEKDAY({$timeExpr})";
+            $hourExpr = "HOUR({$timeExpr})";
+        } elseif ($driver === 'sqlite') {
+            $timeExpr = "datetime(created_at, '+7 hours')";
+            $dayExpr = "((CAST(strftime('%w', {$timeExpr}) AS INTEGER) + 6) % 7)";
+            $hourExpr = "CAST(strftime('%H', {$timeExpr}) AS INTEGER)";
+        } else {
+            $dayExpr = 'EXTRACT(DOW FROM created_at)';
+            $hourExpr = 'EXTRACT(HOUR FROM created_at)';
+        }
+
+        $raw = $q->select(
+            DB::raw("{$dayExpr} as d_idx"),
+            DB::raw("{$hourExpr} as h_idx"),
+            DB::raw('COUNT(*) as cnt'),
+            DB::raw('COALESCE(SUM(order_amount), 0) as rev')
+        )->groupBy(DB::raw($dayExpr), DB::raw($hourExpr))->get();
 
         $grid = [];
+        $gridRev = [];
         $max = 0.0;
         foreach ($raw as $r) {
-            $val = $metric === 'revenue' ? (float) $r->rev : (float) $r->cnt;
-            $grid[(int) $r->d_idx][(int) $r->h_idx] = $val;
+            $txCount = (float) $r->cnt;
+            $revAmount = (float) $r->rev;
+            $grid[(int) $r->d_idx][(int) $r->h_idx] = $txCount;
+            $gridRev[(int) $r->d_idx][(int) $r->h_idx] = $revAmount;
+            $val = $metric === 'revenue' ? $revAmount : $txCount;
             $max = max($max, $val);
         }
 
         $dayNames = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
         $cells = [];
         $peak = ['day' => 'Senin', 'hour' => '12:00', 'value' => 0.0, 'formatted' => '0 tx'];
-        $quiet = ['day' => 'Minggu', 'hour' => '07:00', 'value' => 9999999.0, 'formatted' => '0 tx'];
+        $quiet = ['day' => 'Minggu', 'hour' => '07:00', 'value' => 99999999.0, 'formatted' => '0 tx'];
+
         $dp = [
             'breakfast' => ['label' => 'Breakfast (07:00–11:00)', 'transactions' => 0, 'revenue' => 0.0],
-            'lunch' => ['label' => 'Lunch (11:00–14:00)', 'transactions' => 0, 'revenue' => 0.0],
-            'afternoon' => ['label' => 'Afternoon (14:00–17:00)', 'transactions' => 0, 'revenue' => 0.0],
-            'dinner' => ['label' => 'Dinner (17:00–21:00)', 'transactions' => 0, 'revenue' => 0.0],
+            'lunch' => ['label' => 'Lunch (11:00–15:00)', 'transactions' => 0, 'revenue' => 0.0],
+            'afternoon' => ['label' => 'Afternoon (15:00–18:00)', 'transactions' => 0, 'revenue' => 0.0],
+            'dinner' => ['label' => 'Dinner (18:00–22:00)', 'transactions' => 0, 'revenue' => 0.0],
         ];
+
+        $hasAnyNonZero = false;
 
         for ($d = 0; $d < 7; $d++) {
             for ($h = 7; $h <= 21; $h++) {
-                $val = $grid[$d][$h] ?? 0.0;
+                $txVal = $grid[$d][$h] ?? 0.0;
+                $revVal = $gridRev[$d][$h] ?? 0.0;
+                $activeVal = $metric === 'revenue' ? $revVal : $txVal;
                 $hLabel = sprintf('%02d:00', $h);
-                $cells[] = ['day_index' => $d, 'day_name' => $dayNames[$d], 'hour' => $h, 'hour_label' => $hLabel, 'value' => $val, 'intensity' => $max > 0 ? round($val / $max, 2) : 0.0];
-                if ($val >= $peak['value']) {
-                    $peak = ['day' => $dayNames[$d], 'hour' => $hLabel, 'value' => $val, 'formatted' => $metric === 'revenue' ? 'Rp '.number_format($val, 0, ',', '.') : $val.' tx'];
+
+                $cells[] = [
+                    'day_index' => $d,
+                    'day_name' => $dayNames[$d],
+                    'hour' => $h,
+                    'hour_label' => $hLabel,
+                    'value' => $txVal,
+                    'revenue' => $revVal,
+                    'intensity' => $max > 0 ? round($activeVal / $max, 2) : 0.0,
+                ];
+
+                if ($activeVal > $peak['value']) {
+                    $peak = [
+                        'day' => $dayNames[$d],
+                        'hour' => $hLabel,
+                        'value' => $activeVal,
+                        'formatted' => $metric === 'revenue' ? 'Rp '.number_format($activeVal, 0, ',', '.') : number_format($activeVal).' tx',
+                    ];
                 }
-                if ($val < $quiet['value']) {
-                    $quiet = ['day' => $dayNames[$d], 'hour' => $hLabel, 'value' => $val, 'formatted' => $metric === 'revenue' ? 'Rp '.number_format($val, 0, ',', '.') : $val.' tx'];
+
+                if ($activeVal > 0 && $activeVal < $quiet['value']) {
+                    $quiet = [
+                        'day' => $dayNames[$d],
+                        'hour' => $hLabel,
+                        'value' => $activeVal,
+                        'formatted' => $metric === 'revenue' ? 'Rp '.number_format($activeVal, 0, ',', '.') : number_format($activeVal).' tx',
+                    ];
+                    $hasAnyNonZero = true;
                 }
-                $k = ($h < 11) ? 'breakfast' : (($h < 14) ? 'lunch' : (($h < 17) ? 'afternoon' : 'dinner'));
-                $dp[$k]['transactions'] += (int) $val;
+
+                $k = ($h < 11) ? 'breakfast' : (($h < 15) ? 'lunch' : (($h < 18) ? 'afternoon' : 'dinner'));
+                $dp[$k]['transactions'] += (int) $txVal;
+                $dp[$k]['revenue'] += $revVal;
             }
         }
 
-        if ($quiet['value'] === 9999999.0) {
-            $quiet['value'] = 0.0;
+        if (! $hasAnyNonZero || $quiet['value'] === 99999999.0) {
+            $quiet = ['day' => 'Minggu', 'hour' => '07:00', 'value' => 0.0, 'formatted' => '0 tx'];
         }
+
         $totTx = array_sum(array_column($dp, 'transactions'));
+        $totRev = array_sum(array_column($dp, 'revenue'));
+
         foreach ($dp as &$item) {
             $item['share_pct'] = $totTx > 0 ? round(($item['transactions'] / $totTx) * 100, 1) : 0.0;
+            $item['revenue_share_pct'] = $totRev > 0 ? round(($item['revenue'] / $totRev) * 100, 1) : 0.0;
             $item['revenue_formatted'] = 'Rp '.number_format($item['revenue'], 0, ',', '.');
         }
         unset($item);
 
-        return ['cells' => $cells, 'peak_hour' => $peak, 'quietest_hour' => $quiet, 'dayparts' => array_values($dp)];
+        return [
+            'cells' => $cells,
+            'peak' => $peak,
+            'peak_hour' => $peak,
+            'quiet' => $quiet,
+            'quietest_hour' => $quiet,
+            'dayparts' => array_values($dp),
+        ];
     }
 
     /**
@@ -110,20 +172,53 @@ class DashboardOperationsQueryService
             $tgt = (float) DB::table('store_targets')->where('tenant_id', $tenantId)->where('store_id', $s->id)->where('target_period', $now->format('Y-m'))->sum('target_net_sales');
             $attainment = $tgt > 0 ? round(($sales / $tgt) * 100, 1) : 0.0;
 
+            // Real 7-day sparkline trend for this outlet
+            $outlet7 = DB::table('orders')->where('tenant_id', $tenantId)->where('store_id', $s->id)
+                ->whereBetween('order_date', [$now->copy()->subDays(6)->toDateString(), $now->toDateString()])
+                ->whereIn('order_status', ['paid', 'completed'])
+                ->select('order_date', DB::raw('COALESCE(SUM(subtotal_amount - discount_amount), 0) as day_net'))
+                ->groupBy('order_date')->pluck('day_net', 'order_date')->all();
+
+            $outletSpark = [];
+            for ($si = 6; $si >= 0; $si--) {
+                $sDate = $now->copy()->subDays($si)->toDateString();
+                $outletSpark[] = (float) ($outlet7[$sDate] ?? 0.0);
+            }
+
+            $districtLabel = ! empty($s->district) && $s->district !== 'Jakarta' ? $s->district : ($s->code ?? "Store #{$s->id}");
+
             $item = [
-                'store_id' => $s->id, 'name' => $s->name, 'code' => $s->code ?? "STR-{$s->id}", 'district' => $s->district ?? 'Jakarta',
-                'net_sales' => $sales, 'revenue' => $sales, 'net_sales_formatted' => 'Rp '.number_format($sales, 0, ',', '.'),
-                'orders_count' => $orders, 'transactions' => $orders, 'aov' => $orders > 0 ? round($sales / $orders, 2) : 0.0,
+                'id' => $s->id,
+                'store_id' => $s->id,
+                'name' => $s->name,
+                'code' => $s->code ?? "STR-{$s->id}",
+                'district' => $districtLabel,
+                'net_sales' => $sales,
+                'revenue' => $sales,
+                'net_sales_formatted' => 'Rp '.number_format($sales, 0, ',', '.'),
+                'orders_count' => $orders,
+                'transactions' => $orders,
+                'aov' => $orders > 0 ? round($sales / $orders, 2) : 0.0,
                 'aov_formatted' => 'Rp '.number_format($orders > 0 ? round($sales / $orders, 2) : 0.0, 0, ',', '.'),
-                'target_net_sales' => $tgt, 'target_revenue' => $tgt, 'target_formatted' => 'Rp '.number_format($tgt, 0, ',', '.'),
-                'attainment_pct' => $attainment, 'target_attainment_pct' => $attainment, 'attainment_formatted' => $attainment.'%',
-                'sparkline' => [$sales * 0.1, $sales * 0.12, $sales * 0.15, $sales * 0.14, $sales * 0.16, $sales * 0.18, $sales * 0.15],
+                'target_net_sales' => $tgt,
+                'target_revenue' => $tgt,
+                'target_formatted' => 'Rp '.number_format($tgt, 0, ',', '.'),
+                'attainment_pct' => $attainment,
+                'target_attainment_pct' => $attainment,
+                'attainment_formatted' => $attainment.'%',
+                'sparkline' => $outletSpark,
             ];
 
             if ($hasMarginPermission) {
-                $cogs = (float) DB::table('order_items as oi')->join('orders as o', fn ($j) => $j->on('oi.order_id', '=', 'o.id')->on('oi.tenant_id', '=', 'o.tenant_id'))
-                    ->where('o.tenant_id', $tenantId)->where('o.store_id', $s->id)->whereBetween('o.order_date', [$startStr, $endStr])->whereIn('o.order_status', ['paid', 'completed'])
-                    ->sum(DB::raw('oi.qty * COALESCE(oi.hpp_snapshot, 0)'));
+                $cogs = (float) DB::table('order_items as oi')
+                    ->join('orders as o', fn ($j) => $j->on('oi.order_id', '=', 'o.id')->on('oi.tenant_id', '=', 'o.tenant_id'))
+                    ->leftJoin('products as p', 'oi.product_id', '=', 'p.id')
+                    ->where('o.tenant_id', $tenantId)
+                    ->where('o.store_id', $s->id)
+                    ->whereBetween('o.order_date', [$startStr, $endStr])
+                    ->whereIn('o.order_status', ['paid', 'completed'])
+                    ->sum(DB::raw('oi.qty * COALESCE(NULLIF(oi.hpp_snapshot, 0), p.standard_cost, 0)'));
+
                 $profit = max(0.0, $sales - $cogs);
                 $margin = $sales > 0 ? round(($profit / $sales) * 100, 1) : 0.0;
                 $item['cogs'] = $cogs;
@@ -393,7 +488,17 @@ class DashboardOperationsQueryService
         $alerts = [];
         $outCount = (int) DB::table('products')->where('tenant_id', $tenantId)->where('is_active', true)->where('stock', '<=', 0)->count();
         if ($outCount > 0) {
-            $alerts[] = ['id' => 'alert_stockout', 'type' => 'critical', 'title' => "{$outCount} Produk Mengalami Stok Habis (Stockout)", 'description' => 'Segera buat pesanan pembelian (PO) atau transfer persediaan antar cabang.', 'metric_badge' => "{$outCount} SKU", 'action_label' => 'Buka Inventori', 'action_url' => '/inventory/stock-opname'];
+            $alerts[] = [
+                'id' => 'alert_stockout',
+                'severity' => 'critical',
+                'type' => 'critical',
+                'title' => "Peringatan Stok Habis: Central Kitchen & Warehouse ({$outCount} SKUs Stockout)",
+                'what' => "Sebanyak {$outCount} produk aktif mencatat sisa stok 0 unit di gudang dan outlet cabang.",
+                'why' => 'Lead time supplier 48 jam. Berisiko menyebabkan pesanan menu tidak dapat dipenuhi kasir.',
+                'action_text' => 'Buka Purchase Order & Restock',
+                'action_label' => 'Buka Purchase Order & Restock',
+                'action_url' => '/inventory/stock-opname',
+            ];
         }
 
         $shiftQ = DB::table('shifts')->where('tenant_id', $tenantId)->whereNull('closed_at');
@@ -402,12 +507,61 @@ class DashboardOperationsQueryService
         }
         $shiftCount = (int) $shiftQ->count();
         if ($shiftCount > 0) {
-            $alerts[] = ['id' => 'alert_shift', 'type' => 'warning', 'title' => "{$shiftCount} Sesi Shift Kasir Belum Ditutup", 'description' => 'Shift aktif menunggu proses rekonsiliasi kas dan EOD kasir.', 'metric_badge' => "{$shiftCount} Shift", 'action_label' => 'Lihat Kasir', 'action_url' => '/pos'];
+            $alerts[] = [
+                'id' => 'alert_shift',
+                'severity' => 'warning',
+                'type' => 'warning',
+                'title' => "Shift Kasir Belum Ditutup: Rekonsiliasi Laci ({$shiftCount} Sesi Aktif)",
+                'what' => "Terdapat {$shiftCount} sesi shift kasir aktif yang belum melakukan rekonsiliasi kas laci (cash drawer count).",
+                'why' => 'Rekonsiliasi harian EOD diperlukan sebelum setoran bank dan tutup buku subledger POS.',
+                'action_text' => 'Review Laci Kas & Tutup Shift',
+                'action_label' => 'Review Laci Kas & Tutup Shift',
+                'action_url' => '/pos',
+            ];
         }
 
         $pendingVoid = (int) DB::table('orders')->where('tenant_id', $tenantId)->where('order_status', 'void_pending')->count();
         if ($pendingVoid > 0) {
-            $alerts[] = ['id' => 'alert_void', 'type' => 'warning', 'title' => "{$pendingVoid} Pembatalan Pesanan Menunggu Otorisasi PIN", 'description' => 'Supervisor cabang diperlukan untuk memverifikasi alasan void.', 'metric_badge' => "{$pendingVoid} Pesanan", 'action_label' => 'Otorisasi', 'action_url' => '/dashboard'];
+            $alerts[] = [
+                'id' => 'alert_void',
+                'severity' => 'warning',
+                'type' => 'warning',
+                'title' => "Otorisasi PIN: Pembatalan Pesanan Menunggu Persetujuan ({$pendingVoid} Pesanan)",
+                'what' => "{$pendingVoid} tiket pesanan diajukan void oleh kasir dan membutuhkan verifikasi PIN supervisor.",
+                'why' => 'Mencegah kebocoran pendapatan (shrinkage) dan menjaga integritas audit jejak rekam transaksi.',
+                'action_text' => 'Otorisasi Void di Approval Queue',
+                'action_label' => 'Otorisasi Void di Approval Queue',
+                'action_url' => '/dashboard',
+            ];
+        }
+
+        // Strategic telemetry insights matching Canvas
+        $now = Carbon::now('Asia/Jakarta');
+        $targetQ = DB::table('store_targets')->where('tenant_id', $tenantId)->where('target_period', $now->format('Y-m'));
+        if ($storeId !== null) {
+            $targetQ->where('store_id', $storeId);
+        }
+        $targetAmt = (float) $targetQ->sum('target_net_sales');
+        if ($targetAmt > 0) {
+            $actualQ = DB::table('orders')->where('tenant_id', $tenantId)->whereBetween('order_date', [$now->copy()->startOfMonth()->toDateString(), $now->toDateString()])->whereIn('order_status', ['paid', 'completed']);
+            if ($storeId !== null) {
+                $actualQ->where('store_id', $storeId);
+            }
+            $actualNet = (float) $actualQ->sum(DB::raw('subtotal_amount - discount_amount'));
+            $pacePct = round(($actualNet / $targetAmt) * 100, 1);
+            if ($pacePct < 85.0) {
+                $alerts[] = [
+                    'id' => 'insight_pace',
+                    'severity' => 'warning',
+                    'type' => 'warning',
+                    'title' => 'Pencapaian Target Penjualan Berjalan Membutuhkan Akselerasi Promo',
+                    'what' => "Capaian penjualan saat ini berada di {$pacePct}% dari target bulanan (Rp ".number_format($actualNet, 0, ',', '.').' dari Rp '.number_format($targetAmt, 0, ',', '.').').',
+                    'why' => 'Diperlukan optimasi promosi jam sepi (afternoon & dinner) untuk mengejar run-rate akhir bulan.',
+                    'action_text' => 'Atur Target & Strategi Promo',
+                    'action_label' => 'Atur Target & Strategi Promo',
+                    'action_url' => '/pricing',
+                ];
+            }
         }
 
         return $alerts;

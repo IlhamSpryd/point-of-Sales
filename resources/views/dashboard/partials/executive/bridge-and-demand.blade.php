@@ -9,8 +9,8 @@
 
     $hm = $executiveData['demand_heatmap'] ?? [];
     $cells = $hm['cells'] ?? [];
-    $peak = $hm['peak'] ?? ['day' => 'Senin', 'hour' => '12:00', 'formatted' => '0 tx'];
-    $quiet = $hm['quiet'] ?? ['day' => 'Minggu', 'hour' => '07:00', 'formatted' => '0 tx'];
+    $peak = $hm['peak'] ?? $hm['peak_hour'] ?? ['day' => 'Senin', 'hour' => '12:00', 'formatted' => '0 tx'];
+    $quiet = $hm['quiet'] ?? $hm['quietest_hour'] ?? ['day' => 'Minggu', 'hour' => '07:00', 'formatted' => '0 tx'];
     $dayparts = $hm['dayparts'] ?? [];
     $days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
     $hours = range(7, 21);
@@ -64,17 +64,37 @@
     <!-- Panel 2: Day × Hour Demand Heatmap (3 cols) -->
     <div class="xl:col-span-3 rounded-xl border border-border bg-card p-4 sm:p-5 flex flex-col justify-between"
          x-data="{
+             metric: 'transactions',
              hoveredCell: null,
-             activeCellText: 'Peak: {{ $peak['day'] }} {{ $peak['hour'] }} ({{ $peak['formatted'] }}) · Quiet: {{ $quiet['day'] }} {{ $quiet['hour'] }}'
+             activeCellText: 'Peak: {{ $peak['day'] }} {{ $peak['hour'] }} ({{ $peak['formatted'] }}) · Quiet: {{ $quiet['day'] }} {{ $quiet['hour'] }} ({{ $quiet['formatted'] }})'
          }">
         <div>
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                 <div>
                     <h3 class="text-sm font-semibold text-foreground">Demand by Day and Hour</h3>
-                    <p class="text-xs text-muted-foreground mt-0.5">Operating hours (07:00–21:00) traffic matrix aggregated over 30 days</p>
+                    <p class="text-xs text-muted-foreground mt-0.5">Operating hours (07:00–21:00 WIB) traffic matrix aggregated over 30 days</p>
                 </div>
-                <div class="text-[11px] text-muted-foreground font-medium bg-secondary px-2.5 py-1 rounded border border-border"
-                     x-text="activeCellText">
+                <div class="flex items-center gap-2">
+                    <!-- Toggle Metric: Transactions vs Net Revenue -->
+                    <div role="group" aria-label="Heatmap Metric" class="inline-flex items-center p-0.5 rounded-md bg-secondary border border-border">
+                        <button type="button"
+                                @click="metric = 'transactions'"
+                                :class="metric === 'transactions' ? 'bg-card text-foreground font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground'"
+                                class="px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer">
+                            Transactions
+                        </button>
+                        <button type="button"
+                                @click="metric = 'revenue'"
+                                :class="metric === 'revenue' ? 'bg-card text-foreground font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground'"
+                                class="px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer">
+                            Net Revenue
+                        </button>
+                    </div>
+
+                    <div class="text-[11px] text-muted-foreground font-medium bg-secondary px-2.5 py-1 rounded border border-border truncate max-w-[260px]"
+                         x-text="activeCellText"
+                         title="Active Traffic Telemetry">
+                    </div>
                 </div>
             </div>
 
@@ -97,16 +117,27 @@
                                 @php
                                     $cell = collect($cells)->first(fn($c) => ($c['day_index'] ?? -1) === $dIdx && ($c['hour'] ?? -1) === $h);
                                     $intensity = (float) ($cell['intensity'] ?? 0);
-                                    $val = (float) ($cell['value'] ?? 0);
+                                    $txVal = (float) ($cell['value'] ?? 0);
+                                    $revVal = (float) ($cell['revenue'] ?? 0);
+                                    $revFormatted = 'Rp ' . number_format($revVal, 0, ',', '.');
                                 @endphp
                                 <div class="h-6 rounded flex items-center justify-center text-[10px] font-medium tabular-nums transition-transform hover:scale-110 cursor-pointer {{ $intensity > 0.5 ? 'text-primary-foreground font-bold' : 'text-foreground' }}"
                                      style="background-color: rgba(16, 163, 127, {{ max(0.08, $intensity) }});"
-                                     @mouseenter="activeCellText = '{{ $dName }} {{ sprintf('%02d:00', $h) }}: {{ number_format($val) }} tx'"
+                                     @mouseenter="activeCellText = metric === 'revenue' ? '{{ $dName }} {{ sprintf('%02d:00', $h) }}: {{ $revFormatted }}' : '{{ $dName }} {{ sprintf('%02d:00', $h) }}: {{ number_format($txVal) }} tx'"
                                      @mouseleave="activeCellText = 'Peak: {{ $peak['day'] }} {{ $peak['hour'] }} ({{ $peak['formatted'] }})'"
-                                     title="{{ $dName }} {{ sprintf('%02d:00', $h) }}: {{ number_format($val) }} transactions">
-                                    @if($val > 0)
-                                        {{ number_format($val) }}
-                                    @endif
+                                     title="{{ $dName }} {{ sprintf('%02d:00', $h) }} WIB: {{ number_format($txVal) }} tx · {{ $revFormatted }}">
+                                    <span x-show="metric === 'transactions'">
+                                        {{ $txVal > 0 ? number_format($txVal) : '' }}
+                                    </span>
+                                    <span x-show="metric === 'revenue'" class="text-[9px] truncate px-0.5">
+                                        @if($revVal >= 1000000)
+                                            {{ round($revVal / 1000000, 1) }}M
+                                        @elseif($revVal >= 1000)
+                                            {{ round($revVal / 1000) }}k
+                                        @elseif($revVal > 0)
+                                            {{ round($revVal) }}
+                                        @endif
+                                    </span>
                                 </div>
                             @endforeach
                         </div>
@@ -120,7 +151,9 @@
                     <div class="p-2 rounded-lg bg-secondary/60 border border-border">
                         <div class="text-[11px] text-muted-foreground font-medium truncate">{{ $dpInfo['label'] }}</div>
                         <div class="text-sm font-bold text-foreground tabular-nums mt-0.5">
-                            {{ number_format($dpInfo['transactions'] ?? 0) }} tx
+                            <span x-show="metric === 'transactions'">{{ number_format($dpInfo['transactions'] ?? 0) }} tx</span>
+                            <span x-show="metric === 'revenue'">{{ $dpInfo['revenue_formatted'] ?? 'Rp 0' }}</span>
+                            <span class="text-[11px] text-muted-foreground font-normal">({{ $dpInfo['share_pct'] }}%)</span>
                         </div>
                     </div>
                 @endforeach
@@ -129,7 +162,7 @@
 
         <div class="mt-4 pt-3 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
             <span>Color intensity scales with transaction density</span>
-            <span>Peak kitchen hours highlighted</span>
+            <span>Peak kitchen hours highlighted (WIB)</span>
         </div>
     </div>
 </section>

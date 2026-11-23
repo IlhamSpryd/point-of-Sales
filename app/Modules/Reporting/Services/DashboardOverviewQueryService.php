@@ -162,28 +162,45 @@ class DashboardOverviewQueryService
         $priorSeries = [];
         $targetSeries = [];
         $marginSeries = [];
+        $data = [];
 
         $curr = $range['start']->copy();
         $daysCount = $range['days'];
         for ($i = 0; $i < $daysCount; $i++) {
             $dStr = $curr->format('Y-m-d');
-            $labels[] = $curr->format('d M');
+            $lbl = $curr->format('d M');
+            $labels[] = $lbl;
             $day = $idxMap[$dStr] ?? null;
             $g = $day ? (float) $day['gross_sales'] : 0.0;
             $n = $day ? (float) $day['net_sales'] : 0.0;
+            $p = $prevValues[$i] ?? 0.0;
+            $mg = ($hasMarginPermission && $n > 0) ? 42.5 : 0.0;
 
             $grossSeries[] = $g;
             $netSeries[] = $n;
-            $priorSeries[] = $prevValues[$i] ?? 0.0;
+            $priorSeries[] = $p;
             $targetSeries[] = $dailyTarget;
             if ($hasMarginPermission) {
-                $marginSeries[] = $n > 0 ? 42.5 : 0.0;
+                $marginSeries[] = $mg;
             }
+
+            $data[] = [
+                'date' => $dStr,
+                'label' => $lbl,
+                'gross' => $g,
+                'net' => $n,
+                'prev' => $p,
+                'target' => $dailyTarget,
+                'margin' => $mg,
+                'tx' => $day ? (int) $day['order_count'] : 0,
+            ];
+
             $curr->addDay();
         }
 
         return [
             'labels' => $labels,
+            'data' => $data,
             'gross_series' => $grossSeries,
             'net_series' => $netSeries,
             'prior_series' => $priorSeries,
@@ -200,22 +217,38 @@ class DashboardOverviewQueryService
     public function getPaymentMethodBreakdown(int $tenantId, ?int $storeId, string $period = '30d'): array
     {
         $range = $this->resolveDateRange($period);
-        $query = DB::table('payments')
-            ->where('tenant_id', $tenantId)
-            ->whereIn('status', ['captured', 'success'])
-            ->whereBetween('created_at', [$range['start']->toDateTimeString(), $range['end']->toDateTimeString()]);
-        if ($storeId !== null && Schema::hasColumn('payments', 'store_id')) {
-            $query->where('store_id', $storeId);
+        $startDateStr = $range['start']->toDateString();
+        $endDateStr = $range['end']->toDateString();
+
+        $query = DB::table('payments as p')
+            ->join('orders as o', fn ($j) => $j->on('p.order_id', '=', 'o.id')->on('p.tenant_id', '=', 'o.tenant_id'))
+            ->where('p.tenant_id', $tenantId)
+            ->whereIn('p.status', ['captured', 'success'])
+            ->whereBetween('o.order_date', [$startDateStr, $endDateStr])
+            ->whereIn('o.order_status', ['paid', 'completed']);
+
+        if ($storeId !== null) {
+            $query->where('o.store_id', $storeId);
         }
 
-        $records = $query->select('payment_method', DB::raw('COUNT(*) as tx_count'), DB::raw('COALESCE(SUM(amount), 0) as total_amount'))
-            ->groupBy('payment_method')->get();
+        $records = (clone $query)->select(
+            'p.payment_method',
+            DB::raw('COUNT(*) as tx_count'),
+            DB::raw('COALESCE(SUM(p.amount), 0) as total_amount')
+        )->groupBy('p.payment_method')->get();
 
         $totalAll = (float) $records->sum('total_amount');
         $categories = ['QRIS', 'Card / EDC', 'Cash', 'Bank Transfer / Invoice'];
         $methodMap = [
-            'qris' => 'QRIS', 'credit_card' => 'Card / EDC', 'debit_card' => 'Card / EDC', 'card' => 'Card / EDC',
-            'cash' => 'Cash', 'bank_transfer' => 'Bank Transfer / Invoice', 'transfer' => 'Bank Transfer / Invoice', 'invoice' => 'Bank Transfer / Invoice',
+            'qris' => 'QRIS',
+            'credit_card' => 'Card / EDC',
+            'debit_card' => 'Card / EDC',
+            'card' => 'Card / EDC',
+            'cash' => 'Cash',
+            'bank_transfer' => 'Bank Transfer / Invoice',
+            'transfer' => 'Bank Transfer / Invoice',
+            'invoice' => 'Bank Transfer / Invoice',
+            'ewallet' => 'QRIS',
         ];
 
         $agg = array_fill_keys($categories, ['count' => 0, 'amount' => 0.0]);
@@ -229,10 +262,49 @@ class DashboardOverviewQueryService
         foreach ($categories as $cat) {
             $amt = $agg[$cat]['amount'];
             $items[] = [
-                'method' => $cat, 'name' => $cat, 'count' => $agg[$cat]['count'], 'amount' => $amt,
+                'method' => $cat,
+                'name' => $cat,
+                'count' => $agg[$cat]['count'],
+                'amount' => $amt,
                 'amount_formatted' => 'Rp '.number_format($amt, 0, ',', '.'),
                 'share_pct' => $totalAll > 0 ? round(($amt / $totalAll) * 100, 1) : 0.0,
             ];
+        }
+
+        // Compute daily stacked series for the vertical stacked bar chart (matching Canvas)
+        $dailyRecords = (clone $query)->select(
+            'o.order_date',
+            'p.payment_method',
+            DB::raw('COALESCE(SUM(p.amount), 0) as day_amount'),
+            DB::raw('COUNT(DISTINCT o.id) as day_tx')
+        )->groupBy('o.order_date', 'p.payment_method')->get();
+
+        $dailyMap = [];
+        foreach ($dailyRecords as $dr) {
+            $cat = $methodMap[strtolower((string) $dr->payment_method)] ?? 'Cash';
+            $dailyMap[$dr->order_date][$cat] = [
+                'amount' => (float) $dr->day_amount,
+                'tx' => (int) $dr->day_tx,
+            ];
+        }
+
+        $stackedLabels = [];
+        $stackedQris = [];
+        $stackedCard = [];
+        $stackedCash = [];
+        $stackedInvoice = [];
+
+        $curr = $range['start']->copy();
+        $daysCount = $range['days'];
+        for ($i = 0; $i < $daysCount; $i++) {
+            $dStr = $curr->format('Y-m-d');
+            $stackedLabels[] = $curr->format('d M');
+            $dayData = $dailyMap[$dStr] ?? [];
+            $stackedQris[] = (float) ($dayData['QRIS']['amount'] ?? 0);
+            $stackedCard[] = (float) ($dayData['Card / EDC']['amount'] ?? 0);
+            $stackedCash[] = (float) ($dayData['Cash']['amount'] ?? 0);
+            $stackedInvoice[] = (float) ($dayData['Bank Transfer / Invoice']['amount'] ?? 0);
+            $curr->addDay();
         }
 
         return [
@@ -241,6 +313,15 @@ class DashboardOverviewQueryService
             'items' => $items,
             'total_volume' => $totalAll,
             'total_volume_formatted' => 'Rp '.number_format($totalAll, 0, ',', '.'),
+            'stacked_bar' => [
+                'labels' => $stackedLabels,
+                'series' => [
+                    ['key' => 'qris', 'name' => 'QRIS', 'colorToken' => 'var(--chart-accent)', 'values' => $stackedQris, 'data' => $stackedQris],
+                    ['key' => 'card', 'name' => 'Card / EDC', 'colorToken' => 'var(--primary)', 'values' => $stackedCard, 'data' => $stackedCard],
+                    ['key' => 'cash', 'name' => 'Cash', 'colorToken' => 'var(--warning)', 'values' => $stackedCash, 'data' => $stackedCash],
+                    ['key' => 'invoice', 'name' => 'Invoice / Transfer', 'colorToken' => 'var(--muted-foreground)', 'values' => $stackedInvoice, 'data' => $stackedInvoice],
+                ],
+            ],
         ];
     }
 
@@ -270,6 +351,19 @@ class DashboardOverviewQueryService
             $idxMap[$day['date']] = $day;
         }
 
+        // Daily COGS lookup using products.standard_cost fallback
+        $cogsQuery = DB::table('order_items as oi')
+            ->join('orders as o', fn ($j) => $j->on('oi.order_id', '=', 'o.id')->on('oi.tenant_id', '=', 'o.tenant_id'))
+            ->leftJoin('products as p', 'oi.product_id', '=', 'p.id')
+            ->where('o.tenant_id', $tenantId)
+            ->whereBetween('o.order_date', [$range['start']->toDateString(), $range['end']->toDateString()])
+            ->whereIn('o.order_status', ['paid', 'completed']);
+        if ($storeId !== null) {
+            $cogsQuery->where('o.store_id', $storeId);
+        }
+        $cogsMap = $cogsQuery->select('o.order_date', DB::raw('SUM(oi.qty * COALESCE(NULLIF(oi.hpp_snapshot, 0), p.standard_cost, 0)) as day_cogs'))
+            ->groupBy('o.order_date')->pluck('day_cogs', 'order_date')->all();
+
         $labels = [];
         $profitSeries = [];
         $marginSeries = [];
@@ -281,12 +375,34 @@ class DashboardOverviewQueryService
             $labels[] = $curr->format('d M');
             $day = $idxMap[$dStr] ?? null;
             $net = $day ? (float) $day['net_sales'] : 0.0;
-            $profitSeries[] = round($net * 0.425, 2);
-            $marginSeries[] = $net > 0 ? 42.5 : 0.0;
+            $cogs = (float) ($cogsMap[$dStr] ?? 0.0);
+
+            // If no recorded order on this day, 0. If order exists but no BOM cost, use 42.5% standard margin benchmark
+            $gp = $net > 0 ? ($cogs > 0 ? max(0.0, $net - $cogs) : round($net * 0.425, 2)) : 0.0;
+            $mg = $net > 0 ? round(($gp / $net) * 100, 1) : 0.0;
+
+            $profitSeries[] = round($gp, 2);
+            $marginSeries[] = $mg;
             $curr->addDay();
         }
 
-        return ['labels' => $labels, 'gross_profit_series' => $profitSeries, 'margin_pct_series' => $marginSeries];
+        return [
+            'labels' => $labels,
+            'gross_profit_series' => $profitSeries,
+            'margin_pct_series' => $marginSeries,
+            'barSeries' => [
+                'name' => 'Gross Profit (IDR)',
+                'colorToken' => 'var(--chart-accent)',
+                'values' => $profitSeries,
+                'data' => $profitSeries,
+            ],
+            'lineSeries' => [
+                'name' => 'Margin %',
+                'colorToken' => 'var(--foreground)',
+                'values' => $marginSeries,
+                'data' => $marginSeries,
+            ],
+        ];
     }
 
     /**
@@ -381,13 +497,14 @@ class DashboardOverviewQueryService
     {
         $q = DB::table('order_items as oi')
             ->join('orders as o', fn ($j) => $j->on('oi.order_id', '=', 'o.id')->on('oi.tenant_id', '=', 'o.tenant_id'))
+            ->leftJoin('products as p', 'oi.product_id', '=', 'p.id')
             ->where('o.tenant_id', $tenantId)
             ->whereBetween('o.order_date', [$start->toDateString(), $end->toDateString()])
             ->whereIn('o.order_status', ['paid', 'completed']);
         if ($storeId !== null) {
             $q->where('o.store_id', $storeId);
         }
-        $cogs = $q->selectRaw('COALESCE(SUM(oi.qty * COALESCE(oi.hpp_snapshot, 0)), 0) as total_cogs')->value('total_cogs');
+        $cogs = $q->selectRaw('COALESCE(SUM(oi.qty * COALESCE(NULLIF(oi.hpp_snapshot, 0), p.standard_cost, 0)), 0) as total_cogs')->value('total_cogs');
 
         return $this->metricRegistry->toNumericString($cogs, 2);
     }

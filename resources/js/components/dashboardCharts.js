@@ -132,6 +132,7 @@ export default function dashboardChart(config = {}) {
 
         init() {
             this.height = this.options.height;
+            this.normalizeData();
             this.updateDimensions();
 
             // Set up DOM structure if not present
@@ -155,6 +156,7 @@ export default function dashboardChart(config = {}) {
                 this.$wire.on(`update-dashboard-chart-${config.chartId}`, (payload) => {
                     if (payload) {
                         this.chartData = payload.data || payload;
+                        this.normalizeData();
                         if (payload.options) {
                             this.options = { ...this.options, ...payload.options };
                         }
@@ -164,6 +166,37 @@ export default function dashboardChart(config = {}) {
             }
 
             this.render();
+        },
+
+        normalizeData() {
+            if (this.type === 'sparkline') {
+                if (Array.isArray(this.chartData)) {
+                    this.chartData = { values: this.chartData };
+                } else if (Array.isArray(this.chartData.data)) {
+                    this.chartData.values = this.chartData.data;
+                }
+            } else if (this.type === 'line' || this.type === 'stacked-bar') {
+                if (Array.isArray(this.chartData.series)) {
+                    for (const s of this.chartData.series) {
+                        if (!s.values && Array.isArray(s.data)) {
+                            s.values = s.data;
+                        }
+                    }
+                }
+            } else if (this.type === 'combo') {
+                if (!this.chartData.barSeries && Array.isArray(this.chartData.series) && this.chartData.series.length > 0) {
+                    this.chartData.barSeries = this.chartData.series[0];
+                    if (this.chartData.series.length > 1) {
+                        this.chartData.lineSeries = this.chartData.series[1];
+                    }
+                }
+                if (this.chartData.barSeries && !this.chartData.barSeries.values && Array.isArray(this.chartData.barSeries.data)) {
+                    this.chartData.barSeries.values = this.chartData.barSeries.data;
+                }
+                if (this.chartData.lineSeries && !this.chartData.lineSeries.values && Array.isArray(this.chartData.lineSeries.data)) {
+                    this.chartData.lineSeries.values = this.chartData.lineSeries.data;
+                }
+            }
         },
 
         destroy() {
@@ -605,8 +638,10 @@ export default function dashboardChart(config = {}) {
         },
 
         renderSparklineSvg() {
-            const rawVals = this.chartData.values || [];
-            if (!rawVals || rawVals.length < 2) {
+            const rawVals = Array.isArray(this.chartData)
+                ? this.chartData
+                : (this.chartData.values || this.chartData.data || []);
+            if (!rawVals || rawVals.length === 0) {
                 this.svgEl.setAttribute('viewBox', '0 0 100 30');
                 this.svgEl.innerHTML = '';
                 return;
@@ -614,17 +649,24 @@ export default function dashboardChart(config = {}) {
 
             const vals = rawVals.map((v) => (Number.isFinite(Number(v)) ? Number(v) : 0));
             const min = Math.min(...vals);
-            const range = Math.max(...vals) - min || 1;
+            const max = Math.max(...vals);
+            const range = max - min || 1;
             const n = vals.length;
-            const color = resolveColorToken(this.chartData.colorToken, 0);
+            const colorToken = this.options.strokeColor || this.options.colorToken || this.chartData.colorToken;
+            const color = resolveColorToken(colorToken, 0);
 
-            const points = vals
-                .map((v, i) => {
-                    const x = ((i / (n - 1)) * 96 + 2).toFixed(1);
-                    const y = (26 - ((v - min) / range) * 22).toFixed(1);
-                    return `${i === 0 ? 'M' : 'L'}${x} ${y}`;
-                })
-                .join(' ');
+            let points;
+            if (n === 1) {
+                points = 'M 2 15 L 98 15';
+            } else {
+                points = vals
+                    .map((v, i) => {
+                        const x = ((i / (n - 1)) * 96 + 2).toFixed(1);
+                        const y = (26 - ((v - min) / range) * 22).toFixed(1);
+                        return `${i === 0 ? 'M' : 'L'}${x} ${y}`;
+                    })
+                    .join(' ');
+            }
 
             const areaPath = `${points} L 98 28 L 2 28 Z`;
 
@@ -655,7 +697,7 @@ export default function dashboardChart(config = {}) {
                 return;
             }
 
-            const allVals = series.flatMap((s) => (s.values || []).map(Number).filter(Number.isFinite));
+            const allVals = series.flatMap((s) => (s.values || s.data || []).map(Number).filter(Number.isFinite));
             const maxVal = Math.max(1, ...allVals);
 
             // 1. Grid lines and Y labels
@@ -671,11 +713,18 @@ export default function dashboardChart(config = {}) {
                 `;
             }
 
-            // 2. X-axis labels
+            // 2. X-axis labels (prevent end-label collisions)
             let xLabelsHtml = '';
-            const step = Math.max(1, Math.ceil(n / Math.max(1, Math.floor(plotW / 64))));
+            const minLabelDist = 72;
+            const maxLabels = Math.max(2, Math.floor(plotW / minLabelDist));
+            const step = Math.max(1, Math.ceil(n / maxLabels));
+            const lastIdx = n - 1;
+
             labels.forEach((lbl, i) => {
-                if (i % step === 0 || i === n - 1) {
+                const isStep = i % step === 0;
+                const isLast = i === lastIdx;
+                const shouldPrint = isLast || (isStep && (lastIdx - i) >= Math.ceil(step * 0.65));
+                if (shouldPrint) {
                     const x = padLeft + (n > 1 ? (i / (n - 1)) * plotW : plotW / 2);
                     xLabelsHtml += `
                         <text x="${x.toFixed(1)}" y="${this.height - 8}" text-anchor="middle" class="text-muted-foreground text-[11px] font-sans fill-current">${lbl}</text>
@@ -686,7 +735,7 @@ export default function dashboardChart(config = {}) {
             // 3. Series curves and area fills
             let seriesHtml = '';
             series.forEach((s, sIdx) => {
-                const vals = s.values || [];
+                const vals = s.values || s.data || [];
                 const color = resolveColorToken(s.colorToken, sIdx);
                 const pts = vals.map((rawVal, i) => {
                     const v = Number.isFinite(Number(rawVal)) ? Number(rawVal) : 0;
@@ -742,7 +791,7 @@ export default function dashboardChart(config = {}) {
 
             const totals = labels.map((_, i) =>
                 series.reduce((sum, s) => {
-                    const raw = s.values?.[i];
+                    const raw = s.values?.[i] ?? s.data?.[i];
                     const v = Number.isFinite(Number(raw)) ? Number(raw) : 0;
                     return sum + (v > 0 ? v : 0);
                 }, 0)
@@ -763,14 +812,20 @@ export default function dashboardChart(config = {}) {
                 `;
             }
 
-            // 2. X-axis labels
+            // 2. X-axis labels (prevent end-label collisions)
             let xLabelsHtml = '';
             const bw = plotW / n;
             const barW = Math.min(bw * 0.65, 36);
-            const step = Math.max(1, Math.ceil(n / Math.max(1, Math.floor(plotW / 64))));
+            const minLabelDist = 72;
+            const maxLabels = Math.max(2, Math.floor(plotW / minLabelDist));
+            const step = Math.max(1, Math.ceil(n / maxLabels));
+            const lastIdx = n - 1;
 
             labels.forEach((lbl, i) => {
-                if (i % step === 0 || i === n - 1) {
+                const isStep = i % step === 0;
+                const isLast = i === lastIdx;
+                const shouldPrint = isLast || (isStep && (lastIdx - i) >= Math.ceil(step * 0.65));
+                if (shouldPrint) {
                     const cx = padLeft + i * bw + bw / 2;
                     xLabelsHtml += `
                         <text x="${cx.toFixed(1)}" y="${this.height - 8}" text-anchor="middle" class="text-muted-foreground text-[11px] font-sans fill-current">${lbl}</text>
@@ -786,7 +841,7 @@ export default function dashboardChart(config = {}) {
 
                 for (let sIdx = 0; sIdx < series.length; sIdx++) {
                     const s = series[sIdx];
-                    const rawVal = s.values?.[i];
+                    const rawVal = s.values?.[i] ?? s.data?.[i];
                     const v = Number.isFinite(Number(rawVal)) ? Number(rawVal) : 0;
                     if (v > 0) {
                         const topY = padTop + plotH - ((accum + v) / maxVal) * plotH;
@@ -832,7 +887,7 @@ export default function dashboardChart(config = {}) {
             const bSeries = this.chartData.barSeries || { values: [] };
             const lSeries = this.chartData.lineSeries || { values: [] };
 
-            const bVals = (bSeries.values || []).map(Number).filter(Number.isFinite);
+            const bVals = (bSeries.values || bSeries.data || []).map(Number).filter(Number.isFinite);
             const bMax = Math.max(1, ...bVals);
             const lMin = 0;
             const lMax = 100;
@@ -851,14 +906,20 @@ export default function dashboardChart(config = {}) {
                 `;
             }
 
-            // 2. X-axis labels
+            // 2. X-axis labels (prevent end-label collisions)
             let xLabelsHtml = '';
             const bw = plotW / n;
             const barW = Math.min(bw * 0.6, 32);
-            const step = Math.max(1, Math.ceil(n / Math.max(1, Math.floor(plotW / 64))));
+            const minLabelDist = 72;
+            const maxLabels = Math.max(2, Math.floor(plotW / minLabelDist));
+            const step = Math.max(1, Math.ceil(n / maxLabels));
+            const lastIdx = n - 1;
 
             labels.forEach((lbl, i) => {
-                if (i % step === 0 || i === n - 1) {
+                const isStep = i % step === 0;
+                const isLast = i === lastIdx;
+                const shouldPrint = isLast || (isStep && (lastIdx - i) >= Math.ceil(step * 0.65));
+                if (shouldPrint) {
                     const cx = padLeft + (n > 1 ? (i / (n - 1)) * plotW : plotW / 2);
                     xLabelsHtml += `
                         <text x="${cx.toFixed(1)}" y="${this.height - 8}" text-anchor="middle" class="text-muted-foreground text-[11px] font-sans fill-current">${lbl}</text>
@@ -871,10 +932,10 @@ export default function dashboardChart(config = {}) {
             const bCol = resolveColorToken(bSeries.colorToken, 0);
             for (let i = 0; i < n; i++) {
                 const cx = padLeft + (n > 1 ? (i / (n - 1)) * plotW : plotW / 2);
-                const rawBVal = bSeries.values?.[i];
+                const rawBVal = bSeries.values?.[i] ?? bSeries.data?.[i];
                 const bVal = Number.isFinite(Number(rawBVal)) ? Number(rawBVal) : 0;
                 const bY = padTop + plotH - (bVal / bMax) * plotH;
-                const bH = Math.max(1, padTop + plotH - bY);
+                const bH = Math.max(0.5, padTop + plotH - bY);
 
                 barsHtml += `
                     <rect x="${(cx - barW / 2).toFixed(1)}" y="${bY.toFixed(1)}" width="${barW.toFixed(1)}" height="${bH.toFixed(1)}" rx="2" fill="${bCol}" />
@@ -883,7 +944,7 @@ export default function dashboardChart(config = {}) {
 
             // 4. Line for lineSeries (right axis)
             const lCol = resolveColorToken(lSeries.colorToken, 1);
-            const lPoints = (lSeries.values || []).map((rawVal, i) => {
+            const lPoints = (lSeries.values || lSeries.data || []).map((rawVal, i) => {
                 const v = Number.isFinite(Number(rawVal)) ? Number(rawVal) : 0;
                 const cx = padLeft + (n > 1 ? (i / (n - 1)) * plotW : plotW / 2);
                 const cy = padTop + plotH - ((v - lMin) / (lMax - lMin)) * plotH;

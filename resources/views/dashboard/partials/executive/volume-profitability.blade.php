@@ -4,9 +4,10 @@
 @php
     $pm = $executiveData['payment_methods'] ?? [];
     $pmItems = $pm['items'] ?? [];
-    $pmCategories = $pm['categories'] ?? ['QRIS', 'Card / EDC', 'Cash', 'Bank Transfer / Invoice'];
-    $pmAmounts = $pm['series'] ?? array_column($pmItems, 'amount');
     $pmTotal = $pm['total_volume'] ?? 0;
+    $stackedBar = $pm['stacked_bar'] ?? [];
+    $stackedLabels = $stackedBar['labels'] ?? [];
+    $stackedSeries = $stackedBar['series'] ?? [];
 
     $profCombo = $executiveData['profitability_combo'] ?? [];
     $profLabels = $profCombo['labels'] ?? [];
@@ -16,43 +17,46 @@
 @endphp
 
 <section aria-label="Volume and Profitability" class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-    <!-- Panel 1: Transactions by Payment Method -->
+    <!-- Panel 1: Transactions by Payment Method (Stacked Vertical Bar Chart) -->
     <div class="rounded-xl border border-border bg-card p-4 sm:p-5 flex flex-col justify-between">
         <div>
-            <div class="flex items-start justify-between gap-3 mb-3">
+            <div class="flex items-start justify-between gap-3 mb-2">
                 <div>
                     <h3 class="text-sm font-semibold text-foreground">Transaction Volume by Payment Method</h3>
-                    <p class="text-xs text-muted-foreground mt-0.5">Payment settlement breakdown in the active reporting scope</p>
+                    <p class="text-xs text-muted-foreground mt-0.5">Payment settlement breakdown per day across reporting scope</p>
                 </div>
                 <span class="text-xs font-semibold tabular-nums text-foreground bg-secondary px-2 py-0.5 rounded border border-border">
                     Total: {{ $pm['total_volume_formatted'] ?? 'Rp ' . number_format($pmTotal, 0, ',', '.') }}
                 </span>
             </div>
 
-            <!-- Stacked Horizontal Bar Visualization -->
-            <div class="space-y-3 mt-4">
-                @forelse($pmItems as $item)
-                    <div class="space-y-1">
-                        <div class="flex items-center justify-between text-xs">
-                            <span class="font-medium text-foreground flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full {{ $item['name'] === 'QRIS' ? 'bg-success' : ($item['name'] === 'Card / EDC' ? 'bg-primary' : ($item['name'] === 'Cash' ? 'bg-warning' : 'bg-muted-foreground')) }}"></span>
-                                {{ $item['name'] }}
-                            </span>
-                            <span class="tabular-nums text-muted-foreground">
-                                <strong class="text-foreground font-semibold">{{ $item['amount_formatted'] }}</strong>
-                                ({{ $item['share_pct'] }}% · {{ number_format($item['count']) }} tx)
-                            </span>
-                        </div>
-                        <div class="h-2 rounded-full bg-secondary overflow-hidden">
-                            <div class="h-full rounded-full {{ $item['name'] === 'QRIS' ? 'bg-success' : ($item['name'] === 'Card / EDC' ? 'bg-primary' : ($item['name'] === 'Cash' ? 'bg-warning' : 'bg-muted-foreground')) }}"
-                                 style="width: {{ max(1, min(100, (float)$item['share_pct'])) }}%"></div>
-                        </div>
+            <!-- Stacked Vertical Bar Chart (dashboardCharts.js) -->
+            <div class="relative w-full h-[220px] select-none mt-2"
+                 x-data="dashboardChart({
+                     type: 'stacked-bar',
+                     chartId: 'payment-volume-stacked',
+                     data: {
+                         labels: @js($stackedLabels),
+                         series: @js($stackedSeries)
+                     },
+                     options: {
+                         currency: true,
+                         height: 220,
+                         interactive: true,
+                         ariaLabel: 'Transaction volume by payment method over 30 days'
+                     }
+                 })">
+            </div>
+
+            <!-- Payment Method Legend Indicators -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 mt-2 border-t border-border/60 text-xs">
+                @foreach($pmItems as $item)
+                    <div class="flex items-center gap-1.5 truncate">
+                        <span class="w-2.5 h-2.5 rounded-[2px] shrink-0 {{ $item['name'] === 'QRIS' ? 'bg-success' : ($item['name'] === 'Card / EDC' ? 'bg-primary' : ($item['name'] === 'Cash' ? 'bg-warning' : 'bg-muted-foreground')) }}"></span>
+                        <span class="font-medium text-foreground truncate">{{ $item['name'] }}</span>
+                        <span class="text-[11px] text-muted-foreground tabular-nums">({{ $item['share_pct'] }}%)</span>
                     </div>
-                @empty
-                    <div class="py-8 text-center text-xs text-muted-foreground">
-                        No payment settlement transactions recorded in this period.
-                    </div>
-                @endforelse
+                @endforeach
             </div>
         </div>
 
@@ -62,10 +66,10 @@
         </div>
     </div>
 
-    <!-- Panel 2: Gross Profit and Margin % Evolution -->
+    <!-- Panel 2: Gross Profit and Margin % Evolution (Dual-Axis Combo Chart) -->
     <div class="rounded-xl border border-border bg-card p-4 sm:p-5 flex flex-col justify-between">
         <div>
-            <div class="flex items-start justify-between gap-3 mb-3">
+            <div class="flex items-start justify-between gap-3 mb-2">
                 <div>
                     <h3 class="text-sm font-semibold text-foreground">Sales &amp; Profit Margin Evolution</h3>
                     <p class="text-xs text-muted-foreground mt-0.5">Accrual profit after recipe COGS against blended margin percentage</p>
@@ -80,14 +84,12 @@
             @if($hasMargin && !empty($profLabels))
                 <div class="relative w-full h-[220px] select-none mt-2"
                      x-data="dashboardChart({
-                         type: 'line',
+                         type: 'combo',
                          chartId: 'profit-margin-combo',
                          data: {
                              labels: @js($profLabels),
-                             series: [
-                                 { key: 'gp', name: 'Gross Profit (IDR)', data: @js($profSeries), colorToken: 'var(--chart-accent)' },
-                                 { key: 'margin', name: 'Margin %', data: @js($marginSeries), colorToken: 'var(--foreground)', dashed: true }
-                             ]
+                             barSeries: { name: 'Gross Profit (IDR)', values: @js($profSeries), data: @js($profSeries), colorToken: 'var(--chart-accent)' },
+                             lineSeries: { name: 'Margin %', values: @js($marginSeries), data: @js($marginSeries), colorToken: 'var(--foreground)' }
                          },
                          options: {
                              currency: true,
@@ -96,6 +98,18 @@
                              ariaLabel: 'Gross Profit and Margin Trajectory'
                          }
                      })">
+                </div>
+
+                <!-- Combo Chart Legend -->
+                <div class="flex items-center gap-4 pt-3 mt-2 border-t border-border/60 text-xs">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-[2px] bg-success"></span>
+                        <span class="font-medium text-foreground">Gross Profit (Left Axis)</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-0.5 bg-foreground"></span>
+                        <span class="font-medium text-foreground">Margin % (Right Axis)</span>
+                    </div>
                 </div>
             @else
                 <div class="py-12 text-center text-xs text-muted-foreground space-y-1">

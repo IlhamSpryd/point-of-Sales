@@ -26,7 +26,7 @@
             {{-- Header --}}
             <div class="p-5 sm:p-6 border-b border-border flex items-center justify-between">
                 <div class="flex items-center gap-2.5">
-                    <span class="material-symbols-rounded text-primary text-2xl">receipt_long</span>
+                    <span class="material-symbols-rounded text-primary text-2xl">receipt</span>
                     <div>
                         <h2 class="text-base font-bold text-foreground" id="receipt-drawer-title"
                             x-text="selectedReceipt ? ('Receipt #' + selectedReceipt.order_code) : 'Digital Receipt'">

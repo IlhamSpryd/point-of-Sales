@@ -7,6 +7,9 @@
             <h1 class="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
                 Business Overview
             </h1>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary text-primary-foreground">
+                Executive BI
+            </span>
             <span class="text-xs text-muted-foreground hidden sm:inline">
                 · {{ auth()->user()?->tenant?->name ?? 'Apeiron Enterprise' }}
             </span>

@@ -83,7 +83,7 @@
             {{-- Cashier Recent Orders --}}
             <div class="card-surface rounded-xl border border-border p-5 shadow-xs">
                 <div class="flex items-center justify-between mb-4">
-                    <div class="text-sm font-bold text-foreground">My Recent Transactions</div>
+                    <h2 class="text-sm font-bold text-foreground">Recent Orders</h2>
                     <a href="{{ route('orders.index') }}" wire:navigate class="text-xs font-semibold text-muted-foreground hover:text-foreground">View all</a>
                 </div>
                 <div class="divide-y divide-border/60">

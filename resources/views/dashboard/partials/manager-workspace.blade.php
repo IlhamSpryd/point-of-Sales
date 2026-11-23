@@ -6,7 +6,10 @@
         {{-- Store Status Header --}}
         <div class="card-surface rounded-2xl border border-border p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-                <div class="text-xs font-bold text-primary uppercase tracking-wider">Branch Operational Command</div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-primary uppercase tracking-wider">Branch Operational Command</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-secondary text-secondary-foreground">Branch Ops</span>
+                </div>
                 <div class="text-xl sm:text-2xl font-extrabold text-foreground mt-0.5">
                     {{ $managerData['store']['name'] ?? $activeStoreName ?? 'Store Operations' }}
                 </div>

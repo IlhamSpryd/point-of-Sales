@@ -63,10 +63,10 @@
              data: {
                  labels: @js($chartLabels),
                  series: [
-                     { key: 'gross', name: 'Gross Revenue', data: @js($grossPoints), colorToken: 'var(--foreground)' },
-                     { key: 'net', name: 'Net Revenue', data: @js($netPoints), colorToken: 'var(--chart-accent)' },
-                     { key: 'prev', name: 'Prior Period', data: @js($prevPoints), colorToken: 'var(--muted-foreground)', dashed: true },
-                     { key: 'target', name: 'Target (KPI-PLN-01)', data: @js($targetPoints), colorToken: 'var(--warning)', dotted: true }
+                     { key: 'gross', name: 'Gross Revenue', values: @js($grossPoints), data: @js($grossPoints), colorToken: 'var(--foreground)' },
+                     { key: 'net', name: 'Net Revenue', values: @js($netPoints), data: @js($netPoints), colorToken: 'var(--chart-accent)' },
+                     { key: 'prev', name: 'Prior Period', values: @js($prevPoints), data: @js($prevPoints), colorToken: 'var(--muted-foreground)', dashed: true },
+                     { key: 'target', name: 'Target (KPI-PLN-01)', values: @js($targetPoints), data: @js($targetPoints), colorToken: 'var(--warning)', dotted: true }
                  ]
              },
              options: {
