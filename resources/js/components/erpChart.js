@@ -20,12 +20,14 @@ export async function loadEcharts() {
                 charts.LineChart,
                 charts.BarChart,
                 charts.PieChart,
+                charts.HeatmapChart,
                 components.TitleComponent,
                 components.TooltipComponent,
                 components.GridComponent,
                 components.LegendComponent,
                 components.DataZoomComponent,
                 components.ToolboxComponent,
+                components.VisualMapComponent,
                 renderers.CanvasRenderer,
             ]);
             echartsCore = core;

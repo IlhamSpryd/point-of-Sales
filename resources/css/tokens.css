@@ -11,7 +11,7 @@
     color-scheme: light;
 
     /* ── Typography Fonts (Strict Single Typeface: Plus Jakarta Sans for All Text & Money) ── */
-    --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-sans: "Plus Jakarta Sans", sans-serif;
     --font-brand: "Plus Jakarta Sans", sans-serif;
     --font-mono: "Plus Jakarta Sans", sans-serif;
     --font-serif: "Plus Jakarta Sans", sans-serif;
@@ -20,7 +20,7 @@
        docs/ui-ux-audit/color-system/02 §11 (contrast-verified) ── */
 
     /* Surfaces */
-    --background: #FAFAFA;
+    --background: #F7F7F8;
     --foreground: #09090B;
     --card: #FFFFFF;
     --card-foreground: #09090B;
@@ -68,15 +68,15 @@
     --info-foreground: #172554;
     --info-muted: #EFF6FF;
     --info-border: #BFDBFE;
-    --neutral: #47474F;
+    --neutral: #45454D;
     --neutral-muted: #F4F4F5;
     --neutral-border: #E4E4E7;
 
     /* ERP surfaces */
     --surface-table-header: #FAFAFA;
     --surface-inset: #F4F4F5;
-    --surface-shell: #FFFFFF;
-    --surface-canvas: #FAFAFA;
+    --surface-shell: #F7F7F8;
+    --surface-canvas: #F7F7F8;
 
     /* Charts */
     --chart-accent: #10A37F;
@@ -89,15 +89,15 @@
     --chart-7: #065F46;
     --chart-8: #57534E;
     --chart-grid: #E4E4E7;
-    --chart-axis-label: #47474F;
+    --chart-axis-label: #45454D;
     --chart-seq-0: #F4F4F5;
     --chart-seq-1: #D4D4D8;
     --chart-seq-2: #A1A1AA;
     --chart-seq-3: #52525B;
     --chart-seq-4: #18181B;
 
-    /* Shell (Clean White ChatGPT Aesthetic) */
-    --shell: #FFFFFF;
+    /* Shell */
+    --shell: #F7F7F8;
     --shell-foreground: #47474F;
     --shell-foreground-active: #09090B;
     --shell-accent: #F4F4F5;
@@ -147,13 +147,13 @@
 .dark {
     color-scheme: dark;
 
-    --background: #0A0A0B;
+    --background: #0E0E11;
     --foreground: #FAFAFA;
 
-    --card: #141415;
+    --card: #16161A;
     --card-foreground: #FAFAFA;
 
-    --popover: #1A1A1C;
+    --popover: #1F1F25;
     --popover-foreground: #FAFAFA;
 
     --primary: #FAFAFA;
@@ -163,7 +163,7 @@
     --secondary-foreground: #FAFAFA;
 
     --muted: #1F1F21;
-    --muted-foreground: #A1A1AA;
+    --muted-foreground: #B4B4BE;
 
     --accent: #27272A;
     --accent-foreground: #FAFAFA;
@@ -184,10 +184,10 @@
     --success-muted: #052E16;
     --success-border: rgb(74 222 128 / 0.30);
 
-    --warning: #FBBF24;
+    --warning: #FCD34D;
     --warning-foreground: #FEF3C7;
     --warning-muted: #451A03;
-    --warning-border: rgb(251 191 36 / 0.30);
+    --warning-border: rgb(252 211 77 / 0.30);
 
     --destructive: #FCA5A5;
     --destructive-foreground: #FEE2E2;
@@ -199,16 +199,16 @@
     --info-muted: #172554;
     --info-border: rgb(96 165 250 / 0.30);
 
-    --neutral: #A1A1AA;
+    --neutral: #B4B4BE;
     --neutral-muted: #1F1F21;
     --neutral-border: rgb(255 255 255 / 0.10);
 
-    --surface-table-header: #111112;
-    --surface-inset: #0F0F10;
-    --surface-shell: #111112;
-    --surface-canvas: #0A0A0B;
+    --surface-table-header: #141418;
+    --surface-inset: #121215;
+    --surface-shell: #0E0E11;
+    --surface-canvas: #0E0E11;
 
-    --chart-accent: #10A37F;
+    --chart-accent: #4ADE80;
 
     --chart-1: #FAFAFA;
     --chart-2: #FCA5A5;
@@ -218,19 +218,19 @@
     --chart-6: #FDBA74;
     --chart-7: #6EE7B7;
     --chart-8: #D6D3D1;
-    --chart-grid: #2A2A2D;
-    --chart-axis-label: #A1A1AA;
+    --chart-grid: rgba(255, 255, 255, 0.08);
+    --chart-axis-label: #B4B4BE;
     --chart-seq-0: #1F1F21;
     --chart-seq-1: #3F3F46;
     --chart-seq-2: #71717A;
     --chart-seq-3: #D4D4D8;
     --chart-seq-4: #FAFAFA;
 
-    --shell: #111112;
-    --shell-foreground: #A1A1AA;
+    --shell: #0E0E11;
+    --shell-foreground: #B4B4BE;
     --shell-foreground-active: #FAFAFA;
-    --shell-accent: #1F1F21;
-    --shell-border: rgb(255 255 255 / 0.08);
+    --shell-accent: #16161A;
+    --shell-border: rgb(255 255 255 / 0.10);
     --shell-ring: #FAFAFA;
 
     --overlay-scrim: rgb(0 0 0 / 0.60);

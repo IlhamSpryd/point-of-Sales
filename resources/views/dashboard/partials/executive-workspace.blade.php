@@ -1,9 +1,9 @@
 {{-- ========================================================================= --}}
 {{-- ARCHETYPE VIEW: EXECUTIVE BI WORKSPACE (CANVAS DESIGNED WCAG 2.2 AAA)      --}}
-{{-- SECTIONS A–G + 3-STATE GL NOTICE + SLIDE-OVER INSPECTOR DRAWERS           --}}
+{{-- SECTIONS A–G + 3-STATE GL NOTICE + 7 SLIDE-OVER INSPECTOR DRAWERS          --}}
 {{-- ========================================================================= --}}
 @if($activeArchetype === 'executive' || empty($activeArchetype))
-    <div class="space-y-6"
+    <div class="space-y-4 sm:space-y-5 bg-card border border-border rounded-[14px] sm:rounded-[18px] p-4 sm:p-5 shadow-xs"
          aria-label="Executive BI Workspace"
          x-data="{
              kpiDrawerOpen: false,
@@ -18,6 +18,26 @@
              selectedReceipt: null,
              receiptDetailData: null,
              isLoadingReceipt: false,
+
+             dateDrawerOpen: false,
+             selectedDate: null,
+             dateDetailData: null,
+             isLoadingDate: false,
+
+             hourlyDrawerOpen: false,
+             selectedHourly: null,
+             hourlyDetailData: null,
+             isLoadingHourly: false,
+
+             paymentDrawerOpen: false,
+             selectedPayment: null,
+             paymentDetailData: null,
+             isLoadingPayment: false,
+
+             waterfallDrawerOpen: false,
+             selectedWaterfall: null,
+             waterfallDetailData: null,
+             isLoadingWaterfall: false,
 
              openKpiDrawer(kpiKey) {
                  this.selectedKpi = kpiKey;
@@ -147,9 +167,112 @@
                  this.receiptDrawerOpen = false;
                  this.selectedReceipt = null;
                  this.receiptDetailData = null;
+             },
+
+             closeDateDrawer() {
+                 this.dateDrawerOpen = false;
+                 this.selectedDate = null;
+                 this.dateDetailData = null;
+             },
+             closeHourlyDrawer() {
+                 this.hourlyDrawerOpen = false;
+                 this.selectedHourly = null;
+                 this.hourlyDetailData = null;
+             },
+             closePaymentDrawer() {
+                 this.paymentDrawerOpen = false;
+                 this.selectedPayment = null;
+                 this.paymentDetailData = null;
+             },
+             closeWaterfallDrawer() {
+                 this.waterfallDrawerOpen = false;
+                 this.selectedWaterfall = null;
+                 this.waterfallDetailData = null;
+             },
+
+             async handleDrilldown(detail) {
+                 if (!detail) return;
+                 const type = detail.drilldownType;
+
+                 if (type === 'date') {
+                     const dStr = detail.date || detail.name;
+                     if (!dStr) return;
+                     this.selectedDate = dStr;
+                     this.dateDetailData = null;
+                     this.isLoadingDate = true;
+                     this.dateDrawerOpen = true;
+                     try {
+                         const url = new URL('{{ route('dashboard.api.drilldown.date') }}', window.location.origin);
+                         url.searchParams.set('date', dStr);
+                         @if(request()->filled('store_id')) url.searchParams.set('store_id', '{{ request()->query('store_id') }}'); @endif
+                         const res = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } });
+                         if (res.ok) this.dateDetailData = await res.json();
+                     } catch (e) {
+                         console.error('Failed to load date drilldown:', e);
+                     } finally {
+                         this.isLoadingDate = false;
+                     }
+                 } else if (type === 'hourly') {
+                     this.selectedHourly = detail;
+                     this.hourlyDetailData = null;
+                     this.isLoadingHourly = true;
+                     this.hourlyDrawerOpen = true;
+                     try {
+                         const url = new URL('{{ route('dashboard.api.drilldown.hourly') }}', window.location.origin);
+                         url.searchParams.set('day_of_week', detail.day_of_week);
+                         url.searchParams.set('hour', detail.hour);
+                         url.searchParams.set('period', '{{ $executiveData['period'] ?? '30d' }}');
+                         @if(request()->filled('store_id')) url.searchParams.set('store_id', '{{ request()->query('store_id') }}'); @endif
+                         const res = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } });
+                         if (res.ok) this.hourlyDetailData = await res.json();
+                     } catch (e) {
+                         console.error('Failed to load hourly drilldown:', e);
+                     } finally {
+                         this.isLoadingHourly = false;
+                     }
+                 } else if (type === 'payment-method') {
+                     const method = detail.name || detail.method;
+                     if (!method) return;
+                     this.selectedPayment = method;
+                     this.paymentDetailData = null;
+                     this.isLoadingPayment = true;
+                     this.paymentDrawerOpen = true;
+                     try {
+                         const url = new URL('{{ route('dashboard.api.drilldown.payment-method') }}', window.location.origin);
+                         url.searchParams.set('method', method);
+                         url.searchParams.set('period', '{{ $executiveData['period'] ?? '30d' }}');
+                         @if(request()->filled('store_id')) url.searchParams.set('store_id', '{{ request()->query('store_id') }}'); @endif
+                         const res = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } });
+                         if (res.ok) this.paymentDetailData = await res.json();
+                     } catch (e) {
+                         console.error('Failed to load payment drilldown:', e);
+                     } finally {
+                         this.isLoadingPayment = false;
+                     }
+                 } else if (type === 'waterfall-step') {
+                     const step = detail.step || detail.name;
+                     if (!step) return;
+                     this.selectedWaterfall = step;
+                     this.waterfallDetailData = null;
+                     this.isLoadingWaterfall = true;
+                     this.waterfallDrawerOpen = true;
+                     try {
+                         const url = new URL('{{ route('dashboard.api.drilldown.waterfall-step') }}', window.location.origin);
+                         url.searchParams.set('step', step);
+                         url.searchParams.set('period', '{{ $executiveData['period'] ?? '30d' }}');
+                         @if(request()->filled('store_id')) url.searchParams.set('store_id', '{{ request()->query('store_id') }}'); @endif
+                         const res = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } });
+                         if (res.ok) this.waterfallDetailData = await res.json();
+                     } catch (e) {
+                         console.error('Failed to load waterfall drilldown:', e);
+                     } finally {
+                         this.isLoadingWaterfall = false;
+                     }
+                 }
              }
          }"
-         @keydown.escape.window="closeKpiDrawer(); closeProductDrawer(); closeReceiptDrawer()">
+         @open-dashboard-drilldown.window="handleDrilldown($event.detail)"
+         @keydown.escape.window="closeKpiDrawer(); closeProductDrawer(); closeReceiptDrawer(); closeDateDrawer(); closeHourlyDrawer(); closePaymentDrawer(); closeWaterfallDrawer()">
 
         {{-- 1. HEADER BAR --}}
         @include('dashboard.partials.executive.header-bar')
@@ -160,7 +283,7 @@
         {{-- 3. SECTION A: 12-COL ASYMMETRIC KPI GRID --}}
         @include('dashboard.partials.executive.kpi-grid')
 
-        {{-- 4. SECTION B: REVENUE ANALYTICS (REACTIVE SVG MULTI-SERIES CHART) --}}
+        {{-- 4. SECTION B: REVENUE ANALYTICS (REACTIVE ECHARTS MULTI-SERIES CHART) --}}
         @include('dashboard.partials.executive.revenue-analytics')
 
         {{-- 5. SECTION C1: VOLUME & PROFITABILITY (DUAL-AXIS COMBO & PAYMENT MIX) --}}
@@ -188,6 +311,10 @@
         @include('dashboard.partials.executive.kpi-drilldown-drawer')
         @include('dashboard.partials.executive.product-recipe-bom-drawer')
         @include('dashboard.partials.executive.digital-receipt-drawer')
+        @include('dashboard.partials.executive.date-detail-drawer')
+        @include('dashboard.partials.executive.hourly-orders-drawer')
+        @include('dashboard.partials.executive.payment-detail-drawer')
+        @include('dashboard.partials.executive.waterfall-step-drawer')
 
     </div>
 @endif

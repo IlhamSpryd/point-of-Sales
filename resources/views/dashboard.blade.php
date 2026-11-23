@@ -1,5 +1,5 @@
 <x-app-layout :noPadding="true">
-    <div class="w-full min-h-full flex flex-col flex-1 p-4 sm:p-6 lg:p-8 gap-6 bg-transparent text-foreground"
+    <div class="w-full min-h-full flex flex-col flex-1 p-3 sm:p-4 lg:p-5 bg-shell text-foreground"
          x-data="{
              drawerOpen: false,
              selectedTicket: null,
