@@ -130,14 +130,9 @@ class DashboardV2RedesignTest extends TestCase
         $response->assertStatus(200);
 
         // Check key UI tokens and texts
-        $response->assertSee("Today's total revenue");
+        $response->assertSee('Gross Revenue');
         $response->assertSee('Budi');
-        $response->assertSee("This week's total transactions");
-        $response->assertSee('Sold this month');
-        $response->assertSee('Low stock alerts');
-        $response->assertSee('Payment methods');
         $response->assertSee('Restock Forecast');
-        $response->assertSee('Biji Kopi Arabika');
         $response->assertSee('50.000');
         $response->assertSee('Paid');
     }

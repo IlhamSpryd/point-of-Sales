@@ -70,7 +70,7 @@
         </div>
 
         @if ($displayDelta !== null && $displayDelta !== '')
-            <span class="inline-flex items-center gap-1 text-xs font-semibold tabular-nums {{ $direction === 'up' ? 'text-success' : ($direction === 'down' ? 'text-destructive' : 'text-muted-foreground') }}">
+            <span class="inline-flex items-center gap-1 text-xs font-semibold tabular-nums {{ $deltaClasses }}">
                 @if ($direction === 'up')
                     <span class="material-symbols-rounded text-[14px] leading-none shrink-0" aria-hidden="true">trending_up</span>
                 @elseif ($direction === 'down')

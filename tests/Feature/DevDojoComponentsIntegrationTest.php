@@ -58,7 +58,7 @@ class DevDojoComponentsIntegrationTest extends TestCase
 
         $this->assertStringContainsString('Nama Toko', $html);
         $this->assertStringContainsString('placeholder="Masukkan nama..."', $html);
-        $this->assertStringContainsString('border-input', $html);
+        $this->assertStringContainsString('border-border', $html);
     }
 
     public function test_can_render_devdojo_ui_alert_component(): void

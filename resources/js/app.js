@@ -164,6 +164,7 @@ if (typeof window !== 'undefined') {
     window.apeironCommandPalette = commandPalette;
     window.dashboardChart = dashboardChart;
     window.loadGsap = erpMotion.loadGsap;
+    // window.gsap = gsap dynamically provided by loadGsap
 
     document.addEventListener('livewire:navigating', () => window.ApeironTheme.sync());
     document.addEventListener('livewire:navigate', () => window.ApeironTheme.sync());

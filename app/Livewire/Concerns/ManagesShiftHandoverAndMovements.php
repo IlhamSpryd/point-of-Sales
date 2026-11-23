@@ -31,7 +31,6 @@ trait ManagesShiftHandoverAndMovements
 
     public ?int $toUserId = null;
 
-    #[Locked]
     public ?int $handoverShiftId = null;
 
     public $handoverCountedCash = 0;
@@ -48,7 +47,6 @@ trait ManagesShiftHandoverAndMovements
     public bool $isHandoverModalOpen = false;
 
     // Force Close state
-    #[Locked]
     public ?int $forceClosingShiftId = null;
 
     public string $forceCloseReason = '';
