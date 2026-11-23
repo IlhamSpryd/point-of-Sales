@@ -57,6 +57,7 @@ $COMPOSE up -d app worker scheduler reverb web
 echo "[+] Step 2/6: Syncing compiled frontend assets from app container to host..."
 mkdir -p ./public/build
 $COMPOSE cp app:/var/www/html/public/build/. ./public/build/
+chmod -R a+rX ./public/build
 
 # 5. Run database migrations
 echo "[+] Step 3/6: Executing database migrations..."
@@ -65,6 +66,7 @@ $COMPOSE exec -T app php artisan migrate --force --no-interaction
 # 6. Clear and re-warm production caches
 echo "[+] Step 4/6: Re-warming application caches..."
 $COMPOSE exec -T app php artisan optimize:clear
+$COMPOSE exec -T app php artisan cache:clear
 $COMPOSE exec -T app php artisan config:cache
 $COMPOSE exec -T app php artisan route:cache
 $COMPOSE exec -T app php artisan view:cache
