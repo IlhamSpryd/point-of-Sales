@@ -171,7 +171,7 @@
                                     View Details
                                 </x-ui.table-action-item>
                                 @if (in_array($stVal, ['paid', 'completed'], true))
-                                    <x-ui.table-action-item icon="print" href="{{ route('transaction.receipt', $order->order_code) }}" target="_blank" rel="noopener" aria-label="Reprint Receipt">
+                                    <x-ui.table-action-item icon="print" href="{{ route('transaction.receipt', $order->order_code) }}" target="_blank" rel="noopener noreferrer" aria-label="Reprint Receipt">
                                         Reprint Receipt
                                     </x-ui.table-action-item>
                                 @endif

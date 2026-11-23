@@ -60,7 +60,7 @@
                 <button
                     type="button"
                     @click="showPass = !showPass"
-                    class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-muted-foreground focus:outline-none focus:text-foreground rounded-md transition-colors cursor-pointer flex items-center justify-center"
+                    class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus:text-foreground rounded-md transition-colors cursor-pointer flex items-center justify-center"
                     :aria-label="showPass ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
                     :title="showPass ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
                 >
@@ -99,7 +99,7 @@
                 <button
                     type="button"
                     @click="showConfirm = !showConfirm"
-                    class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-muted-foreground focus:outline-none focus:text-foreground rounded-md transition-colors cursor-pointer flex items-center justify-center"
+                    class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus:text-foreground rounded-md transition-colors cursor-pointer flex items-center justify-center"
                     :aria-label="showConfirm ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
                     :title="showConfirm ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
                 >

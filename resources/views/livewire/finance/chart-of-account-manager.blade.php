@@ -31,14 +31,14 @@
     <!-- Filter & Search Toolbar -->
     <x-erp.filter-bar search-placeholder="Search account code or name...">
         <x-slot:filters>
-            <select wire:model.live="typeFilter" class="h-9 text-xs rounded-xl border border-input bg-background text-foreground px-3 outline-none">
+            <select wire:model.live="typeFilter" class="h-9 text-xs rounded-xl border border-input bg-background text-foreground px-3 outline-none focus:ring-1 focus:ring-ring">
                 <option value="">All Account Types</option>
                 @foreach ($accountTypes as $type)
                     <option value="{{ $type->value }}">{{ $type->value }}</option>
                 @endforeach
             </select>
 
-            <select wire:model.live="statusFilter" class="h-9 text-xs rounded-xl border border-input bg-background text-foreground px-3 outline-none">
+            <select wire:model.live="statusFilter" class="h-9 text-xs rounded-xl border border-input bg-background text-foreground px-3 outline-none focus:ring-1 focus:ring-ring">
                 <option value="">All Statuses</option>
                 <option value="active">Active Only</option>
                 <option value="inactive">Inactive</option>

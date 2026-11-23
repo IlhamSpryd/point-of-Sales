@@ -8,7 +8,7 @@
     'align' => 'center',
     'maxWidth' => 'lg',
     'sheet' => false,
-    'zIndex' => 50,
+    'zIndex' => 60,
     'onClose' => null,
     'role' => 'dialog',
     'instant' => false,

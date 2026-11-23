@@ -162,17 +162,17 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Price List Code <span class="text-destructive">*</span></label>
-                        <input type="text" name="code" value="{{ old('code') }}" required maxlength="64" placeholder="e.g. PL-WHOLESALE-01" class="w-full rounded-xl border border-border px-3.5 py-2 text-sm uppercase focus:border-primary-500 focus:outline-none">
+                        <input type="text" name="code" value="{{ old('code') }}" required maxlength="64" placeholder="e.g. PL-WHOLESALE-01" class="w-full rounded-xl border border-border px-3.5 py-2 text-sm uppercase focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-ring">
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Price Rule Name <span class="text-destructive">*</span></label>
-                        <input type="text" name="name" value="{{ old('name') }}" required maxlength="150" placeholder="e.g. Wholesale Price Min. 10 Pcs" class="w-full rounded-xl border border-border px-3.5 py-2 text-sm focus:border-primary-500 focus:outline-none">
+                        <input type="text" name="name" value="{{ old('name') }}" required maxlength="150" placeholder="e.g. Wholesale Price Min. 10 Pcs" class="w-full rounded-xl border border-border px-3.5 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-ring">
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Rule Type / Scope <span class="text-destructive">*</span></label>
-                        <select name="type" x-model="type" required class="w-full rounded-xl border border-border bg-card px-3.5 py-2 text-sm focus:border-primary-500 focus:outline-none">
+                        <select name="type" x-model="type" required class="w-full rounded-xl border border-border bg-card px-3.5 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-ring">
                             <option value="standard">Standard (Global / General)</option>
                             <option value="wholesale">Tiered Wholesale (Volume Qty)</option>
                             <option value="customer_tier">Loyalty Member Tier</option>
@@ -184,7 +184,7 @@
 
                     <div>
                         <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Execution Priority</label>
-                        <input type="number" name="priority" value="{{ old('priority', 0) }}" min="0" class="w-full rounded-xl border border-border px-3.5 py-2 text-sm focus:border-primary-500 focus:outline-none">
+                        <input type="number" name="priority" value="{{ old('priority', 0) }}" min="0" class="w-full rounded-xl border border-border px-3.5 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-ring">
                     </div>
                 </div>
 

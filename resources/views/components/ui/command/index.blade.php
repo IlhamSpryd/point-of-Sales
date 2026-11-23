@@ -33,7 +33,7 @@
             x-show="open"
             x-cloak
             x-id="['dd-command']"
-            class="fixed inset-0 z-50 flex items-start justify-center p-0 sm:p-4 pt-0 sm:pt-[15vh]"
+            class="fixed inset-0 z-[70] flex items-start justify-center p-0 sm:p-4 pt-0 sm:pt-[15vh]"
             role="dialog"
             aria-modal="true"
             aria-label="Command palette"
@@ -71,7 +71,7 @@
                         aria-autocomplete="list"
                         :aria-controls="$id('dd-command')"
                         :aria-activedescendant="filtered.length ? $id('dd-command') + '-option-' + active : null"
-                        class="h-12 w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                        class="h-12 w-full bg-transparent text-sm text-foreground outline-none focus:ring-0 placeholder:text-muted-foreground"
                     />
                 </div>
 

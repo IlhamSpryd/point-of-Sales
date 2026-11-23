@@ -13,9 +13,11 @@ use App\Modules\Workforce\Models\CommissionRecord;
 use App\Modules\Workforce\Models\Employee;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
+use Livewire\Attributes\Lazy;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Lazy]
 class CommissionManager extends Component
 {
     use RequiresTenantContext;
@@ -24,6 +26,16 @@ class CommissionManager extends Component
     public ?int $employeeFilter = null;
 
     public string $statusFilter = 'ALL';
+
+    public function placeholder(): string
+    {
+        return <<<'HTML'
+        <div class="space-y-4 p-4 animate-pulse" role="status" aria-label="Loading commission analytics">
+            <div class="h-8 bg-muted rounded-xl w-48"></div>
+            <div class="h-64 bg-card border border-border rounded-xl"></div>
+        </div>
+        HTML;
+    }
 
     public function render(): View
     {

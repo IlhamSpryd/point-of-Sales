@@ -19,9 +19,11 @@ use DomainException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
+#[Lazy]
 #[Layout('layouts.app')]
 class BankReconciliationWorkbench extends Component
 {
@@ -46,6 +48,24 @@ class BankReconciliationWorkbench extends Component
     public ?int $selectedStatementLineId = null;
 
     public ?int $selectedTransactionId = null;
+
+    public function placeholder(): string
+    {
+        return <<<'HTML'
+        <div class="space-y-6 p-6 animate-pulse" role="status" aria-label="Loading bank reconciliation workbench">
+            <div class="flex items-center justify-between pb-4 border-b border-border">
+                <div class="h-7 bg-muted rounded-xl w-72"></div>
+                <div class="h-9 bg-muted rounded-xl w-36"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="h-24 bg-card border border-border rounded-xl"></div>
+                <div class="h-24 bg-card border border-border rounded-xl"></div>
+                <div class="h-24 bg-card border border-border rounded-xl"></div>
+            </div>
+            <div class="h-80 bg-card border border-border rounded-2xl"></div>
+        </div>
+        HTML;
+    }
 
     public function mount(): void
     {

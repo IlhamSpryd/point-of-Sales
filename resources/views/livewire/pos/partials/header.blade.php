@@ -33,7 +33,7 @@
         @if ($orderType === 'dine_in' && $this->isTablesEnabled)
             <div class="relative">
                 <select wire:model.live="tableId"
-                    class="h-9 pl-8 pr-7 bg-card border border-border hover:bg-muted transition-colors text-foreground text-xs font-medium rounded-lg shadow-2xs appearance-none cursor-pointer focus:outline-none focus:border-foreground">
+                    class="h-9 pl-8 pr-7 bg-card border border-border hover:bg-muted transition-colors text-foreground text-xs font-medium rounded-lg shadow-2xs appearance-none cursor-pointer focus:outline-none focus:border-foreground focus:ring-1 focus:ring-ring">
                     <option value="">-- Select Table --</option>
                     @foreach ($this->activeTables as $table)
                         @php

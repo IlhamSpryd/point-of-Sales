@@ -18,7 +18,7 @@
                     Hold Reference / Customer Name
                 </label>
                 <input type="text" wire:model="holdReference"
-                    class="w-full h-10 px-3 bg-card border border-border rounded-lg text-xs font-semibold text-foreground focus:outline-none focus:border-foreground transition-all"
+                    class="w-full h-10 px-3 bg-card border border-border rounded-lg text-xs font-semibold text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-ring transition-all"
                     placeholder="e.g. Table 03 / Guest Name">
             </div>
 
@@ -27,7 +27,7 @@
                     Order Remarks (Optional)
                 </label>
                 <textarea wire:model="holdNotes" rows="2"
-                    class="w-full p-3 bg-card border border-border rounded-lg text-xs text-foreground focus:outline-none focus:border-foreground transition-all resize-none"
+                    class="w-full p-3 bg-card border border-border rounded-lg text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-ring transition-all resize-none"
                     placeholder="e.g. Awaiting party arrival..."></textarea>
             </div>
         </form>

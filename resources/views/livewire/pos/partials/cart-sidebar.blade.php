@@ -37,7 +37,7 @@
                     <input type="text" wire:model.live.debounce.300ms="customerSearch"
                         x-on:focus="showResults = true" x-on:click.outside="showResults = false"
                         placeholder="Customer (optional)..."
-                        class="w-full h-8 pl-9 pr-3 text-xs bg-muted border border-border rounded-lg text-foreground placeholder-muted-foreground focus:bg-card focus:border-foreground focus:outline-none transition-colors" />
+                        class="w-full h-8 pl-9 pr-3 text-xs bg-muted border border-border rounded-lg text-foreground placeholder-muted-foreground focus:bg-card focus:border-foreground focus:outline-none focus:ring-1 focus:ring-ring transition-colors" />
                 </div>
                 @if (mb_strlen(trim($customerSearch)) >= 2)
                     <div x-show="showResults" x-cloak wire:loading.class="opacity-50"

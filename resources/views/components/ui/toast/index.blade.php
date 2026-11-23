@@ -22,7 +22,7 @@
         role="region"
         aria-label="System notifications"
         aria-live="polite"
-        {{ $attributes->twMerge('pointer-events-none fixed right-0 top-0 z-[99999] flex flex-col items-end gap-2 p-4 w-full sm:max-w-sm') }}
+        {{ $attributes->twMerge('pointer-events-none fixed right-0 top-0 z-[80] flex flex-col items-end gap-2 p-4 w-full sm:max-w-sm') }}
         x-data="{
             toasts: [],
             toastsProgress: {},

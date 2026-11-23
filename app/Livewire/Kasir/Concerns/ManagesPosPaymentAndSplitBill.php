@@ -355,7 +355,15 @@ trait ManagesPosPaymentAndSplitBill
                     syncUrl: route('api.order.sync-status', ['order_number' => $order->order_code])
                 );
             } else {
-                $this->dispatch('transaction-success', orderCode: $order->order_code, isCash: collect($normalizedLegs)->contains('method', 'cash'));
+                $paidAmount = (int) $order->payments()->sum('amount_tendered');
+                $changeAmount = (int) $order->payments()->sum('change_amount');
+                $this->dispatch(
+                    'transaction-success',
+                    orderCode: $order->order_code,
+                    isCash: collect($normalizedLegs)->contains('method', 'cash'),
+                    paidAmount: $paidAmount > 0 ? $paidAmount : (int) $order->order_amount,
+                    changeAmount: $changeAmount
+                );
             }
 
             $this->cart = [];
@@ -431,7 +439,13 @@ trait ManagesPosPaymentAndSplitBill
             $this->customerName = null;
             $this->selectedDiscountId = null;
             $this->dispatch('pos-cart-state-changed', dirty: false);
-            $this->dispatch('transaction-success', orderCode: $order->order_code, isCash: false);
+            $this->dispatch(
+                'transaction-success',
+                orderCode: $order->order_code,
+                isCash: false,
+                paidAmount: (int) $order->order_amount,
+                changeAmount: 0
+            );
             $this->dispatch('toast', message: "Payment confirmed for {$order->order_code}.", type: 'success');
 
             return;

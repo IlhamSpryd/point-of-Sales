@@ -9,7 +9,33 @@ function getRecentsStorageKey() {
     const metaUser = document.querySelector('meta[name="user-id"]')?.getAttribute('content');
     const tenantId = metaTenant || window.__APEIRON_BOOT__?.tenantId || window.ApeironTenantId || 'global';
     const userId = metaUser || window.__APEIRON_BOOT__?.userId || window.ApeironUserId || 'guest';
-    return `apeiron.nav.recents.${tenantId}.${userId}`;
+
+    // SEC-05: Purge legacy global key to eliminate cross-tenant leakage on shared terminals
+    try {
+        if (localStorage.getItem('apeiron.nav.recents')) {
+            localStorage.removeItem('apeiron.nav.recents');
+        }
+    } catch (_) {}
+
+    return `apeiron.nav.recents.t${tenantId}.u${userId}`;
+}
+
+if (typeof window !== 'undefined' && !window.__apeironCommandPaletteLogoutBound) {
+    window.__apeironCommandPaletteLogoutBound = true;
+    const clearActiveRecents = () => {
+        try {
+            const key = getRecentsStorageKey();
+            localStorage.removeItem(key);
+            localStorage.removeItem('apeiron.nav.recents');
+        } catch (_) {}
+    };
+
+    window.addEventListener('apeiron:logout', clearActiveRecents);
+    window.addEventListener('submit', (e) => {
+        if (e.target && e.target.action && e.target.action.includes('logout')) {
+            clearActiveRecents();
+        }
+    });
 }
 
 export default function commandPalette(initialItems = []) {

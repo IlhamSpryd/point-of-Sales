@@ -28,6 +28,13 @@ abstract class TestCase extends BaseTestCase
      */
     protected function afterSubclassSetUp(): void
     {
+        if (class_exists(\Livewire\Livewire::class)) {
+            \Livewire\Livewire::withoutLazyLoading();
+            \Livewire\Livewire::listen('flush-state', function () {
+                \Livewire\Livewire::withoutLazyLoading();
+            });
+        }
+
         if (method_exists($this, 'setUpWithDefaultTenant')) {
             $this->setUpWithDefaultTenant();
         }

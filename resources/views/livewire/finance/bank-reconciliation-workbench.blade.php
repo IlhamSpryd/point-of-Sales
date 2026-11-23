@@ -35,7 +35,7 @@
 
         <div class="flex flex-wrap items-center gap-2">
             <select wire:model.live="selectedAccountId"
-                    class="px-3 py-1.5 text-xs rounded-xl border border-border bg-card text-foreground font-medium focus:outline-none">
+                    class="px-3 py-1.5 text-xs rounded-xl border border-border bg-card text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-ring">
                 <option value="">-- Select Cash/Bank Account --</option>
                 @foreach ($accounts as $acc)
                     <option value="{{ $acc->id }}">[{{ $acc->account_code }}] {{ $acc->account_name }} ({{ $acc->bank_name ?: 'Cash' }})</option>

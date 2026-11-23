@@ -242,7 +242,7 @@
         id="{{ $listboxId }}"
         role="listbox"
         x-ref="listbox"
-        class="absolute left-0 right-0 z-50 mt-1 rounded-card bg-popover text-popover-foreground border border-border shadow-md overflow-hidden p-1 focus:outline-none"
+        class="absolute left-0 right-0 z-50 mt-1 rounded-card bg-popover text-popover-foreground border border-border shadow-md overflow-hidden p-1 focus:outline-none focus:ring-1 focus:ring-ring"
     >
         {{-- Search input inside popover --}}
         <div class="relative p-1 border-b border-border mb-1">

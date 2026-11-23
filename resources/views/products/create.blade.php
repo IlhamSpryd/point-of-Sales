@@ -361,7 +361,7 @@
                     <div class="space-y-1 text-center">
                         <span class="material-symbols-rounded text-[32px] text-primary-300">image</span>
                         <div class="flex flex-col sm:flex-row text-sm text-muted-foreground justify-center gap-1 mt-3">
-                            <label for="product_photo" class="relative cursor-pointer bg-card rounded-xl font-medium text-foreground hover:text-foreground focus-within:outline-none px-3 py-1 shadow-sm border border-border transition-all duration-200 active:scale-95">
+                            <label for="product_photo" class="relative cursor-pointer bg-card rounded-xl font-medium text-foreground hover:text-foreground focus-within:outline-none focus-within:ring-2 focus-within:ring-ring px-3 py-1 shadow-sm border border-border transition-all duration-200 active:scale-95">
                                 <span>Upload file</span>
                                 <input id="product_photo" name="product_photo" type="file" class="sr-only" accept="image/jpeg,image/png,image/jpg,image/webp" onchange="document.getElementById('file-name').textContent = this.files[0].name">
                             </label>

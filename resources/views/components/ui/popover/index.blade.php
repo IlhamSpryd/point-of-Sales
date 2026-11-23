@@ -68,7 +68,7 @@
             left: left + 'px',
             transform: [transformX, transformY].filter(t => t).join(' '),
             transformOrigin: this.getTransformOrigin(),
-            zIndex: 50
+            zIndex: 40
         };
     },
 
@@ -105,7 +105,7 @@ x-modelable="popoverOpen"
         @if (isset($trigger))
             {{ $trigger }}
         @else
-            <div class="relative inline-flex items-center justify-center rounded-medium border border-border bg-background p-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary focus:outline-none disabled:pointer-events-none disabled:opacity-50">
+            <div class="relative inline-flex items-center justify-center rounded-medium border border-border bg-background p-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50">
                 Popover
             </div>
         @endif

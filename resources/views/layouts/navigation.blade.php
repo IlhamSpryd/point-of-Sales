@@ -220,7 +220,7 @@
                 x-transition:leave="transition-all duration-100 ease-in"
                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                 x-transition:leave-end="opacity-0 scale-95 translate-y-1"
-                class="fixed z-[70] bg-card text-foreground rounded-2xl shadow-xl border border-border overflow-hidden divide-y divide-border w-60"
+                class="fixed z-[55] bg-card text-foreground rounded-2xl shadow-xl border border-border overflow-hidden divide-y divide-border w-60"
                 :class="wide ? 'left-3 bottom-16' : 'left-[72px] bottom-3'">
                 <div class="px-3.5 py-3 bg-card">
                     <p class="text-xs font-bold text-foreground truncate">{{ auth()->user()->name ?? 'User' }}</p>

@@ -121,7 +121,7 @@
                         @keydown.enter="openReceiptDrawer(tx)"
                         tabindex="0"
                         role="button"
-                        class="hover:bg-secondary/40 transition-colors cursor-pointer group focus:outline-none focus:bg-secondary/50">
+                        class="hover:bg-secondary/40 transition-colors cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus:bg-secondary/50">
                         <td class="py-2 pr-3 font-mono font-semibold text-foreground flex items-center gap-1.5">
                             <span class="material-symbols-rounded text-sm text-foreground">receipt</span>
                             <span x-text="tx.order_code"></span>

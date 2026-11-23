@@ -10,6 +10,6 @@
     <input 
         type="search"
         placeholder="{{ $placeholder }}"
-        {{ $attributes->merge(['class' => 'flex-1 w-full h-full pr-3 bg-transparent outline-none text-foreground text-xs sm:text-[13px] font-medium placeholder:text-muted-foreground placeholder:font-normal']) }}
+        {{ $attributes->merge(['class' => 'flex-1 w-full h-full pr-3 bg-transparent outline-none focus:ring-0 text-foreground text-xs sm:text-[13px] font-medium placeholder:text-muted-foreground placeholder:font-normal']) }}
     >
 </div>

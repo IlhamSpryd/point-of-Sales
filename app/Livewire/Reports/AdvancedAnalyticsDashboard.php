@@ -48,6 +48,25 @@ class AdvancedAnalyticsDashboard extends Component
 
     public string $exportFeedback = '';
 
+    public function placeholder(): string
+    {
+        return <<<'HTML'
+        <div class="space-y-6 p-6 animate-pulse" role="status" aria-label="Loading analytics dashboard">
+            <div class="flex items-center justify-between pb-4 border-b border-border">
+                <div class="h-7 bg-muted rounded-xl w-64"></div>
+                <div class="h-9 bg-muted rounded-xl w-48"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="h-28 bg-card border border-border rounded-xl"></div>
+                <div class="h-28 bg-card border border-border rounded-xl"></div>
+                <div class="h-28 bg-card border border-border rounded-xl"></div>
+                <div class="h-28 bg-card border border-border rounded-xl"></div>
+            </div>
+            <div class="h-96 bg-card border border-border rounded-2xl"></div>
+        </div>
+        HTML;
+    }
+
     public function boot(): void
     {
         $this->bootRequiresTenantContext();

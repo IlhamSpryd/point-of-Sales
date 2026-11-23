@@ -120,56 +120,43 @@ class UiUxDesignSystemAuditTest extends TestCase
     public function test_modal_component_renders_accessible_dialog_roles(): void
     {
         $rendered = Blade::render(
-            '<x-modal name="test-dialog" :show="true"><div>Modal Content</div></x-modal>'
+            '<x-ui.modal name="test-dialog" :show="true"><div>Modal Content</div></x-ui.modal>'
         );
 
         $this->assertStringContainsString('role="dialog"', $rendered);
         $this->assertStringContainsString('aria-modal="true"', $rendered);
-        $this->assertStringContainsString('triggerEl', $rendered);
-        $this->assertStringContainsString('keydown.tab.prevent', $rendered);
+        $this->assertStringContainsString('modalId', $rendered);
+        $this->assertStringContainsString('x-trap.inert.noscroll', $rendered);
     }
 
     public function test_button_and_form_input_primitives_render_consistent_focus_and_disabled_tokens(): void
     {
-        // 1. Canonical Button Variants
-        $btnPrimary = Blade::render('<x-button variant="primary">Simpan</x-button>');
-        $this->assertStringContainsString('bg-primary', $btnPrimary);
+        // 1. Canonical <x-ui.button> Variants
+        $btnPrimary = Blade::render('<x-ui.button variant="primary">Simpan</x-ui.button>');
+        $this->assertStringContainsString('bg-foreground', $btnPrimary);
         $this->assertStringContainsString('focus-visible:ring-ring', $btnPrimary);
-        $this->assertStringContainsString('disabled:opacity-50', $btnPrimary);
+        $this->assertStringContainsString('disabled:opacity-75', $btnPrimary);
 
-        $btnSecondary = Blade::render('<x-button variant="secondary">Batal</x-button>');
-        $this->assertStringContainsString('border-border', $btnSecondary);
-        $this->assertStringContainsString('focus-visible:ring-ring', $btnSecondary);
+        $btnOutline = Blade::render('<x-ui.button variant="outline">Batal</x-ui.button>');
+        $this->assertStringContainsString('border-border', $btnOutline);
+        $this->assertStringContainsString('focus-visible:ring-ring', $btnOutline);
 
-        $btnDanger = Blade::render('<x-button variant="danger">Hapus</x-button>');
+        $btnDanger = Blade::render('<x-ui.button variant="destructive">Hapus</x-ui.button>');
         $this->assertStringContainsString('bg-destructive', $btnDanger);
         $this->assertStringContainsString('focus-visible:ring-destructive', $btnDanger);
 
-        // 2. Button Primitive Delegation Parity
-        $primBtn = Blade::render('<x-primary-button>Aksi Utama</x-primary-button>');
-        $this->assertStringContainsString('bg-primary', $primBtn);
-        $this->assertStringContainsString('focus-visible:ring-ring', $primBtn);
-
-        $secBtn = Blade::render('<x-secondary-button>Aksi Kedua</x-secondary-button>');
-        $this->assertStringContainsString('border-border', $secBtn);
-        $this->assertStringContainsString('focus-visible:ring-ring', $secBtn);
-
-        $danBtn = Blade::render('<x-danger-button>Aksi Hapus</x-danger-button>');
-        $this->assertStringContainsString('bg-destructive', $danBtn);
-        $this->assertStringContainsString('focus-visible:ring-destructive', $danBtn);
-
-        // 3. Form Input Primitives Parity
+        // 2. Form Input Primitives Parity
         $formInput = Blade::render('<x-form-input name="test_field" placeholder="Ketik disini" />');
         $this->assertStringContainsString('form-input', $formInput);
         $this->assertStringContainsString('focus:ring-apeiron-ink', $formInput);
         $this->assertStringContainsString('disabled:opacity-50', $formInput);
 
-        // 4. Form Label Primitives Parity
+        // 3. Form Label Primitives Parity
         $formLabel = Blade::render('<x-form-label for="field">Nama Field</x-form-label>');
         $this->assertStringContainsString('text-apeiron-ink', $formLabel);
         $this->assertStringContainsString('for="field"', $formLabel);
 
-        // 5. Redundant component removal verification (D4-001 & T-4.3 Pruning)
+        // 4. Redundant component removal verification (D4-001 & T-4.3 Pruning & Breeze cleanup)
         $prunedComponents = [
             'discount-manager.blade.php',
             'application-logo.blade.php',
@@ -181,6 +168,17 @@ class UiUxDesignSystemAuditTest extends TestCase
             'zinc-button.blade.php',
             'text-input.blade.php',
             'input-label.blade.php',
+            'toast.blade.php',
+            'button.blade.php',
+            'primary-button.blade.php',
+            'secondary-button.blade.php',
+            'danger-button.blade.php',
+            'alert.blade.php',
+            'badge.blade.php',
+            'breadcrumb.blade.php',
+            'skeleton.blade.php',
+            'modal.blade.php',
+            'empty-state.blade.php',
         ];
 
         foreach ($prunedComponents as $componentFile) {

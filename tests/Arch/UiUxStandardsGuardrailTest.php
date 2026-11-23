@@ -327,4 +327,81 @@ class UiUxStandardsGuardrailTest extends TestCase
         $this->assertStringContainsString('role="switch"', $content, 'Top navbar theme switch must declare role="switch" for accessibility.');
         $this->assertStringContainsString(':aria-checked="isDark.toString()"', $content, 'Top navbar theme switch must dynamically bind :aria-checked.');
     }
+
+    /**
+     * Security & Tabnabbing Guardrail (SEC-07):
+     * All links declaring target="_blank" must include rel="noopener noreferrer".
+     */
+    public function test_all_target_blank_links_must_declare_noopener_noreferrer(): void
+    {
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->viewsPath));
+        $violations = [];
+
+        /** @var \SplFileInfo $file */
+        foreach ($iterator as $file) {
+            if (! $file->isFile() || $file->getExtension() !== 'php' || ! str_ends_with($file->getFilename(), '.blade.php')) {
+                continue;
+            }
+
+            if (str_contains($file->getPathname(), '/vendor/')) {
+                continue;
+            }
+
+            $content = file_get_contents($file->getPathname()) ?: '';
+            $relPath = str_replace(dirname($this->viewsPath, 2).'/', '', $file->getPathname());
+
+            if (str_contains($content, 'target="_blank"')) {
+                $lines = file($file->getPathname(), FILE_IGNORE_NEW_LINES) ?: [];
+                foreach ($lines as $lineNum => $line) {
+                    if (str_contains($line, 'target="_blank"')) {
+                        if (! str_contains($line, 'rel="noopener noreferrer"')) {
+                            $violations[] = "{$relPath}:".($lineNum + 1).' -> missing rel="noopener noreferrer"';
+                        }
+                    }
+                }
+            }
+        }
+
+        $this->assertEmpty(
+            $violations,
+            "Reverse tabnabbing violations found (all target=\"_blank\" must declare rel=\"noopener noreferrer\"):\n".implode("\n", $violations)
+        );
+    }
+
+    /**
+     * WCAG 2.2 AAA Accessibility Guardrail (FE-A11Y-01):
+     * Zero outline-none without visible ring replacement on interactive elements.
+     */
+    public function test_zero_suppressed_outline_without_visible_ring_on_interactive_elements(): void
+    {
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->viewsPath));
+        $violations = [];
+
+        /** @var \SplFileInfo $file */
+        foreach ($iterator as $file) {
+            if (! $file->isFile() || $file->getExtension() !== 'php' || ! str_ends_with($file->getFilename(), '.blade.php')) {
+                continue;
+            }
+
+            if (str_contains($file->getPathname(), '/vendor/')) {
+                continue;
+            }
+
+            $lines = file($file->getPathname(), FILE_IGNORE_NEW_LINES) ?: [];
+            $relPath = str_replace(dirname($this->viewsPath, 2).'/', '', $file->getPathname());
+
+            foreach ($lines as $lineNum => $line) {
+                if (str_contains($line, 'outline-none')) {
+                    if (! str_contains($line, 'ring') && ! str_contains($line, '$typeClasses')) {
+                        $violations[] = "{$relPath}:".($lineNum + 1).' -> outline-none without ring: '.trim($line);
+                    }
+                }
+            }
+        }
+
+        $this->assertEmpty(
+            $violations,
+            "Interactive elements suppressing focus outline without visible ring indicator:\n".implode("\n", $violations)
+        );
+    }
 }

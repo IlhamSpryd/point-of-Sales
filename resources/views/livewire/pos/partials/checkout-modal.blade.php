@@ -77,7 +77,7 @@
                     <input type="text" inputmode="numeric" :value="amountFormatted"
                         x-on:input="setAmountInput($event)"
                         placeholder="0"
-                        class="w-full h-12 pl-12 pr-24 rounded-xl border-2 border-foreground tabular-nums text-xl font-bold text-foreground focus:outline-none bg-card">
+                        class="w-full h-12 pl-12 pr-24 rounded-xl border-2 border-foreground tabular-nums text-xl font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-ring bg-card">
                     <button type="button" x-on:click="fillRemaining()"
                         class="absolute right-2 top-1/2 -translate-y-1/2 px-2.5 py-1.5 rounded-lg bg-muted text-foreground text-xs hover:bg-secondary transition-colors font-medium">
                         Exact Amount
@@ -189,7 +189,7 @@
                     <div>
                         <label class="text-xs text-muted-foreground block mb-1">Reference Number / RRN (Optional)</label>
                         <input type="text" x-model="qrisReference" placeholder="e.g. RRN-99283741"
-                            class="w-full h-9 px-3 rounded-lg border border-border text-xs text-foreground tabular-nums focus:outline-none focus:border-foreground bg-card">
+                            class="w-full h-9 px-3 rounded-lg border border-border text-xs text-foreground tabular-nums focus:outline-none focus:border-foreground focus:ring-1 focus:ring-ring focus:ring-1 focus:ring-ring bg-card">
                     </div>
                 </div>
             </div>
@@ -219,7 +219,7 @@
                 <div>
                     <label class="text-xs text-muted-foreground block mb-1">Approval Code / Trace Number (EDC Slip)</label>
                     <input type="text" x-model="edcTrace" placeholder="e.g. 849201"
-                        class="w-full h-9 px-3 rounded-lg border border-border text-xs text-foreground tabular-nums focus:outline-none focus:border-foreground bg-card">
+                        class="w-full h-9 px-3 rounded-lg border border-border text-xs text-foreground tabular-nums focus:outline-none focus:border-foreground focus:ring-1 focus:ring-ring focus:ring-1 focus:ring-ring bg-card">
                 </div>
             </div>
 
@@ -258,7 +258,7 @@
                 <div>
                     <label class="text-xs text-muted-foreground block mb-1">Sender Name / Transfer Reference</label>
                     <input type="text" x-model="transferSender" placeholder="Account holder name or payment note..."
-                        class="w-full h-9 px-3 rounded-lg border border-border text-xs text-foreground focus:outline-none focus:border-foreground bg-card">
+                        class="w-full h-9 px-3 rounded-lg border border-border text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-ring focus:ring-1 focus:ring-ring bg-card">
                 </div>
             </div>
 
@@ -310,7 +310,7 @@
                         <input type="text" inputmode="numeric" :value="splitAmountFormatted"
                             x-on:input="setSplitAmountInput($event)"
                             placeholder="Allocation amount..."
-                            class="flex-1 h-9 px-3 rounded-lg border border-border tabular-nums text-xs text-foreground bg-card focus:outline-none focus:border-foreground">
+                            class="flex-1 h-9 px-3 rounded-lg border border-border tabular-nums text-xs text-foreground bg-card focus:outline-none focus:border-foreground focus:ring-1 focus:ring-ring">
                         <button type="button" x-on:click="addSplitLeg()"
                             class="px-3 h-9 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors">
                             + Allocate
@@ -324,28 +324,65 @@
         </div>
 
         <!-- Receipt Fallback State (FE-UX-02 / Browser Popup Blocked Protection) -->
-        <div x-show="receiptReady" x-cloak class="p-8 text-center space-y-4 flex flex-col items-center justify-center min-h-[320px]">
-            <div class="w-14 h-14 rounded-2xl bg-success-muted text-success flex items-center justify-center border border-success-border">
-                <span class="material-symbols-rounded text-[28px]">check_circle</span>
+        <div x-show="receiptReady" x-cloak class="p-6 sm:p-8 text-center space-y-4 flex flex-col items-center justify-center min-h-[360px]">
+            <div class="w-14 h-14 rounded-2xl bg-success-muted text-success flex items-center justify-center border border-success-border shadow-xs">
+                <span class="material-symbols-rounded text-[30px]" aria-hidden="true">check_circle</span>
             </div>
-            <div>
-                <h4 class="text-base font-bold text-foreground">Pembayaran Berhasil Diproses</h4>
-                <p class="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
-                    Struk kasir siap dicetak. Jika pencetakan otomatis terhalang oleh peramban, gunakan tombol di bawah ini:
+            
+            <div class="space-y-1">
+                <h4 class="text-base sm:text-lg font-bold text-foreground">Transaksi Sukses</h4>
+                <p class="text-xs text-muted-foreground max-w-sm mx-auto">
+                    Pembayaran telah diverifikasi dan tercatat ke pembukuan.
                 </p>
-                <div class="mt-2 text-xs font-sans font-bold text-foreground tabular-nums">
-                    No. Order: <span x-text="'#' + (receiptOrderCode || '')"></span>
+            </div>
+
+            <!-- Transaction Summary Box (WCAG AAA, zero badge pills, tabular-nums) -->
+            <div class="w-full max-w-md rounded-xl border border-border bg-muted/50 p-3.5 space-y-2 text-left">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-muted-foreground">Nomor Order</span>
+                    <span class="font-bold text-foreground tabular-nums" x-text="'#' + (receiptOrderCode || '')"></span>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-muted-foreground">Total Dibayar</span>
+                    <span class="font-semibold text-foreground tabular-nums" x-text="'Rp ' + formatRupiah(receiptPaidAmount || total)"></span>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-muted-foreground">Kembalian</span>
+                    <span class="font-bold text-foreground tabular-nums" x-text="'Rp ' + formatRupiah(receiptChangeAmount || 0)"></span>
                 </div>
             </div>
-            <div class="flex items-center justify-center gap-3 pt-3">
+
+            <!-- Warning Status Dot: QZ Tray Not Connected -->
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-warning-border bg-warning-muted/40 text-xs">
+                <span class="w-2 h-2 rounded-full bg-warning shrink-0 animate-pulse" aria-hidden="true"></span>
+                <span class="text-warning-foreground font-medium">QZ Tray Thermal Printer Tidak Terhubung</span>
+            </div>
+
+            <p x-show="qzRetryStatus === 'failed'" x-cloak class="text-xs text-destructive font-medium">
+                Koneksi thermal masih belum tersedia. Gunakan Cetak Struk peramban.
+            </p>
+            <p x-show="qzRetryStatus === 'success'" x-cloak class="text-xs text-success font-medium">
+                Struk berhasil dikirim ke printer thermal. Menutup jendela...
+            </p>
+
+            <!-- Action Buttons (Fresh User Gesture) -->
+            <div class="flex flex-wrap items-center justify-center gap-2.5 pt-2 w-full max-w-md">
                 <button type="button" @click="printReceiptDirect(receiptOrderCode)"
-                    class="h-11 px-5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 flex items-center gap-2 shadow-xs transition-colors cursor-pointer">
-                    <span class="material-symbols-rounded text-[18px]">print</span>
-                    <span>Cetak Ulang Struk</span>
+                    class="flex-1 min-h-[44px] h-11 px-4 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1">
+                    <span class="material-symbols-rounded text-[18px]" aria-hidden="true">print</span>
+                    <span>Cetak Struk (Browser Print)</span>
                 </button>
+
+                <button type="button" @click="retryQzPrint()" :disabled="retryingQz"
+                    class="min-h-[44px] h-11 px-3.5 rounded-xl bg-card text-foreground text-xs font-semibold hover:bg-secondary border border-border flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1">
+                    <span x-show="retryingQz" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-foreground/30 border-t-foreground" aria-hidden="true"></span>
+                    <span x-show="!retryingQz" class="material-symbols-rounded text-[18px]" aria-hidden="true">refresh</span>
+                    <span>Coba Ulang QZ</span>
+                </button>
+
                 <button type="button" @click="closeModal()"
-                    class="h-11 px-5 rounded-xl bg-muted text-foreground text-xs font-semibold hover:bg-muted/80 transition-colors cursor-pointer border border-border">
-                    <span>Selesai / Tutup</span>
+                    class="min-h-[44px] h-11 px-4 rounded-xl bg-secondary text-foreground text-xs font-semibold hover:bg-secondary/80 border border-border flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1">
+                    <span>Transaksi Baru / Tutup</span>
                 </button>
             </div>
         </div>
@@ -415,11 +452,36 @@
             pollTimer: null,
             receiptReady: false,
             receiptOrderCode: null,
+            receiptPaidAmount: 0,
+            receiptChangeAmount: 0,
+            retryingQz: false,
+            qzRetryStatus: null,
 
             printReceiptDirect(orderCode) {
                 const code = orderCode || this.receiptOrderCode;
                 if (!code) return;
                 window.open(`/transaction/receipt/${code}?autoprint=1`, '_blank', 'width=400,height=600');
+            },
+
+            async retryQzPrint() {
+                if (!this.receiptOrderCode || this.retryingQz) return;
+                this.retryingQz = true;
+                this.qzRetryStatus = null;
+                try {
+                    if (window.ApeironPrint?.printReceipt) {
+                        const ok = await window.ApeironPrint.printReceipt(this.receiptOrderCode);
+                        if (ok) {
+                            this.qzRetryStatus = 'success';
+                            setTimeout(() => this.closeModal(), 1200);
+                            return;
+                        }
+                    }
+                    this.qzRetryStatus = 'failed';
+                } catch (e) {
+                    this.qzRetryStatus = 'failed';
+                } finally {
+                    this.retryingQz = false;
+                }
             },
 
             getWire() {
@@ -454,6 +516,10 @@
                     this.submitting = false;
                     this.receiptReady = false;
                     this.receiptOrderCode = null;
+                    this.receiptPaidAmount = 0;
+                    this.receiptChangeAmount = 0;
+                    this.retryingQz = false;
+                    this.qzRetryStatus = null;
                     this.awaitingMidtransOrderCode = null;
                     this.awaitingSnapToken = null;
                     this.verifyingMidtrans = false;
@@ -465,6 +531,12 @@
 
                 this._receiptReadyHandler = (e) => {
                     this.receiptOrderCode = e.detail?.orderCode || null;
+                    this.receiptPaidAmount = e.detail?.paidAmount || this.amountRaw || this.total;
+                    this.receiptChangeAmount = (e.detail?.changeAmount !== undefined && e.detail?.changeAmount !== null)
+                        ? e.detail.changeAmount
+                        : Math.max(0, this.changePreview);
+                    this.retryingQz = false;
+                    this.qzRetryStatus = null;
                     this.receiptReady = true;
                 };
                 window.addEventListener('pos-receipt-ready', this._receiptReadyHandler);
@@ -775,6 +847,8 @@
             const payload = Array.isArray(e) ? e[0] : (e?.detail ?? e);
             const orderCode = payload?.orderCode;
             const isCash = Boolean(payload?.isCash);
+            const paidAmount = payload?.paidAmount;
+            const changeAmount = payload?.changeAmount;
 
             if (!orderCode) return;
 
@@ -801,7 +875,9 @@
             } else {
                 // FE-UX-02: Jangan tutup modal secara diam-diam saat popup window.open diblokir browser.
                 // Tampilkan fallback state dengan tombol user-gesture "Cetak Ulang Struk"
-                window.dispatchEvent(new CustomEvent('pos-receipt-ready', { detail: { orderCode } }));
+                window.dispatchEvent(new CustomEvent('pos-receipt-ready', {
+                    detail: { orderCode, paidAmount, changeAmount }
+                }));
             }
         });
     }

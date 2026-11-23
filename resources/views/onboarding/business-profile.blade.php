@@ -160,7 +160,7 @@
             <span>&copy; {{ date('Y') }} Apeiron</span>
             <form action="{{ route('logout') }}" method="POST" class="inline">
                 @csrf
-                <button type="submit" class="hover:text-foreground underline focus:outline-none cursor-pointer">
+                <button type="submit" class="hover:text-foreground underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer">
                     Sign out temporarily (progress is saved)
                 </button>
             </form>

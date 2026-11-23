@@ -31,7 +31,7 @@
     <!-- Filter & Search Toolbar -->
     <x-erp.filter-bar search-placeholder="Search journal number, reference...">
         <x-slot:filters>
-            <select wire:model.live="statusFilter" class="h-9 text-xs rounded-xl border border-input bg-background text-foreground px-3 outline-none">
+            <select wire:model.live="statusFilter" class="h-9 text-xs rounded-xl border border-input bg-background text-foreground px-3 outline-none focus:ring-1 focus:ring-ring">
                 <option value="">All Statuses</option>
                 @foreach ($statuses as $status)
                     <option value="{{ $status->value }}">{{ $status->value }}</option>
@@ -42,11 +42,11 @@
                 <span>From:</span>
                 <input type="date"
                        wire:model.live="dateFrom"
-                       class="h-9 px-2.5 text-xs rounded-xl border border-input bg-background text-foreground focus:outline-none font-sans">
+                       class="h-9 px-2.5 text-xs rounded-xl border border-input bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring font-sans">
                 <span>To:</span>
                 <input type="date"
                        wire:model.live="dateTo"
-                       class="h-9 px-2.5 text-xs rounded-xl border border-input bg-background text-foreground focus:outline-none font-sans">
+                       class="h-9 px-2.5 text-xs rounded-xl border border-input bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring font-sans">
             </div>
         </x-slot:filters>
     </x-erp.filter-bar>

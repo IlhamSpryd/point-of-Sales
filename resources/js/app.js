@@ -4,7 +4,6 @@ import commandPalette from './components/commandPalette';
 import { erpMotion, initErpMotion, registerGsapAlpineDirectives } from './motion/erp-motion';
 import { initSidebarPersistence } from './navigation/sidebar-persistence';
 import dashboardChart from './components/dashboardCharts';
-import dashboardEcharts from './components/dashboardEcharts';
 import './echo';
 
 /**
@@ -32,6 +31,78 @@ function erpChart(...args) {
                 })
                 .catch((err) => {
                     console.error('[erpChart] Dynamic component import failed:', err);
+                });
+        },
+
+        destroy() {
+            destroyed = true;
+            if (instance && typeof instance.destroy === 'function') {
+                instance.destroy.call(this);
+                instance = null;
+            }
+        },
+    };
+}
+
+/**
+ * Dynamic proxy component for dashboardEcharts.
+ * Asynchronously loads ./components/dashboardEcharts only when executive analytics charts are mounted.
+ * Keeps synchronous reactive variables defined immediately for zero Alpine reactivity lag.
+ */
+function dashboardEcharts(config = {}) {
+    let instance = null;
+    let destroyed = false;
+
+    return {
+        type: config.type || 'revenue',
+        drilldownType: config.drilldownType || config.type,
+        chartData: config.data || {},
+        loading: false,
+        granularity: config.granularity || 'daily',
+        period: config.period || '30d',
+        chartStyle: config.chartStyle || 'line',
+        metricType: config.metricType || 'transactions',
+        activeSeries: config.activeSeries || { gross: false, net: true, prior: true, target: false },
+
+        async setPeriod(p) {
+            this.period = p;
+            if (instance) return instance.setPeriod.call(this, p);
+        },
+
+        async setGranularity(g) {
+            this.granularity = g;
+            if (instance) return instance.setGranularity.call(this, g);
+        },
+
+        async setChartStyle(s) {
+            this.chartStyle = s;
+            if (instance) return instance.setChartStyle.call(this, s);
+        },
+
+        toggleSeries(key) {
+            if (this.activeSeries && this.activeSeries[key] !== undefined) {
+                this.activeSeries[key] = !this.activeSeries[key];
+            }
+            if (instance) instance.toggleSeries.call(this, key);
+        },
+
+        async setMetricType(m) {
+            this.metricType = m;
+            if (instance) return instance.setMetricType.call(this, m);
+        },
+
+        init() {
+            import('./components/dashboardEcharts')
+                .then(({ default: factory }) => {
+                    if (destroyed) return;
+                    instance = factory.call(this, config);
+                    Object.assign(this, instance);
+                    if (typeof instance.init === 'function') {
+                        instance.init.call(this);
+                    }
+                })
+                .catch((err) => {
+                    console.error('[dashboardEcharts] Dynamic component import failed:', err);
                 });
         },
 

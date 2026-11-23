@@ -40,7 +40,7 @@
                 <div class="flex items-center gap-1.5">
                     <input type="text" wire:model="voucherInput" wire:keydown.enter.prevent="applyVoucher"
                         placeholder="Coupon / voucher code..."
-                        class="flex-1 min-h-[40px] h-10 px-3 text-xs bg-background border border-border rounded-md text-foreground placeholder-muted-foreground focus:border-foreground focus:outline-none uppercase tabular-nums transition-colors" />
+                        class="flex-1 min-h-[40px] h-10 px-3 text-xs bg-background border border-border rounded-md text-foreground placeholder-muted-foreground focus:border-foreground focus:outline-none focus:ring-1 focus:ring-ring uppercase tabular-nums transition-colors" />
                     <button type="button" wire:click.prevent="applyVoucher"
                         class="min-h-[40px] h-10 px-3 text-xs font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-md transition-colors shadow-2xs cursor-pointer">
                         Apply
