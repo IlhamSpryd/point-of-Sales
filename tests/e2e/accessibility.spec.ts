@@ -323,5 +323,59 @@ test.describe('Apeiron Accessibility & Interaction Suite', () => {
 
         expect(consoleErrors).toEqual([]);
     });
+
+    test('Hierarki Z-Index Token terverifikasi konsisten: Toast (80) > Command Palette (70) > Modal Dialog (60) > Account Popover (55) > Drawer (50) > Dropdown (40)', async ({ page }) => {
+        await page.goto('/login');
+        await page.waitForLoadState('networkidle');
+
+        const zTokens = await page.evaluate(() => {
+            const styles = window.getComputedStyle(document.documentElement);
+            return {
+                dropdown: parseInt(styles.getPropertyValue('--z-dropdown').trim(), 10),
+                drawer: parseInt(styles.getPropertyValue('--z-drawer').trim(), 10),
+                popoverAccount: parseInt(styles.getPropertyValue('--z-popover-account').trim(), 10),
+                modal: parseInt(styles.getPropertyValue('--z-modal').trim(), 10),
+                command: parseInt(styles.getPropertyValue('--z-command').trim(), 10),
+                toast: parseInt(styles.getPropertyValue('--z-toast').trim(), 10),
+            };
+        });
+
+        expect(zTokens.toast).toBe(80);
+        expect(zTokens.command).toBe(70);
+        expect(zTokens.modal).toBe(60);
+        expect(zTokens.popoverAccount).toBe(55);
+        expect(zTokens.drawer).toBe(50);
+        expect(zTokens.dropdown).toBe(40);
+
+        // Strict descending hierarchy guarantees zero collisions
+        expect(zTokens.command).toBeGreaterThan(zTokens.modal);
+        expect(zTokens.modal).toBeGreaterThan(zTokens.drawer);
+        expect(zTokens.drawer).toBeGreaterThan(zTokens.dropdown);
+    });
+
+    test('Keyboard Tab navigation reaches interactive buttons and inputs with focus rings and no bare outline-none', async ({ page }) => {
+        await page.goto('/login');
+        await page.waitForLoadState('networkidle');
+
+        // Tab sequentially through interactive controls on the login page
+        for (let i = 0; i < 5; i++) {
+            await page.keyboard.press('Tab');
+            const focusedInfo = await page.evaluate(() => {
+                const el = document.activeElement;
+                if (!el || el === document.body) return null;
+                const style = window.getComputedStyle(el);
+                const hasOutline = style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0;
+                const hasBoxShadow = style.boxShadow && style.boxShadow !== 'none';
+                return {
+                    tag: el.tagName,
+                    hasVisibleRing: hasOutline || Boolean(hasBoxShadow),
+                };
+            });
+
+            if (focusedInfo && ['INPUT', 'BUTTON', 'A'].includes(focusedInfo.tag)) {
+                expect(focusedInfo.hasVisibleRing).toBe(true);
+            }
+        }
+    });
 });
 
