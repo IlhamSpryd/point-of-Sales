@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 #[Layout('kds.index')]
@@ -28,8 +29,10 @@ class Board extends Component
 
     public string $stationFilter = 'all';
 
+    #[Locked]
     public ?int $tenantId = null;
 
+    #[Locked]
     public ?int $storeId = null;
 
     public function boot(): void

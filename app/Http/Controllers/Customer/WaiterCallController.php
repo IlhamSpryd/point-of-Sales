@@ -29,17 +29,17 @@ class WaiterCallController extends Controller
             return response()->json(['message' => 'Invalid table session.'], 422);
         }
 
-        // Debounce: maks 1 panggilan per meja per 60 detik.
-        $lockKey = "waiter_call_table_{$tableId}";
+        $table = Table::withoutGlobalScopes()->find($tableId);
+        $tenantId = $table ? (int) $table->tenant_id : (app(TenantContext::class)->getTenantId() ?? 0);
+        $storeId = $table ? (int) $table->store_id : app(TenantContext::class)->getStoreId();
+
+        // Debounce: maks 1 panggilan per meja per 60 detik (namespaced by tenant).
+        $lockKey = "waiter_call_t{$tenantId}_table_{$tableId}";
         if (! Cache::add($lockKey, true, 60)) {
             return response()->json(['message' => "Staff has already been notified for {$tableName} and is on their way."]);
         }
 
         Log::channel('stack')->info("[WAITER-CALL] Customer at {$tableName} (ID:{$tableId}) called staff.");
-
-        $table = Table::withoutGlobalScopes()->find($tableId);
-        $tenantId = $table ? (int) $table->tenant_id : app(TenantContext::class)->getTenantId();
-        $storeId = $table ? (int) $table->store_id : app(TenantContext::class)->getStoreId();
 
         // Dispatch event push notification ke KDS/Kasir inside afterCommit
         DB::afterCommit(function () use ($tableId, $tableName, $tenantId, $storeId) {

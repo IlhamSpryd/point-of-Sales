@@ -118,58 +118,60 @@ class WhatsAppNotificationService
         }
 
         try {
-            // Set konteks tenant untuk eksekusi terisolasi
-            $prevTenantId = $this->tenantContext->getTenantId();
-            $this->tenantContext->setTenantId($outbox->tenant_id);
+            return $this->tenantContext->runAs((int) $outbox->tenant_id, null, function () use ($outbox): bool {
+                try {
+                    $payload = $outbox->payload;
+                    $parameters = [
+                        'customer_name' => $payload['customer_name'] ?? 'Pelanggan',
+                        'store_name' => $payload['store_name'] ?? 'Toko',
+                        'order_code' => $payload['order_code'] ?? '-',
+                        'total_amount' => $payload['total_amount'] ?? '0',
+                        'receipt_url' => $payload['receipt_url'] ?? '',
+                    ];
 
-            $payload = $outbox->payload;
-            $parameters = [
-                'customer_name' => $payload['customer_name'] ?? 'Pelanggan',
-                'store_name' => $payload['store_name'] ?? 'Toko',
-                'order_code' => $payload['order_code'] ?? '-',
-                'total_amount' => $payload['total_amount'] ?? '0',
-                'receipt_url' => $payload['receipt_url'] ?? '',
-            ];
+                    $result = $this->gateway->sendTemplateMessage(
+                        $outbox->recipient_phone,
+                        $outbox->template_id ?? 'pos_digital_receipt_v1',
+                        $parameters
+                    );
 
-            $result = $this->gateway->sendTemplateMessage(
-                $outbox->recipient_phone,
-                $outbox->template_id ?? 'pos_digital_receipt_v1',
-                $parameters
-            );
+                    if ($result['success']) {
+                        $outbox->update([
+                            'status' => WhatsAppMessageOutbox::STATUS_SENT,
+                            'sent_at' => now(),
+                            'provider_message_id' => $result['message_id'],
+                            'last_error' => null,
+                        ]);
 
-            if ($result['success']) {
-                $outbox->update([
-                    'status' => WhatsAppMessageOutbox::STATUS_SENT,
-                    'sent_at' => now(),
-                    'provider_message_id' => $result['message_id'],
-                    'last_error' => null,
-                ]);
+                        return true;
+                    }
 
-                return true;
-            }
+                    // Gagal kirim dari sisi provider
+                    $newAttempts = $outbox->attempts + 1;
+                    $outbox->update([
+                        'attempts' => $newAttempts,
+                        'status' => $newAttempts >= 3 ? WhatsAppMessageOutbox::STATUS_FAILED : WhatsAppMessageOutbox::STATUS_PENDING,
+                        'last_error' => $result['error'] ?? 'Pengiriman WhatsApp ditolak gateway provider',
+                    ]);
 
-            // Gagal kirim dari sisi provider
-            $newAttempts = $outbox->attempts + 1;
-            $outbox->update([
-                'attempts' => $newAttempts,
-                'status' => $newAttempts >= 3 ? WhatsAppMessageOutbox::STATUS_FAILED : WhatsAppMessageOutbox::STATUS_PENDING,
-                'last_error' => $result['error'] ?? 'Pengiriman WhatsApp ditolak gateway provider',
-            ]);
+                    return false;
+                } catch (Throwable $e) {
+                    $newAttempts = $outbox->attempts + 1;
+                    $outbox->update([
+                        'attempts' => $newAttempts,
+                        'status' => $newAttempts >= 3 ? WhatsAppMessageOutbox::STATUS_FAILED : WhatsAppMessageOutbox::STATUS_PENDING,
+                        'last_error' => $e->getMessage(),
+                    ]);
 
-            return false;
+                    return false;
+                }
+            });
         } catch (Throwable $e) {
-            $newAttempts = $outbox->attempts + 1;
-            $outbox->update([
-                'attempts' => $newAttempts,
-                'status' => $newAttempts >= 3 ? WhatsAppMessageOutbox::STATUS_FAILED : WhatsAppMessageOutbox::STATUS_PENDING,
-                'last_error' => $e->getMessage(),
+            Log::error('Error executing WhatsApp notification job: '.$e->getMessage(), [
+                'outbox_id' => $outboxId,
             ]);
 
             return false;
-        } finally {
-            if (isset($prevTenantId)) {
-                $this->tenantContext->setTenantId($prevTenantId);
-            }
         }
     }
 }

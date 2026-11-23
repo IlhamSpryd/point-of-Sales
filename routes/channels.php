@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Modules\Organization\Models\Role;
 use App\Modules\Organization\Models\User;
 use Illuminate\Support\Facades\Broadcast;
 
@@ -83,7 +84,26 @@ Broadcast::channel('tenant.{tenantId}.kds', function (User $user, int|string $te
         return false;
     }
 
-    $role = $user->role;
+    $role = $user->role ?? Role::withoutGlobalScopes()->where('tenant_id', (int) $user->tenant_id)->find($user->role_id);
+
+    return (bool) ($role && (
+        $role->name === 'Owner' ||
+        $role->name === 'Cook' ||
+        $role->name === 'Barista' ||
+        (bool) $role->is_admin ||
+        $role->hasPermission('*') ||
+        $role->hasPermission('kds.access') ||
+        $role->hasPermission('kds.view') ||
+        $role->hasPermission('orders.*')
+    ));
+});
+
+Broadcast::channel('kds.tenant.{tenantId}', function (User $user, int|string $tenantId): bool {
+    if ((int) $user->tenant_id !== (int) $tenantId) {
+        return false;
+    }
+
+    $role = $user->role ?? Role::withoutGlobalScopes()->where('tenant_id', (int) $user->tenant_id)->find($user->role_id);
 
     return (bool) ($role && (
         $role->name === 'Owner' ||

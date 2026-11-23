@@ -39,8 +39,9 @@ class ReapStuckOutboxCommand extends Command
         $this->info("Scanning for outbox rows stuck in PROCESSING for >= {$minutes} minutes...");
 
         $reaped = $reaper->reapStuckProcessingRows($minutes);
+        $reapedInboxes = $reaper->reapStuckPaymentInboxes($minutes);
 
-        $this->info("Successfully reaped {$reaped} stuck outbox record(s).");
+        $this->info("Successfully reaped {$reaped} stuck outbox record(s) and {$reapedInboxes} stuck payment inbox record(s).");
 
         return self::SUCCESS;
     }

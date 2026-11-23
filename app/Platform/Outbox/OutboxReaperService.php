@@ -6,6 +6,7 @@ namespace App\Platform\Outbox;
 
 use App\Modules\Finance\Enums\OutboxStatusEnum;
 use App\Modules\Finance\Models\FinancialEventOutbox;
+use App\Modules\Sales\Models\PaymentInbox;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -70,6 +71,44 @@ class OutboxReaperService
             }
 
             return $reapedCount;
+        });
+    }
+
+    /**
+     * Reaps stuck PROCESSING payment_inbox rows back to FAILED for retry (BE-CONC-01).
+     *
+     * @param  int  $staleMinutes  Threshold in minutes to consider a processing row stuck
+     * @return int Number of reaped rows
+     */
+    public function reapStuckPaymentInboxes(int $staleMinutes = 5): int
+    {
+        $cutoff = Carbon::now()->subMinutes($staleMinutes);
+
+        return DB::transaction(function () use ($cutoff, $staleMinutes) {
+            $stuckInboxes = PaymentInbox::withoutGlobalScopes()
+                ->where('status', 'processing')
+                ->where('updated_at', '<=', $cutoff)
+                ->lockForUpdate()
+                ->get();
+
+            $reaped = 0;
+            foreach ($stuckInboxes as $inbox) {
+                $inbox->update([
+                    'status' => 'failed',
+                    'error_message' => "Processing timeout / worker killed; reaped after >= {$staleMinutes} minutes for retry.",
+                ]);
+
+                Log::warning("[PAYMENT-INBOX-REAPER] PaymentInbox #{$inbox->id} transitioned to failed for retry", [
+                    'inbox_id' => $inbox->id,
+                    'tenant_id' => $inbox->tenant_id,
+                    'provider' => $inbox->provider,
+                    'idempotency_key' => $inbox->idempotency_key,
+                ]);
+
+                $reaped++;
+            }
+
+            return $reaped;
         });
     }
 }

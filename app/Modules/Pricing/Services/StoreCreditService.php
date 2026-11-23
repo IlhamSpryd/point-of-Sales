@@ -36,6 +36,11 @@ class StoreCreditService
         ?string $idempotencyKey = null
     ): StoreCreditLedger {
         $tenantId = (int) ($customer->tenant_id ?? $this->tenantContext->requireTenantId());
+
+        if ($this->tenantContext->hasTenant() && (int) $customer->tenant_id !== $this->tenantContext->getTenantId()) {
+            throw new DomainException('Cannot issue store credit for a customer of another tenant.');
+        }
+
         $issueAmount = bcadd(bc_num($amount), '0', 2);
 
         if (bccomp($issueAmount, '0.00', 2) <= 0) {
@@ -114,6 +119,11 @@ class StoreCreditService
         ?string $idempotencyKey = null
     ): StoreCreditLedger {
         $tenantId = (int) ($customer->tenant_id ?? $this->tenantContext->requireTenantId());
+
+        if ($this->tenantContext->hasTenant() && (int) $customer->tenant_id !== $this->tenantContext->getTenantId()) {
+            throw new DomainException('Cannot redeem store credit for a customer of another tenant.');
+        }
+
         $redeemAmount = bcadd(bc_num($amount), '0', 2);
 
         if (bccomp($redeemAmount, '0.00', 2) <= 0) {

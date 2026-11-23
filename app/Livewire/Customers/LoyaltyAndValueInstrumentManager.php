@@ -127,6 +127,13 @@ class LoyaltyAndValueInstrumentManager extends Component
             'gift_card_amount' => 'required|numeric|min:1000',
         ]);
 
+        if ($this->gift_card_customer_id) {
+            $customer = Customer::withoutGlobalScopes()
+                ->where('tenant_id', app(TenantContext::class)->requireTenantId())
+                ->findOrFail($this->gift_card_customer_id);
+            $this->authorize('view', $customer);
+        }
+
         $service = app(GiftCardService::class);
         $service->issueGiftCard([
             'card_number' => $this->gift_card_number ?: null,
@@ -144,12 +151,18 @@ class LoyaltyAndValueInstrumentManager extends Component
 
     public function issueStoreCredit(): void
     {
+        $tenantId = app(TenantContext::class)->requireTenantId();
+
         $this->validate([
             'store_credit_customer_id' => 'required|integer',
             'store_credit_amount' => 'required|numeric|min:1000',
         ]);
 
-        $customer = Customer::withoutGlobalScopes()->findOrFail($this->store_credit_customer_id);
+        $customer = Customer::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->findOrFail($this->store_credit_customer_id);
+
+        $this->authorize('issueStoreCredit', $customer);
 
         $service = app(StoreCreditService::class);
         $service->issueStoreCredit(

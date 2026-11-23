@@ -82,6 +82,14 @@ class CustomerPolicy
             || (bool) $user->role?->is_admin;
     }
 
+    public function issueStoreCredit(User $user, Customer $customer): bool
+    {
+        return $this->sameTenant($user, $customer)
+            && ($user->hasPermission('credit.manage_limit')
+                || in_array($user->role?->name, ['Owner', 'Manager', 'Admin', 'Finance'], true)
+                || (bool) $user->role?->is_admin);
+    }
+
     public function viewCredit(User $user, Customer $customer): bool
     {
         return $this->sameTenant($user, $customer)

@@ -41,7 +41,20 @@ class InventoryApiController extends Controller
             ]);
 
         if ($request->filled('store_id')) {
-            $query->where('product_stock_balances.store_id', (int) $request->input('store_id'));
+            $storeId = (int) $request->input('store_id');
+            $storeBelongsToTenant = DB::table('stores')
+                ->where('tenant_id', $tenantId)
+                ->where('id', $storeId)
+                ->exists();
+
+            if (! $storeBelongsToTenant || ! $user->canAccessStore($storeId)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Unauthorized access to the requested store.',
+                ], 403);
+            }
+
+            $query->where('product_stock_balances.store_id', $storeId);
         }
 
         if ($request->filled('product_id')) {
