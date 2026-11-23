@@ -93,7 +93,7 @@
                     <tr>
                         <th scope="col" class="px-5 py-3.5 w-64">Employee Name</th>
                         @foreach ($days as $day)
-                            <th scope="col" wire:key="day-{{ $day->id ?? (None ?? $loop->index) }}" class="px-3 py-3.5 text-center {{ $day->isToday() ? 'bg-primary/10 text-primary font-bold' : '' }}">
+                            <th scope="col" wire:key="day-{{ $day->id ?? $loop->index }}" class="px-3 py-3.5 text-center {{ $day->isToday() ? 'bg-primary/10 text-primary font-bold' : '' }}">
                                 <div>{{ $day->format('D') }}</div>
                                 <div class="text-xs font-normal tabular-nums">{{ $day->format('d/m') }}</div>
                             </th>
@@ -117,7 +117,7 @@
                                     $dateStr = $day->toDateString();
                                     $sched = $schedules->first(fn($s) => $s->employee_id === $emp->id && $s->schedule_date->toDateString() === $dateStr);
                                 @endphp
-                                <td wire:key="day-{{ $day->id ?? (None ?? $loop->index) }}" class="px-2 py-2 text-center align-middle {{ $day->isToday() ? 'bg-primary/5' : '' }}">
+                                <td wire:key="day-{{ $day->id ?? $loop->index }}" class="px-2 py-2 text-center align-middle {{ $day->isToday() ? 'bg-primary/5' : '' }}">
                                     @if ($sched)
                                         <button wire:click="openAssignModal({{ $emp->id }}, '{{ $dateStr }}')"
                                             class="w-full px-2.5 py-1.5 bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-xl text-xs font-medium text-primary transition-colors cursor-pointer text-left">

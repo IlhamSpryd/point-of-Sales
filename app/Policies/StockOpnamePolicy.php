@@ -51,9 +51,13 @@ class StockOpnamePolicy
         return $this->canManage($user) && $this->sameTenantAndStore($user, $opname);
     }
 
-    public function create(User $user, int $storeId): bool
+    public function create(User $user, ?int $storeId = null): bool
     {
-        return $this->canManage($user) && $this->hasBranchAccess($user, $storeId);
+        if ($storeId !== null) {
+            return $this->canManage($user) && $this->hasBranchAccess($user, $storeId);
+        }
+
+        return $this->canManage($user);
     }
 
     public function startCounting(User $user, StockOpname $opname): bool

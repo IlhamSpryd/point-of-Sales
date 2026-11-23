@@ -31,3 +31,5 @@ ngrok
 /audit.php
 /scratch
 /.agents/teamwork/
+/test-results/
+/playwright-report/

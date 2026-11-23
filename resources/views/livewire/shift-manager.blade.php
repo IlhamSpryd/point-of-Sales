@@ -275,7 +275,7 @@
                             </thead>
                             <tbody class="divide-y divide-border">
                                 @foreach($handovers as $ho)
-                                    <tr wire:key="ho-{{ $ho->id ?? (None ?? $loop->index) }}">
+                                    <tr wire:key="ho-{{ $ho->id ?? $loop->index }}">
                                         <td class="py-2.5 px-3 text-muted-foreground">{{ $ho->initiated_at->format('d/m H:i') }}</td>
                                         <td class="py-2.5 px-3 font-medium text-foreground">{{ $ho->fromUser?->name }}</td>
                                         <td class="py-2.5 px-3 font-medium text-foreground">{{ $ho->toUser?->name }}</td>

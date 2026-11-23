@@ -356,7 +356,7 @@
                         </thead>
                         <tbody class="divide-y border-border">
                             @foreach($selectedQuotation->lines as $line)
-                                <tr wire:key="line-{{ $line->id ?? (None ?? $loop->index) }}">
+                                <tr wire:key="line-{{ $line->id ?? $loop->index }}">
                                     <td class="p-3 font-sans text-muted-foreground">{{ $line->line_number }}</td>
                                     <td class="p-3">
                                         <div class="font-medium text-foreground">{{ $line->description ?: ($line->product?->product_name ?? $line->product?->name) }}</div>

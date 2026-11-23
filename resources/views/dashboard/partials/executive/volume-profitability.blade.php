@@ -74,7 +74,7 @@
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2.5 mt-2 border-t border-border text-[11px]">
                 @foreach($pmItems as $item)
                     <div class="flex items-center gap-1.5 truncate" title="{{ $item['name'] }}">
-                        <span class="w-2 h-2 rounded-full shrink-0 {{ $item['name'] === 'QRIS' ? 'bg-[#38BDF8]' : ($item['name'] === 'Card / EDC' ? 'bg-[#A78BFA]' : ($item['name'] === 'Cash' ? 'bg-[#4ADE80]' : 'bg-[#FBBF24]')) }}"></span>
+                        <span class="w-2 h-2 rounded-full shrink-0 {{ $item['name'] === 'QRIS' ? 'bg-info' : ($item['name'] === 'Card / EDC' ? 'bg-chart-4' : ($item['name'] === 'Cash' ? 'bg-positive' : 'bg-warning')) }}"></span>
                         <span class="font-medium text-foreground truncate max-w-[95px]">{{ $item['name'] === 'Bank Transfer / Invoice' ? 'Transfer/Inv' : $item['name'] }}</span>
                         <span class="text-[10px] text-muted-foreground tabular-nums">({{ $item['share_pct'] }}%)</span>
                     </div>

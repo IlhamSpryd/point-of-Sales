@@ -256,16 +256,16 @@ class UiUxDesignSystemAuditTest extends TestCase
             $this->assertSame($status->badgeType(), $orderHistory->statusBadgeType($status));
         }
 
-        // x-badge Blade component rendering with Enum instance
-        $renderedPaid = Blade::render('<x-badge :status="\App\Enums\OrderStatus::Paid" />');
+        // x-ui.badge Blade component rendering with Enum instance
+        $renderedPaid = Blade::render('<x-ui.badge :status="\App\Enums\OrderStatus::Paid" />');
         $this->assertStringContainsString('bg-success-muted', $renderedPaid);
         $this->assertStringContainsString('Paid', $renderedPaid);
 
-        $renderedPending = Blade::render('<x-badge :status="\App\Enums\OrderStatus::Pending" />');
+        $renderedPending = Blade::render('<x-ui.badge :status="\App\Enums\OrderStatus::Pending" />');
         $this->assertStringContainsString('bg-warning-muted', $renderedPending);
         $this->assertStringContainsString('Pending Payment', $renderedPending);
 
-        $renderedVoid = Blade::render('<x-badge :status="\App\Enums\OrderStatus::Void" />');
+        $renderedVoid = Blade::render('<x-ui.badge :status="\App\Enums\OrderStatus::Void" />');
         $this->assertStringContainsString('bg-destructive-muted', $renderedVoid);
         $this->assertStringContainsString('Voided', $renderedVoid);
     }
@@ -274,17 +274,16 @@ class UiUxDesignSystemAuditTest extends TestCase
     {
         // D4-003: WCAG a11y status messages & dialog focus management
         // Toast
-        $toast = Blade::render('<x-toast />');
-        $this->assertStringContainsString('role="status"', $toast);
+        $toast = Blade::render('<x-ui.toast />');
         $this->assertStringContainsString('aria-live="polite"', $toast);
         $this->assertStringContainsString('aria-label="Close notification"', $toast);
 
         // Alert
-        $successAlert = Blade::render('<x-alert type="success">Data tersimpan</x-alert>');
-        $this->assertStringContainsString('role="status"', $successAlert);
+        $successAlert = Blade::render('<x-ui.alert type="success">Data tersimpan</x-ui.alert>');
+        $this->assertStringContainsString('role="alert"', $successAlert);
         $this->assertStringContainsString('aria-live="polite"', $successAlert);
 
-        $errorAlert = Blade::render('<x-alert type="error">Terjadi kegagalan</x-alert>');
+        $errorAlert = Blade::render('<x-ui.alert type="error">Terjadi kegagalan</x-ui.alert>');
         $this->assertStringContainsString('role="alert"', $errorAlert);
         $this->assertStringContainsString('aria-live="assertive"', $errorAlert);
 

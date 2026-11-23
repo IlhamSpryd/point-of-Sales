@@ -64,7 +64,7 @@
                 </x-slot:head>
 
                 @foreach ($opnames as $opname)
-                    <tr wire:key="opname-{{ $opname->id ?? (None ?? $loop->index) }}" class="hover:bg-secondary transition-colors duration-150">
+                    <tr wire:key="opname-{{ $opname->id ?? $loop->index }}" class="hover:bg-secondary transition-colors duration-150">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="text-sm font-bold text-foreground">{{ $opname->opname_number }}</span>
                             <div class="text-xs text-muted-foreground">Created: {{ $opname->created_at->format('d M Y H:i') }}</div>
@@ -198,7 +198,7 @@
                         </thead>
                         <tbody class="divide-y divide-border">
                             @foreach ($activeOpname->items as $item)
-                                <tr wire:key="item-{{ $item->id ?? (None ?? $loop->index) }}">
+                                <tr wire:key="item-{{ $item->id ?? $loop->index }}">
                                     <td class="p-3">
                                         <div class="font-bold text-foreground">
                                             {{ $item->item_type === 'product' ? ($item->product?->product_name ?? $item->product?->name) : $item->ingredient?->name }}
@@ -247,7 +247,7 @@
 
                 <div class="space-y-4 max-h-96 overflow-y-auto mb-6">
                     @foreach ($driftedItems as $d)
-                        <div wire:key="d-{{ $d->id ?? (None ?? $loop->index) }}" class="p-4 rounded-2xl bg-destructive-muted border border-destructive text-xs text-foreground flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div wire:key="d-{{ $d->id ?? $loop->index }}" class="p-4 rounded-2xl bg-destructive-muted border border-destructive text-xs text-foreground flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div>
                                 <div class="font-bold text-sm text-foreground">{{ $d['name'] }}</div>
                                 <div class="text-muted-foreground uppercase">{{ $d['item_type'] }} #{{ $d['item_id'] }}</div>
@@ -320,7 +320,7 @@
                         </thead>
                         <tbody class="divide-y divide-border">
                             @foreach ($selectedOpname->items as $item)
-                                <tr wire:key="item-{{ $item->id ?? (None ?? $loop->index) }}">
+                                <tr wire:key="item-{{ $item->id ?? $loop->index }}">
                                     <td class="p-3">
                                         <div class="font-bold text-foreground">
                                             {{ $item->item_type === 'product' ? ($item->product?->product_name ?? $item->product?->name) : $item->ingredient?->name }}

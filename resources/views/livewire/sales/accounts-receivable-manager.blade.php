@@ -359,7 +359,7 @@
                             </thead>
                             <tbody class="divide-y border-border">
                                 @foreach($selectedInvoice->lines as $line)
-                                    <tr wire:key="line-{{ $line->id ?? (None ?? $loop->index) }}">
+                                    <tr wire:key="line-{{ $line->id ?? $loop->index }}">
                                         <td class="py-2.5 px-3 font-sans text-muted-foreground">{{ $line->line_number }}</td>
                                         <td class="py-2.5 px-3 font-medium text-foreground">{{ $line->description }}</td>
                                         <td class="py-2.5 px-3 text-right font-sans tabular-nums">{{ number_format((float) $line->quantity, 2, ',', '.') }}</td>
@@ -421,7 +421,7 @@
                                 </thead>
                                 <tbody class="divide-y border-border">
                                     @foreach($selectedInvoice->allocations as $alloc)
-                                        <tr wire:key="alloc-{{ $alloc->id ?? (None ?? $loop->index) }}">
+                                        <tr wire:key="alloc-{{ $alloc->id ?? $loop->index }}">
                                             <td class="py-2 px-3 font-sans">{{ $alloc->allocated_at?->format('d/m/Y H:i') }}</td>
                                             <td class="py-2 px-3 font-sans text-muted-foreground">{{ $alloc->payment_reference ?: '-' }}</td>
                                             <td class="py-2 px-3">{{ $alloc->allocatedBy?->name }}</td>
@@ -511,7 +511,7 @@
                                 </thead>
                                 <tbody class="divide-y border-border">
                                     @foreach($openCustomerInvoices as $openInv)
-                                        <tr wire:key="openInv-{{ $openInv->id ?? (None ?? $loop->index) }}">
+                                        <tr wire:key="openInv-{{ $openInv->id ?? $loop->index }}">
                                             <td class="py-2 px-3 font-sans font-bold">{{ $openInv->invoice_number }}</td>
                                             <td class="py-2 px-3 text-muted-foreground">{{ $openInv->due_date?->format('d/m/Y') }}</td>
                                             <td class="py-2 px-3 text-right font-sans font-semibold text-destructive tabular-nums">

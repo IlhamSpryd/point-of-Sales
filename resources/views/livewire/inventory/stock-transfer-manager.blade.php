@@ -68,7 +68,7 @@
                 </x-slot:head>
 
                 @foreach ($transfers as $transfer)
-                    <tr wire:key="transfer-{{ $transfer->id ?? (None ?? $loop->index) }}" class="hover:bg-secondary transition-colors duration-150">
+                    <tr wire:key="transfer-{{ $transfer->id ?? $loop->index }}" class="hover:bg-secondary transition-colors duration-150">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="text-sm font-bold text-foreground">{{ $transfer->transfer_number }}</span>
                             <div class="text-xs text-muted-foreground">Created by: {{ $transfer->creator->name ?? 'System' }}</div>
@@ -254,7 +254,7 @@
                         </thead>
                         <tbody class="divide-y divide-border">
                             @foreach ($activeTransfer->items as $item)
-                                <tr wire:key="item-{{ $item->id ?? (None ?? $loop->index) }}">
+                                <tr wire:key="item-{{ $item->id ?? $loop->index }}">
                                     <td class="p-3">
                                         <div class="font-bold text-foreground">
                                             {{ $item->item_type === 'product' ? ($item->product?->product_name ?? $item->product?->name) : $item->ingredient?->name }}
@@ -349,7 +349,7 @@
                         </thead>
                         <tbody class="divide-y divide-border">
                             @foreach ($selectedTransfer->items as $item)
-                                <tr wire:key="item-{{ $item->id ?? (None ?? $loop->index) }}">
+                                <tr wire:key="item-{{ $item->id ?? $loop->index }}">
                                     <td class="p-3">
                                         <div class="font-bold text-foreground">
                                             {{ $item->item_type === 'product' ? ($item->product?->product_name ?? $item->product?->name) : $item->ingredient?->name }}

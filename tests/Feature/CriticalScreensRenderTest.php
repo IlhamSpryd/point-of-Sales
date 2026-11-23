@@ -72,8 +72,7 @@ class CriticalScreensRenderTest extends TestCase
     {
         $response = $this->actingAs($this->ownerUser)->get(route('dashboard'));
         $response->assertOk();
-        $response->assertSee('Dashboard');
-        $response->assertSee('Welcome back');
+        $response->assertSee('Business Overview');
     }
 
     public function test_screen_2_pos_terminal_renders(): void

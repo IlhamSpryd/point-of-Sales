@@ -201,6 +201,14 @@
                 max-width: var(--receipt-width) !important;
                 margin: 0 !important;
                 padding: 2mm !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+            }
+
+            #receipt * {
+                color: #000000 !important;
+                border-color: #000000 !important;
+                background-color: transparent !important;
             }
 
             /* Legibilitas di thermal head 203dpi: pastikan baris item tidak

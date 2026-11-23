@@ -365,7 +365,7 @@
                 @if ($hasModifierGroups)
                     <div class="space-y-4 pt-2 border-t border-border/60">
                         @foreach ($selectingProduct->modifierGroups as $group)
-                            <div wire:key="group-{{ $group->id ?? (None ?? $loop->index) }}" class="space-y-2">
+                            <div wire:key="group-{{ $group->id ?? $loop->index }}" class="space-y-2">
                                 <div class="flex items-center justify-between">
                                     <label class="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1">
                                         <span>{{ $group->name }}</span>

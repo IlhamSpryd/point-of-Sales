@@ -121,7 +121,7 @@
             <div class="space-y-3">
                 <label class="block text-xs font-semibold text-foreground">Select Target Tier</label>
                 @foreach ($allPlans as $plan)
-                    <div wire:key="plan-{{ $plan->id ?? (None ?? $loop->index) }}" wire:click="$set('selectedPlanId', {{ $plan->id }})"
+                    <div wire:key="plan-{{ $plan->id ?? $loop->index }}" wire:click="$set('selectedPlanId', {{ $plan->id }})"
                         class="p-4 rounded-xl border cursor-pointer transition-all {{ $selectedPlanId === $plan->id ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-border bg-card hover:border-primary/50' }}">
                         <div class="flex justify-between items-center">
                             <div>

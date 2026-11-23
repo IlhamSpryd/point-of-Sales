@@ -114,8 +114,9 @@ class StockOpnameManager extends Component
         $this->items = array_values($this->items);
     }
 
-    public function createSession(StockOpnameService $service): void
+    public function createSession(?StockOpnameService $service = null): void
     {
+        $service = $service ?? app(StockOpnameService::class);
         $this->authorize('create', StockOpname::class);
 
         $rules = [
@@ -162,6 +163,11 @@ class StockOpnameManager extends Component
         } catch (DomainException $e) {
             session()->flash('error', $e->getMessage());
         }
+    }
+
+    public function saveOpname(?StockOpnameService $service = null): void
+    {
+        $this->createSession($service);
     }
 
     public function startCounting(int $opnameId, StockOpnameService $service): void

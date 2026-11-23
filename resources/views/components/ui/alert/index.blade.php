@@ -38,7 +38,7 @@
     $iconName = $icon ?? ($defaultIconNames[$resolvedVariant] ?? 'info');
 @endphp
 
-<div x-data="{ shown: true }" x-show="shown" role="alert" {{ $attributes->twMerge($classes) }}>
+<div x-data="{ shown: true }" x-show="shown" role="alert" aria-live="{{ $resolvedVariant === 'destructive' ? 'assertive' : 'polite' }}" {{ $attributes->twMerge($classes) }}>
     @if (\Illuminate\Support\Facades\View::exists('components.'.str_replace('.', '/', $iconName)))
         <x-dynamic-component class="size-4 shrink-0 mt-0.5" :component="$iconName" />
     @else

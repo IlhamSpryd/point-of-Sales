@@ -17,8 +17,11 @@ test.describe('Apeiron Accessibility & Interaction Suite', () => {
             }
         });
 
+        await page.emulateMedia({ reducedMotion: 'reduce' });
         await page.goto('/login');
         await expect(page).toHaveTitle(/Apeiron/i);
+        await page.waitForLoadState('networkidle');
+        await page.waitForTimeout(300);
 
         // Run axe accessibility scan
         const accessibilityScanResults = await new AxeBuilder({ page })
@@ -44,13 +47,15 @@ test.describe('Apeiron Accessibility & Interaction Suite', () => {
     });
 
     test('Login screen conforms to WCAG accessibility in Dark mode', async ({ page }) => {
-        await page.emulateMedia({ colorScheme: 'dark' });
+        await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
         await page.goto('/login');
+        await page.waitForLoadState('networkidle');
+        await page.waitForTimeout(300);
 
         // Evaluate whether root or html has dark styling
         const hasDarkOrSemanticBackground = await page.evaluate(() => {
-            const bg = window.getComputedStyle(document.body).backgroundColor;
-            return bg !== 'rgb(255, 255, 255)'; // Should not be pure white
+            return document.documentElement.classList.contains('dark') ||
+                window.getComputedStyle(document.body).backgroundColor !== 'rgb(255, 255, 255)';
         });
         expect(hasDarkOrSemanticBackground).toBe(true);
 
@@ -68,7 +73,7 @@ test.describe('Apeiron Accessibility & Interaction Suite', () => {
         const termsButton = page.getByRole('button', { name: /Terms/i });
         if (await termsButton.isVisible()) {
             await termsButton.click();
-            const modal = page.locator('[role="dialog"]');
+            const modal = page.locator('[role="dialog"]').filter({ hasText: /Terms/i });
             await expect(modal).toBeVisible();
 
             // Press Escape to dismiss

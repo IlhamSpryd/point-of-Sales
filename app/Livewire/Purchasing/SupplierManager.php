@@ -124,6 +124,24 @@ class SupplierManager extends Component
         $this->showModal = true;
     }
 
+    public function edit(int $id): void
+    {
+        $this->openEditModal($id);
+    }
+
+    public function deleteSupplier(int $id, SupplierService $supplierService): void
+    {
+        $supplier = $this->findSupplierForActiveTenant($id);
+        Gate::authorize('delete', $supplier);
+
+        try {
+            $supplierService->deleteSupplier($supplier, auth()->user());
+            session()->flash('message', "Supplier '{$supplier->name}' deleted successfully.");
+        } catch (\Throwable $e) {
+            session()->flash('error', $e->getMessage());
+        }
+    }
+
     public function saveSupplier(SupplierService $supplierService): void
     {
         $tenantId = app(TenantContext::class)->requireTenantId();
