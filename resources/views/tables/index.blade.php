@@ -273,7 +273,7 @@
 
         {{-- MODAL MOVE TABLE (TASK-P1-01) --}}
         <div x-show="moveModalOpen" x-cloak
-            class="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+            class="fixed inset-0 z-50 overflow-y-auto bg-overlay-scrim backdrop-blur-xs flex items-center justify-center p-4">
             <div class="bg-card border border-border rounded-2xl max-w-md w-full p-6 shadow-xl"
                 @click.outside="moveModalOpen = false">
                 <div class="flex items-center gap-3 mb-4">
@@ -321,7 +321,7 @@
 
         {{-- MODAL MERGE TABLES (TASK-P1-01) --}}
         <div x-show="mergeModalOpen" x-cloak
-            class="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+            class="fixed inset-0 z-50 overflow-y-auto bg-overlay-scrim backdrop-blur-xs flex items-center justify-center p-4">
             <div class="bg-card border border-border rounded-2xl max-w-md w-full p-6 shadow-xl"
                 @click.outside="mergeModalOpen = false">
                 <div class="flex items-center gap-3 mb-4">

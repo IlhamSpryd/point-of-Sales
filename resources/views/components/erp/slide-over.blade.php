@@ -77,10 +77,10 @@
                     x-transition:leave="transform transition ease-in-out duration-200 sm:duration-300"
                     x-transition:leave-start="translate-x-0"
                     x-transition:leave-end="translate-x-full"
-                    class="w-screen {{ $panelWidth }} bg-card border-l border-border shadow-2xl flex flex-col justify-between">
+                    class="w-screen {{ $panelWidth }} bg-popover text-popover-foreground border-l border-border-strong shadow-dialog flex flex-col justify-between">
                     
                     {{-- Header --}}
-                    <div class="px-5 py-4 border-b border-border flex items-center justify-between gap-3 bg-muted">
+                    <div class="px-5 py-4 border-b border-border-strong flex items-center justify-between gap-3 bg-muted">
                         <div>
                             <h3 id="{{ $slideId }}-title" class="text-base font-bold text-foreground tracking-tight">
                                 {{ $title }}
@@ -107,7 +107,7 @@
 
                     {{-- Sticky Action Footer --}}
                     @if (isset($footer))
-                        <div class="px-5 py-3.5 border-t border-border bg-muted flex items-center justify-end gap-2.5">
+                        <div class="px-5 py-3.5 border-t border-border-strong bg-muted flex items-center justify-end gap-2.5">
                             {{ $footer }}
                         </div>
                     @endif

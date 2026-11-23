@@ -32,7 +32,7 @@
         <ol class="flex items-center gap-1.5 min-w-0">
             @foreach ($trail as $crumb)
                 @if (!$loop->first)
-                    <li aria-hidden="true" class="text-muted-foreground/50 font-sans text-[11px] select-none">/</li>
+                    <li aria-hidden="true" class="text-muted-foreground/75 font-sans text-[11px] select-none">/</li>
                 @endif
                 <li class="flex items-center min-w-0">
                     @if ($loop->last)

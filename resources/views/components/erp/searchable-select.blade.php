@@ -200,7 +200,7 @@
         :aria-expanded="open"
         aria-haspopup="listbox"
         aria-controls="{{ $listboxId }}"
-        class="h-9 w-full min-w-0 px-3 py-1.5 bg-background border border-input rounded-control text-xs sm:text-sm flex items-center justify-between gap-2 shadow-xs transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50 select-none cursor-pointer"
+        class="h-9 w-full min-w-0 px-3 py-1.5 bg-background border border-input rounded-control text-xs sm:text-sm flex items-center justify-between gap-2 shadow-xs transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring disabled:cursor-not-allowed disabled:bg-disabled-bg disabled:text-muted-foreground disabled:border-border select-none cursor-pointer"
         :class="{ 'border-ring ring-1 ring-ring': open }"
     >
         <span
@@ -242,10 +242,10 @@
         id="{{ $listboxId }}"
         role="listbox"
         x-ref="listbox"
-        class="absolute left-0 right-0 z-50 mt-1 rounded-card bg-popover text-popover-foreground border border-border shadow-md overflow-hidden p-1 focus:outline-none focus:ring-1 focus:ring-ring"
+        class="absolute left-0 right-0 z-50 mt-1 rounded-card bg-popover text-popover-foreground border border-border-strong shadow-popover overflow-hidden p-1 focus:outline-none focus:ring-1 focus:ring-ring"
     >
         {{-- Search input inside popover --}}
-        <div class="relative p-1 border-b border-border mb-1">
+        <div class="relative p-1 border-b border-border-strong mb-1">
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
                 <x-ui.icon name="search" size="xs" />
             </span>
@@ -255,7 +255,7 @@
                 x-model.debounce.300ms="search"
                 placeholder="{{ $searchPlaceholder }}"
                 aria-label="{{ $searchPlaceholder }}"
-                class="w-full h-8 pl-8 pr-3 text-xs bg-muted border border-border rounded-control text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                class="w-full h-8 pl-8 pr-3 text-xs bg-muted border border-input rounded-control text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />
             <template x-if="loading">
                 <span class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground animate-spin">

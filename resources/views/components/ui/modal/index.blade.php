@@ -116,7 +116,7 @@
                     x-transition:leave-start="opacity-100"
                     x-transition:leave-end="opacity-0"
                 @endif
-                class="absolute inset-0 h-full w-full bg-black/60 backdrop-blur-[2px]"
+                class="absolute inset-0 h-full w-full bg-overlay-scrim backdrop-blur-[2px]"
                 @click="closeModal()"
                 aria-hidden="true"
             ></div>
@@ -147,7 +147,7 @@
                     aria-modal="true"
                     @if(isset($header) || $title) aria-labelledby="{{ $titleId }}" @endif
                     @if($description) aria-describedby="{{ $descId }}" @endif
-                    {{ $attributes->withoutTwMergeClasses()->except('id')->twMerge("relative w-full {$maxWidthClass} {$panelRadiusClasses} bg-card text-card-foreground px-6 py-5 sm:px-7 sm:py-6 border border-border shadow-xl max-h-[92dvh] overflow-y-auto custom-scrollbar") }}
+                    {{ $attributes->withoutTwMergeClasses()->except('id')->twMerge("relative w-full {$maxWidthClass} {$panelRadiusClasses} bg-popover text-popover-foreground px-6 py-5 sm:px-7 sm:py-6 border border-border-strong shadow-dialog max-h-[92dvh] overflow-y-auto custom-scrollbar") }}
                 >
                     @if (isset($header) || $title)
                         <div class="pr-8 mb-4">
@@ -165,7 +165,7 @@
                     </div>
 
                     @isset($footer)
-                        <div {{ $attributes->twMergeFor('footer', 'mt-6 pt-4 border-t border-border flex w-full flex-wrap items-center justify-end gap-2.5') }}>
+                        <div {{ $attributes->twMergeFor('footer', 'mt-6 pt-4 border-t border-border-strong flex w-full flex-wrap items-center justify-end gap-2.5') }}>
                             {{ $footer }}
                         </div>
                     @endisset

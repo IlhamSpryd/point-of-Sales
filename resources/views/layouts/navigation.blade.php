@@ -220,17 +220,17 @@
                 x-transition:leave="transition-all duration-100 ease-in"
                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                 x-transition:leave-end="opacity-0 scale-95 translate-y-1"
-                class="fixed z-[55] bg-card text-foreground rounded-2xl shadow-xl border border-border overflow-hidden divide-y divide-border w-60"
+                class="fixed z-[55] bg-popover text-popover-foreground rounded-2xl shadow-popover border border-border-strong overflow-hidden divide-y divide-border-strong w-60"
                 :class="wide ? 'left-3 bottom-16' : 'left-[72px] bottom-3'">
-                <div class="px-3.5 py-3 bg-card">
-                    <p class="text-xs font-bold text-foreground truncate">{{ auth()->user()->name ?? 'User' }}</p>
+                <div class="px-3.5 py-3 bg-popover">
+                    <p class="text-xs font-bold text-popover-foreground truncate">{{ auth()->user()->name ?? 'User' }}</p>
                     <p class="text-[11px] text-muted-foreground truncate mt-0.5">{{ auth()->user()->email ?? '' }}</p>
                     @if ($roleName)
                         <span
                             class="inline-flex items-center mt-2 px-1.5 py-0.5 rounded text-[10px] font-medium bg-muted text-foreground border border-border">{{ $roleName }}</span>
                     @endif
                 </div>
-                <div class="p-1.5 space-y-0.5 bg-card">
+                <div class="p-1.5 space-y-0.5 bg-popover">
                     <a href="{{ route('profile.edit') }}" wire:navigate
                         @click="if (window.apeironPosCartDirty && !confirm('You have an active cart in POS. Leaving this page will cancel the current cart. Continue?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; } if (sidebarMobileOpen) { sidebarMobileOpen = false; } openPopover = false;"
                         role="menuitem"

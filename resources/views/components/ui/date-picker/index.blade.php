@@ -138,7 +138,7 @@
             @click.outside="open = false"
             @keydown.escape.window="open = false"
             :style="styles()"
-            class="rounded-large border border-border bg-popover p-4 text-popover-foreground shadow-lg"
+            class="rounded-large border border-border-strong bg-popover p-4 text-popover-foreground shadow-popover"
         >
             <div class="mb-3 flex items-center justify-between">
                 <div class="text-sm font-semibold text-foreground">

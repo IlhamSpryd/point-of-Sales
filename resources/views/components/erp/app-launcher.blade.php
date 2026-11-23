@@ -73,7 +73,7 @@
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
         @click="close()"
-        class="fixed inset-0 z-40 bg-black/60 backdrop-blur-[2px]"></div>
+        class="fixed inset-0 z-40 bg-overlay-scrim backdrop-blur-[2px]"></div>
 
     {{-- Odoo-Style App Grid Modal --}}
     <div x-show="launcherOpen"

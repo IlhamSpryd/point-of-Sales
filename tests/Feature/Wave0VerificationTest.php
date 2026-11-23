@@ -50,24 +50,28 @@ class Wave0VerificationTest extends TestCase
     {
         $css = File::get(resource_path('css/tokens.css'));
 
-        // Light AAA tokens
-        $this->assertStringContainsString('--muted-foreground: #47474F;', $css);
-        $this->assertStringContainsString('--shell-foreground: #47474F;', $css);
-        $this->assertStringContainsString('--border-input: #94949E;', $css);
-        $this->assertStringContainsString('--ring: #18181B;', $css);
+        // Light AAA tokens (Wave 5 calibrated)
+        $this->assertStringContainsString('--muted-foreground: #4A4A52;', $css);
+        $this->assertStringContainsString('--shell-foreground: #4A4A52;', $css);
+        $this->assertStringContainsString('--border-input: #8E8E98;', $css);
+        $this->assertStringContainsString('--ring: #0D0D0D;', $css);
         $this->assertStringContainsString('--success: #14532D;', $css);
         $this->assertStringContainsString('--warning: #78350F;', $css);
         $this->assertStringContainsString('--destructive: #991B1B;', $css);
         $this->assertStringContainsString('--info: #1E40AF;', $css);
+        $this->assertStringContainsString('--on-positive: #FFFFFF;', $css);
+        $this->assertStringContainsString('--on-warning: #FFFFFF;', $css);
 
-        // Dark AAA tokens
-        $this->assertStringContainsString('--destructive: #FCA5A5;', $css);
-        $this->assertStringContainsString('--border-input: rgb(255 255 255 / 0.30);', $css);
+        // Dark AAA tokens (Wave 5 calibrated)
+        $this->assertStringContainsString('--destructive: #F89B9B;', $css);
+        $this->assertStringContainsString('--border-input: rgba(255, 255, 255, 0.38);', $css);
+        $this->assertStringContainsString('--on-positive: #052E16;', $css);
+        $this->assertStringContainsString('--on-warning: #271200;', $css);
 
         // Wave 1 preparation tokens
         $this->assertStringContainsString('--surface-shell:', $css);
         $this->assertStringContainsString('--surface-canvas:', $css);
-        $this->assertStringContainsString('--chart-accent: #10A37F;', $css);
+        $this->assertStringContainsString('--chart-accent: #0F766E;', $css);
     }
 
     public function test_button_link_variant_has_focus_visible_ring(): void

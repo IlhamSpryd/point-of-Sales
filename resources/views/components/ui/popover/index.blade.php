@@ -135,7 +135,7 @@ x-modelable="popoverOpen"
             x-cloak
             class="w-max max-w-sm">
             @if (isset($content))
-                <div {{ $content->attributes->twMerge('overflow-hidden rounded-medium border border-border bg-popover p-4 text-popover-foreground shadow-lg }}>
+                <div {{ $content->attributes->twMerge('overflow-hidden rounded-medium border border-border-strong bg-popover p-4 text-popover-foreground shadow-popover') }}>
                     {{ $content }}
                 </div>
             @else

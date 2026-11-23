@@ -2,7 +2,8 @@
  * Apeiron Systems — Unified Design Tokens (tokens.css)
  * --------------------------------------------------------------------------
  * Single Source of Truth for Design Tokens (Tailwind CSS v4 CSS-first).
- * Architecture: Primitives -> Semantic -> Components (shadcn-inspired).
+ * Architecture: Primitives -> Semantic -> Components (ChatGPT & Linear Inspired).
+ * Certified WCAG 2.2 Level AAA (Text >= 7.0:1) & Level AA Non-Text (>= 3.0:1).
  *
  * DO NOT introduce arbitrary hex classes. Use semantic tokens below.
  */
@@ -11,111 +12,121 @@
     color-scheme: light;
 
     /* ── Typography Fonts (Strict Single Typeface: Plus Jakarta Sans for All Text & Money) ── */
-    --font-sans: "Plus Jakarta Sans", sans-serif;
+    --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-brand: "Plus Jakarta Sans", sans-serif;
-    --font-mono: "Plus Jakarta Sans", sans-serif;
+    --font-mono: "Plus Jakarta Sans", monospace;
     --font-serif: "Plus Jakarta Sans", sans-serif;
 
-    /* ── Semantic Colors (Light) — canonical values per
-       docs/ui-ux-audit/color-system/02 §11 (contrast-verified) ── */
-
-    /* Surfaces */
+    /* ── Semantic Surfaces (Light: Cool Chalk & Whisper Elevation) ── */
     --chrome-surface: #FFFFFF;
-    --chrome-foreground: #09090B;
-    --chrome-border: #E4E4E7;
+    --chrome-foreground: #0D0D0D;
+    --chrome-border: #E2E2E6;
+
     --background: #F7F7F8;
-    --foreground: #09090B;
+    --shell: #F7F7F8;
+    --foreground: #0D0D0D;
+    --shell-foreground: #4A4A52;
+    --shell-foreground-active: #0D0D0D;
+    --shell-accent: #ECECEF;
+    --shell-border: #E2E2E6;
+    --shell-ring: #0D0D0D;
+
     --card: #FFFFFF;
-    --card-foreground: #09090B;
+    --card-foreground: #0D0D0D;
+
     --popover: #FFFFFF;
-    --popover-foreground: #09090B;
+    --popover-foreground: #0D0D0D;
 
-    /* Primary / Secondary */
-    --primary: #18181B;
-    --primary-foreground: #FAFAFA;
-    --secondary: #F4F4F5;
-    --secondary-foreground: #18181B;
+    /* ── Primary / Secondary (Monochrome Authority) ── */
+    --primary: #0D0D0D;
+    --primary-foreground: #FFFFFF;
+    --secondary: #F0F0F2;
+    --secondary-foreground: #0D0D0D;
 
-    /* Muted / Accent */
-    --muted: #F4F4F5;
-    --muted-foreground: #47474F;
-    --accent: #F4F4F5;
-    --accent-foreground: #18181B;
+    /* ── Muted / Accent (Whisper Separation above White) ── */
+    --muted: #ECECEF;
+    --muted-foreground: #4A4A52;           /* 8.78:1 on #FFFFFF (AAA) */
+    --accent: #ECECEF;
+    --accent-foreground: #0D0D0D;
 
-    /* Form & interaction */
-    --border: #E4E4E7;
-    --border-strong: #D4D4D8;
-    --border-input: #94949E;
-    --input: #94949E;
-    --ring: #18181B;
-    --focus: #18181B;
-    --disabled: #A1A1AA;
-    --disabled-bg: #F4F4F5;
-    --selection: #18181B;
-    --selection-foreground: #FAFAFA;
+    /* ── Form Controls & Interaction (WCAG 1.4.11 >= 3.0:1 Certified) ── */
+    --border: #E2E2E6;                     /* 1.29:1 subtle divider */
+    --border-strong: #C8C8D0;              /* 1.66:1 structural divider */
+    --border-input: #8E8E98;               /* 3.24:1 on #FFFFFF, 3.03:1 on #F7F7F8 (PASS 3:1) */
+    --input: #8E8E98;                      /* 1:1 alias */
+    --ring: #0D0D0D;
+    --focus: #0D0D0D;
+    --disabled: #9E9EA8;
+    --disabled-bg: #F4F4F6;
+    --selection: #0D0D0D;
+    --selection-foreground: #FFFFFF;
 
-    /* Status (WCAG 2.2 Level AAA Standalone Ratios >= 7.0:1) */
+    /* ── Status Semantics (Editorial Desaturated, AAA Certified >= 7.0:1) ── */
     --success: #14532D;
     --success-foreground: #052E16;
     --success-muted: #F0FDF4;
     --success-border: #BBF7D0;
+
     --positive: #14532D;
     --positive-foreground: #052E16;
+
     --warning: #78350F;
     --warning-foreground: #451A03;
     --warning-muted: #FFFBEB;
     --warning-border: #FDE68A;
+
     --destructive: #991B1B;
     --destructive-foreground: #450A0A;
     --destructive-muted: #FEF2F2;
     --destructive-border: #FECACA;
+
     --info: #1E40AF;
     --info-foreground: #172554;
     --info-muted: #EFF6FF;
     --info-border: #BFDBFE;
-    --neutral: #45454D;
-    --neutral-muted: #F4F4F5;
-    --neutral-border: #E4E4E7;
 
-    /* ERP surfaces */
+    --neutral: #4A4A52;
+    --neutral-muted: #F0F0F2;
+    --neutral-border: #E2E2E6;
+
+    /* ── On-Solid-Status Tokens (KOREKSI #1 — High-contrast text on solid status backgrounds) ── */
+    --on-positive: #FFFFFF;
+    --on-success: #FFFFFF;
+    --on-warning: #FFFFFF;
+    --on-destructive: #FFFFFF;
+    --on-info: #FFFFFF;
+
+    /* ── ERP Specialized Surfaces ── */
     --surface-table-header: #FAFAFA;
-    --surface-inset: #F4F4F5;
+    --surface-inset: #F0F0F2;
     --surface-shell: #F7F7F8;
     --surface-canvas: #F7F7F8;
 
-    /* Auth Editorial Hero (Isolated Dark Surface, WCAG AAA) */
+    /* ── Auth Editorial Hero (Isolated Dark Surface, WCAG AAA) ── */
     --auth-hero-surface: #0D0E12;
     --auth-hero-foreground: #FAFAFA;
     --auth-hero-muted: #C8C8D0;
     --auth-hero-subtle: #9E9EA8;
 
-    /* Charts */
-    --chart-accent: #10A37F;
-    --chart-1: #18181B;
-    --chart-2: #980000;
-    --chart-3: #1D4ED8;
-    --chart-4: #4C1D95;
-    --chart-5: #9D174D;
-    --chart-6: #C2410C;
-    --chart-7: #065F46;
-    --chart-8: #57534E;
-    --chart-grid: #E4E4E7;
-    --chart-axis-label: #45454D;
-    --chart-seq-0: #F4F4F5;
-    --chart-seq-1: #D4D4D8;
-    --chart-seq-2: #A1A1AA;
-    --chart-seq-3: #52525B;
-    --chart-seq-4: #18181B;
+    /* ── Editorial Data Visualization Palette (Linear / Stripe Inspired) ── */
+    --chart-accent: #0F766E;               /* Desaturated Sage Emerald (5.47:1) */
+    --chart-1: #0D0D0D;                    /* Obsidian Primary */
+    --chart-2: #BE123C;                    /* Restrained Crimson */
+    --chart-3: #1D4ED8;                    /* Deep Navy */
+    --chart-4: #B45309;                    /* Warm Ochre */
+    --chart-5: #5B21B6;                    /* Deep Slate Violet */
+    --chart-6: #0E7490;                    /* Deep Cyan */
+    --chart-7: #047857;                    /* Forest Green */
+    --chart-8: #4B5563;                    /* Slate Steel */
+    --chart-grid: #E8E8EC;
+    --chart-axis-label: #4A4A52;
+    --chart-seq-0: #F0F0F2;
+    --chart-seq-1: #D8D8DF;
+    --chart-seq-2: #9E9EA8;
+    --chart-seq-3: #4A4A52;
+    --chart-seq-4: #0D0D0D;
 
-    /* Shell */
-    --shell: #F7F7F8;
-    --shell-foreground: #47474F;
-    --shell-foreground-active: #09090B;
-    --shell-accent: #F4F4F5;
-    --shell-border: #E4E4E7;
-    --shell-ring: #18181B;
-
-    /* Sidebar → shell aliases (04 §3; kept for one release) */
+    /* ── Sidebar -> Shell Aliases (Backward Compatibility) ── */
     --sidebar-background: var(--shell);
     --sidebar-foreground: var(--shell-foreground);
     --sidebar-primary: var(--shell-foreground-active);
@@ -125,8 +136,8 @@
     --sidebar-border: var(--shell-border);
     --sidebar-ring: var(--shell-ring);
 
-    /* Overlay & Z-Index Layering Scale */
-    --overlay-scrim: rgb(9 9 11 / 0.40);
+    /* ── Overlay & Elevation Layering ── */
+    --overlay-scrim: rgb(13 13 13 / 0.45);
     --z-dropdown: 40;
     --z-drawer: 50;
     --z-popover-account: 55;
@@ -134,11 +145,10 @@
     --z-command: 70;
     --z-toast: 80;
 
-    /* Elevation */
-    --shadow-shell: 0 1px 2px rgba(16, 24, 40, 0.03);
-    --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.04);
-    --shadow-popover: 0 4px 12px -2px rgb(0 0 0 / 0.08);
-    --shadow-dialog: 0 12px 32px -8px rgb(0 0 0 / 0.16);
+    --shadow-shell: 0 1px 2px rgba(13, 13, 13, 0.03);
+    --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.03);
+    --shadow-popover: 0 6px 18px -3px rgb(0 0 0 / 0.09), 0 2px 6px -2px rgb(0 0 0 / 0.05);
+    --shadow-dialog: 0 16px 36px -8px rgb(0 0 0 / 0.18), 0 4px 12px -2px rgb(0 0 0 / 0.08);
 
     /* ── Shape Scale (Measured Enterprise Radii) ── */
     --radius-control: 8px;     /* inputs, buttons, selects */
@@ -160,114 +170,127 @@
     --ease-ui: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ── Dark Mode Tokens (Preserved & Dormant until Phase 5 activation) ── */
+/* ═══════════════════════════════════════════════════════
+   DARK MODE TOKENS (ChatGPT Matte Graphite Architecture)
+   ═══════════════════════════════════════════════════════ */
 .dark {
     color-scheme: dark;
 
-    /* Chrome Surface (Dark Mode Chrome per Wave 2.2) */
-    --chrome-surface: #0B0B0E;
-    --chrome-foreground: #FAFAFA;
-    --chrome-border: rgba(255, 255, 255, 0.09);
+    /* ── Matte Graphite Elevation Staircase (Zero Crushed Blacks) ── */
+    --chrome-surface: #141417;             /* Base Layer 0: Dark Calm Chrome */
+    --chrome-foreground: #ECECF0;
+    --chrome-border: rgba(255, 255, 255, 0.10);
 
-    --background: #0E0E11;
-    --foreground: #FAFAFA;
+    --background: #1B1B1F;                /* Base Layer 1: Page Shell Canvas (ΔL=3.0%) */
+    --shell: #1B1B1F;
+    --foreground: #ECECF0;
+    --shell-foreground: #B8B8C2;
+    --shell-foreground-active: #ECECF0;
+    --shell-accent: #232328;
+    --shell-border: rgba(255, 255, 255, 0.10);
+    --shell-ring: #ECECF0;
 
-    --card: #18181D;
-    --card-foreground: #FAFAFA;
+    --card: #232328;                      /* Base Layer 2: Content Cards (ΔL=3.3%, 1.10:1) */
+    --card-foreground: #ECECF0;
 
-    --popover: #1F1F25;
-    --popover-foreground: #FAFAFA;
+    --popover: #2B2B31;                   /* Base Layer 3: Overlays, Modals, Popovers (ΔL=3.3%) */
+    --popover-foreground: #ECECF0;
 
-    --primary: #FAFAFA;
-    --primary-foreground: #18181B;
+    /* ── Primary / Secondary (Monochrome Inversion) ── */
+    --primary: #ECECF0;
+    --primary-foreground: #141417;
+    --secondary: #26262C;
+    --secondary-foreground: #ECECF0;
 
-    --secondary: #1F1F21;
-    --secondary-foreground: #FAFAFA;
+    /* ── Muted / Accent ── */
+    --muted: #2C2C33;
+    --muted-foreground: #B8B8C2;           /* 7.95:1 on #232328 (AAA Certified) */
+    --accent: #32323A;
+    --accent-foreground: #ECECF0;
 
-    --muted: #1F1F21;
-    --muted-foreground: #B4B4BE;
+    /* ── Form Controls & Interaction (WCAG 1.4.11 >= 3.0:1 Certified) ── */
+    --border: rgba(255, 255, 255, 0.12);   /* 1.45:1 Clean Hairline */
+    --border-strong: rgba(255, 255, 255, 0.22); /* 1.92:1 Structural Divider */
+    --border-input: rgba(255, 255, 255, 0.38);  /* 3.50:1 on Card, 3.58:1 on Shell (PASS 3:1) */
+    --input: rgba(255, 255, 255, 0.38);   /* 1:1 alias */
+    --ring: #ECECF0;
+    --focus: #ECECF0;
+    --disabled: #585862;
+    --disabled-bg: rgba(255, 255, 255, 0.05);
+    --selection: #ECECF0;
+    --selection-foreground: #141417;
 
-    --accent: #27272A;
-    --accent-foreground: #FAFAFA;
+    /* ── Status Semantics (Editorial Desaturated, AAA Certified >= 7.0:1) ── */
+    --success: #58D68D;                    /* 8.51:1 on #232328 (AAA), Sat 60.6% */
+    --success-foreground: #022C22;
+    --success-muted: #064E3B;
+    --success-border: rgba(88, 214, 141, 0.35);
 
-    --border: rgba(255, 255, 255, 0.09);
-    --border-strong: rgb(255 255 255 / 0.18);
-    --border-input: rgb(255 255 255 / 0.30);
-    --input: rgb(255 255 255 / 0.30);
-    --ring: #71717A;
-    --focus: #FAFAFA;
-    --disabled: #52525B;
-    --disabled-bg: rgb(255 255 255 / 0.04);
-    --selection: #FAFAFA;
-    --selection-foreground: #18181B;
+    --positive: #58D68D;
+    --positive-foreground: #022C22;
 
-    --success: #4ADE80;
-    --success-foreground: #DCFCE7;
-    --success-muted: #052E16;
-    --success-border: rgb(74 222 128 / 0.30);
-    --positive: #4ADE80;
-    --positive-foreground: #052E16;
+    --warning: #E5B942;                    /* 8.45:1 on #232328 (AAA), Sat 75.8% */
+    --warning-foreground: #451A03;
+    --warning-muted: #78350F;
+    --warning-border: rgba(229, 185, 66, 0.35);
 
-    --warning: #FCD34D;
-    --warning-foreground: #FEF3C7;
-    --warning-muted: #451A03;
-    --warning-border: rgb(252 211 77 / 0.30);
+    --destructive: #F89B9B;                /* 7.56:1 on #232328 (AAA), Sat 86.9% */
+    --destructive-foreground: #450A0A;
+    --destructive-muted: #7F1D1D;
+    --destructive-border: rgba(248, 155, 155, 0.35);
 
-    --destructive: #FCA5A5;
-    --destructive-foreground: #FEE2E2;
-    --destructive-muted: #450A0A;
-    --destructive-border: rgb(248 113 113 / 0.30);
+    --info: #93C5FD;                       /* 8.67:1 on #232328 (AAA), Sat 96.4% */
+    --info-foreground: #172554;
+    --info-muted: #1E3A8A;
+    --info-border: rgba(147, 197, 253, 0.35);
 
-    --info: #60A5FA;
-    --info-foreground: #DBEAFE;
-    --info-muted: #172554;
-    --info-border: rgb(96 165 250 / 0.30);
+    --neutral: #B8B8C2;
+    --neutral-muted: #26262C;
+    --neutral-border: rgba(255, 255, 255, 0.12);
 
-    --neutral: #B4B4BE;
-    --neutral-muted: #1F1F21;
-    --neutral-border: rgb(255 255 255 / 0.10);
+    /* ── On-Solid-Status Tokens (KOREKSI #1 — Deep rich contrast text on solid status backgrounds) ── */
+    --on-positive: #052E16;
+    --on-success: #052E16;
+    --on-warning: #271200;
+    --on-destructive: #2B0606;
+    --on-info: #0F1E4A;
 
-    --surface-table-header: #141418;
-    --surface-inset: #121215;
-    --surface-shell: #0E0E11;
-    --surface-canvas: #0E0E11;
+    /* ── ERP Specialized Surfaces ── */
+    --surface-table-header: #1E1E22;
+    --surface-inset: #19191D;
+    --surface-shell: #1B1B1F;
+    --surface-canvas: #1B1B1F;
 
-    /* Auth Editorial Hero (Preserved across Dark Mode) */
+    /* ── Auth Editorial Hero (Preserved across Dark Mode) ── */
     --auth-hero-surface: #0D0E12;
     --auth-hero-foreground: #FAFAFA;
     --auth-hero-muted: #C8C8D0;
     --auth-hero-subtle: #9E9EA8;
 
-    --chart-accent: #4ADE80;
-
-    --chart-1: #FAFAFA;
-    --chart-2: #FCA5A5;
-    --chart-3: #60A5FA;
-    --chart-4: #C4B5FD;
-    --chart-5: #F9A8D4;
-    --chart-6: #FDBA74;
-    --chart-7: #6EE7B7;
-    --chart-8: #D6D3D1;
+    /* ── Editorial Data Visualization Palette (Linear Dark Inspired) ── */
+    --chart-accent: #5EEAD4;               /* Desaturated Teal (10.57:1 on Card) */
+    --chart-1: #ECECF0;                    /* Soft White Primary */
+    --chart-2: #FDA4AF;                    /* Muted Coral */
+    --chart-3: #93C5FD;                    /* Ice Cobalt */
+    --chart-4: #FCD34D;                    /* Mellow Amber */
+    --chart-5: #C4B5FD;                    /* Soft Lavender */
+    --chart-6: #67E8F9;                    /* Cyan Mint */
+    --chart-7: #86EFAC;                    /* Sage Soft Green */
+    --chart-8: #9CA3AF;                    /* Slate Steel */
     --chart-grid: rgba(255, 255, 255, 0.08);
-    --chart-axis-label: #B4B4BE;
-    --chart-seq-0: #1F1F21;
-    --chart-seq-1: #3F3F46;
-    --chart-seq-2: #71717A;
-    --chart-seq-3: #D4D4D8;
-    --chart-seq-4: #FAFAFA;
+    --chart-axis-label: #B8B8C2;
+    --chart-seq-0: #26262C;
+    --chart-seq-1: #3F3F48;
+    --chart-seq-2: #71717E;
+    --chart-seq-3: #B8B8C2;
+    --chart-seq-4: #ECECF0;
 
-    --shell: #121216;
-    --shell-foreground: #B4B4BE;
-    --shell-foreground-active: #FAFAFA;
-    --shell-accent: #18181D;
-    --shell-border: rgba(255, 255, 255, 0.09);
-    --shell-ring: #FAFAFA;
-
-    --overlay-scrim: rgb(0 0 0 / 0.60);
+    /* ── Overlay & Elevation Layering ── */
+    --overlay-scrim: rgb(0 0 0 / 0.65);
     --shadow-shell: 0 1px 2px rgb(0 0 0 / 0.40);
-    --shadow-card: none;
-    --shadow-popover: 0 4px 16px -4px rgb(0 0 0 / 0.60);
-    --shadow-dialog: 0 16px 40px -8px rgb(0 0 0 / 0.70);
+    --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.35);
+    --shadow-popover: 0 8px 24px -4px rgb(0 0 0 / 0.65), 0 2px 8px -2px rgb(0 0 0 / 0.40);
+    --shadow-dialog: 0 20px 48px -8px rgb(0 0 0 / 0.80), 0 4px 16px -2px rgb(0 0 0 / 0.50);
 }
 
 /* ── KDS Theme (Kitchen Display System Screens) ── */
@@ -359,6 +382,22 @@
     --color-warning-foreground: var(--warning-foreground);
     --color-warning-muted: var(--warning-muted);
     --color-warning-border: var(--warning-border);
+
+    --color-info: var(--info);
+    --color-info-foreground: var(--info-foreground);
+    --color-info-muted: var(--info-muted);
+    --color-info-border: var(--info-border);
+
+    --color-neutral: var(--neutral);
+    --color-neutral-muted: var(--neutral-muted);
+    --color-neutral-border: var(--neutral-border);
+
+    /* ── On-Solid-Status Tokens (KOREKSI #1) ── */
+    --color-on-positive: var(--on-positive);
+    --color-on-success: var(--on-success);
+    --color-on-warning: var(--on-warning);
+    --color-on-destructive: var(--on-destructive);
+    --color-on-info: var(--on-info);
 
     --color-border: var(--border);
     --color-border-strong: var(--border-strong);
