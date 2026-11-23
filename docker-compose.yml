@@ -3,8 +3,15 @@
 # 6 Services: web (Nginx), app (PHP-FPM), worker (Queue), scheduler, db (MariaDB), redis
 # ==============================================================================
 
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "20m"
+    max-file: "5"
+
 services:
   web:
+    logging: *default-logging
     image: nginx:alpine
     container_name: apeiron_web
     restart: unless-stopped
@@ -21,6 +28,7 @@ services:
       - apeiron_net
 
   app:
+    logging: *default-logging
     build:
       context: .
       dockerfile: Dockerfile
@@ -42,6 +50,7 @@ services:
       - apeiron_net
 
   worker:
+    logging: *default-logging
     build:
       context: .
       dockerfile: Dockerfile
@@ -64,6 +73,7 @@ services:
       - apeiron_net
 
   scheduler:
+    logging: *default-logging
     build:
       context: .
       dockerfile: Dockerfile
@@ -86,6 +96,7 @@ services:
       - apeiron_net
 
   reverb:
+    logging: *default-logging
     build:
       context: .
       dockerfile: Dockerfile
@@ -112,6 +123,7 @@ services:
       - apeiron_net
 
   db:
+    logging: *default-logging
     image: mariadb:11.4
     container_name: apeiron_db
     restart: unless-stopped
@@ -132,6 +144,7 @@ services:
       - apeiron_net
 
   redis:
+    logging: *default-logging
     image: redis:7-alpine
     container_name: apeiron_redis
     restart: unless-stopped

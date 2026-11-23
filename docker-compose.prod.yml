@@ -1,0 +1,170 @@
+# ==============================================================================
+# Apeiron POS — Enterprise Docker Compose Stack (VPS + Cloudflare Parity)
+# 6 Services: web (Nginx), app (PHP-FPM), worker (Queue), scheduler, db (MariaDB), redis
+# ==============================================================================
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+services:
+  web:
+    logging: *default-logging
+    image: nginx:alpine
+    container_name: apeiron_web
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-80}:80"
+    volumes:
+      - ./public:/var/www/html/public:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - storage_public:/var/www/html/public/storage:ro
+    depends_on:
+      - app
+      - reverb
+    networks:
+      - apeiron_net
+
+  app:
+    logging: *default-logging
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: apeiron_app
+    restart: unless-stopped
+    command: ["app"]
+    volumes:
+      - storage_data:/var/www/html/storage
+      - storage_public:/var/www/html/storage/app/public
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - apeiron_net
+
+  worker:
+    logging: *default-logging
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: apeiron_worker
+    restart: unless-stopped
+    command: ["worker"]
+    volumes:
+      - storage_data:/var/www/html/storage
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      app:
+        condition: service_started
+    networks:
+      - apeiron_net
+
+  scheduler:
+    logging: *default-logging
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: apeiron_scheduler
+    restart: unless-stopped
+    command: ["scheduler"]
+    volumes:
+      - storage_data:/var/www/html/storage
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      app:
+        condition: service_started
+    networks:
+      - apeiron_net
+
+  reverb:
+    logging: *default-logging
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: apeiron_reverb
+    restart: unless-stopped
+    command: ["reverb"]
+    volumes:
+      - storage_data:/var/www/html/storage
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_started
+      app:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -o /dev/null http://127.0.0.1:8080/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - apeiron_net
+
+  db:
+    logging: *default-logging
+    image: mariadb:11.4
+    container_name: apeiron_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_secret}
+      MYSQL_DATABASE: ${DB_DATABASE:-apeiron_pos}
+      MYSQL_USER: ${DB_USERNAME:-apeiron}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-apeiron_secret}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./docker/mariadb/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - apeiron_net
+
+  redis:
+    logging: *default-logging
+    image: redis:7-alpine
+    container_name: apeiron_redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    networks:
+      - apeiron_net
+
+volumes:
+  mariadb_data:
+    driver: local
+  redis_data:
+    driver: local
+  storage_data:
+    driver: local
+  storage_public:
+    driver: local
+
+networks:
+  apeiron_net:
+    driver: bridge
+
