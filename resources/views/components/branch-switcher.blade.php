@@ -47,14 +47,14 @@
 @else
     {{-- Mode 3: Enterprise Interactive Switcher (Owner, Admin, Authorized Managers) --}}
     <div x-data="{ open: false, search: '' }" class="relative {{ $fullWidth ? 'w-full block' : 'inline-block' }} text-left" @click.outside="open = false" @keydown.escape.window="open = false">
-        {{-- Trigger Button --}}
+        {{-- Trigger Button (Ghost Control) --}}
         <button type="button" @click="open = !open" :aria-expanded="open.toString()" aria-haspopup="true" aria-label="Select active branch"
-            class="{{ $isDark ? 'inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-shell-foreground bg-shell-accent hover:bg-shell-border hover:text-shell-foreground-active border border-shell-border rounded-lg shadow-xs transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-shell-ring cursor-pointer' : 'inline-flex bg-card hover:bg-secondary border-border text-foreground items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg border shadow-xs transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer' }} {{ $fullWidth ? 'w-full justify-between' : '' }}">
-            <div class="flex items-center gap-2 min-w-0">
-                <span class="shrink-0 w-2 h-2 rounded-full {{ $isAll ? 'bg-warning' : 'bg-success' }}"></span>
+            class="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-foreground hover:bg-secondary rounded-md transition-colors cursor-pointer select-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring {{ $fullWidth ? 'w-full justify-between' : '' }}">
+            <div class="flex items-center gap-1.5 min-w-0">
+                <span class="shrink-0 w-1.5 h-1.5 rounded-full {{ $isAll ? 'bg-warning' : 'bg-success' }}"></span>
                 <span class="truncate text-left text-xs {{ $fullWidth ? 'max-w-[145px]' : 'max-w-[120px] sm:max-w-[180px] lg:max-w-[220px]' }}">{{ $activeLabel }}</span>
             </div>
-            <x-ui.icon name="expand_more" size="sm" class="{{ $isDark ? 'text-muted-foreground' : 'text-muted-foreground' }} transition-transform duration-150 shrink-0" ::class="open ? 'rotate-180' : ''" />
+            <x-ui.icon name="expand_more" size="sm" class="text-muted-foreground transition-transform duration-150 shrink-0" ::class="open ? 'rotate-180' : ''" />
         </button>
 
         {{-- Dropdown Menu --}}

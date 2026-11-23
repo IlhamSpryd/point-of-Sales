@@ -8,6 +8,10 @@
 
     $hm = $executiveData['demand_heatmap'] ?? [];
     $cells = $hm['cells'] ?? [];
+    $cellMap = [];
+    foreach ($cells as $c) {
+        $cellMap[($c['day_index'] ?? -1) . '_' . ($c['hour'] ?? -1)] = $c;
+    }
     $peak = $hm['peak'] ?? $hm['peak_hour'] ?? ['day' => 'Senin', 'hour' => '12:00', 'formatted' => '0 tx'];
     $quiet = $hm['quiet'] ?? $hm['quietest_hour'] ?? ['day' => 'Minggu', 'hour' => '07:00', 'formatted' => '0 tx'];
     $dayparts = $hm['dayparts'] ?? [];
@@ -107,8 +111,17 @@
     <div class="xl:col-span-3 rounded-[10px] border border-border bg-card p-3.5 sm:p-4 flex flex-col justify-between"
          x-data="{
              metric: 'transactions',
-             hoveredCell: null,
-             activeCellText: 'Peak: {{ $peak['day'] }} {{ $peak['hour'] }} ({{ $peak['formatted'] }}) · Quiet: {{ $quiet['day'] }} {{ $quiet['hour'] }} ({{ $quiet['formatted'] }})'
+             activeCellText: 'Peak: {{ $peak['day'] }} {{ $peak['hour'] }} ({{ $peak['formatted'] }}) · Quiet: {{ $quiet['day'] }} {{ $quiet['hour'] }} ({{ $quiet['formatted'] }})',
+             peakText: 'Peak: {{ $peak['day'] }} {{ $peak['hour'] }} ({{ $peak['formatted'] }})',
+             hover(name, time, tx, rev) {
+                 this.activeCellText = this.metric === 'revenue' ? `${name} ${time}: ${rev}` : `${name} ${time}: ${tx} tx`;
+             },
+             leave() {
+                 this.activeCellText = this.peakText;
+             },
+             drill(dayNum, hour, name) {
+                 $dispatch('open-dashboard-drilldown', { drilldownType: 'hourly', day_of_week: dayNum, hour: hour, day_name: name, time_label: `${hour < 10 ? '0' : ''}${hour}:00 WIB` });
+             }
          }">
         <div>
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
@@ -158,22 +171,22 @@
                             <span class="text-[10.5px] font-medium text-muted-foreground text-left truncate">{{ substr($dName, 0, 3) }}</span>
                             @foreach($hours as $h)
                                 @php
-                                    $cell = collect($cells)->first(fn($c) => ($c['day_index'] ?? -1) === $dIdx && ($c['hour'] ?? -1) === $h);
+                                    $cell = $cellMap["{$dIdx}_{$h}"] ?? null;
                                     $intensity = (float) ($cell['intensity'] ?? 0);
                                     $txVal = (float) ($cell['value'] ?? 0);
                                     $revVal = (float) ($cell['revenue'] ?? 0);
                                     $revFormatted = 'Rp ' . number_format($revVal, 0, ',', '.');
-                                    $dayNum = ($dIdx + 1) % 7; // Convert to 0=Sun..6=Sat for query
+                                    $dayNum = ($dIdx + 1) % 7;
                                 @endphp
                                 <button type="button"
                                      class="h-5.5 rounded flex items-center justify-center text-[9.5px] font-medium tabular-nums transition-transform hover:scale-110 cursor-pointer {{ $intensity > 0.45 ? 'text-white font-bold' : 'text-foreground' }}"
                                      style="background-color: rgba(16, 163, 127, {{ max(0.08, $intensity) }});"
-                                     @click="$dispatch('open-dashboard-drilldown', { drilldownType: 'hourly', day_of_week: {{ $dayNum }}, hour: {{ $h }}, day_name: '{{ $dName }}', time_label: '{{ sprintf('%02d:00', $h) }} WIB' })"
-                                     @mouseenter="activeCellText = metric === 'revenue' ? '{{ $dName }} {{ sprintf('%02d:00', $h) }}: {{ $revFormatted }}' : '{{ $dName }} {{ sprintf('%02d:00', $h) }}: {{ number_format($txVal) }} tx'"
-                                     @mouseleave="activeCellText = 'Peak: {{ $peak['day'] }} {{ $peak['hour'] }} ({{ $peak['formatted'] }})'"
-                                     title="{{ $dName }} {{ sprintf('%02d:00', $h) }} WIB: {{ number_format($txVal) }} tx · {{ $revFormatted }}">
+                                     @click="drill({{ $dayNum }}, {{ $h }}, '{{ $dName }}')"
+                                     @mouseenter="hover('{{ $dName }}', '{{ sprintf('%02d:00', $h) }}', {{ (int)$txVal }}, '{{ $revFormatted }}')"
+                                     @mouseleave="leave()"
+                                     title="{{ $dName }} {{ sprintf('%02d:00', $h) }} WIB: {{ (int)$txVal }} tx · {{ $revFormatted }}">
                                     <span x-show="metric === 'transactions'">
-                                        {{ $txVal > 0 ? number_format($txVal) : '' }}
+                                        {{ $txVal > 0 ? (int)$txVal : '' }}
                                     </span>
                                     <span x-show="metric === 'revenue'" class="truncate px-0.5">
                                         @if($revVal >= 1000000)

@@ -80,6 +80,12 @@
     --surface-shell: #F7F7F8;
     --surface-canvas: #F7F7F8;
 
+    /* Auth Editorial Hero (Isolated Dark Surface, WCAG AAA) */
+    --auth-hero-surface: #0D0E12;
+    --auth-hero-foreground: #FAFAFA;
+    --auth-hero-muted: #C8C8D0;
+    --auth-hero-subtle: #9E9EA8;
+
     /* Charts */
     --chart-accent: #10A37F;
     --chart-1: #18181B;
@@ -212,6 +218,12 @@
     --surface-shell: #0E0E11;
     --surface-canvas: #0E0E11;
 
+    /* Auth Editorial Hero (Preserved across Dark Mode) */
+    --auth-hero-surface: #0D0E12;
+    --auth-hero-foreground: #FAFAFA;
+    --auth-hero-muted: #C8C8D0;
+    --auth-hero-subtle: #9E9EA8;
+
     --chart-accent: #4ADE80;
 
     --chart-1: #FAFAFA;
@@ -308,6 +320,11 @@
     --color-surface-table-header: var(--surface-table-header);
     --color-surface-shell: var(--surface-shell);
     --color-surface-canvas: var(--surface-canvas);
+
+    --color-auth-hero-surface: var(--auth-hero-surface);
+    --color-auth-hero-foreground: var(--auth-hero-foreground);
+    --color-auth-hero-muted: var(--auth-hero-muted);
+    --color-auth-hero-subtle: var(--auth-hero-subtle);
 
     --color-destructive: var(--destructive);
     --color-destructive-foreground: var(--destructive-foreground);

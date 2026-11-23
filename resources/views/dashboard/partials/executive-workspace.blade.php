@@ -3,7 +3,7 @@
 {{-- SECTIONS A–G + 3-STATE GL NOTICE + 7 SLIDE-OVER INSPECTOR DRAWERS          --}}
 {{-- ========================================================================= --}}
 @if($activeArchetype === 'executive' || empty($activeArchetype))
-    <div class="space-y-4 sm:space-y-5 bg-card border border-border rounded-[14px] sm:rounded-[18px] p-4 sm:p-5 shadow-xs"
+    <div class="space-y-4 sm:space-y-5 w-full"
          aria-label="Executive BI Workspace"
          x-data="{
              kpiDrawerOpen: false,

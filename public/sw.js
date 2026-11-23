@@ -37,8 +37,9 @@ self.addEventListener('fetch', (event) => {
 
     const url = new URL(event.request.url);
 
-    // Skip non-origin requests
+    // Skip non-origin requests and dynamic Livewire internal endpoints
     if (url.origin !== self.location.origin) return;
+    if (url.pathname.startsWith('/livewire/')) return;
 
     // Static assets: /build/assets/, /fonts/, /vendor/
     if (url.pathname.startsWith('/build/assets/') || url.pathname.startsWith('/fonts/') || url.pathname.startsWith('/vendor/')) {

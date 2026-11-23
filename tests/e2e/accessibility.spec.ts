@@ -94,5 +94,98 @@ test.describe('Apeiron Accessibility & Interaction Suite', () => {
         const activeTag = await page.evaluate(() => document.activeElement?.tagName);
         expect(['INPUT', 'BUTTON', 'A']).toContain(activeTag);
     });
+
+    test('Login screen right editorial hero has zero duplicate Apeiron logo and clean typography', async ({ page }) => {
+        await page.goto('/login');
+        await page.waitForLoadState('networkidle');
+
+        // Verify right panel is present on desktop
+        const rightPanel = page.locator('#anim-panel-right');
+        await expect(rightPanel).toBeVisible();
+
+        // Wave 2.1 Directive: Zero logo/mark in right panel (no img, no svg)
+        const logosInPanel = rightPanel.locator('img, svg');
+        await expect(logosInPanel).toHaveCount(0);
+
+        // Verify editorial headline text is present
+        await expect(rightPanel).toContainText(/Point of sale, inventory ledger/i);
+        await expect(rightPanel).toContainText(/Enterprise Point of Sale/i);
+    });
+
+    test('Authenticated Dashboard maintains persistent Dark Mode across wire:navigate, reloads, and has 0 horizontal scroll at 1366px', async ({ page }) => {
+        // Step 1: Sign in
+        await page.goto('/login');
+        await page.waitForLoadState('networkidle');
+        await page.fill('#email', 'admin@pos.test');
+        await page.fill('#password', '12345678');
+        await page.click('button[type="submit"]');
+
+        // Wait for redirect to dashboard
+        await page.waitForURL(/.*dashboard.*/i);
+        await page.waitForLoadState('networkidle');
+
+        // Step 2: Test theme toggle
+        const themeToggle = page.locator('header button[aria-label="Toggle color theme"]');
+        await expect(themeToggle).toBeVisible();
+
+        // Ensure we switch to dark mode
+        const isInitiallyDark = await page.evaluate(() => document.documentElement.classList.contains('dark'));
+        if (!isInitiallyDark) {
+            await themeToggle.click();
+            await page.waitForTimeout(200);
+        }
+
+        const isDarkAfterClick = await page.evaluate(() => {
+            return document.documentElement.classList.contains('dark') &&
+                localStorage.getItem('apeiron-theme') === 'dark';
+        });
+        expect(isDarkAfterClick).toBe(true);
+
+        // Step 3: Navigate via Livewire or link to another page and verify theme persists
+        const navLinks = page.locator('#sidebar-nav-container a[href*="/"]');
+        const linkCount = await navLinks.count();
+        if (linkCount > 1) {
+            // Click second link (e.g. POS or Catalog)
+            await navLinks.nth(1).click();
+            await page.waitForLoadState('networkidle');
+            await page.waitForTimeout(300);
+
+            // Verify .dark is STILL on html element
+            const isDarkAfterNav = await page.evaluate(() => document.documentElement.classList.contains('dark'));
+            expect(isDarkAfterNav).toBe(true);
+
+            // Navigate back to /dashboard
+            await page.goto('/dashboard');
+            await page.waitForLoadState('networkidle');
+            await page.waitForTimeout(300);
+            const isDarkBackOnDashboard = await page.evaluate(() => document.documentElement.classList.contains('dark'));
+            expect(isDarkBackOnDashboard).toBe(true);
+        }
+
+        // Step 4: Perform full page reload and verify zero FOUC / dark class retained
+        await page.reload();
+        await page.waitForLoadState('networkidle');
+        const isDarkAfterReload = await page.evaluate(() => document.documentElement.classList.contains('dark'));
+        expect(isDarkAfterReload).toBe(true);
+
+        // Step 5: Verify 0 horizontal scroll overflow at current viewport
+        const hasHorizontalScroll = await page.evaluate(() => {
+            return document.documentElement.scrollWidth > window.innerWidth;
+        });
+        expect(hasHorizontalScroll).toBe(false);
+
+        // Step 6: Verify Header bar controls single row layout
+        const posOrderBtn = page.getByRole('button', { name: /New POS Order/i }).or(page.locator('button:has-text("New POS Order")'));
+        const dateRangeBtn = page.locator('#dash-period-trigger, [id*="period"]').first();
+
+        if (await posOrderBtn.isVisible() && await dateRangeBtn.isVisible()) {
+            const posBox = await posOrderBtn.boundingBox();
+            const periodBox = await dateRangeBtn.boundingBox();
+            if (posBox && periodBox) {
+                // Should be aligned on roughly the same row (within 16px delta)
+                expect(Math.abs(posBox.y - periodBox.y)).toBeLessThan(20);
+            }
+        }
+    });
 });
 

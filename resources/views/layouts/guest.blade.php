@@ -1,14 +1,25 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="{{ (request()->cookie('apeiron_theme') === 'dark') ? 'dark' : '' }}">
 
 <head>
     <meta charset="UTF-8">
     <script>
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
+        (function() {
+            var cookieMatch = document.cookie.match(/(?:^|;\s*)apeiron_theme=(dark|light)/);
+            var saved = localStorage.getItem('apeiron-theme') || (cookieMatch ? cookieMatch[1] : null);
+            if (!saved) {
+                var old = localStorage.getItem('theme') || localStorage.getItem('color-theme');
+                if (old === 'dark' || old === 'light') { saved = old; }
+            }
+            var isDark = saved ? (saved === 'dark') : window.matchMedia('(prefers-color-scheme: dark)').matches;
+            var theme = isDark ? 'dark' : 'light';
+            document.documentElement.classList.toggle('dark', isDark);
+            document.documentElement.style.colorScheme = theme;
+            try {
+                localStorage.setItem('apeiron-theme', theme);
+                document.cookie = 'apeiron_theme=' + theme + '; path=/; max-age=31536000; SameSite=Lax';
+            } catch(e) {}
+        })();
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -132,27 +143,30 @@
         @hasSection('panel')
             @yield('panel')
         @else
-            <div class="hidden md:flex md:col-span-1 lg:col-span-5 text-white p-8 sm:p-10 lg:p-12 xl:p-14 flex-col justify-between select-none relative overflow-hidden bg-card h-full max-h-screen max-h-[100dvh]" id="anim-panel-right" aria-hidden="true">
-                <div class="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-luminosity pointer-events-none"
+            <div class="hidden md:flex md:col-span-1 lg:col-span-5 p-8 sm:p-10 lg:p-12 xl:p-14 flex-col justify-between select-none relative overflow-hidden bg-auth-hero-surface text-auth-hero-foreground h-full max-h-screen max-h-[100dvh]" id="anim-panel-right" aria-hidden="true">
+                <div class="absolute inset-0 bg-cover bg-center opacity-35 mix-blend-luminosity pointer-events-none"
                     style="background-image: url('{{ asset('assets/images/auth/panelKananLogin.avif') }}');"></div>
-                <div class="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/30 pointer-events-none"></div>
+                <div class="absolute inset-0 pointer-events-none"
+                    style="background: linear-gradient(165deg, rgba(11,12,16,0.58) 0%, rgba(11,12,16,0.78) 55%, rgba(11,12,16,0.94) 100%);"></div>
 
                 <div class="relative z-10 flex items-center shrink-0">
-                    <x-brand-logo variant="wordmark" class="h-6 w-auto text-white" />
+                    <span class="text-[11px] font-medium tracking-[0.14em] uppercase text-auth-hero-subtle select-none">
+                        Apeiron Systems · Multi-Branch Operations
+                    </span>
                 </div>
 
-                <div class="relative z-10 my-auto max-w-sm space-y-4">
-                    <p class="text-[20px] lg:text-[22px] font-medium tracking-tight text-white leading-[1.45]">
+                <div class="relative z-10 my-auto max-w-sm space-y-3">
+                    <p class="text-[20px] lg:text-[23px] font-semibold tracking-tight text-auth-hero-foreground leading-[1.4]">
                         Point of sale, inventory ledger, and shift reconciliation built for multi-branch hospitality.
                     </p>
-                    <p class="text-xs text-foreground leading-relaxed font-normal">
+                    <p class="text-xs text-auth-hero-muted leading-relaxed font-normal">
                         Every order, stock movement, and cash drawer event is recorded with strict branch isolation.
                     </p>
                 </div>
 
-                <div class="relative z-10 flex items-center justify-between text-xs text-muted-foreground pt-6 border-t border-border shrink-0">
+                <div class="relative z-10 flex items-center justify-between text-xs text-auth-hero-subtle pt-6 border-t border-white/15 shrink-0">
                     <span>Enterprise Point of Sale</span>
-                    <span>© {{ date('Y') }}</span>
+                    <span>© {{ date('Y') }} Apeiron Systems</span>
                 </div>
             </div>
         @endif

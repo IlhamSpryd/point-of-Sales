@@ -1,14 +1,25 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="admin-ui">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="admin-ui {{ (request()->cookie('apeiron_theme') === 'dark') ? 'dark' : '' }}">
 
 <head>
     <meta charset="utf-8">
     <script>
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
+        (function() {
+            var cookieMatch = document.cookie.match(/(?:^|;\s*)apeiron_theme=(dark|light)/);
+            var saved = localStorage.getItem('apeiron-theme') || (cookieMatch ? cookieMatch[1] : null);
+            if (!saved) {
+                var old = localStorage.getItem('theme') || localStorage.getItem('color-theme');
+                if (old === 'dark' || old === 'light') { saved = old; }
+            }
+            var isDark = saved ? (saved === 'dark') : window.matchMedia('(prefers-color-scheme: dark)').matches;
+            var theme = isDark ? 'dark' : 'light';
+            document.documentElement.classList.toggle('dark', isDark);
+            document.documentElement.style.colorScheme = theme;
+            try {
+                localStorage.setItem('apeiron-theme', theme);
+                document.cookie = 'apeiron_theme=' + theme + '; path=/; max-age=31536000; SameSite=Lax';
+            } catch(e) {}
+        })();
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -124,20 +135,23 @@
         @include('layouts.navigation')
 
         <!-- Main Content Wrapper (Unified Curved Shell Frame with Inset Workspace Canvas) -->
-        <div class="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 bg-shell lg:pr-2.5 lg:pb-2.5" id="main-wrapper">
+        <div class="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 bg-shell" id="main-wrapper">
 
-            <!-- Sticky h-14 Top Navbar (Flows flush from left sidebar) -->
-            <header class="h-14 shrink-0 bg-shell text-shell-foreground flex items-center justify-between px-4 lg:px-5 z-30 sticky top-0 border-b-0 select-none">
+            <!-- Sticky h-13 Top Navbar (Clean Executive Layout, 52px, border-b border-border) -->
+            <header class="h-13 shrink-0 bg-background/95 backdrop-blur-sm text-foreground flex items-center justify-between px-5 z-30 sticky top-0 border-b border-border select-none">
                 
                 <!-- Left: Mobile Drawer Trigger + Active Branch & Context Breadcrumbs -->
-                <div class="flex items-center gap-2.5 min-w-0">
+                <div class="flex items-center gap-3 min-w-0">
                     <button type="button" @click="sidebarMobileOpen = true" aria-label="Open navigation menu"
-                        class="md:hidden min-h-[44px] min-w-[44px] rounded-lg bg-shell-accent hover:bg-shell-border text-shell-foreground flex items-center justify-center border border-shell-border shrink-0 cursor-pointer">
+                        class="md:hidden min-h-[44px] min-w-[44px] rounded-lg bg-secondary hover:bg-muted text-foreground flex items-center justify-center border border-border shrink-0 cursor-pointer">
                         <span class="material-symbols-rounded text-[20px]">menu</span>
                     </button>
 
-                    {{-- Branch Switcher (Top Navbar) --}}
-                    <x-branch-switcher :dark="true" align="left" />
+                    {{-- Branch Switcher (Top Navbar, ghost control) --}}
+                    <x-branch-switcher :dark="false" align="left" />
+
+                    {{-- Hairline divider --}}
+                    <div class="hidden sm:block h-4 w-px bg-border shrink-0"></div>
 
                     {{-- Context-Aware Breadcrumbs (Tier 1 ERP Wayfinding) --}}
                     <x-erp.context-breadcrumbs />
@@ -157,8 +171,8 @@
                             $perspectives = [];
                             if ($currentUser) {
                                 $isOwnerOrAdmin = in_array($currentUser->role?->name, ['Owner', 'Superadmin', 'Administrator'], true)
-                                    || (bool) ($currentUser->role?->is_admin ?? false)
-                                    || $currentUser->canViewConsolidatedStores();
+                                     || (bool) ($currentUser->role?->is_admin ?? false)
+                                     || $currentUser->canViewConsolidatedStores();
                                 if ($isOwnerOrAdmin || $abilityEvaluator->can($currentUser, 'dashboard.scope.all_stores') || $abilityEvaluator->can($currentUser, 'dashboard.view')) {
                                     $perspectives['executive'] = 'Executive / Owner';
                                 }
@@ -181,10 +195,10 @@
                             <div class="relative hidden sm:block">
                                 <select aria-label="Switch dashboard role view"
                                     onchange="window.location.href = this.value"
-                                    class="h-8 px-2.5 rounded-lg bg-shell-accent border border-shell-border text-shell-foreground-active text-xs font-medium cursor-pointer focus:outline-none focus:ring-1 focus:ring-shell-ring">
+                                    class="h-8 px-2.5 rounded-lg bg-secondary border border-border text-foreground text-xs font-medium cursor-pointer focus:outline-none focus:ring-1 focus:ring-ring">
                                     @foreach($perspectives as $key => $label)
                                         <option value="{{ route('dashboard', array_merge(request()->query(), ['view' => $key])) }}" {{ $currentView === $key ? 'selected' : '' }}>
-                                            Role: {{ $label }}
+                                            {{ $label }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -192,37 +206,27 @@
                         @endif
                     @endif
 
-                    {{-- Light/Dark Theme Switcher (Zero FOUC & Persisted) --}}
-                    <button type="button"
-                        @click="
-                            let isDark = document.documentElement.classList.toggle('dark');
-                            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-                            $dispatch('theme-changed', { theme: isDark ? 'dark' : 'light' });
-                        "
-                        aria-label="Toggle color theme"
-                        class="w-8 h-8 rounded-lg bg-shell-accent hover:bg-shell-border text-shell-foreground hover:text-shell-foreground-active border border-shell-border flex items-center justify-center transition-colors cursor-pointer"
-                        title="Toggle Light / Dark Theme">
-                        <span class="material-symbols-rounded text-[18px] dark:hidden">dark_mode</span>
-                        <span class="material-symbols-rounded text-[18px] hidden dark:inline">light_mode</span>
-                    </button>
+                    {{-- Hairline divider --}}
+                    <div class="h-4 w-px bg-border shrink-0"></div>
 
-                    {{-- Micro Sync Indicator (Clean dot replaces bulky text badge) --}}
-                    <div class="hidden sm:flex items-center justify-center w-8 h-8 rounded-lg text-shell-foreground hover:bg-shell-accent hover:text-shell-foreground-active transition-colors cursor-default"
-                         title="System Status: Online & Cloud Synchronized">
-                        <span class="relative flex h-2 w-2">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
-                        </span>
-                    </div>
+                    {{-- Light/Dark Theme Switcher (Single Icon, Zero FOUC & Persisted) --}}
+                    <button type="button"
+                        @click="window.ApeironTheme ? window.ApeironTheme.toggle() : document.documentElement.classList.toggle('dark')"
+                        aria-label="Toggle color theme"
+                        class="w-8 h-8 rounded-lg bg-secondary hover:bg-muted text-muted-foreground hover:text-foreground border border-border flex items-center justify-center transition-colors cursor-pointer"
+                        title="Toggle Light / Dark Theme">
+                        <span class="material-symbols-rounded text-[18px] dark:hidden" aria-hidden="true">dark_mode</span>
+                        <span class="material-symbols-rounded text-[18px] hidden dark:inline" aria-hidden="true">light_mode</span>
+                    </button>
 
                     {{-- Notification Center Dropdown --}}
                     <x-erp.notification-dropdown />
                 </div>
             </header>
 
-            <!-- Main Scrollable Area (Curved Inset Workspace Canvas with Unified Border) -->
+            <!-- Main Scrollable Area (Full-Bleed Fluid Workspace) -->
             <main
-                class="flex-1 overflow-y-auto overflow-x-hidden w-full bg-card border-t lg:border border-border rounded-t-[22px] lg:rounded-[20px] shadow-shell flex flex-col {{ ($noPadding ?? false) ? '' : 'p-4 sm:p-6 lg:p-7' }}"
+                class="flex-1 overflow-y-auto overflow-x-hidden w-full bg-shell flex flex-col"
                 :class="{ 'opacity-60 transition-opacity duration-150 pointer-events-none': navigating }"
                 id="main-content"
                 data-gsap="page-enter">

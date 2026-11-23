@@ -115,7 +115,7 @@
     </div>
 
     {{-- Main Navigation Container --}}
-    <nav id="sidebar-nav-container" class="flex-1 py-3 overflow-y-auto overflow-x-hidden scrollbar-hide" :class="wide ? 'px-3' : 'px-1.5 flex flex-col items-center'"
+    <nav id="sidebar-nav-container" class="flex-1 min-h-0 py-3 pb-4 overflow-y-auto overflow-x-hidden scrollbar-hide" :class="wide ? 'px-3' : 'px-1.5 flex flex-col items-center'"
         aria-label="Main navigation">
 
         {{-- MODE A: Expanded — 9 domain labels -> 19 hub rows (max depth 3, ADR-NAV-003) --}}
@@ -186,7 +186,7 @@
     </nav>
 
     {{-- DEMURE Luxury Footer: User Card --}}
-    <div class="shrink-0 mt-auto relative" :class="wide ? 'p-3' : 'py-3 px-1.5 flex flex-col items-center'">
+    <div class="shrink-0 mt-auto relative border-t border-shell-border" :class="wide ? 'p-3' : 'py-3 px-1.5 flex flex-col items-center'">
         
         {{-- Luxury User Card (Catherine Kim Style) --}}
         <button type="button" @click="openPopover = !openPopover" :aria-expanded="openPopover.toString()"

@@ -47,15 +47,59 @@ function erpChart(...args) {
 
 
 
+/**
+ * Canonical Apeiron Design System Theme Controller (Directive 2)
+ * Zero-FOUC, persistent across Livewire wire:navigate, synchronized with cookie & localStorage.
+ */
+const ApeironTheme = {
+    getTheme() {
+        const saved = localStorage.getItem('apeiron-theme');
+        if (saved === 'dark' || saved === 'light') return saved;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    },
+    isDark() {
+        return this.getTheme() === 'dark';
+    },
+    setTheme(theme) {
+        const isDark = theme === 'dark';
+        document.documentElement.classList.toggle('dark', isDark);
+        document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+        try {
+            localStorage.setItem('apeiron-theme', isDark ? 'dark' : 'light');
+            localStorage.removeItem('theme');
+            localStorage.removeItem('color-theme');
+            document.cookie = 'apeiron_theme=' + (isDark ? 'dark' : 'light') + '; path=/; max-age=31536000; SameSite=Lax';
+        } catch (_) {}
+        window.dispatchEvent(new CustomEvent('apeiron:theme-changed', { detail: { theme: isDark ? 'dark' : 'light', isDark } }));
+        window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: isDark ? 'dark' : 'light', isDark } }));
+    },
+    toggle() {
+        this.setTheme(this.isDark() ? 'light' : 'dark');
+    },
+    sync() {
+        const isDark = this.isDark();
+        document.documentElement.classList.toggle('dark', isDark);
+        document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+    }
+};
+
 if (typeof window !== 'undefined') {
     window.Swal = Swal;
     window.erpMotion = erpMotion;
     window.ApeironMotion = erpMotion;
+    window.ApeironTheme = ApeironTheme;
     window.erpChart = erpChart;
     window.dashboardEcharts = dashboardEcharts;
     window.apeironCommandPalette = commandPalette;
     window.dashboardChart = dashboardChart;
     window.loadGsap = erpMotion.loadGsap;
+
+    document.addEventListener('livewire:navigating', () => window.ApeironTheme.sync());
+    document.addEventListener('livewire:navigate', () => window.ApeironTheme.sync());
+    document.addEventListener('livewire:navigated', () => window.ApeironTheme.sync());
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'apeiron-theme') window.ApeironTheme.sync();
+    });
 }
 
 initErpMotion();

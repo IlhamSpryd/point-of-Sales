@@ -105,7 +105,7 @@
                     <h3 class="text-[13.5px] font-semibold text-foreground tracking-[-0.01em]">Sales &amp; Profit Margin Evolution</h3>
                     <p class="text-[11px] text-muted-foreground mt-0.5">Accrual profit after recipe COGS against blended margin % (klik untuk rincian)</p>
                 </div>
-                <div class="flex flex-wrap items-center gap-1.5">
+                <div class="flex items-center gap-1.5 shrink-0">
                     @if($hasMargin)
                         <!-- Period Filter 7D | 14D | 30D -->
                         <div role="group" aria-label="Filter margin period" class="inline-flex items-center p-0.5 rounded-md bg-secondary border border-border">

@@ -23,61 +23,67 @@
                 $sId = null;
             }
 
+            $cacheKey = "notifs_t{$tId}_s" . ($sId ?? 'all');
             try {
-                // 1. Stockout detection
-                $stockoutCount = (int) \Illuminate\Support\Facades\DB::table('products')
-                    ->where('tenant_id', $tId)
-                    ->where('is_active', true)
-                    ->where('stock', '<=', 0)
-                    ->count();
-                if ($stockoutCount > 0) {
-                    $realNotifications[] = [
-                        'id' => 'alert_stockout_' . $tId,
-                        'icon' => 'inventory_2',
-                        'variant' => 'amber',
-                        'title' => 'Stok Habis Terdeteksi',
-                        'desc' => "{$stockoutCount} SKU produk kehabisan stok dan memerlukan pengadaan/restock.",
-                        'time' => 'Live',
-                        'unread' => true,
-                    ];
-                }
+                $realNotifications = \Illuminate\Support\Facades\Cache::remember($cacheKey, 30, function () use ($tId, $sId) {
+                    $items = [];
+                    // 1. Stockout detection
+                    $stockoutCount = (int) \Illuminate\Support\Facades\DB::table('products')
+                        ->where('tenant_id', $tId)
+                        ->where('is_active', true)
+                        ->where('stock', '<=', 0)
+                        ->count();
+                    if ($stockoutCount > 0) {
+                        $items[] = [
+                            'id' => 'alert_stockout_' . $tId,
+                            'icon' => 'inventory_2',
+                            'variant' => 'amber',
+                            'title' => 'Stok Habis Terdeteksi',
+                            'desc' => "{$stockoutCount} SKU produk kehabisan stok dan memerlukan pengadaan/restock.",
+                            'time' => 'Live',
+                            'unread' => true,
+                        ];
+                    }
 
-                // 2. Open Cashier Shifts
-                $shiftQ = \Illuminate\Support\Facades\DB::table('shifts')
-                    ->where('tenant_id', $tId)
-                    ->whereNull('closed_at');
-                if ($sId) {
-                    $shiftQ->where('store_id', (int) $sId);
-                }
-                $openShifts = (int) $shiftQ->count();
-                if ($openShifts > 0) {
-                    $realNotifications[] = [
-                        'id' => 'alert_shift_' . $tId,
-                        'icon' => 'schedule',
-                        'variant' => 'blue',
-                        'title' => 'Sesi Shift Kasir Aktif',
-                        'desc' => "{$openShifts} shift kasir sedang berjalan menunggu rekonsiliasi EOD.",
-                        'time' => 'Berjalan',
-                        'unread' => false,
-                    ];
-                }
+                    // 2. Open Cashier Shifts
+                    $shiftQ = \Illuminate\Support\Facades\DB::table('shifts')
+                        ->where('tenant_id', $tId)
+                        ->whereNull('closed_at');
+                    if ($sId) {
+                        $shiftQ->where('store_id', (int) $sId);
+                    }
+                    $openShifts = (int) $shiftQ->count();
+                    if ($openShifts > 0) {
+                        $items[] = [
+                            'id' => 'alert_shift_' . $tId,
+                            'icon' => 'schedule',
+                            'variant' => 'blue',
+                            'title' => 'Sesi Shift Kasir Aktif',
+                            'desc' => "{$openShifts} shift kasir sedang berjalan menunggu rekonsiliasi EOD.",
+                            'time' => 'Berjalan',
+                            'unread' => false,
+                        ];
+                    }
 
-                // 3. Pending Void / Supervisor Overrides
-                $pendingVoids = (int) \Illuminate\Support\Facades\DB::table('orders')
-                    ->where('tenant_id', $tId)
-                    ->where('order_status', 'void_pending')
-                    ->count();
-                if ($pendingVoids > 0) {
-                    $realNotifications[] = [
-                        'id' => 'alert_void_' . $tId,
-                        'icon' => 'verified_user',
-                        'variant' => 'amber',
-                        'title' => 'Otorisasi Supervisor Menunggu',
-                        'desc' => "{$pendingVoids} permintaan pembatalan pesanan memerlukan verifikasi PIN.",
-                        'time' => 'Perhatian',
-                        'unread' => true,
-                    ];
-                }
+                    // 3. Pending Void / Supervisor Overrides
+                    $pendingVoids = (int) \Illuminate\Support\Facades\DB::table('orders')
+                        ->where('tenant_id', $tId)
+                        ->where('order_status', 'void_pending')
+                        ->count();
+                    if ($pendingVoids > 0) {
+                        $items[] = [
+                            'id' => 'alert_void_' . $tId,
+                            'icon' => 'verified_user',
+                            'variant' => 'amber',
+                            'title' => 'Otorisasi Supervisor Menunggu',
+                            'desc' => "{$pendingVoids} permintaan pembatalan pesanan memerlukan verifikasi PIN.",
+                            'time' => 'Perhatian',
+                            'unread' => true,
+                        ];
+                    }
+
+                    return $items;
+                });
             } catch (\Throwable $e) {
                 $realNotifications = [];
             }
@@ -114,14 +120,14 @@
         :aria-expanded="open.toString()"
         aria-haspopup="true"
         aria-label="System notifications"
-        class="relative w-8 h-8 flex items-center justify-center rounded-lg text-shell-foreground bg-shell-accent hover:bg-shell-border hover:text-shell-foreground-active border border-shell-border active:scale-95 transition-all cursor-pointer">
-        <span class="material-symbols-rounded text-[20px]" aria-hidden="true">notifications</span>
+        class="relative w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground bg-secondary hover:bg-muted hover:text-foreground border border-border active:scale-95 transition-all cursor-pointer">
+        <span class="material-symbols-rounded text-[18px]" aria-hidden="true">notifications</span>
 
         {{-- Unread Badge Dot --}}
         <template x-if="unreadTotal > 0">
             <span class="absolute top-1.5 right-1.5 flex h-2 w-2">
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-destructive"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-destructive border border-background"></span>
             </span>
         </template>
     </button>

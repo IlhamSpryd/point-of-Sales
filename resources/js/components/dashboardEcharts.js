@@ -5,6 +5,24 @@ import { loadEcharts } from './erpChart';
  * WCAG 2.2 Level AAA compliant, Plus Jakarta Sans typography,
  * Dark/Light auto-reactive, click-to-drilldown, and per-chart filtering.
  */
+const activeDashboardCharts = new Set();
+
+if (typeof window !== 'undefined') {
+    const cleanupAllDashboardCharts = () => {
+        activeDashboardCharts.forEach(chartComponent => {
+            try {
+                if (typeof chartComponent.destroy === 'function') {
+                    chartComponent.destroy();
+                }
+            } catch (_) {}
+        });
+        activeDashboardCharts.clear();
+    };
+
+    document.addEventListener('livewire:navigating', cleanupAllDashboardCharts);
+    window.addEventListener('pagehide', cleanupAllDashboardCharts);
+}
+
 function getEchartsThemeTokens() {
     const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
     return {
@@ -58,6 +76,7 @@ export default function dashboardEcharts(config = {}) {
         activeSeries: config.activeSeries || { gross: false, net: true, prior: true, target: false },
 
         init() {
+            activeDashboardCharts.add(this);
             this.$nextTick(() => {
                 this.setupChart();
             });
@@ -349,16 +368,13 @@ export default function dashboardEcharts(config = {}) {
                     }
                 },
                 legend: {
-                    bottom: 0,
-                    textStyle: { color: t.mutedTextColor, fontFamily: t.fontFamily, fontSize: 11 },
-                    itemWidth: 10,
-                    itemHeight: 10,
+                    show: false,
                 },
                 grid: {
                     left: '2%',
                     right: '3%',
                     top: '8%',
-                    bottom: '15%',
+                    bottom: '8%',
                     containLabel: true,
                 },
                 xAxis: {
@@ -785,6 +801,7 @@ export default function dashboardEcharts(config = {}) {
         },
 
         destroy() {
+            activeDashboardCharts.delete(this);
             isDisposed = true;
             if (resizeObserver) resizeObserver.disconnect();
             if (themeObserver) themeObserver.disconnect();
