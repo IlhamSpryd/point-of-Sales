@@ -196,7 +196,7 @@
                     <span class="text-xs text-muted-foreground mt-1 block">Cash-In vs Cash-Out</span>
                 </div>
 
-                <div class="bg-card rounded-2xl p-5 border border-border shadow-sm bg-gradient-to-br from-card to-gray-50" data-gsap="kpi-card">
+                <div class="bg-card rounded-2xl p-5 border border-border shadow-sm bg-gradient-to-br from-card to-secondary/50" data-gsap="kpi-card">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-foreground block mb-1.5">Expected Drawer Cash</span>
                     <p class="text-2xl font-black text-foreground font-sans tabular-nums">Rp {{ number_format($expectedCash, 0, ',', '.') }}</p>
                     <span class="text-xs text-muted-foreground mt-1 block">Expected cash balance at closing</span>

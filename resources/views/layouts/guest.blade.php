@@ -128,7 +128,7 @@
             <div class="hidden md:flex md:col-span-1 lg:col-span-5 text-white p-8 sm:p-10 lg:p-12 xl:p-14 flex-col justify-between select-none relative overflow-hidden bg-card h-full max-h-screen max-h-[100dvh]" id="anim-panel-right" aria-hidden="true">
                 <div class="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-luminosity pointer-events-none"
                     style="background-image: url('{{ asset('assets/images/auth/panelKananLogin.avif') }}');"></div>
-                <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-zinc-950/30 pointer-events-none"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/30 pointer-events-none"></div>
 
                 <div class="relative z-10 flex items-center shrink-0">
                     <x-brand-logo variant="wordmark" class="h-6 w-auto text-white" />

@@ -126,10 +126,17 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
-      - name: Build aset frontend
+      - name: Build aset frontend & verify budget
         run: |
           npm ci
           npm run build
+          # Enforce bundle budget: app.js must stay under 150 kB (153600 bytes)
+          APP_JS_SIZE=$(stat -c%s public/build/assets/app-*.js)
+          echo "Built app.js size: $APP_JS_SIZE bytes"
+          if [ "$APP_JS_SIZE" -gt 153600 ]; then
+            echo "ERROR: app.js exceeded 150 kB budget ($APP_JS_SIZE bytes)"
+            exit 1
+          fi
 
       - name: Smoke test migrasi + seeder
         run: php artisan migrate:fresh --seed --force

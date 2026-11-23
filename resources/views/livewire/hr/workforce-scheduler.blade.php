@@ -93,7 +93,7 @@
                     <tr>
                         <th scope="col" class="px-5 py-3.5 w-64">Employee Name</th>
                         @foreach ($days as $day)
-                            <th wire:key="day-{{ $day->id ?? (None ?? $loop->index) }}" scope="col" class="px-3 py-3.5 text-center {{ $day->isToday() ? 'bg-primary/10 text-primary font-bold' : '' }}">
+                            <th scope="col" wire:key="day-{{ $day->id ?? (None ?? $loop->index) }}" class="px-3 py-3.5 text-center {{ $day->isToday() ? 'bg-primary/10 text-primary font-bold' : '' }}">
                                 <div>{{ $day->format('D') }}</div>
                                 <div class="text-xs font-normal tabular-nums">{{ $day->format('d/m') }}</div>
                             </th>

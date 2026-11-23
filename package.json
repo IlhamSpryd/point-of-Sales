@@ -4,7 +4,8 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "test:e2e": "playwright test"
     },
     "dependencies": {
         "@alpinejs/focus": "^3.17.5",
@@ -14,6 +15,8 @@
         "pusher-js": "^8.6.0"
     },
     "devDependencies": {
+        "@axe-core/playwright": "^4.14.0",
+        "@playwright/test": "^1.65.1",
         "@tailwindcss/forms": "^0.5.2",
         "@tailwindcss/vite": "^4.3.3",
         "alpinejs": "^3.4.2",
