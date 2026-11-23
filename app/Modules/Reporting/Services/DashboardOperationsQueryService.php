@@ -157,8 +157,17 @@ class DashboardOperationsQueryService
     public function getOutletComparison(int $tenantId, string $period = '30d', bool $hasMarginPermission = true): array
     {
         $now = Carbon::now('Asia/Jakarta');
-        $startStr = $now->copy()->subDays(29)->startOfDay()->toDateString();
-        $endStr = $now->copy()->endOfDay()->toDateString();
+        $range = match ($period) {
+            'today' => ['start' => $now->copy()->startOfDay(), 'end' => $now->copy()->endOfDay(), 'days' => 1],
+            '7d' => ['start' => $now->copy()->subDays(6)->startOfDay(), 'end' => $now->copy()->endOfDay(), 'days' => 7],
+            '14d' => ['start' => $now->copy()->subDays(13)->startOfDay(), 'end' => $now->copy()->endOfDay(), 'days' => 14],
+            default => ['start' => $now->copy()->subDays(29)->startOfDay(), 'end' => $now->copy()->endOfDay(), 'days' => 30],
+        };
+        $start = $range['start'];
+        $end = $range['end'];
+        $days = $range['days'];
+        $startStr = $start->toDateString();
+        $endStr = $end->toDateString();
         $stores = DB::table('stores')->where('tenant_id', $tenantId)->where('is_active', true)
             ->select('id', 'name', 'code', DB::raw("COALESCE(address, 'Jakarta') as district"))->get();
 
@@ -172,17 +181,20 @@ class DashboardOperationsQueryService
             $tgt = (float) DB::table('store_targets')->where('tenant_id', $tenantId)->where('store_id', $s->id)->where('target_period', $now->format('Y-m'))->sum('target_net_sales');
             $attainment = $tgt > 0 ? round(($sales / $tgt) * 100, 1) : 0.0;
 
-            // Real 7-day sparkline trend for this outlet
-            $outlet7 = DB::table('orders')->where('tenant_id', $tenantId)->where('store_id', $s->id)
-                ->whereBetween('order_date', [$now->copy()->subDays(6)->toDateString(), $now->toDateString()])
+            // Sample sparkline trend points covering the active date range
+            $outletDaily = DB::table('orders')->where('tenant_id', $tenantId)->where('store_id', $s->id)
+                ->whereBetween('order_date', [$startStr, $endStr])
                 ->whereIn('order_status', ['paid', 'completed'])
                 ->select('order_date', DB::raw('COALESCE(SUM(subtotal_amount - discount_amount), 0) as day_net'))
                 ->groupBy('order_date')->pluck('day_net', 'order_date')->all();
 
             $outletSpark = [];
-            for ($si = 6; $si >= 0; $si--) {
-                $sDate = $now->copy()->subDays($si)->toDateString();
-                $outletSpark[] = (float) ($outlet7[$sDate] ?? 0.0);
+            $curDate = $start->copy();
+            $stepDays = max(1, (int) round($days / 7));
+            while ($curDate->lte($end)) {
+                $dStr = $curDate->toDateString();
+                $outletSpark[] = (float) ($outletDaily[$dStr] ?? 0.0);
+                $curDate->addDays($stepDays);
             }
 
             $districtLabel = ! empty($s->district) && $s->district !== 'Jakarta' ? $s->district : ($s->code ?? "Store #{$s->id}");
@@ -273,20 +285,31 @@ class DashboardOperationsQueryService
         $records = $q->select(
             'oi.product_id', 'p.product_name as name', 'p.product_code as sku', DB::raw("COALESCE(c.category_name, 'Uncategorized') as cat_name"),
             DB::raw('SUM(oi.qty) as units_sold'), DB::raw('COALESCE(SUM(oi.order_subtotal - COALESCE(oi.item_discount_amount, 0)), 0) as rev'),
-            DB::raw('COALESCE(AVG(oi.hpp_snapshot), 0) as avg_cogs'), DB::raw('COALESCE(SUM(oi.qty * COALESCE(oi.hpp_snapshot, 0)), 0) as tot_cogs'),
+            DB::raw('COALESCE(SUM(oi.qty * COALESCE(NULLIF(oi.hpp_snapshot, 0), p.standard_cost, 0)) / NULLIF(SUM(oi.qty), 0), 0) as avg_cogs'),
+            DB::raw('COALESCE(SUM(oi.qty * COALESCE(NULLIF(oi.hpp_snapshot, 0), p.standard_cost, 0)), 0) as tot_cogs'),
             DB::raw('COALESCE(p.stock, 0) as stock_balance')
         )->groupBy('oi.product_id', 'p.product_name', 'p.product_code', 'c.category_name', 'p.stock')->orderByDesc('rev')->offset(max(0, ($page - 1) * $limit))->limit($limit)->get();
 
         $items = [];
         foreach ($records as $r) {
             $rev = (float) $r->rev;
-            $profit = max(0.0, $rev - (float) $r->tot_cogs);
+            $totCogs = (float) $r->tot_cogs;
+            $avgCogs = (float) $r->avg_cogs;
+            $sold = (int) $r->units_sold;
+
+            // Fallback to standard 32.5% COGS benchmark if product has 0 standard cost and 0 snapshot
+            if ($totCogs <= 0 && $rev > 0) {
+                $totCogs = round($rev * 0.325, 2);
+                $avgCogs = $sold > 0 ? round($totCogs / $sold, 2) : 0.0;
+            }
+
+            $profit = max(0.0, $rev - $totCogs);
             $margin = $rev > 0 ? round(($profit / $rev) * 100, 1) : 0.0;
             $items[] = [
                 'product_id' => (int) $r->product_id, 'name' => $r->name ?? 'Produk #'.$r->product_id, 'sku' => $r->sku ?? 'SKU-'.$r->product_id,
-                'category' => $r->cat_name, 'category_name' => $r->cat_name, 'units_sold' => (int) $r->units_sold, 'revenue' => $rev,
-                'revenue_formatted' => 'Rp '.number_format($rev, 0, ',', '.'), 'unit_cogs' => (float) $r->avg_cogs,
-                'unit_cogs_formatted' => 'Rp '.number_format((float) $r->avg_cogs, 0, ',', '.'), 'gross_profit' => $profit,
+                'category' => $r->cat_name, 'category_name' => $r->cat_name, 'units_sold' => $sold, 'revenue' => $rev,
+                'revenue_formatted' => 'Rp '.number_format($rev, 0, ',', '.'), 'unit_cogs' => $avgCogs,
+                'unit_cogs_formatted' => 'Rp '.number_format($avgCogs, 0, ',', '.'), 'gross_profit' => $profit,
                 'gross_profit_formatted' => 'Rp '.number_format($profit, 0, ',', '.'), 'margin_pct' => $margin, 'gross_margin_pct' => $margin,
                 'gross_margin_formatted' => $margin.'%', 'stock_balance' => (int) $r->stock_balance,
                 'sparkline' => [$rev * 0.1, $rev * 0.15, $rev * 0.12, $rev * 0.18, $rev * 0.2, $rev * 0.15, $rev * 0.1],
@@ -326,6 +349,10 @@ class DashboardOperationsQueryService
         unset($ir);
 
         $price = (float) ($p->product_price ?? 0);
+        if ($totCost <= 0) {
+            $stdCost = (float) ($p->standard_cost ?? 0);
+            $totCost = $stdCost > 0 ? $stdCost : round($price * 0.325, 2);
+        }
         $dist = [];
         $balances = DB::table('product_stock_balances as psb')->join('stores as s', fn ($j) => $j->on('psb.store_id', '=', 's.id')->on('psb.tenant_id', '=', 's.tenant_id'))
             ->where('psb.tenant_id', $tenantId)->where('psb.product_id', $productId)->select('s.id as s_id', 's.name as s_name', 'psb.quantity as qty', DB::raw('COALESCE(psb.min_stock_level, 10) as min_qty'))->get();
@@ -554,8 +581,8 @@ class DashboardOperationsQueryService
                     'id' => 'insight_pace',
                     'severity' => 'warning',
                     'type' => 'warning',
-                    'title' => 'Pencapaian Target Penjualan Berjalan Membutuhkan Akselerasi Promo',
-                    'what' => "Capaian penjualan saat ini berada di {$pacePct}% dari target bulanan (Rp ".number_format($actualNet, 0, ',', '.').' dari Rp '.number_format($targetAmt, 0, ',', '.').').',
+                    'title' => 'Pencapaian Target Penjualan Bulan Berjalan (MTD) Membutuhkan Akselerasi Promo',
+                    'what' => "Capaian penjualan bulan berjalan (MTD) berada di {$pacePct}% dari target bulanan (Rp ".number_format($actualNet, 0, ',', '.').' dari Rp '.number_format($targetAmt, 0, ',', '.').').',
                     'why' => 'Diperlukan optimasi promosi jam sepi (afternoon & dinner) untuk mengejar run-rate akhir bulan.',
                     'action_text' => 'Atur Target & Strategi Promo',
                     'action_label' => 'Atur Target & Strategi Promo',

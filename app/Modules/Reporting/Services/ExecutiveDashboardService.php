@@ -168,7 +168,7 @@ class ExecutiveDashboardService
             'outlet_comparison' => $branchRanking,
             'product_unit_economics' => $this->operationsService->getProductUnitEconomics($tenantId, $storeId, $period),
             'inventory_intelligence' => $this->operationsService->getInventoryIntelligence($tenantId, $storeId),
-            'recent_transactions' => $this->operationsService->getRecentTransactions($tenantId, $storeId, [], 10, 1),
+            'recent_transactions' => $this->operationsService->getRecentTransactions($tenantId, $storeId, [], 100, 1),
             'operational_alerts' => $this->operationsService->getOperationalAlerts($tenantId, $storeId),
         ];
 

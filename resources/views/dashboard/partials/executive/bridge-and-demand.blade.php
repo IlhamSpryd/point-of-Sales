@@ -17,43 +17,84 @@
 
 <section aria-label="Profitability and Demand" class="grid grid-cols-1 xl:grid-cols-5 gap-3">
     <!-- Panel 1: Waterfall Bridge (2 cols) -->
-    <div class="xl:col-span-2 rounded-[10px] border border-border bg-card p-3.5 sm:p-4 flex flex-col justify-between">
+    <div class="xl:col-span-2 rounded-[10px] border border-border bg-card p-3.5 sm:p-4 flex flex-col justify-between"
+         x-data="{
+             period: '{{ $executiveData['period'] ?? '30d' }}',
+             steps: @js($wf),
+             loading: false,
+             get grossVal() {
+                 const first = (this.steps && this.steps[0]) ? Number(this.steps[0].amount) : 1;
+                 return first > 0 ? first : 1;
+             },
+             async setPeriod(p) {
+                 this.period = p;
+                 this.loading = true;
+                 try {
+                     const url = new URL('{{ route('dashboard.api.waterfall-bridge') }}', window.location.origin);
+                     url.searchParams.set('period', p);
+                     @if(request()->filled('store_id')) url.searchParams.set('store_id', '{{ request()->query('store_id') }}'); @endif
+                     const res = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } });
+                     if (res.ok) {
+                         const json = await res.json();
+                         this.steps = json.steps || [];
+                     }
+                 } catch (e) {
+                     console.error('Failed to update waterfall:', e);
+                 } finally {
+                     this.loading = false;
+                 }
+             }
+         }">
         <div>
-            <div class="mb-2">
-                <h3 class="text-[13.5px] font-semibold text-foreground tracking-[-0.01em]">Revenue-to-Gross-Profit Waterfall</h3>
-                <p class="text-[11px] text-muted-foreground mt-0.5">Accrual transition from gross receipts to gross profit (klik baris untuk rincian)</p>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                <div>
+                    <h3 class="text-[13.5px] font-semibold text-foreground tracking-[-0.01em]">Revenue-to-Gross-Profit Waterfall</h3>
+                    <p class="text-[11px] text-muted-foreground mt-0.5">Accrual transition from gross receipts to gross profit (klik baris untuk rincian)</p>
+                </div>
+                <!-- Inline Period Switcher (Today | 7D | 14D | 30D) -->
+                <div role="group" aria-label="Filter waterfall period" class="inline-flex items-center p-0.5 rounded-md bg-secondary border border-border shrink-0">
+                    @foreach(['today' => 'Today', '7d' => '7D', '14d' => '14D', '30d' => '30D'] as $pVal => $pLbl)
+                        <button type="button"
+                                @click="setPeriod('{{ $pVal }}')"
+                                :class="period === '{{ $pVal }}' ? 'bg-card text-foreground font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground'"
+                                class="px-1.5 py-0.5 rounded text-[10.5px] font-medium transition-colors cursor-pointer">
+                            {{ $pLbl }}
+                        </button>
+                    @endforeach
+                </div>
             </div>
 
-            <div class="space-y-2 mt-3">
-                @forelse($wf as $step)
-                    @php
-                        $amt = (float) $step['amount'];
-                        $isNegative = $step['type'] === 'deduction';
-                        $pct = round((abs($amt) / $grossVal) * 100, 1);
-                    @endphp
+            <div class="space-y-2 mt-3 relative min-h-[160px]">
+                <div x-show="loading" class="absolute inset-0 bg-card/60 backdrop-blur-xs flex items-center justify-center z-10" x-cloak>
+                    <span class="w-2 h-2 rounded-full bg-accent animate-ping"></span>
+                </div>
+                <template x-for="(step, idx) in steps" :key="step.label || idx">
                     <button type="button"
-                            @click="$dispatch('open-dashboard-drilldown', { drilldownType: 'waterfall-step', step: '{{ $step['label'] }}' })"
+                            @click="$dispatch('open-dashboard-drilldown', { drilldownType: 'waterfall-step', step: step.label })"
                             class="w-full text-left space-y-1 p-1.5 -mx-1.5 rounded-md hover:bg-secondary/60 transition-colors cursor-pointer group">
                         <div class="flex items-center justify-between text-xs">
                             <span class="font-medium text-foreground flex items-center gap-1.5">
-                                <span class="w-1.5 h-1.5 rounded-full {{ $step['type'] === 'final' ? 'bg-positive' : ($isNegative ? 'bg-destructive' : 'bg-foreground') }}"></span>
-                                {{ $step['label'] }}
+                                <span class="w-1.5 h-1.5 rounded-full"
+                                      :class="step.type === 'final' ? 'bg-positive' : (step.type === 'deduction' ? 'bg-destructive' : 'bg-foreground')"></span>
+                                <span x-text="step.label"></span>
                             </span>
-                            <span class="tabular-nums font-semibold {{ $step['type'] === 'final' ? 'text-positive' : ($isNegative ? 'text-destructive' : 'text-foreground') }}">
-                                {{ $step['amount_formatted'] }}
-                                <span class="text-[10px] text-muted-foreground font-normal">({{ $pct }}%)</span>
+                            <span class="tabular-nums font-semibold"
+                                  :class="step.type === 'final' ? 'text-positive' : (step.type === 'deduction' ? 'text-destructive' : 'text-foreground')">
+                                <span x-text="step.amount_formatted"></span>
+                                <span class="text-[10px] text-muted-foreground font-normal"
+                                      x-text="'(' + Math.round((Math.abs(Number(step.amount) || 0) / grossVal) * 1000) / 10 + '%)'"></span>
                             </span>
                         </div>
                         <div class="h-1.5 rounded-full bg-secondary overflow-hidden">
-                            <div class="h-full rounded-full {{ $step['type'] === 'final' ? 'bg-positive' : ($isNegative ? 'bg-destructive' : 'bg-foreground') }}"
-                                 style="width: {{ min(100, max(2, $pct)) }}%"></div>
+                            <div class="h-full rounded-full"
+                                 :class="step.type === 'final' ? 'bg-positive' : (step.type === 'deduction' ? 'bg-destructive' : 'bg-foreground')"
+                                 :style="'width: ' + Math.min(100, Math.max(2, Math.round((Math.abs(Number(step.amount) || 0) / grossVal) * 100))) + '%'"></div>
                         </div>
                     </button>
-                @empty
-                    <div class="py-8 text-center text-xs text-muted-foreground">
-                        No revenue or deduction records to compute bridge.
-                    </div>
-                @endforelse
+                </template>
+                <div x-show="!loading && (!steps || steps.length === 0)" class="py-8 text-center text-xs text-muted-foreground" x-cloak>
+                    No revenue or deduction records to compute bridge.
+                </div>
             </div>
         </div>
 

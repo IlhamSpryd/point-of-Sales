@@ -19,7 +19,8 @@
     $txSpark = !empty($revSeries) ? array_column($revSeries, 'tx') : [0,0,0,0,0];
     $atvSpark = !empty($revSeries) ? array_map(fn($r) => ($r['tx'] ?? 0) > 0 ? (float) ($r['net'] / $r['tx']) : 0, $revSeries) : [0,0,0,0,0];
     $profitSpark = !empty($revSeries) ? array_map(fn($r) => (float) (($r['net'] ?? 0) * ($grossMarginPct / 100)), $revSeries) : [0,0,0,0,0];
-    $activeOrdersSpark = [2, 4, 3, 5, 4, 6, 5];
+    $openCount = (int) ($openOrdersCount ?? ($k['open_orders'] ?? 0));
+    $activeOrdersSpark = $openCount > 0 ? [max(1, $openCount - 2), $openCount, max(1, $openCount - 1), $openCount + 1, $openCount] : [0, 0, 0, 0, 0, 0, 0];
 
     $netDelta = $k['net_sales_delta'] ?? '+0.0%';
     $netDeltaPositive = !str_starts_with((string)$netDelta, '-');

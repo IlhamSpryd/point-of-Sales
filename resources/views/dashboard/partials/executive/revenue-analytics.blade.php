@@ -29,6 +29,34 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
+            <!-- Series Toggles (Net Revenue, Prior Period, Target) -->
+            <div role="group" aria-label="Toggle series visibility" class="inline-flex items-center p-0.5 rounded-md bg-secondary border border-border">
+                <button type="button"
+                        @click="toggleSeries('net')"
+                        :class="activeSeries.net ? 'bg-card text-foreground font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground opacity-60'"
+                        class="px-2 py-0.5 rounded text-[11px] font-medium transition-all cursor-pointer flex items-center gap-1.5"
+                        title="Tampilkan / Sembunyikan Net Revenue">
+                    <span class="w-1.5 h-1.5 rounded-full shrink-0" :class="activeSeries.net ? 'bg-positive' : 'bg-muted-foreground/40'"></span>
+                    <span>Net Revenue</span>
+                </button>
+                <button type="button"
+                        @click="toggleSeries('prior')"
+                        :class="activeSeries.prior ? 'bg-card text-foreground font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground opacity-60'"
+                        class="px-2 py-0.5 rounded text-[11px] font-medium transition-all cursor-pointer flex items-center gap-1.5"
+                        title="Tampilkan / Sembunyikan Prior Period">
+                    <span class="w-2 h-0.5 shrink-0" :class="activeSeries.prior ? 'bg-muted-foreground' : 'bg-muted-foreground/30'"></span>
+                    <span>Prior Period</span>
+                </button>
+                <button type="button"
+                        @click="toggleSeries('target')"
+                        :class="activeSeries.target ? 'bg-card text-foreground font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground opacity-60'"
+                        class="px-2 py-0.5 rounded text-[11px] font-medium transition-all cursor-pointer flex items-center gap-1.5"
+                        title="Tampilkan / Sembunyikan Target Penjualan (KPI-PLN-01)">
+                    <span class="w-1.5 h-1.5 rounded-full border border-warning shrink-0" :class="activeSeries.target ? 'bg-warning' : 'bg-transparent'"></span>
+                    <span>Target</span>
+                </button>
+            </div>
+
             <!-- Line / Bar Switcher -->
             <div role="group" aria-label="Chart style" class="inline-flex items-center p-0.5 rounded-md bg-secondary border border-border">
                 <button type="button"

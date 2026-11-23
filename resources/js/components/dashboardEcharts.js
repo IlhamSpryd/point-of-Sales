@@ -55,7 +55,7 @@ export default function dashboardEcharts(config = {}) {
         period: config.period || '30d',
         chartStyle: config.chartStyle || 'line', // 'line' | 'bar'
         metricType: config.metricType || 'transactions', // 'transactions' | 'revenue'
-        activeSeries: config.activeSeries || { gross: true, net: true, prior: true, target: true },
+        activeSeries: config.activeSeries || { gross: false, net: true, prior: true, target: false },
 
         init() {
             this.$nextTick(() => {
@@ -83,17 +83,26 @@ export default function dashboardEcharts(config = {}) {
 
                 // Click to drilldown listener
                 chartInstance.on('click', (params) => {
+                    let drillType = this.drilldownType;
+                    const detailPayload = {
+                        drilldownType: drillType,
+                        name: params.name,
+                        value: params.value,
+                        seriesName: params.seriesName,
+                        dataIndex: params.dataIndex,
+                        data: params.data,
+                        period: this.period,
+                        date: params.name,
+                    };
+                    if (this.type === 'stacked-bar' || drillType === 'payment-method') {
+                        detailPayload.drilldownType = 'payment-method';
+                        detailPayload.method = params.seriesName || params.name;
+                    } else if (this.type === 'profitability') {
+                        detailPayload.drilldownType = 'date';
+                        detailPayload.date = params.name;
+                    }
                     window.dispatchEvent(new CustomEvent('open-dashboard-drilldown', {
-                        detail: {
-                            drilldownType: this.drilldownType,
-                            name: params.name,
-                            value: params.value,
-                            seriesName: params.seriesName,
-                            dataIndex: params.dataIndex,
-                            data: params.data,
-                            period: this.period,
-                            date: params.name,
-                        }
+                        detail: detailPayload
                     }));
                 });
 
@@ -225,7 +234,7 @@ export default function dashboardEcharts(config = {}) {
                     },
                 },
                 series: [
-                    {
+                    ...(this.activeSeries.gross ? [{
                         name: 'Gross Revenue',
                         type: isBar ? 'bar' : 'line',
                         data: gross,
@@ -234,8 +243,8 @@ export default function dashboardEcharts(config = {}) {
                         showSymbol: false,
                         smooth: true,
                         barMaxWidth: 16,
-                    },
-                    {
+                    }] : []),
+                    ...(this.activeSeries.net ? [{
                         name: 'Net Revenue',
                         type: isBar ? 'bar' : 'line',
                         data: net,
@@ -254,8 +263,8 @@ export default function dashboardEcharts(config = {}) {
                         showSymbol: false,
                         smooth: true,
                         barMaxWidth: 16,
-                    },
-                    ...(prior.length > 0 ? [{
+                    }] : []),
+                    ...(this.activeSeries.prior && prior.length > 0 ? [{
                         name: 'Prior Period',
                         type: 'line',
                         data: prior,
@@ -264,7 +273,7 @@ export default function dashboardEcharts(config = {}) {
                         showSymbol: false,
                         smooth: true,
                     }] : []),
-                    ...(target.length > 0 ? [{
+                    ...(this.activeSeries.target && target.length > 0 ? [{
                         name: 'Target Penjualan',
                         type: 'line',
                         data: target,
@@ -277,9 +286,10 @@ export default function dashboardEcharts(config = {}) {
         },
 
         buildStackedBarOption(t) {
-            const d = this.chartData?.stacked_bar || {};
+            const d = (this.chartData && this.chartData.stacked_bar) ? this.chartData.stacked_bar : (this.chartData || {});
             const labels = d.labels || [];
             const seriesList = d.series || [];
+            const isTx = this.metricType === 'transactions';
 
             return {
                 textStyle: { fontFamily: t.fontFamily },
@@ -298,22 +308,28 @@ export default function dashboardEcharts(config = {}) {
                         items.forEach(it => {
                             const val = Number(it.value) || 0;
                             total += val;
+                            const formatted = isTx
+                                ? `${Math.round(val).toLocaleString('id-ID')} tx`
+                                : `Rp ${Math.round(val).toLocaleString('id-ID')}`;
                             out += `
                                 <div class="flex items-center justify-between gap-4 text-xs py-0.5">
                                     <span class="flex items-center gap-1.5" style="color: ${it.color}">
                                         <span class="w-2 h-2 rounded-full" style="background: ${it.color}"></span>
                                         ${it.seriesName}
                                     </span>
-                                    <span class="font-semibold tabular-nums">Rp ${Math.round(val).toLocaleString('id-ID')}</span>
+                                    <span class="font-semibold tabular-nums">${formatted}</span>
                                 </div>
                             `;
                         });
+                        const totalFormatted = isTx
+                            ? `${Math.round(total).toLocaleString('id-ID')} tx`
+                            : `Rp ${Math.round(total).toLocaleString('id-ID')}`;
                         out += `
                             <div class="mt-1.5 pt-1.5 border-t border-border flex items-center justify-between text-xs font-bold">
-                                <span>Total Settlement</span>
-                                <span class="tabular-nums">Rp ${Math.round(total).toLocaleString('id-ID')}</span>
+                                <span>Total Volume</span>
+                                <span class="tabular-nums">${totalFormatted}</span>
                             </div>
-                            <div class="mt-1 text-[10px] text-muted-foreground">Klik segmen batang untuk filter transaksi</div>
+                            <div class="mt-1 text-[10px] text-muted-foreground">Klik segmen batang untuk filter kanal pembayaran</div>
                         `;
                         return out;
                     }
@@ -350,20 +366,20 @@ export default function dashboardEcharts(config = {}) {
                         color: t.mutedTextColor,
                         fontFamily: t.fontFamily,
                         fontSize: 11,
-                        formatter: (val) => formatCompactIDR(val),
+                        formatter: (val) => isTx ? `${val} tx` : formatCompactIDR(val),
                     },
                 },
                 series: seriesList.map(s => {
                     const color = s.name === 'QRIS' ? t.qrisColor :
-                                 (s.name === 'Card' ? t.cardColor :
-                                 (s.name === 'Cash' ? t.cashColor : t.invoiceColor));
+                                 (s.name.includes('Card') ? t.cardColor :
+                                 (s.name.includes('Cash') ? t.cashColor : t.invoiceColor));
                     return {
                         name: s.name,
                         type: 'bar',
                         stack: 'total',
                         barMaxWidth: 18,
                         itemStyle: { color },
-                        data: s.data || [],
+                        data: s.data || s.values || [],
                     };
                 })
             };
@@ -372,8 +388,8 @@ export default function dashboardEcharts(config = {}) {
         buildProfitabilityOption(t) {
             const d = this.chartData || {};
             const labels = d.labels || [];
-            const profits = d.gross_profit_series || [];
-            const margins = d.margin_pct_series || [];
+            const profits = d.gross_profit_series || (d.barSeries?.data) || [];
+            const margins = d.margin_pct_series || (d.lineSeries?.data) || [];
 
             return {
                 textStyle: { fontFamily: t.fontFamily },
@@ -402,7 +418,7 @@ export default function dashboardEcharts(config = {}) {
                                 </div>
                             `;
                         });
-                        out += `<div class="mt-1.5 pt-1 text-[10px] text-muted-foreground border-t border-border">Klik batang untuk melihat rincian driver HPP produk</div>`;
+                        out += `<div class="mt-1.5 pt-1 text-[10px] text-muted-foreground border-t border-border">Klik batang untuk melihat rincian tanggal transaksi</div>`;
                         return out;
                     }
                 },
@@ -451,19 +467,22 @@ export default function dashboardEcharts(config = {}) {
                 ],
                 series: [
                     {
-                        name: 'Gross Profit',
+                        name: 'Gross Profit (IDR)',
                         type: 'bar',
                         yAxisIndex: 0,
                         barMaxWidth: 16,
-                        itemStyle: { color: t.isDark ? '#27272A' : '#D4D4D8' },
+                        itemStyle: {
+                            color: t.isDark ? '#4ADE80' : '#10A37F',
+                            borderRadius: [3, 3, 0, 0]
+                        },
                         data: profits,
                     },
                     {
                         name: 'Margin %',
                         type: 'line',
                         yAxisIndex: 1,
-                        lineStyle: { width: 2.25, color: t.accentColor },
-                        itemStyle: { color: t.accentColor },
+                        lineStyle: { width: 2.25, color: t.isDark ? '#FAFAFA' : '#18181B' },
+                        itemStyle: { color: t.isDark ? '#FAFAFA' : '#18181B' },
                         showSymbol: false,
                         smooth: true,
                         data: margins,
@@ -709,6 +728,13 @@ export default function dashboardEcharts(config = {}) {
         async setChartStyle(s) {
             this.chartStyle = s;
             this.renderCurrentChart();
+        },
+
+        toggleSeries(key) {
+            if (this.activeSeries && this.activeSeries[key] !== undefined) {
+                this.activeSeries[key] = !this.activeSeries[key];
+                this.renderCurrentChart();
+            }
         },
 
         async setMetricType(m) {
