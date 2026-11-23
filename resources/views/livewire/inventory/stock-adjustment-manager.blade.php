@@ -70,7 +70,7 @@
                 </x-slot:head>
 
                 @foreach ($adjustments as $adjustment)
-                    <tr class="hover:bg-secondary transition-colors duration-150">
+                    <tr wire:key="adjustment-{{ $adjustment->id ?? (None ?? $loop->index) }}" class="hover:bg-secondary transition-colors duration-150">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="text-sm font-bold text-foreground">{{ $adjustment->adjustment_number }}</span>
                             <div class="text-xs text-muted-foreground">Created by: {{ $adjustment->creator->name ?? 'System' }}</div>
@@ -168,7 +168,7 @@
 
                     <div class="space-y-3">
                         @foreach ($items as $index => $item)
-                            <div class="p-3 rounded-2xl border border-border bg-secondary/50 space-y-2">
+                            <div wire:key="item-{{ $item->id ?? ($index ?? $loop->index) }}" class="p-3 rounded-2xl border border-border bg-secondary/50 space-y-2">
                                 <div class="grid grid-cols-12 gap-2 items-center">
                                     <div class="col-span-12 sm:col-span-2">
                                         <select wire:model.live="items.{{ $index }}.item_type" class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-card">
@@ -298,7 +298,7 @@
                             </thead>
                             <tbody class="divide-y divide-border">
                                 @foreach ($selectedAdjustment->items as $item)
-                                    <tr>
+                                    <tr wire:key="item-{{ $item->id ?? (None ?? $loop->index) }}">
                                         <td class="px-4 py-2 font-medium capitalize">{{ $item->item_type }}</td>
                                         <td class="px-4 py-2 font-semibold text-foreground">{{ $item->item_name }}</td>
                                         <td class="px-4 py-2 text-center font-bold {{ $item->direction === 'IN' ? 'text-positive' : 'text-destructive' }}">

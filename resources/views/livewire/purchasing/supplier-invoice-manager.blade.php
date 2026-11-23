@@ -209,7 +209,7 @@
                             </thead>
                             <tbody class="divide-y border-border">
                                 @foreach($invoiceLines as $i => $line)
-                                <tr>
+                                <tr wire:key="line-{{ $line->id ?? ($i ?? $loop->index) }}">
                                     <td class="px-3 py-2">
                                         <div class="font-medium text-foreground">{{ $line['item_name'] }}</div>
                                         <div class="text-[10px] text-muted-foreground uppercase">{{ $line['purchasable_type'] }}</div>
@@ -281,7 +281,7 @@
                         </thead>
                         <tbody class="divide-y border-border">
                             @foreach($matchPlanLines as $i => $m)
-                            <tr>
+                            <tr wire:key="m-{{ $m->id ?? ($i ?? $loop->index) }}">
                                 <td class="px-4 py-2.5 font-medium text-foreground">
                                     {{ $m['item_name'] }}
                                 </td>
@@ -396,7 +396,7 @@
                             </thead>
                             <tbody class="divide-y border-border">
                                 @foreach($selectedInvoice->lines as $line)
-                                <tr>
+                                <tr wire:key="line-{{ $line->id ?? (None ?? $loop->index) }}">
                                     <td class="px-4 py-2.5 font-medium text-foreground">
                                         {{ $line->purchasable?->product_name ?? $line->purchasable?->name ?? 'Item #' . $line->purchasable_id }}
                                     </td>

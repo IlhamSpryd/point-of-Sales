@@ -104,7 +104,7 @@
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                 </x-slot:head>
                     @foreach ($ingredients as $item)
-                        <tr class="hover:bg-muted/40 transition-colors duration-150">
+                        <tr wire:key="item-{{ $item->id ?? (None ?? $loop->index) }}" class="hover:bg-muted/40 transition-colors duration-150">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex flex-col">
                                     <span class="text-sm font-semibold text-foreground">{{ $item->name }}</span>

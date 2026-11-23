@@ -43,7 +43,7 @@
 
         @foreach ($this->categories as $category)
             @if ($category->products->count() > 0)
-                <button type="button" @click="activeCategory = {{ $category->id }}"
+                <button wire:key="pos-cat-{{ $category->id }}" type="button" @click="activeCategory = {{ $category->id }}"
                     :class="activeCategory === {{ $category->id }} ? 'bg-primary text-white shadow-sm' : 'bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border'"
                     class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium shrink-0 transition-all cursor-pointer">
                     <span class="truncate">{{ $category->category_name }}</span>

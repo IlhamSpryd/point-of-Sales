@@ -199,7 +199,7 @@
 
                     <div class="p-3 space-y-3">
                         @foreach($lines as $idx => $line)
-                            <div class="flex flex-col sm:flex-row items-center gap-2 p-2 rounded-lg bg-secondary/50 /30 border border-border /50">
+                            <div wire:key="line-{{ $line->id ?? ($idx ?? $loop->index) }}" class="flex flex-col sm:flex-row items-center gap-2 p-2 rounded-lg bg-secondary/50 /30 border border-border /50">
                                 <div class="flex-1 w-full sm:w-auto">
                                     <x-ui.select wire:model="lines.{{ $idx }}.product_id" class="text-xs">
                                         <option value="">-- Select Product --</option>
@@ -356,7 +356,7 @@
                         </thead>
                         <tbody class="divide-y border-border">
                             @foreach($selectedQuotation->lines as $line)
-                                <tr>
+                                <tr wire:key="line-{{ $line->id ?? (None ?? $loop->index) }}">
                                     <td class="p-3 font-sans text-muted-foreground">{{ $line->line_number }}</td>
                                     <td class="p-3">
                                         <div class="font-medium text-foreground">{{ $line->description ?: ($line->product?->product_name ?? $line->product?->name) }}</div>

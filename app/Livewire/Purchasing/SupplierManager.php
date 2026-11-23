@@ -6,6 +6,7 @@ namespace App\Livewire\Purchasing;
 
 use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
+use App\Livewire\Purchasing\Concerns\ManagesSupplierContactsAndCatalog;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Inventory\Models\Ingredient;
 use App\Modules\Purchasing\Models\Supplier;
@@ -24,6 +25,7 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class SupplierManager extends Component
 {
+    use ManagesSupplierContactsAndCatalog;
     use RequiresTenantContext;
     use WithPagination;
 
@@ -37,10 +39,6 @@ class SupplierManager extends Component
     public bool $showModal = false;
 
     public bool $isEditing = false;
-
-    public bool $showContactModal = false;
-
-    public bool $showCatalogModal = false;
 
     // Supplier form properties
     #[Locked]
@@ -65,54 +63,6 @@ class SupplierManager extends Component
     public string $status = 'active';
 
     public string $notes = '';
-
-    // Contact form properties
-    #[Locked]
-    public ?int $contactId = null;
-
-    public string $contactName = '';
-
-    public string $contactTitle = '';
-
-    public string $contactEmail = '';
-
-    public string $contactPhone = '';
-
-    public bool $contactIsPrimary = false;
-
-    public string $contactNotes = '';
-
-    // Catalog item form properties
-    #[Locked]
-    public ?int $catalogItemId = null;
-
-    public string $catalogPurchasableType = 'product';
-
-    public ?int $catalogPurchasableId = null;
-
-    public string $catalogSupplierSku = '';
-
-    public string $catalogPurchaseUom = 'PCS';
-
-    public string $catalogConversionFactor = '1.000000';
-
-    public string $catalogStandardPrice = '0.0000';
-
-    public int $catalogLeadTimeDays = 1;
-
-    public string $catalogMinOrderQty = '1.0000';
-
-    public string $catalogOrderMultipleQty = '1.0000';
-
-    public bool $catalogIsPreferred = false;
-
-    public bool $catalogIsActive = true;
-
-    // Active selection for child modals
-    #[Locked]
-    public ?int $activeSupplierId = null;
-
-    public ?string $activeSupplierName = null;
 
     public function boot(): void
     {
@@ -145,31 +95,17 @@ class SupplierManager extends Component
         $this->resetPage();
     }
 
-    public function create(): void
+    public function openCreateModal(): void
     {
         Gate::authorize('create', Supplier::class);
-
         $this->resetSupplierForm();
         $this->isEditing = false;
         $this->showModal = true;
     }
 
-    private function findSupplierForActiveTenant(int $id): Supplier
-    {
-        $tenantId = app(TenantContext::class)->requireTenantId();
-        $supplier = Supplier::query()->where('tenant_id', $tenantId)->find($id);
-
-        if (! $supplier) {
-            abort(404, 'Supplier not found.');
-        }
-
-        return $supplier;
-    }
-
-    public function edit(int $id): void
+    public function openEditModal(int $id): void
     {
         $supplier = $this->findSupplierForActiveTenant($id);
-
         Gate::authorize('update', $supplier);
 
         $this->supplierId = (int) $supplier->id;
@@ -180,8 +116,8 @@ class SupplierManager extends Component
         $this->tax_id = (string) ($supplier->tax_id ?? '');
         $this->address = (string) ($supplier->address ?? '');
         $this->payment_terms_days = (int) $supplier->payment_terms_days;
-        $this->currency_code = (string) $supplier->currency_code;
-        $this->status = (string) $supplier->getStatusEnum()->value;
+        $this->currency_code = (string) ($supplier->currency_code ?? 'IDR');
+        $this->status = $supplier->status->value;
         $this->notes = (string) ($supplier->notes ?? '');
 
         $this->isEditing = true;
@@ -190,44 +126,64 @@ class SupplierManager extends Component
 
     public function saveSupplier(SupplierService $supplierService): void
     {
-        $this->validate([
+        $tenantId = app(TenantContext::class)->requireTenantId();
+
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'tax_id' => ['nullable', 'string', 'max:50'],
             'address' => ['nullable', 'string'],
-            'payment_terms_days' => ['required', 'integer', 'min:0'],
+            'payment_terms_days' => ['required', 'integer', 'min:0', 'max:365'],
             'currency_code' => ['required', 'string', 'size:3'],
-            'status' => ['required', 'string', 'in:active,on_hold,inactive,archived'],
+            'status' => ['required', 'string', 'in:active,inactive,blocked'],
             'notes' => ['nullable', 'string'],
-        ]);
+        ];
 
-        $payload = [
+        if ($this->isEditing && $this->supplierId) {
+            $rules['code'] = [
+                'required',
+                'string',
+                'max:50',
+                "unique:suppliers,code,{$this->supplierId},id,tenant_id,{$tenantId}",
+            ];
+        } else {
+            $rules['code'] = [
+                'nullable',
+                'string',
+                'max:50',
+                "unique:suppliers,code,NULL,id,tenant_id,{$tenantId}",
+            ];
+        }
+
+        $validated = $this->validate($rules);
+
+        $data = [
             'name' => $this->name,
             'email' => $this->email ?: null,
             'phone' => $this->phone ?: null,
             'tax_id' => $this->tax_id ?: null,
             'address' => $this->address ?: null,
             'payment_terms_days' => $this->payment_terms_days,
-            'currency_code' => $this->currency_code,
+            'currency_code' => strtoupper($this->currency_code),
             'status' => $this->status,
             'notes' => $this->notes ?: null,
         ];
 
-        if ($this->code !== '') {
-            $payload['code'] = $this->code;
+        if (! empty($validated['code'])) {
+            $data['code'] = $validated['code'];
         }
 
         try {
             if ($this->isEditing && $this->supplierId) {
                 $supplier = $this->findSupplierForActiveTenant($this->supplierId);
                 Gate::authorize('update', $supplier);
-                $supplierService->updateSupplier($supplier, $payload, auth()->user());
-                session()->flash('message', "Supplier '{$supplier->name}' updated successfully.");
+                $supplierService->updateSupplier($supplier, $data, auth()->user());
+                session()->flash('message', "Supplier '{$supplier->name}' berhasil diperbarui.");
             } else {
                 Gate::authorize('create', Supplier::class);
-                $supplier = $supplierService->createSupplier($payload, auth()->user());
-                session()->flash('message', "Supplier '{$supplier->name}' created successfully with code {$supplier->code}.");
+                $supplier = $supplierService->createSupplier($data, auth()->user());
+                session()->flash('message', "Supplier '{$supplier->name}' ({$supplier->code}) berhasil ditambahkan.");
             }
 
             $this->showModal = false;
@@ -237,174 +193,28 @@ class SupplierManager extends Component
         }
     }
 
-    public function archiveSupplier(int $id, SupplierService $supplierService): void
+    public function toggleStatus(int $id, SupplierService $supplierService): void
     {
         $supplier = $this->findSupplierForActiveTenant($id);
+        Gate::authorize('update', $supplier);
 
-        Gate::authorize('archive', $supplier);
-
-        $supplierService->archiveSupplier($supplier, 'Archived via user interface.', auth()->user());
-        session()->flash('message', "Supplier '{$supplier->name}' archived successfully.");
-    }
-
-    public function deleteSupplier(int $id, SupplierService $supplierService): void
-    {
-        $supplier = $this->findSupplierForActiveTenant($id);
-
-        Gate::authorize('delete', $supplier);
+        $newStatus = $supplier->status === \App\Enums\SupplierStatusEnum::Active ? 'inactive' : 'active';
 
         try {
-            $supplierService->deleteSupplier($supplier, auth()->user());
-            session()->flash('message', "Supplier '{$supplier->name}' deleted successfully.");
+            $supplierService->updateSupplier($supplier, ['status' => $newStatus], auth()->user());
+            session()->flash('message', "Status supplier '{$supplier->name}' diubah menjadi {$newStatus}.");
         } catch (ValidationException $e) {
             session()->flash('error', $e->validator->getMessageBag()->first());
         }
     }
 
-    // --- Narahubung / Contacts ---
-    public function openContacts(int $supplierId): void
-    {
-        $supplier = $this->findSupplierForActiveTenant($supplierId);
-        Gate::authorize('view', $supplier);
-
-        $this->activeSupplierId = (int) $supplier->id;
-        $this->activeSupplierName = $supplier->name;
-        $this->resetContactForm();
-        $this->showContactModal = true;
-    }
-
-    public function saveContact(SupplierService $supplierService): void
+    private function findSupplierForActiveTenant(int $id): Supplier
     {
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $supplier = Supplier::query()->where('tenant_id', $tenantId)->findOrFail($this->activeSupplierId);
-        Gate::authorize('update', $supplier);
 
-        $this->validate([
-            'contactName' => ['required', 'string', 'max:255'],
-            'contactTitle' => ['nullable', 'string', 'max:100'],
-            'contactEmail' => ['nullable', 'email', 'max:255'],
-            'contactPhone' => ['nullable', 'string', 'max:50'],
-            'contactNotes' => ['nullable', 'string'],
-        ]);
-
-        $contactData = [
-            'name' => $this->contactName,
-            'title' => $this->contactTitle ?: null,
-            'email' => $this->contactEmail ?: null,
-            'phone' => $this->contactPhone ?: null,
-            'is_primary' => $this->contactIsPrimary,
-            'notes' => $this->contactNotes ?: null,
-        ];
-
-        if ($this->contactId) {
-            $contact = SupplierContact::query()
-                ->where('tenant_id', $tenantId)
-                ->where('supplier_id', $supplier->id)
-                ->findOrFail($this->contactId);
-            $supplierService->updateContact($contact, $contactData);
-        } else {
-            $supplierService->addContact($supplier, $contactData);
-        }
-
-        $this->resetContactForm();
-        session()->flash('contact_message', 'Contact saved successfully.');
-    }
-
-    public function editContact(int $contactId): void
-    {
-        $tenantId = app(TenantContext::class)->requireTenantId();
-        $contact = SupplierContact::query()
+        return Supplier::query()
             ->where('tenant_id', $tenantId)
-            ->where('supplier_id', $this->activeSupplierId)
-            ->findOrFail($contactId);
-
-        $this->contactId = (int) $contact->id;
-        $this->contactName = (string) $contact->name;
-        $this->contactTitle = (string) ($contact->title ?? '');
-        $this->contactEmail = (string) ($contact->email ?? '');
-        $this->contactPhone = (string) ($contact->phone ?? '');
-        $this->contactIsPrimary = (bool) $contact->is_primary;
-        $this->contactNotes = (string) ($contact->notes ?? '');
-    }
-
-    public function deleteContact(int $contactId, SupplierService $supplierService): void
-    {
-        $tenantId = app(TenantContext::class)->requireTenantId();
-        $contact = SupplierContact::query()
-            ->where('tenant_id', $tenantId)
-            ->where('supplier_id', $this->activeSupplierId)
-            ->findOrFail($contactId);
-
-        $supplierService->deleteContact($contact);
-        $this->resetContactForm();
-        session()->flash('contact_message', 'Contact deleted successfully.');
-    }
-
-    // --- Katalog Pemasok / Catalog ---
-    public function openCatalog(int $supplierId): void
-    {
-        $supplier = $this->findSupplierForActiveTenant($supplierId);
-        Gate::authorize('view', $supplier);
-
-        $this->activeSupplierId = (int) $supplier->id;
-        $this->activeSupplierName = $supplier->name;
-        $this->resetCatalogForm();
-        $this->showCatalogModal = true;
-    }
-
-    public function saveCatalogItem(SupplierService $supplierService): void
-    {
-        $supplier = $this->findSupplierForActiveTenant($this->activeSupplierId);
-        Gate::authorize('manageCatalog', $supplier);
-
-        $this->validate([
-            'catalogPurchasableType' => ['required', 'string', 'in:product,ingredient'],
-            'catalogPurchasableId' => ['required', 'integer'],
-            'catalogPurchaseUom' => ['required', 'string', 'max:32'],
-            'catalogConversionFactor' => ['required', 'numeric', 'gt:0'],
-            'catalogStandardPrice' => ['required', 'numeric', 'min:0'],
-            'catalogLeadTimeDays' => ['required', 'integer', 'min:0'],
-            'catalogMinOrderQty' => ['required', 'numeric', 'gt:0'],
-            'catalogOrderMultipleQty' => ['required', 'numeric', 'gt:0'],
-            'catalogSupplierSku' => ['nullable', 'string', 'max:100'],
-        ]);
-
-        $itemData = [
-            'purchasable_type' => $this->catalogPurchasableType,
-            'purchasable_id' => $this->catalogPurchasableId,
-            'supplier_sku' => $this->catalogSupplierSku ?: null,
-            'purchase_uom' => $this->catalogPurchaseUom,
-            'uom_conversion_factor' => $this->catalogConversionFactor,
-            'standard_price' => $this->catalogStandardPrice,
-            'lead_time_days' => $this->catalogLeadTimeDays,
-            'min_order_qty' => $this->catalogMinOrderQty,
-            'order_multiple_qty' => $this->catalogOrderMultipleQty,
-            'is_preferred' => $this->catalogIsPreferred,
-            'is_active' => $this->catalogIsActive,
-        ];
-
-        try {
-            $supplierService->addOrUpdateSupplierProduct($supplier, $itemData, auth()->user());
-            $this->resetCatalogForm();
-            session()->flash('catalog_message', 'Catalog item saved successfully.');
-        } catch (ValidationException $e) {
-            $this->setErrorBag($e->validator->getMessageBag());
-        }
-    }
-
-    public function deleteCatalogItem(int $id, SupplierService $supplierService): void
-    {
-        $tenantId = app(TenantContext::class)->requireTenantId();
-        $item = SupplierProduct::query()
-            ->where('tenant_id', $tenantId)
-            ->where('supplier_id', $this->activeSupplierId)
             ->findOrFail($id);
-
-        $supplier = Supplier::query()->where('tenant_id', $tenantId)->findOrFail($this->activeSupplierId);
-        Gate::authorize('manageCatalog', $supplier);
-
-        $supplierService->removeSupplierProduct($item, auth()->user());
-        session()->flash('catalog_message', 'Catalog item deleted successfully.');
     }
 
     private function resetSupplierForm(): void
@@ -420,35 +230,6 @@ class SupplierManager extends Component
         $this->currency_code = 'IDR';
         $this->status = 'active';
         $this->notes = '';
-        $this->resetErrorBag();
-    }
-
-    private function resetContactForm(): void
-    {
-        $this->contactId = null;
-        $this->contactName = '';
-        $this->contactTitle = '';
-        $this->contactEmail = '';
-        $this->contactPhone = '';
-        $this->contactIsPrimary = false;
-        $this->contactNotes = '';
-        $this->resetErrorBag();
-    }
-
-    private function resetCatalogForm(): void
-    {
-        $this->catalogItemId = null;
-        $this->catalogPurchasableType = 'product';
-        $this->catalogPurchasableId = null;
-        $this->catalogSupplierSku = '';
-        $this->catalogPurchaseUom = 'PCS';
-        $this->catalogConversionFactor = '1.000000';
-        $this->catalogStandardPrice = '0.0000';
-        $this->catalogLeadTimeDays = 1;
-        $this->catalogMinOrderQty = '1.0000';
-        $this->catalogOrderMultipleQty = '1.0000';
-        $this->catalogIsPreferred = false;
-        $this->catalogIsActive = true;
         $this->resetErrorBag();
     }
 

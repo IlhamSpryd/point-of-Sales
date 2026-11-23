@@ -7,8 +7,8 @@ namespace App\Livewire\Inventory;
 use App\Core\Context\TenantContext;
 use App\Enums\StockOpnameStatusEnum;
 use App\Livewire\Concerns\RequiresTenantContext;
+use App\Livewire\Inventory\Concerns\ManagesStockOpnameCountsAndDrift;
 use App\Modules\Catalog\Models\Product;
-use App\Modules\Inventory\Exceptions\StockOpnameDriftException;
 use App\Modules\Inventory\Models\Ingredient;
 use App\Modules\Inventory\Models\StockOpname;
 use App\Modules\Inventory\Services\StockOpnameService;
@@ -16,7 +16,6 @@ use App\Modules\Organization\Models\User;
 use DomainException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;
-use InvalidArgumentException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
@@ -26,6 +25,7 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class StockOpnameManager extends Component
 {
+    use ManagesStockOpnameCountsAndDrift;
     use RequiresTenantContext;
     use WithPagination;
 
@@ -38,11 +38,7 @@ class StockOpnameManager extends Component
     // Modal states
     public bool $showFormModal = false;
 
-    public bool $showCountModal = false;
-
     public bool $showDetailModal = false;
-
-    public bool $showDriftModal = false;
 
     // Create session form
     public bool $all_items = true;
@@ -59,40 +55,9 @@ class StockOpnameManager extends Component
      */
     public array $items = [];
 
-    // Counting state
-    #[Locked]
-    public ?int $activeOpnameId = null;
-
-    /**
-     * @var array<int, float|string>
-     */
-    public array $countedQuantities = [];
-
-    /**
-     * @var array<int, string>
-     */
-    public array $countNotes = [];
-
     // Detail view
     #[Locked]
     public ?int $selectedOpnameId = null;
-
-    // Drift modal data
-    /**
-     * @var array<int, array{
-     *     item_id: int,
-     *     item_type: string,
-     *     product_id?: ?int,
-     *     ingredient_id?: ?int,
-     *     name: string,
-     *     snapshot_on_hand: string,
-     *     current_on_hand: string,
-     *     snapshot_last_movement_id: ?int,
-     *     current_last_movement_id: ?int,
-     *     drift_delta: string
-     * }>
-     */
-    public array $driftedItems = [];
 
     public function boot(): void
     {
@@ -149,50 +114,53 @@ class StockOpnameManager extends Component
         $this->items = array_values($this->items);
     }
 
-    public function saveOpname(StockOpnameService $service): void
+    public function createSession(StockOpnameService $service): void
     {
-        $context = app(TenantContext::class);
-        $tenantId = $context->getTenantId();
-        $storeId = $context->getStoreId();
+        $this->authorize('create', StockOpname::class);
 
-        if (! $tenantId || ! $storeId) {
-            $this->addError('general', 'Konteks tenant atau cabang aktif tidak valid.');
+        $rules = [
+            'all_items' => 'required|boolean',
+            'notes' => 'nullable|string|max:500',
+        ];
 
-            return;
+        if (! $this->all_items) {
+            $rules['items'] = 'required|array|min:1';
+            $rules['items.*.item_type'] = 'required|in:product,ingredient';
+            $rules['items.*.product_id'] = 'required_if:items.*.item_type,product|nullable|integer';
+            $rules['items.*.ingredient_id'] = 'required_if:items.*.item_type,ingredient|nullable|integer';
         }
 
-        $this->authorize('create', [StockOpname::class, $storeId]);
+        $this->validate($rules);
+
         $user = auth()->user();
+        $tenantId = app(TenantContext::class)->requireTenantId();
+        $storeId = app(TenantContext::class)->getStoreId();
 
-        $this->validate([
-            'notes' => 'nullable|string|max:500',
-            'all_items' => 'boolean',
-        ]);
-
-        if (! $this->all_items && empty($this->items)) {
-            $this->addError('items', 'Wajib menambahkan minimal 1 item jika tidak memilih opsi Hitung Semua Item.');
-
-            return;
+        $itemsPayload = [];
+        if (! $this->all_items) {
+            foreach ($this->items as $row) {
+                $itemsPayload[] = [
+                    'item_type' => $row['item_type'],
+                    'product_id' => $row['item_type'] === 'product' ? $row['product_id'] : null,
+                    'ingredient_id' => $row['item_type'] === 'ingredient' ? $row['ingredient_id'] : null,
+                    'notes' => $row['notes'] ?? null,
+                ];
+            }
         }
 
         try {
-            $opname = $service->createDraft(
-                tenantId: $tenantId,
-                storeId: $storeId,
-                data: [
-                    'all_items' => $this->all_items,
-                    'notes' => $this->notes,
-                    'items' => $this->items,
-                ],
-                userId: (int) $user->id
-            );
+            $opname = $service->createDraft((int) $tenantId, (int) $storeId, [
+                'all_items' => $this->all_items,
+                'notes' => $this->notes,
+                'items' => $itemsPayload,
+            ], (int) $user->id);
 
-            session()->flash('message', "Sesi Stock Opname #{$opname->opname_number} berhasil dibuat sebagai DRAFT.");
+            session()->flash('message', "Sesi opname #{$opname->opname_number} berhasil dibuat.");
             $this->closeFormModal();
         } catch (ValidationException $e) {
-            $this->setErrorBag($e->validator->errors());
-        } catch (InvalidArgumentException|DomainException $e) {
-            $this->addError('general', $e->getMessage());
+            $this->setErrorBag($e->validator->getMessageBag());
+        } catch (DomainException $e) {
+            session()->flash('error', $e->getMessage());
         }
     }
 
@@ -210,61 +178,6 @@ class StockOpnameManager extends Component
         }
     }
 
-    public function openCountModal(int $opnameId): void
-    {
-        $opname = $this->findScopedOpname($opnameId);
-        $this->authorize('recordCount', $opname);
-
-        $this->activeOpnameId = $opname->id;
-        $this->countedQuantities = [];
-        $this->countNotes = [];
-
-        foreach ($opname->items as $item) {
-            $this->countedQuantities[$item->id] = $item->counted_quantity !== null ? (string) $item->counted_quantity : '';
-            $this->countNotes[$item->id] = $item->notes ?? '';
-        }
-
-        $this->showCountModal = true;
-    }
-
-    public function closeCountModal(): void
-    {
-        $this->showCountModal = false;
-        $this->activeOpnameId = null;
-        $this->countedQuantities = [];
-        $this->countNotes = [];
-    }
-
-    public function saveCounts(StockOpnameService $service): void
-    {
-        if (! $this->activeOpnameId) {
-            return;
-        }
-
-        $opname = $this->findScopedOpname($this->activeOpnameId);
-        $this->authorize('recordCount', $opname);
-        $user = auth()->user();
-
-        $counts = [];
-        foreach ($this->countedQuantities as $itemId => $qty) {
-            if ($qty !== '') {
-                $counts[(int) $itemId] = [
-                    'item_id' => (int) $itemId,
-                    'counted_quantity' => (string) $qty,
-                    'notes' => $this->countNotes[$itemId] ?? null,
-                ];
-            }
-        }
-
-        try {
-            $service->recordCounts($opname, $counts, (int) $user->id);
-            session()->flash('message', 'Hasil hitung fisik berhasil disimpan.');
-            $this->closeCountModal();
-        } catch (InvalidArgumentException|DomainException $e) {
-            $this->addError('general', $e->getMessage());
-        }
-    }
-
     public function submitForApproval(int $opnameId, StockOpnameService $service): void
     {
         $opname = $this->findScopedOpname($opnameId);
@@ -274,54 +187,6 @@ class StockOpnameManager extends Component
         try {
             $service->submitForApproval($opname, (int) $user->id);
             session()->flash('message', "Sesi opname #{$opname->opname_number} berhasil diajukan untuk persetujuan manajer.");
-        } catch (DomainException $e) {
-            session()->flash('error', $e->getMessage());
-        }
-    }
-
-    public function approveOpname(int $opnameId, StockOpnameService $service): void
-    {
-        $opname = $this->findScopedOpname($opnameId);
-        $this->authorize('approve', $opname);
-        $user = auth()->user();
-
-        try {
-            $service->approveOpname($opname, (int) $user->id);
-            session()->flash('message', "Sesi opname #{$opname->opname_number} berhasil disetujui & rekonsiliasi stok telah dicatat ke ledger.");
-            $this->showDriftModal = false;
-        } catch (StockOpnameDriftException $e) {
-            $this->activeOpnameId = $opname->id;
-            $this->driftedItems = $e->getDriftedItems();
-            $this->showDriftModal = true;
-            session()->flash('error', $e->getMessage());
-        } catch (DomainException $e) {
-            session()->flash('error', $e->getMessage());
-        }
-    }
-
-    public function resolveDriftItem(int $itemId, string $mode, StockOpnameService $service): void
-    {
-        if (! $this->activeOpnameId) {
-            return;
-        }
-
-        $opname = $this->findScopedOpname($this->activeOpnameId);
-        $this->authorize('approve', $opname);
-        $user = auth()->user();
-
-        try {
-            $service->resolveDrift($opname, $itemId, $mode, (int) $user->id);
-
-            // Filter out resolved item from local list
-            $this->driftedItems = array_values(array_filter(
-                $this->driftedItems,
-                fn ($d) => (int) $d['item_id'] !== $itemId
-            ));
-
-            if (empty($this->driftedItems)) {
-                $this->showDriftModal = false;
-                session()->flash('message', 'Seluruh drift telah diresolusi.');
-            }
         } catch (DomainException $e) {
             session()->flash('error', $e->getMessage());
         }

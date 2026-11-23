@@ -44,12 +44,7 @@ class NoGodClassTest extends TestCase
      *
      * @var array<string, int>
      */
-    private const OVERSIZED_LIVEWIRE_RATCHET = [
-        'app/Livewire/ShiftManager.php' => 540,
-        'app/Livewire/Customers/CustomerManager.php' => 745,
-        'app/Livewire/Purchasing/SupplierManager.php' => 540,
-        'app/Livewire/Kasir/OrderHistory.php' => 680,
-    ];
+    private const OVERSIZED_LIVEWIRE_RATCHET = [];
 
     public function test_services_do_not_exceed_line_limit_or_ratchet_ceiling(): void
     {

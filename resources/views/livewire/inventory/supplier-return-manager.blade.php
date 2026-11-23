@@ -80,7 +80,7 @@
         </x-slot:head>
 
         @foreach ($returns as $ret)
-                        <tr class="hover:bg-secondary/40 transition-colors">
+                        <tr wire:key="ret-{{ $ret->id ?? (None ?? $loop->index) }}" class="hover:bg-secondary/40 transition-colors">
                             <td class="px-6 py-4 font-bold text-foreground">
                                 {{ $ret->return_number }}
                             </td>
@@ -229,7 +229,7 @@
                             </thead>
                             <tbody class="divide-y divide-border">
                                 @foreach ($items as $index => $item)
-                                    <tr class="align-top">
+                                    <tr wire:key="item-{{ $item->id ?? ($index ?? $loop->index) }}" class="align-top">
                                         <td class="p-2">
                                             <select wire:model.live="items.{{ $index }}.item_type" class="w-full text-xs rounded-lg border-border">
                                                 <option value="product">Product</option>
@@ -340,7 +340,7 @@
                             </thead>
                             <tbody class="divide-y divide-border">
                                 @foreach ($selectedReturn->items as $it)
-                                    <tr>
+                                    <tr wire:key="it-{{ $it->id ?? (None ?? $loop->index) }}">
                                         <td class="px-4 py-2.5 font-bold text-foreground">
                                             {{ $it->getItemName() }}
                                         </td>

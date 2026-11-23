@@ -53,7 +53,7 @@
                 <h4 class="text-sm font-semibold text-foreground">Select Item to Exchange:</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     @foreach ($order->orderItems as $item)
-                        <div wire:click="$set('selectedOrderItemId', {{ $item->id }})"
+                        <div wire:key="item-{{ $item->id ?? (None ?? $loop->index) }}" wire:click="$set('selectedOrderItemId', {{ $item->id }})"
                             class="p-4 rounded-xl border cursor-pointer transition-all {{ $selectedOrderItemId === $item->id ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-border bg-background hover:border-primary/50' }}">
                             <div class="flex justify-between items-start">
                                 <div>

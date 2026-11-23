@@ -28,7 +28,7 @@
             </div>
             <ul class="list-disc list-inside space-y-0.5 text-xs text-muted-foreground">
                 @foreach($resumeWarnings as $warn)
-                    <li>{{ $warn }}</li>
+                    <li wire:key="warn-{{ $warn->id ?? (None ?? $loop->index) }}">{{ $warn }}</li>
                 @endforeach
             </ul>
         </div>

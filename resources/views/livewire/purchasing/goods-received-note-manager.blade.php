@@ -73,7 +73,7 @@
         :colspan="7"
     >
         @foreach($grns as $grn)
-                    <tr class="hover:bg-secondary/50 transition-colors">
+                    <tr wire:key="grn-{{ $grn->id ?? (None ?? $loop->index) }}" class="hover:bg-secondary/50 transition-colors">
                         <td class="px-6 py-4">
                             <div class="font-bold text-foreground font-sans">{{ $grn->grn_number }}</div>
                             <div class="text-xs text-muted-foreground">{{ \Carbon\Carbon::parse($grn->received_date)->format('d M Y') }}</div>
@@ -199,7 +199,7 @@
                             </thead>
                             <tbody class="divide-y border-border">
                                 @foreach($grnLines as $i => $line)
-                                <tr>
+                                <tr wire:key="line-{{ $line->id ?? ($i ?? $loop->index) }}">
                                     <td class="px-3 py-2">
                                         <div class="font-medium text-foreground">{{ $line['item_name'] }}</div>
                                         <div class="text-[10px] text-muted-foreground uppercase">{{ $line['item_type'] }}</div>
@@ -302,7 +302,7 @@
                             </thead>
                             <tbody class="divide-y border-border">
                                 @foreach($selectedGrn->lines as $line)
-                                <tr>
+                                <tr wire:key="line-{{ $line->id ?? (None ?? $loop->index) }}">
                                     <td class="px-4 py-2.5">
                                         <div class="font-medium text-foreground">
                                             {{ $line->purchasable?->product_name ?? $line->purchasable?->name ?? 'Item #' . $line->purchasable_id }}

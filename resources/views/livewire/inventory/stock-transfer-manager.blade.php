@@ -68,7 +68,7 @@
                 </x-slot:head>
 
                 @foreach ($transfers as $transfer)
-                    <tr class="hover:bg-secondary transition-colors duration-150">
+                    <tr wire:key="transfer-{{ $transfer->id ?? (None ?? $loop->index) }}" class="hover:bg-secondary transition-colors duration-150">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="text-sm font-bold text-foreground">{{ $transfer->transfer_number }}</span>
                             <div class="text-xs text-muted-foreground">Created by: {{ $transfer->creator->name ?? 'System' }}</div>
@@ -175,7 +175,7 @@
 
                     <div class="space-y-2 max-h-64 overflow-y-auto">
                         @foreach ($items as $index => $item)
-                            <div class="p-3 rounded-2xl bg-secondary border border-border flex flex-col sm:flex-row items-center gap-3 text-sm">
+                            <div wire:key="item-{{ $item->id ?? ($index ?? $loop->index) }}" class="p-3 rounded-2xl bg-secondary border border-border flex flex-col sm:flex-row items-center gap-3 text-sm">
                                 <div class="w-full sm:w-32">
                                     <select wire:model.live="items.{{ $index }}.item_type" class="form-input w-full p-2 rounded-lg border border-border text-xs">
                                         <option value="product">Product</option>
@@ -254,7 +254,7 @@
                         </thead>
                         <tbody class="divide-y divide-border">
                             @foreach ($activeTransfer->items as $item)
-                                <tr>
+                                <tr wire:key="item-{{ $item->id ?? (None ?? $loop->index) }}">
                                     <td class="p-3">
                                         <div class="font-bold text-foreground">
                                             {{ $item->item_type === 'product' ? ($item->product?->product_name ?? $item->product?->name) : $item->ingredient?->name }}
@@ -349,7 +349,7 @@
                         </thead>
                         <tbody class="divide-y divide-border">
                             @foreach ($selectedTransfer->items as $item)
-                                <tr>
+                                <tr wire:key="item-{{ $item->id ?? (None ?? $loop->index) }}">
                                     <td class="p-3">
                                         <div class="font-bold text-foreground">
                                             {{ $item->item_type === 'product' ? ($item->product?->product_name ?? $item->product?->name) : $item->ingredient?->name }}

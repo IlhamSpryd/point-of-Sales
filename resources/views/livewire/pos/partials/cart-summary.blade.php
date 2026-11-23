@@ -11,7 +11,7 @@
                 Active Promotion Applied
             </span>
             @foreach($pipelineBreakdown->appliedPromotionsSummary as $promo)
-                <div class="flex justify-between text-xs text-muted-foreground">
+                <div wire:key="promo-{{ $promo->id ?? (None ?? $loop->index) }}" class="flex justify-between text-xs text-muted-foreground">
                     <span>{{ $promo['name'] ?? 'Automatic Promotion' }}</span>
                     <span class="font-semibold text-foreground tabular-nums">- Rp {{ number_format($promo['discount_amount'] ?? 0, 0, ',', '.') }}</span>
                 </div>

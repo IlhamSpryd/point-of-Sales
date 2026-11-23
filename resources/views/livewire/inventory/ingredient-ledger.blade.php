@@ -58,7 +58,7 @@
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Reason / Notes</th>
                 </x-slot:head>
                     @foreach ($movements as $movement)
-                        <tr class="hover:bg-secondary transition-colors duration-150">
+                        <tr wire:key="movement-{{ $movement->id ?? (None ?? $loop->index) }}" class="hover:bg-secondary transition-colors duration-150">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-foreground">{{ $movement->created_at->format('d M Y') }}</div>
                                 <div class="text-xs text-muted-foreground">{{ $movement->created_at->format('H:i') }}</div>

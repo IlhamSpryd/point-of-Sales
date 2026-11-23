@@ -75,7 +75,7 @@
                         </thead>
                         <tbody class="divide-y divide-border">
                             @foreach ($simulation->itemSimulations as $item)
-                                <tr class="@if($item['is_negative_margin']) bg-destructive/5 @endif">
+                                <tr wire:key="item-{{ $item->id ?? (None ?? $loop->index) }}" class="@if($item['is_negative_margin']) bg-destructive/5 @endif">
                                     <td class="px-3 py-2.5 font-medium text-foreground">{{ $item['product_name'] }}</td>
                                     <td class="tabular-nums px-3 py-2.5 text-right text-muted-foreground">Rp {{ number_format($item['unit_price'], 0, ',', '.') }}</td>
                                     <td class="px-3 py-2.5 text-right text-warning font-medium">-Rp {{ number_format($item['discount_amount'], 0, ',', '.') }}</td>
