@@ -186,14 +186,16 @@ export default function erpChart({ chartId, options = {} } = {}) {
 
         applyDesignTokens(baseOptions = {}) {
             const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+            const cs = typeof window !== 'undefined' && typeof document !== 'undefined' ? getComputedStyle(document.documentElement) : null;
+            const getVal = (prop, fallback) => (cs ? cs.getPropertyValue(prop).trim() : '') || fallback;
 
-            let primary = isDark ? '#FAFAFA' : '#18181B';
-            let foreground = isDark ? '#FAFAFA' : '#09090B';
-            let muted = isDark ? '#A1A1AA' : '#71717A';
-            let border = isDark ? 'rgba(255, 255, 255, 0.10)' : '#E4E4E7';
-            let splitLine = isDark ? 'rgba(255, 255, 255, 0.06)' : '#F4F4F5';
-            let cardBg = isDark ? '#18181D' : '#FFFFFF';
-            let accent = isDark ? '#4ADE80' : '#10A37F';
+            let primary = getVal('--chart-1', isDark ? '#ECECF0' : '#0D0D0D');
+            let foreground = getVal('--popover-foreground', isDark ? '#ECECF0' : '#0D0D0D');
+            let muted = getVal('--chart-axis-label', isDark ? '#B8B8C2' : '#4A4A52');
+            let border = getVal('--border-strong', isDark ? 'rgba(255, 255, 255, 0.22)' : '#C8C8D0');
+            let splitLine = getVal('--chart-grid', isDark ? 'rgba(255, 255, 255, 0.08)' : '#E8E8EC');
+            let popoverBg = getVal('--popover', isDark ? '#2B2B31' : '#FFFFFF');
+            let accent = getVal('--chart-accent', isDark ? '#5EEAD4' : '#0F766E');
 
             const merged = { ...baseOptions };
 
@@ -214,7 +216,7 @@ export default function erpChart({ chartId, options = {} } = {}) {
             // Tooltip standard dengan IDR formatter
             merged.tooltip = {
                 trigger: 'axis',
-                backgroundColor: cardBg,
+                backgroundColor: popoverBg,
                 borderColor: border,
                 borderWidth: 1,
                 textStyle: {
@@ -312,12 +314,12 @@ export default function erpChart({ chartId, options = {} } = {}) {
                                 y2: 1,
                                 colorStops: isDark
                                     ? [
-                                          { offset: 0, color: 'rgba(74, 222, 128, 0.22)' },
-                                          { offset: 1, color: 'rgba(74, 222, 128, 0.00)' },
+                                          { offset: 0, color: 'rgba(94, 234, 212, 0.22)' },
+                                          { offset: 1, color: 'rgba(94, 234, 212, 0.00)' },
                                       ]
                                     : [
-                                          { offset: 0, color: 'rgba(24, 24, 27, 0.14)' },
-                                          { offset: 1, color: 'rgba(24, 24, 27, 0.00)' },
+                                          { offset: 0, color: 'rgba(15, 118, 110, 0.16)' },
+                                          { offset: 1, color: 'rgba(15, 118, 110, 0.00)' },
                                       ],
                             },
                         };

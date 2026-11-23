@@ -52,7 +52,7 @@
             <button
                 type="button"
                 wire:click="setStationFilter('kitchen')"
-                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer {{ $stationFilter === 'kitchen' ? 'bg-warning text-white shadow-xs' : 'bg-muted text-muted-foreground hover:text-foreground' }}">
+                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer {{ $stationFilter === 'kitchen' ? 'bg-warning text-on-warning shadow-xs' : 'bg-muted text-muted-foreground hover:text-foreground' }}">
                 Kitchen (Food)
             </button>
             <button
@@ -100,7 +100,7 @@
                 <h3 id="kds-brewing" class="flex items-center gap-2 font-bold text-sm text-warning">
                     <span class="size-2.5 animate-pulse rounded-full bg-warning"></span> Preparing
                 </h3>
-                <span class="rounded-lg bg-warning px-2.5 py-0.5 text-xs font-black text-white tabular-nums">{{ $this->brewingItems->count() }}</span>
+                <span class="rounded-lg bg-warning px-2.5 py-0.5 text-xs font-black text-on-warning tabular-nums">{{ $this->brewingItems->count() }}</span>
             </header>
             <div class="custom-scrollbar max-h-[70vh] flex-1 space-y-3 overflow-y-auto p-4">
                 @forelse ($this->brewingItems as $item)
@@ -122,7 +122,7 @@
                 <h3 id="kds-ready" class="flex items-center gap-2 font-bold text-sm text-positive">
                     <span class="size-2.5 rounded-full bg-positive"></span> Ready to Serve
                 </h3>
-                <span class="rounded-lg bg-positive px-2.5 py-0.5 text-xs font-black text-white tabular-nums">{{ $this->readyItems->count() }}</span>
+                <span class="rounded-lg bg-positive px-2.5 py-0.5 text-xs font-black text-on-positive tabular-nums">{{ $this->readyItems->count() }}</span>
             </header>
             <div class="custom-scrollbar max-h-[70vh] flex-1 space-y-3 overflow-y-auto p-4">
                 @forelse ($this->readyItems as $item)

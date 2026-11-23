@@ -132,7 +132,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="px-6 py-12 text-center text-muted-foreground">
-                                <span class="material-symbols-rounded text-[32px] text-muted-foreground/50 block mb-2">campaign</span>
+                                <span class="material-symbols-rounded text-[32px] text-muted-foreground block mb-2">campaign</span>
                                 No promotion campaigns registered yet.
                             </td>
                         </tr>

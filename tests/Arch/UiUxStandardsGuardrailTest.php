@@ -404,4 +404,43 @@ class UiUxStandardsGuardrailTest extends TestCase
             "Interactive elements suppressing focus outline without visible ring indicator:\n".implode("\n", $violations)
         );
     }
+
+    /**
+     * WCAG 2.2 AAA Contrast Guardrail (Wave 5 — CLR-01..12):
+     * Prohibits pairing solid status background bg-(warning|positive|success|destructive|info)
+     * with raw text-white. Must use text-on-warning, text-on-positive, text-on-success,
+     * text-on-destructive, or text-on-info to ensure AAA contrast in both Light & Dark modes.
+     */
+    public function test_zero_raw_text_white_on_status_backgrounds_in_blade_views(): void
+    {
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->viewsPath));
+        $pattern = '/\b(?:bg-(?:warning|positive|success|destructive|info))\b[^"\']*?\btext-white\b|\btext-white\b[^"\']*?\b(?:bg-(?:warning|positive|success|destructive|info))\b/';
+
+        $violations = [];
+
+        /** @var \SplFileInfo $file */
+        foreach ($iterator as $file) {
+            if (! $file->isFile() || $file->getExtension() !== 'php' || ! str_ends_with($file->getFilename(), '.blade.php')) {
+                continue;
+            }
+
+            if (str_contains($file->getPathname(), '/vendor/')) {
+                continue;
+            }
+
+            $lines = file($file->getPathname(), FILE_IGNORE_NEW_LINES) ?: [];
+            $relPath = str_replace(dirname($this->viewsPath, 2).'/', '', $file->getPathname());
+
+            foreach ($lines as $lineNum => $line) {
+                if (preg_match($pattern, $line)) {
+                    $violations[] = "{$relPath}:".($lineNum + 1).' -> status background with raw text-white (must use text-on-*): '.trim($line);
+                }
+            }
+        }
+
+        $this->assertEmpty(
+            $violations,
+            "Prohibited status background + raw text-white combinations found (must use semantic text-on-* tokens):\n".implode("\n", $violations)
+        );
+    }
 }

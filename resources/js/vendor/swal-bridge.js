@@ -57,6 +57,11 @@ const Swal = {
 
         closeActiveDialog();
 
+        const cs = typeof window !== 'undefined' && typeof document !== 'undefined' ? getComputedStyle(document.documentElement) : null;
+        const getVal = (prop, fallback) => (cs ? cs.getPropertyValue(prop).trim() : '') || fallback;
+        const defaultPrimary = getVal('--primary', '#0D0D0D');
+        const defaultDestructive = getVal('--destructive', '#991B1B');
+
         const {
             title = 'Konfirmasi',
             text = '',
@@ -65,8 +70,8 @@ const Swal = {
             showCancelButton = false,
             confirmButtonText = 'OK',
             cancelButtonText = 'Batal',
-            confirmButtonColor = '#202020',
-             returnFocus = true,
+            confirmButtonColor = defaultPrimary,
+            returnFocus = true,
             reverseButtons = false,
             didOpen = null,
         } = options;
@@ -75,7 +80,7 @@ const Swal = {
 
         return new Promise((resolve) => {
             const overlay = document.createElement('div');
-            overlay.className = 'fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px]';
+            overlay.className = 'fixed inset-0 z-[100] flex items-center justify-center p-4 bg-overlay-scrim backdrop-blur-[2px]';
             overlay.setAttribute('role', 'alertdialog');
             overlay.setAttribute('aria-modal', 'true');
             overlay.setAttribute('aria-labelledby', 'apeiron-swal-title');
@@ -84,11 +89,12 @@ const Swal = {
             }
 
             const panel = document.createElement('div');
-            panel.className = 'w-full max-w-md rounded-2xl bg-card border border-border shadow-xl p-6 text-foreground focus:outline-none';
+            panel.className = 'w-full max-w-md rounded-2xl bg-popover text-popover-foreground border border-border-strong shadow-dialog p-6 focus:outline-none';
             panel.tabIndex = -1;
 
             const isDestructive = confirmButtonColor.toLowerCase() === '#be123c'
                 || confirmButtonColor.toLowerCase() === '#e11d48'
+                || confirmButtonColor.toLowerCase() === defaultDestructive.toLowerCase()
                 || confirmButtonColor.toLowerCase() === 'destructive'
                 || icon === 'warning'
                 || icon === 'error';
@@ -102,10 +108,10 @@ const Swal = {
                 : (icon === 'success' ? 'check_circle' : (icon === 'warning' ? 'warning' : 'info'));
 
             const confirmBtnClass = isDestructive
-                ? 'inline-flex items-center justify-center h-10 px-4 rounded-lg text-xs font-semibold text-destructive-foreground bg-destructive hover:bg-destructive/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destructive transition-colors cursor-pointer'
+                ? 'inline-flex items-center justify-center h-10 px-4 rounded-lg text-xs font-semibold text-on-destructive bg-destructive hover:bg-destructive/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destructive transition-colors cursor-pointer'
                 : 'inline-flex items-center justify-center h-10 px-4 rounded-lg text-xs font-semibold text-primary-foreground bg-primary hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors cursor-pointer';
 
-            const cancelBtnClass = 'inline-flex items-center justify-center h-10 px-4 rounded-lg text-xs font-semibold text-foreground bg-card border border-border hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors cursor-pointer';
+            const cancelBtnClass = 'inline-flex items-center justify-center h-10 px-4 rounded-lg text-xs font-semibold text-foreground bg-card border border-border-strong hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors cursor-pointer';
 
             panel.innerHTML = `
                 <div class="flex items-start gap-4">

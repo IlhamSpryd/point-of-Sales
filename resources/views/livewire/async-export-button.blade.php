@@ -87,7 +87,7 @@
     <a 
         x-show="status === 'completed'" 
         x-bind:href="downloadUrl"
-        class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-positive text-white hover:bg-positive transition shadow-xs w-full sm:w-auto"
+        class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-positive text-on-positive hover:bg-positive transition shadow-xs w-full sm:w-auto"
         download
     >
         <span class="material-symbols-rounded text-base">check_circle</span>

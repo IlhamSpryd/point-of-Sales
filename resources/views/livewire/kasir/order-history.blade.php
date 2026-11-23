@@ -356,7 +356,7 @@
                         <button type="button" wire:click="syncMidtransStatus({{ $detail->id }})"
                             wire:loading.attr="disabled" wire:target="syncMidtransStatus"
                             class="min-h-[44px] min-w-[44px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-all active:scale-95 shadow-xs disabled:opacity-50">
-                            <span wire:loading wire:target="syncMidtransStatus" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
+                            <span wire:loading wire:target="syncMidtransStatus" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current/30 border-t-current"></span>
                             <span wire:loading.remove wire:target="syncMidtransStatus" class="material-symbols-rounded text-[16px]">sync</span>
                             <span>Sync Midtrans Status</span>
                         </button>
@@ -364,7 +364,7 @@
                     @if (in_array($detail->order_status->value, ['paid', 'completed'], true))
                         <button type="button" wire:click="openReturnModal({{ $detail->id }})"
                             x-on:click="window.erpMotion?.pulseHighlight($el)"
-                            class="min-h-[44px] min-w-[44px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-warning text-white text-xs font-bold hover:bg-warning/90 transition-all active:scale-95 shadow-xs">
+                            class="min-h-[44px] min-w-[44px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-warning text-on-warning text-xs font-bold hover:bg-warning/90 transition-all active:scale-95 shadow-xs">
                             <span class="material-symbols-rounded text-[16px]">keyboard_return</span> Return &amp; Refund
                         </button>
                     @endif
@@ -429,7 +429,7 @@
                         wire:loading.attr="disabled" wire:target="voidOrder"
                         x-on:click="window.erpMotion?.pulseHighlight($el)"
                         class="px-4 py-2 rounded-xl bg-destructive text-destructive-foreground text-xs font-bold hover:bg-destructive/90 shadow-sm disabled:opacity-50 flex items-center gap-2">
-                        <span wire:loading wire:target="voidOrder" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
+                        <span wire:loading wire:target="voidOrder" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current/30 border-t-current"></span>
                         <span wire:loading.remove wire:target="voidOrder">Confirm Void</span>
                         <span wire:loading wire:target="voidOrder">Processing...</span>
                     </button>
@@ -571,8 +571,8 @@
                 <button type="button" wire:click="processReturn"
                     wire:loading.attr="disabled" wire:target="processReturn"
                     x-on:click="window.erpMotion?.pulseHighlight($el)"
-                    class="px-5 py-2 rounded-xl bg-warning text-white text-xs font-bold hover:bg-warning shadow-sm disabled:opacity-50 flex items-center gap-2">
-                    <span wire:loading wire:target="processReturn" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
+                    class="px-5 py-2 rounded-xl bg-warning text-on-warning text-xs font-bold hover:bg-warning shadow-sm disabled:opacity-50 flex items-center gap-2">
+                    <span wire:loading wire:target="processReturn" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current/30 border-t-current"></span>
                     <span wire:loading.remove wire:target="processReturn">Process Return &amp; Refund</span>
                     <span wire:loading wire:target="processReturn">Processing...</span>
                 </button>
@@ -624,7 +624,7 @@
                     wire:loading.attr="disabled" wire:target="confirmReprint"
                     x-on:click="window.erpMotion?.pulseHighlight($el)"
                     class="px-5 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 shadow-sm disabled:opacity-50 flex items-center gap-2">
-                    <span wire:loading wire:target="confirmReprint" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
+                    <span wire:loading wire:target="confirmReprint" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current/30 border-t-current"></span>
                     <span wire:loading.remove wire:target="confirmReprint">Print Now</span>
                     <span wire:loading wire:target="confirmReprint">Processing...</span>
                 </button>

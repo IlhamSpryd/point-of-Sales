@@ -53,7 +53,7 @@
             <!-- Actions -->
             <div class="grid grid-cols-2 gap-2 pt-2 border-t border-border" x-show="pin.length === 6">
                 <button type="button" @click="$dispatch('kiosk-clock-in', { pin }); openKiosk = false;"
-                    class="py-2.5 bg-positive hover:bg-positive text-white font-bold text-xs rounded-xl transition-colors cursor-pointer shadow-xs">
+                    class="py-2.5 bg-positive hover:bg-positive text-on-positive font-bold text-xs rounded-xl transition-colors cursor-pointer shadow-xs">
                     Clock In
                 </button>
                 <button type="button" @click="$dispatch('kiosk-clock-out', { pin }); openKiosk = false;"

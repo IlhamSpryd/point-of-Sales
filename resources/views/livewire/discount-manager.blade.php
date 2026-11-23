@@ -219,7 +219,7 @@
                     Cancel
                 </x-ui.button>
                 <x-ui.button variant="primary" wire:click="store" wire:loading.attr="disabled" wire:target="store">
-                    <span wire:loading wire:target="store" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white mr-1.5"></span>
+                    <span wire:loading wire:target="store" class="h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current mr-1.5"></span>
                     Save Discount
                 </x-ui.button>
             </div>

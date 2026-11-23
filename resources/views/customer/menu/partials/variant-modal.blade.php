@@ -140,7 +140,7 @@
                 <button type="button" @click="submit()" :disabled="!canSubmit"
                         class="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl bg-primary px-5 font-bold text-primary-foreground shadow-lg transition-all duration-200 hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     <span class="flex items-center gap-2 text-[15px]">
-                        <span x-show="submitting" x-cloak class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true"></span>
+                        <span x-show="submitting" x-cloak class="h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current" aria-hidden="true"></span>
                         <span x-text="submitting ? 'Adding…' : 'Add to Order'"></span>
                     </span>
                     <span class="tabular-nums" x-text="rupiah(total)"></span>

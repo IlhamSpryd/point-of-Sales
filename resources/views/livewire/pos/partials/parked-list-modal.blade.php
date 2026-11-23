@@ -61,7 +61,7 @@
                 </div>
             @empty
                 <div class="py-10 text-center text-muted-foreground space-y-1">
-                    <span class="material-symbols-rounded text-[36px] text-muted-foreground/60 block mb-1">inbox</span>
+                    <span class="material-symbols-rounded text-[36px] text-muted-foreground block mb-1">inbox</span>
                     <p class="text-xs font-semibold text-foreground">No parked orders found.</p>
                     <p class="text-xs text-muted-foreground">Active orders can be held using the Park Order (F8) action.</p>
                 </div>

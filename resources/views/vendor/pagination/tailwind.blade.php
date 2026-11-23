@@ -3,7 +3,7 @@
         {{-- Mobile: Simple Previous/Next --}}
         <div class="flex justify-between flex-1 sm:hidden">
             @if ($paginator->onFirstPage())
-                <span class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-muted-foreground/50 bg-card border border-border cursor-not-allowed rounded-lg">
+                <span class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-muted-foreground bg-card border border-border cursor-not-allowed rounded-lg">
                     &laquo; Previous
                 </span>
             @else
@@ -17,7 +17,7 @@
                     Next &raquo;
                 </a>
             @else
-                <span class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-muted-foreground/50 bg-card border border-border cursor-not-allowed rounded-lg">
+                <span class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-muted-foreground bg-card border border-border cursor-not-allowed rounded-lg">
                     Next &raquo;
                 </span>
             @endif
@@ -41,7 +41,7 @@
                 <span class="relative z-0 inline-flex items-center gap-1">
                     {{-- Previous Page --}}
                     @if ($paginator->onFirstPage())
-                        <span aria-disabled="true" class="relative inline-flex items-center p-2 text-muted-foreground/50 bg-card rounded-lg cursor-not-allowed">
+                        <span aria-disabled="true" class="relative inline-flex items-center p-2 text-muted-foreground bg-card rounded-lg cursor-not-allowed">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                         </span>
                     @else
@@ -54,7 +54,7 @@
                     @foreach ($elements as $element)
                         {{-- "Three Dots" Separator --}}
                         @if (is_string($element))
-                            <span class="relative inline-flex items-center px-2 py-1.5 text-sm font-medium text-muted-foreground/50">{{ $element }}</span>
+                            <span class="relative inline-flex items-center px-2 py-1.5 text-sm font-medium text-muted-foreground">{{ $element }}</span>
                         @endif
 
                         {{-- Array Of Links --}}
@@ -75,7 +75,7 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </a>
                     @else
-                        <span aria-disabled="true" class="relative inline-flex items-center p-2 text-muted-foreground/50 bg-card rounded-lg cursor-not-allowed">
+                        <span aria-disabled="true" class="relative inline-flex items-center p-2 text-muted-foreground bg-card rounded-lg cursor-not-allowed">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </span>
                     @endif

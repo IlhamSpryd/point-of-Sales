@@ -221,7 +221,7 @@
                 class="w-full h-11 px-4 rounded-lg bg-foreground hover:opacity-90 text-background transition-all flex items-center justify-between shadow-sm disabled:bg-muted disabled:text-muted-foreground disabled:border disabled:border-border disabled:opacity-75 disabled:cursor-not-allowed"
                 @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
                 <div class="flex items-center gap-2">
-                    <span wire:loading wire:target="submitOrder" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
+                    <span wire:loading wire:target="submitOrder" class="h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current"></span>
                     <span wire:loading.remove wire:target="submitOrder" class="text-sm font-medium">Pay Now</span>
                     <span wire:loading wire:target="submitOrder" class="text-sm font-medium">Processing...</span>
                     <span class="px-1.5 py-0.5 rounded bg-background/20 text-xs tabular-nums uppercase">F4</span>

@@ -52,7 +52,7 @@
                 </div>
 
                 <x-ui.button type="submit" variant="primary" class="mt-2 w-full justify-center" wire:loading.attr="disabled" wire:target="saveMapping">
-                    <span wire:loading wire:target="saveMapping" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white mr-1.5"></span>
+                    <span wire:loading wire:target="saveMapping" class="h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current mr-1.5"></span>
                     Save Mapping
                 </x-ui.button>
             </form>

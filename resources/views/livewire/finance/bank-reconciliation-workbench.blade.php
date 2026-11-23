@@ -77,7 +77,7 @@
                         <button type="button"
                                 wire:click="completeSession"
                                 @if(bccomp((string) $difference, '0.00', 2) !== 0) disabled @endif
-                                class="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-positive hover:bg-positive rounded-xl transition-colors shadow-xs disabled:opacity-40 disabled:cursor-not-allowed">
+                                class="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-on-positive bg-positive hover:bg-positive rounded-xl transition-colors shadow-xs disabled:opacity-40 disabled:cursor-not-allowed">
                             <span class="material-symbols-rounded text-sm">check_circle</span>
                             <span>Complete Reconciliation</span>
                         </button>

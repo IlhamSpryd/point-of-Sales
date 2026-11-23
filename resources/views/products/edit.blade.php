@@ -444,11 +444,11 @@
                         <img src="{{ asset('storage/' . $m->file_path) }}" alt="{{ $m->alt_text ?? $product->product_name }}" class="w-full h-full object-cover rounded-lg absolute inset-0">
                         <div class="relative z-10 flex justify-between items-start">
                             @if($m->is_primary)
-                                <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-md bg-positive text-white shadow-sm">Primary</span>
+                                <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-md bg-positive text-on-positive shadow-sm">Primary</span>
                             @else
                                 <form action="{{ route('products.media.set-primary', [$product->id, $m->id]) }}" method="POST">
                                     @csrf
-                                    <button type="submit" class="px-2 py-0.5 text-[10px] font-medium rounded-md bg-black/60 hover:bg-black text-white transition-colors" title="Set as primary photo">
+                                    <button type="submit" class="px-2 py-0.5 text-[10px] font-medium rounded-md bg-overlay-scrim hover:bg-foreground text-background transition-colors" title="Set as primary photo">
                                         Set Primary
                                     </button>
                                 </form>
@@ -456,7 +456,7 @@
                             <form action="{{ route('products.media.destroy', [$product->id, $m->id]) }}" method="POST" onsubmit="return confirm('Delete this media?')">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="p-1 rounded-md bg-destructive hover:bg-destructive text-white transition-colors shadow-sm" title="Delete photo">
+                                <button type="submit" class="p-1 rounded-md bg-destructive hover:bg-destructive text-on-destructive transition-colors shadow-sm" title="Delete photo">
                                     <span class="material-symbols-rounded text-[14px]">delete</span>
                                 </button>
                             </form>

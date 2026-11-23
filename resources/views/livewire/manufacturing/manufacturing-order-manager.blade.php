@@ -132,7 +132,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="px-6 py-12 text-center text-muted-foreground">
-                                <span class="material-symbols-rounded text-[32px] block mb-2 text-muted-foreground/50">precision_manufacturing</span>
+                                <span class="material-symbols-rounded text-[32px] block mb-2 text-muted-foreground">precision_manufacturing</span>
                                 Belum ada perintah kerja manufaktur. Klik "Buat Perintah Kerja (MO)" untuk memulai.
                             </td>
                         </tr>

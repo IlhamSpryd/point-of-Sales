@@ -97,7 +97,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="px-6 py-12 text-center text-muted-foreground">
-                                <span class="material-symbols-rounded text-[32px] block mb-2 text-muted-foreground/50">label_off</span>
+                                <span class="material-symbols-rounded text-[32px] block mb-2 text-muted-foreground">label_off</span>
                                 No shelf labels found. Click "Generate Labels" to create new price tags.
                             </td>
                         </tr>

@@ -47,7 +47,7 @@
                             <label class="flex items-center cursor-pointer">
                                 <div class="relative">
                                     <input type="checkbox" wire:model="groupForm.is_required" class="sr-only">
-                                    <div class="block bg-primary-200 w-10 h-6 rounded-full transition-colors duration-300"></div>
+                                    <div class="block bg-muted border border-border w-10 h-6 rounded-full transition-colors duration-300"></div>
                                     <div class="dot absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform duration-300 shadow-sm"></div>
                                 </div>
                                 <div class="ml-3 text-sm font-semibold text-foreground">
@@ -103,7 +103,7 @@
                             <label class="flex items-center cursor-pointer">
                                 <div class="relative">
                                     <input type="checkbox" wire:model="modifierForm.is_default" class="sr-only">
-                                    <div class="block bg-primary-200 w-10 h-6 rounded-full transition-colors duration-300"></div>
+                                    <div class="block bg-muted border border-border w-10 h-6 rounded-full transition-colors duration-300"></div>
                                     <div class="dot absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform duration-300 shadow-sm"></div>
                                 </div>
                                 <div class="ml-3 text-sm font-semibold text-foreground">

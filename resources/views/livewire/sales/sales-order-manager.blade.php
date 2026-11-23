@@ -412,7 +412,7 @@
 
                 <div class="flex justify-end pt-2">
                     <x-ui.button variant="primary" wire:click="calculateShippingRates" wire:loading.attr="disabled" class="gap-1.5 text-xs">
-                        <span wire:loading wire:target="calculateShippingRates" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
+                        <span wire:loading wire:target="calculateShippingRates" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current/30 border-t-current"></span>
                         <span class="material-symbols-rounded text-[16px]">calculate</span>
                         Hitung Tarif Seluruh Ekspedisi
                     </x-ui.button>

@@ -139,7 +139,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="px-4 py-12 text-center text-muted-foreground">
-                                <span class="material-symbols-rounded text-[28px] mb-1 text-muted-foreground/60">event_busy</span>
+                                <span class="material-symbols-rounded text-[28px] mb-1 text-muted-foreground">event_busy</span>
                                 <p class="text-xs">No accounting periods found for fiscal year {{ $selectedFiscalYear }}.</p>
                                 <button type="button"
                                         wire:click="generateFiscalYearPeriods"

@@ -147,7 +147,7 @@
                     @empty
                         <tr>
                             <td colspan="7" class="px-6 py-12 text-center text-muted-foreground">
-                                <span class="material-symbols-rounded text-[32px] block mb-2 text-muted-foreground/50">payments</span>
+                                <span class="material-symbols-rounded text-[32px] block mb-2 text-muted-foreground">payments</span>
                                 No payroll batches initiated yet.
                             </td>
                         </tr>

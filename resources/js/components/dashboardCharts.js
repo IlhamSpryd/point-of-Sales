@@ -66,12 +66,13 @@ export function formatPercent(num) {
  * Color token resolver ensuring strict design token compliance
  */
 export function resolveColorToken(token, fallbackIndex = 0) {
+    const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
     const palette = [
-        'var(--chart-accent, #10A37F)',
-        'var(--primary, #18181B)',
-        'var(--warning, #F59E0B)',
-        'var(--destructive, #EF4444)',
-        'var(--muted-foreground, #71717A)',
+        'var(--chart-accent, ' + (isDark ? '#5EEAD4' : '#0F766E') + ')',
+        'var(--primary, ' + (isDark ? '#ECECF0' : '#0D0D0D') + ')',
+        'var(--warning, ' + (isDark ? '#E5B942' : '#78350F') + ')',
+        'var(--destructive, ' + (isDark ? '#F89B9B' : '#991B1B') + ')',
+        'var(--muted-foreground, ' + (isDark ? '#B8B8C2' : '#4A4A52') + ')',
     ];
 
     if (!token) {

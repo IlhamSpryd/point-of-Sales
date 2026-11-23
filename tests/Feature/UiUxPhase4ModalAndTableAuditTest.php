@@ -86,7 +86,10 @@ class UiUxPhase4ModalAndTableAuditTest extends TestCase
     {
         $modalPrimitive = File::get(resource_path('views/components/ui/modal/index.blade.php'));
 
-        $this->assertStringContainsString('bg-black/60 backdrop-blur-[2px]', $modalPrimitive);
+        $this->assertTrue(
+            str_contains($modalPrimitive, 'bg-overlay-scrim backdrop-blur-[2px]') || str_contains($modalPrimitive, 'bg-black/60 backdrop-blur-[2px]'),
+            'Modal primitive must use standardized backdrop blur scrim (bg-overlay-scrim backdrop-blur-[2px])'
+        );
         $this->assertStringContainsString('x-trap.inert.noscroll="modalOpen"', $modalPrimitive);
         $this->assertStringContainsString('@keydown.escape.window=', $modalPrimitive);
         $this->assertStringContainsString('@close=', $modalPrimitive);

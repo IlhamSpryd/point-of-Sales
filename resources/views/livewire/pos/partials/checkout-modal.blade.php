@@ -166,7 +166,7 @@
                                 </button>
                                 <button type="button" x-on:click="checkMidtransStatus()" :disabled="verifyingMidtrans"
                                     class="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all disabled:opacity-50 cursor-pointer">
-                                    <span x-show="verifyingMidtrans" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
+                                    <span x-show="verifyingMidtrans" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current/30 border-t-current"></span>
                                     <span x-show="!verifyingMidtrans" class="material-symbols-rounded text-[16px]">sync</span>
                                     <span x-text="verifyingMidtrans ? 'Verifying...' : 'Verify Payment Status'"></span>
                                 </button>
@@ -403,7 +403,7 @@
                 aria-live="polite"
                 :disabled="submitting || (method === 'split' ? remaining > 0 : false)"
                 class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
-                <span x-show="submitting" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true"></span>
+                <span x-show="submitting" class="h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current" aria-hidden="true"></span>
                 <span class="material-symbols-rounded text-[16px]" x-show="!submitting" x-text="(method === 'qris' && qrisMode === 'midtrans') ? 'qr_code_scanner' : 'check_circle'"></span>
                 <span x-text="submitting ? 'Processing Payment...' : ((method === 'qris' && qrisMode === 'midtrans') ? 'Proceed to QR Payment' : 'Confirm & Complete Order')"></span>
             </button>
@@ -415,7 +415,7 @@
                 aria-live="polite"
                 :disabled="verifyingMidtrans"
                 class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
-                <span x-show="verifyingMidtrans" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true"></span>
+                <span x-show="verifyingMidtrans" class="h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current" aria-hidden="true"></span>
                 <span class="material-symbols-rounded text-[16px]" x-show="!verifyingMidtrans">verified</span>
                 <span x-text="verifyingMidtrans ? 'Verifying...' : 'Verify & Complete Order'"></span>
             </button>

@@ -55,7 +55,7 @@
                 <div class="card-surface rounded-2xl overflow-hidden border border-border shadow-xs">
                     @if($recentJournals->isEmpty())
                         <div class="p-8 text-center space-y-2">
-                            <span class="material-symbols-rounded text-[28px] text-muted-foreground/60">hourglass_empty</span>
+                            <span class="material-symbols-rounded text-[28px] text-muted-foreground">hourglass_empty</span>
                             <p class="text-sm font-medium text-foreground">No transaction journals recorded yet</p>
                             <p class="text-xs text-muted-foreground max-w-sm mx-auto">
                                 Journals are automatically posted upon cashier checkout, goods receipt (GRN) approval, or customer invoice verification.
@@ -117,7 +117,7 @@
                 <div class="card-surface rounded-2xl p-5 border border-border space-y-3 shadow-xs">
                     @if($cashBankAccounts->isEmpty())
                         <div class="text-center py-6 space-y-2">
-                            <span class="material-symbols-rounded text-2xl text-muted-foreground/60">account_balance</span>
+                            <span class="material-symbols-rounded text-2xl text-muted-foreground">account_balance</span>
                             <p class="text-xs text-muted-foreground">No bank or cash accounts configured.</p>
                         </div>
                     @else

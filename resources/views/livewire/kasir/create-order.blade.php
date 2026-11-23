@@ -170,7 +170,7 @@
 
     .custom-scrollbar {
         scrollbar-width: thin;
-        scrollbar-color: #e5e5e5 transparent;
+        scrollbar-color: var(--border-strong) transparent;
     }
 
     .custom-scrollbar::-webkit-scrollbar {
@@ -182,12 +182,12 @@
     }
 
     .custom-scrollbar::-webkit-scrollbar-thumb {
-        background-color: #e5e5e5;
+        background-color: var(--border-strong);
         border-radius: 9999px;
     }
 
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background-color: #d4d4d4;
+        background-color: var(--muted-foreground);
     }
 
     @media (prefers-reduced-motion: reduce) {

@@ -89,11 +89,11 @@
             <div class="relative overflow-hidden rounded-3xl bg-primary text-primary-foreground p-6 shadow-md mb-4">
                 <div class="relative z-10">
                     <span
-                        class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-card/20 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider mb-3 shadow-sm border border-white/10">
+                        class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-card/20 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider mb-3 shadow-sm border border-border/20">
                         <span class="material-symbols-rounded text-[14px] text-warning">stars</span> Today's Specials
                     </span>
-                    <h2 class="font-bold text-xl leading-tight mb-1.5 text-white">Explore Our Featured Menu</h2>
-                    <p class="text-xs text-white/70 font-medium">Check available promotional discounts at checkout.</p>
+                    <h2 class="font-bold text-xl leading-tight mb-1.5 text-primary-foreground">Explore Our Featured Menu</h2>
+                    <p class="text-xs text-primary-foreground/75 font-medium">Check available promotional discounts at checkout.</p>
                 </div>
 
                 {{-- Elemen Dekoratif Premium --}}

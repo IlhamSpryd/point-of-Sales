@@ -25,28 +25,31 @@ if (typeof window !== 'undefined') {
 
 function getEchartsThemeTokens() {
     const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+    const cs = typeof window !== 'undefined' && typeof document !== 'undefined' ? getComputedStyle(document.documentElement) : null;
+    const getVal = (prop, fallback) => (cs ? cs.getPropertyValue(prop).trim() : '') || fallback;
+
     return {
         isDark,
         fontFamily: '"Plus Jakarta Sans", sans-serif',
-        textColor: isDark ? '#FAFAFA' : '#09090B',
-        mutedTextColor: isDark ? '#B4B4BE' : '#45454D',
-        gridLineColor: isDark ? 'rgba(255, 255, 255, 0.08)' : '#E4E4E7',
-        splitLineColor: isDark ? 'rgba(255, 255, 255, 0.06)' : '#F4F4F5',
-        borderColor: isDark ? 'rgba(255, 255, 255, 0.10)' : '#E4E4E7',
-        tooltipBg: isDark ? '#1F1F25' : '#FFFFFF',
-        tooltipBorder: isDark ? 'rgba(255, 255, 255, 0.15)' : '#E4E4E7',
-        accentColor: isDark ? '#4ADE80' : '#10A37F',
-        primaryColor: isDark ? '#FAFAFA' : '#18181B',
-        priorColor: isDark ? '#71717A' : '#8E8E98',
-        targetColor: isDark ? '#FCD34D' : '#D97706',
-        cogsColor: isDark ? '#F87171' : '#DC2626',
-        qrisColor: isDark ? '#38BDF8' : '#0284C7',
-        cardColor: isDark ? '#A78BFA' : '#7C3AED',
-        cashColor: isDark ? '#4ADE80' : '#16A34A',
-        invoiceColor: isDark ? '#FBBF24' : '#D97706',
-        heatmapZero: isDark ? '#16161A' : '#F7F7F8',
-        heatmapMid: isDark ? '#1E3A5F' : '#BAE6FD',
-        heatmapMax: isDark ? '#0284C7' : '#0369A1',
+        textColor: getVal('--popover-foreground', isDark ? '#ECECF0' : '#0D0D0D'),
+        mutedTextColor: getVal('--chart-axis-label', isDark ? '#B8B8C2' : '#4A4A52'),
+        gridLineColor: getVal('--chart-grid', isDark ? 'rgba(255, 255, 255, 0.08)' : '#E8E8EC'),
+        splitLineColor: isDark ? 'rgba(255, 255, 255, 0.05)' : '#F0F0F2',
+        borderColor: getVal('--border-strong', isDark ? 'rgba(255, 255, 255, 0.22)' : '#C8C8D0'),
+        tooltipBg: getVal('--popover', isDark ? '#2B2B31' : '#FFFFFF'),
+        tooltipBorder: getVal('--border-strong', isDark ? 'rgba(255, 255, 255, 0.22)' : '#C8C8D0'),
+        accentColor: getVal('--chart-accent', isDark ? '#5EEAD4' : '#0F766E'),
+        primaryColor: getVal('--chart-1', isDark ? '#ECECF0' : '#0D0D0D'),
+        priorColor: getVal('--chart-8', isDark ? '#9CA3AF' : '#4B5563'),
+        targetColor: getVal('--chart-accent', isDark ? '#5EEAD4' : '#0F766E'),
+        cogsColor: getVal('--chart-2', isDark ? '#FDA4AF' : '#BE123C'),
+        qrisColor: getVal('--chart-3', isDark ? '#93C5FD' : '#1D4ED8'),
+        cardColor: getVal('--chart-4', isDark ? '#FCD34D' : '#B45309'),
+        cashColor: getVal('--chart-7', isDark ? '#58D68D' : '#047857'),
+        invoiceColor: getVal('--chart-4', isDark ? '#FCD34D' : '#B45309'),
+        heatmapZero: isDark ? '#1B1B1F' : '#F7F7F8',
+        heatmapMid: isDark ? 'rgba(94, 234, 212, 0.35)' : 'rgba(15, 118, 110, 0.35)',
+        heatmapMax: isDark ? '#5EEAD4' : '#0F766E',
     };
 }
 

@@ -179,8 +179,8 @@
                                     $dayNum = ($dIdx + 1) % 7;
                                 @endphp
                                 <button type="button"
-                                     class="h-5.5 rounded flex items-center justify-center text-[9.5px] font-medium tabular-nums transition-transform hover:scale-110 cursor-pointer {{ $intensity > 0.45 ? 'text-white font-bold' : 'text-foreground' }}"
-                                     style="background-color: rgba(16, 163, 127, {{ max(0.08, $intensity) }});"
+                                     class="h-5.5 rounded flex items-center justify-center text-[9.5px] font-medium tabular-nums transition-transform hover:scale-110 cursor-pointer {{ $intensity >= 0.75 ? 'text-primary-foreground font-semibold' : 'text-foreground' }}"
+                                     style="background-color: {{ $txVal > 0 ? 'color-mix(in srgb, var(--chart-accent) ' . max(12, (int) round($intensity * 85)) . '%, transparent)' : 'transparent' }};"
                                      @click="drill({{ $dayNum }}, {{ $h }}, '{{ $dName }}')"
                                      @mouseenter="hover('{{ $dName }}', '{{ sprintf('%02d:00', $h) }}', {{ (int)$txVal }}, '{{ $revFormatted }}')"
                                      @mouseleave="leave()"

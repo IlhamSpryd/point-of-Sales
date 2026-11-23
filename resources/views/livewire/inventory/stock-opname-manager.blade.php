@@ -261,7 +261,7 @@
                                 <button type="button" wire:click="resolveDriftItem({{ $d['item_id'] }}, 'RE_SNAPSHOT')" class="px-3 py-2 bg-card hover:bg-secondary text-foreground font-semibold rounded-xl border border-border shadow-sm">
                                     Recount (Re-Snapshot)
                                 </button>
-                                <button type="button" wire:click="resolveDriftItem({{ $d['item_id'] }}, 'REBASE_OVERRIDE')" class="px-3 py-2 bg-destructive hover:bg-destructive text-white font-semibold rounded-xl shadow-sm">
+                                <button type="button" wire:click="resolveDriftItem({{ $d['item_id'] }}, 'REBASE_OVERRIDE')" class="px-3 py-2 bg-destructive hover:bg-destructive text-on-destructive font-semibold rounded-xl shadow-sm">
                                     Rebase Override
                                 </button>
                             </div>

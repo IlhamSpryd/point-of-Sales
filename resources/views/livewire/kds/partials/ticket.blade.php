@@ -89,7 +89,7 @@
                     <span class="material-symbols-rounded text-[16px]">skillet</span> Start Prep
                 </span>
                 <span wire:loading wire:target="claim({{ $item->id }})" class="flex items-center gap-1.5">
-                    <span class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white"></span> Processing…
+                    <span class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current/30 border-t-current"></span> Processing…
                 </span>
             </button>
         @endif
@@ -99,12 +99,12 @@
                 @if ($isMine)
                     <button type="button" wire:click="markReady({{ $item->id }})" wire:loading.attr="disabled" wire:target="markReady({{ $item->id }})"
                             x-on:click="window.erpMotion?.pulseHighlight($el)"
-                            class="flex min-h-10 flex-1 items-center justify-center rounded-xl bg-positive text-xs font-bold text-white shadow-sm transition-all duration-200 hover:bg-positive active:scale-[0.98] disabled:cursor-wait disabled:opacity-60">
+                            class="flex min-h-10 flex-1 items-center justify-center rounded-xl bg-positive text-xs font-bold text-on-positive shadow-sm transition-all duration-200 hover:bg-positive active:scale-[0.98] disabled:cursor-wait disabled:opacity-60">
                         <span wire:loading.remove wire:target="markReady({{ $item->id }})" class="flex items-center gap-1.5">
                             <span class="material-symbols-rounded text-[16px]">check_circle</span> Complete
                         </span>
                         <span wire:loading wire:target="markReady({{ $item->id }})" class="flex items-center gap-1.5">
-                            <span class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white"></span> Processing…
+                            <span class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current/30 border-t-current"></span> Processing…
                         </span>
                     </button>
                 @endif

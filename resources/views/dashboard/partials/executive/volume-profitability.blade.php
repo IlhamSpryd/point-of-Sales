@@ -164,7 +164,7 @@
                 </div>
             @else
                 <div class="py-12 text-center text-xs text-muted-foreground space-y-1">
-                    <span class="material-symbols-rounded text-2xl text-muted-foreground/60">analytics</span>
+                    <span class="material-symbols-rounded text-2xl text-muted-foreground">analytics</span>
                     <p>{{ $hasMargin ? 'No recipe COGS or transaction movements recorded in this period.' : 'Profit margin metrics require elevated role authorization.' }}</p>
                 </div>
             @endif

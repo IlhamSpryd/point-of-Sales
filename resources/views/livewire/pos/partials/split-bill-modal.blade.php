@@ -130,7 +130,7 @@
                 @endif
             @else
                 <div class="p-6 text-center text-muted-foreground">
-                    <span class="material-symbols-rounded text-[28px] block mb-2 text-muted-foreground/50">receipt_long</span>
+                    <span class="material-symbols-rounded text-[28px] block mb-2 text-muted-foreground">receipt_long</span>
                     Belum ada pesanan aktif atau pending yang dapat dipecah tagihannya.
                 </div>
             @endif

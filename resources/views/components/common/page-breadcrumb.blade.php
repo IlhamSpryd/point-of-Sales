@@ -12,7 +12,7 @@
             <li>
                 <a class="inline-flex items-center gap-1 hover:text-foreground transition-colors" href="{{ route('home') }}" wire:navigate>
                     <span>{{ __('Home') }}</span>
-                    <span class="material-symbols-rounded text-sm text-muted-foreground/60" aria-hidden="true">chevron_right</span>
+                    <span class="material-symbols-rounded text-sm text-muted-foreground" aria-hidden="true">chevron_right</span>
                 </a>
             </li>
             @foreach ($breadcrumbs as $crumb)
@@ -20,7 +20,7 @@
                     @if (!empty($crumb['url']) && !$loop->last)
                         <a class="inline-flex items-center gap-1 hover:text-foreground transition-colors" href="{{ $crumb['url'] }}" wire:navigate>
                             <span>{{ $crumb['label'] }}</span>
-                            <span class="material-symbols-rounded text-sm text-muted-foreground/60" aria-hidden="true">chevron_right</span>
+                            <span class="material-symbols-rounded text-sm text-muted-foreground" aria-hidden="true">chevron_right</span>
                         </a>
                     @else
                         <span class="font-medium text-foreground" aria-current="page">{{ $crumb['label'] ?? $crumb }}</span>

@@ -62,7 +62,7 @@
                 <button type="submit" wire:loading.attr="disabled" wire:target="openShift"
                     x-on:click="window.erpMotion?.pulseHighlight($el)"
                     class="w-full disabled:opacity-60 disabled:cursor-wait bg-foreground hover:opacity-90 text-background font-bold py-3.5 rounded-xl shadow-md active:scale-[0.98] transition-all flex justify-center items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                    <span wire:loading wire:target="openShift" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
+                    <span wire:loading wire:target="openShift" class="h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current"></span>
                     <span>Start Shift Session</span>
                 </button>
             </form>
@@ -196,7 +196,7 @@
                     <span class="text-xs text-muted-foreground mt-1 block">Cash-In vs Cash-Out</span>
                 </div>
 
-                <div class="bg-card rounded-2xl p-5 border border-border shadow-sm bg-gradient-to-br from-card to-secondary/50" data-gsap="kpi-card">
+                <div class="bg-card rounded-2xl p-5 border border-border shadow-sm" data-gsap="kpi-card">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-foreground block mb-1.5">Expected Drawer Cash</span>
                     <p class="text-[20px] font-semibold text-foreground font-sans tabular-nums">Rp {{ number_format($expectedCash, 0, ',', '.') }}</p>
                     <span class="text-xs text-muted-foreground mt-1 block">Expected cash balance at closing</span>

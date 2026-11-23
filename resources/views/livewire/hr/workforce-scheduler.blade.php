@@ -128,7 +128,7 @@
                                         </button>
                                     @else
                                         <button wire:click="openAssignModal({{ $emp->id }}, '{{ $dateStr }}')"
-                                            class="w-full py-2.5 rounded-xl border border-dashed border-border hover:border-primary/50 hover:bg-muted/50 text-muted-foreground/60 hover:text-primary transition-colors text-xs cursor-pointer flex items-center justify-center">
+                                            class="w-full py-2.5 rounded-xl border border-dashed border-border hover:border-primary/50 hover:bg-muted/50 text-muted-foreground hover:text-primary transition-colors text-xs cursor-pointer flex items-center justify-center">
                                             <span class="material-symbols-rounded text-base">add</span>
                                         </button>
                                     @endif
@@ -138,7 +138,7 @@
                     @empty
                         <tr>
                             <td colspan="8" class="px-6 py-12 text-center text-muted-foreground">
-                                <span class="material-symbols-rounded text-[32px] block mb-2 text-muted-foreground/50">calendar_month</span>
+                                <span class="material-symbols-rounded text-[32px] block mb-2 text-muted-foreground">calendar_month</span>
                                 No active employees found in directory to schedule.
                             </td>
                         </tr>
