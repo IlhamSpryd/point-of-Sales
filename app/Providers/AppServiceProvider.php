@@ -105,6 +105,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if ($this->app->isProduction()) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         ini_set('unserialize_callback_func', 'spl_autoload_call');
 
         Factory::guessFactoryNamesUsing(static function (string $modelName): string {

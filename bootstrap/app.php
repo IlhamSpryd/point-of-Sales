@@ -34,9 +34,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // PATCH FOR S-04: jangan percaya semua proxy. Isi TRUSTED_PROXIES=IP_LB di produksi.
+        // PATCH FOR S-04: jangan percaya semua proxy. Isi TRUSTED_PROXIES=IP_LB di produksi (default '*' di balik reverse-proxy/Cloudflare).
         $middleware->trustProxies(
-            at: env('TRUSTED_PROXIES', '127.0.0.1'),
+            at: env('TRUSTED_PROXIES', '*'),
             headers: Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_HOST
                    | Request::HEADER_X_FORWARDED_PORT | Request::HEADER_X_FORWARDED_PROTO,
         );
