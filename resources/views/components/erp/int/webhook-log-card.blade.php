@@ -22,7 +22,7 @@
             <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold font-sans uppercase bg-secondary text-primary border border-border">
                 {{ $event }}
             </span>
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold font-sans {{ $statusClass }}">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-bold font-sans {{ $statusClass }}">
                 <span>{{ $status }}</span>
                 <span>{{ $isSuccess ? 'OK' : 'Error' }}</span>
             </span>

@@ -65,12 +65,12 @@
     </div>
 
     <div class="flex items-baseline justify-between gap-2 mt-1">
-        <div @class(['text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight', 'numeric' => $mono])>
+        <div @class(['text-[20px] font-semibold tracking-[-0.02em] text-foreground tabular-nums whitespace-nowrap', 'numeric' => $mono])>
             {{ $value }}
         </div>
 
         @if ($displayDelta !== null && $displayDelta !== '')
-            <span class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold {{ $deltaClasses }}">
+            <span class="inline-flex items-center gap-1 text-xs font-semibold tabular-nums {{ $direction === 'up' ? 'text-success' : ($direction === 'down' ? 'text-destructive' : 'text-muted-foreground') }}">
                 @if ($direction === 'up')
                     <span class="material-symbols-rounded text-[14px] leading-none shrink-0" aria-hidden="true">trending_up</span>
                 @elseif ($direction === 'down')

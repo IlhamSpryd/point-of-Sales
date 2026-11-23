@@ -75,6 +75,11 @@ return Application::configure(basePath: dirname(__DIR__))
             Authorize::class,
         ]);
 
+        // Cookie apeiron_theme wajib unencrypted agar SSR layout membaca nilainya seketika (0ms FOUC).
+        $middleware->encryptCookies(except: [
+            'apeiron_theme',
+        ]);
+
         // Midtrans mengirim notifikasi webhook server-to-server TANPA cookie
         // sesi browser, sehingga TIDAK PERNAH bisa menyertakan CSRF token.
         // Keamanan endpoint ini dijamin oleh verifikasi signature_key (SHA512)

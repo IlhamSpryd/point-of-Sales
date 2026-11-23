@@ -60,7 +60,7 @@
             class="relative rounded-lg font-medium transition-all duration-150 cursor-pointer flex items-center gap-1.5 whitespace-nowrap {{ $buttonPadding }}">
             <span>{{ $opt['label'] }}</span>
             @if (!empty($opt['badge']))
-                <span class="px-1.5 py-0.2 text-[10px] rounded-full bg-secondary text-primary font-bold">
+                <span class="px-1.5 py-0.5 text-[10px] rounded font-medium bg-secondary text-foreground">
                     {{ $opt['badge'] }}
                 </span>
             @endif

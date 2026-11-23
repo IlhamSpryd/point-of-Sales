@@ -62,8 +62,8 @@
             </p>
         </div>
 
-        {{-- Status Pill with Dot --}}
-        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-xs font-semibold {{ $statusConfig['badgeClass'] }}">
+        {{-- Status Tag with Dot --}}
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-xs font-semibold {{ $statusConfig['badgeClass'] }}">
             <span class="w-1.5 h-1.5 rounded-full {{ $statusConfig['dotClass'] }}" aria-hidden="true"></span>
             <span>{{ $statusConfig['label'] }}</span>
         </span>

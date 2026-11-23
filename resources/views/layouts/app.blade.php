@@ -135,10 +135,10 @@
         @include('layouts.navigation')
 
         <!-- Main Content Wrapper (Unified Curved Shell Frame with Inset Workspace Canvas) -->
-        <div class="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 bg-shell" id="main-wrapper">
+        <div class="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 bg-[var(--chrome-surface)]" id="main-wrapper">
 
-            <!-- Sticky h-13 Top Navbar (Clean Executive Layout, 52px, border-b border-border) -->
-            <header class="h-13 shrink-0 bg-background/95 backdrop-blur-sm text-foreground flex items-center justify-between px-5 z-30 sticky top-0 border-b border-border select-none">
+            <!-- Sticky h-13 Top Navbar (Clean Executive Layout, 52px) -->
+            <header class="h-13 shrink-0 bg-[var(--chrome-surface)] text-foreground flex items-center justify-between px-5 z-30 sticky top-0 select-none">
                 
                 <!-- Left: Mobile Drawer Trigger + Active Branch & Context Breadcrumbs -->
                 <div class="flex items-center gap-3 min-w-0">
@@ -148,7 +148,7 @@
                     </button>
 
                     {{-- Branch Switcher (Top Navbar, ghost control) --}}
-                    <x-branch-switcher :dark="false" align="left" />
+                    <x-branch-switcher :dark="true" align="left" />
 
                     {{-- Hairline divider --}}
                     <div class="hidden sm:block h-4 w-px bg-border shrink-0"></div>
@@ -209,14 +209,50 @@
                     {{-- Hairline divider --}}
                     <div class="h-4 w-px bg-border shrink-0"></div>
 
-                    {{-- Light/Dark Theme Switcher (Single Icon, Zero FOUC & Persisted) --}}
+                    {{-- Interactive Tactile Theme Switch Button --}}
                     <button type="button"
-                        @click="window.ApeironTheme ? window.ApeironTheme.toggle() : document.documentElement.classList.toggle('dark')"
+                        x-data="{
+                            isDark: document.documentElement.classList.contains('dark'),
+                            init() {
+                                window.addEventListener('apeiron:theme-changed', (e) => {
+                                    this.isDark = e.detail.isDark;
+                                });
+                            },
+                            toggle() {
+                                if (window.ApeironTheme) {
+                                    window.ApeironTheme.toggle();
+                                } else {
+                                    document.documentElement.classList.toggle('dark');
+                                }
+                                this.isDark = document.documentElement.classList.contains('dark');
+                            }
+                        }"
+                        @click="toggle()"
+                        role="switch"
+                        :aria-checked="isDark.toString()"
                         aria-label="Toggle color theme"
-                        class="w-8 h-8 rounded-lg bg-secondary hover:bg-muted text-muted-foreground hover:text-foreground border border-border flex items-center justify-center transition-colors cursor-pointer"
-                        title="Toggle Light / Dark Theme">
-                        <span class="material-symbols-rounded text-[18px] dark:hidden" aria-hidden="true">dark_mode</span>
-                        <span class="material-symbols-rounded text-[18px] hidden dark:inline" aria-hidden="true">light_mode</span>
+                        title="Toggle Light / Dark Theme"
+                        class="w-[46px] h-[26px] rounded-full p-[3px] border border-border bg-shell relative inline-flex items-center cursor-pointer transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 select-none shrink-0">
+                        <span class="sr-only">Toggle theme</span>
+                        <span class="w-5 h-5 rounded-full bg-card border border-border shadow-xs flex items-center justify-center transition-transform duration-200 ease-[cubic-bezier(0.2,0,0,1)] text-foreground"
+                              :class="isDark ? 'translate-x-5' : 'translate-x-0'">
+                            {{-- Sun Icon (12px, 1.75px stroke) --}}
+                            <svg x-show="!isDark" aria-hidden="true" class="w-3 h-3 transition-all duration-180 motion-reduce:transition-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="4"></circle>
+                                <path d="M12 2v2"></path>
+                                <path d="M12 20v2"></path>
+                                <path d="m4.93 4.93 1.41 1.41"></path>
+                                <path d="m17.66 17.66 1.41 1.41"></path>
+                                <path d="M2 12h2"></path>
+                                <path d="M20 12h2"></path>
+                                <path d="m6.34 17.66-1.41 1.41"></path>
+                                <path d="m19.07 4.93-1.41 1.41"></path>
+                            </svg>
+                            {{-- Moon Icon (12px, 1.75px stroke) --}}
+                            <svg x-show="isDark" x-cloak aria-hidden="true" class="w-3 h-3 transition-all duration-180 motion-reduce:transition-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+                            </svg>
+                        </span>
                     </button>
 
                     {{-- Notification Center Dropdown --}}
@@ -224,9 +260,9 @@
                 </div>
             </header>
 
-            <!-- Main Scrollable Area (Full-Bleed Fluid Workspace) -->
+            <!-- Main Scrollable Area (Full-Bleed Fluid Workspace with Curved Inner Seam) -->
             <main
-                class="flex-1 overflow-y-auto overflow-x-hidden w-full bg-shell flex flex-col"
+                class="flex-1 overflow-y-auto overflow-x-hidden w-full bg-shell flex flex-col lg:rounded-tl-[20px] lg:border-t lg:border-l border-border"
                 :class="{ 'opacity-60 transition-opacity duration-150 pointer-events-none': navigating }"
                 id="main-content"
                 data-gsap="page-enter">

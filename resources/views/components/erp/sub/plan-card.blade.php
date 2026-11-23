@@ -14,7 +14,7 @@
         : ($isPopular ? 'border-foreground bg-card shadow-md' : 'border-border bg-card')
 )) }}>
     @if ($isPopular)
-        <span class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary text-primary-foreground shadow-xs">
+        <span class="absolute -top-3 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-primary text-primary-foreground shadow-xs">
             Most Popular
         </span>
     @endif
@@ -26,7 +26,7 @@
                 {{ $name }}
             </h3>
             @if ($isCurrent)
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-success-muted text-success border border-success-border">
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-success-muted text-success border border-success-border">
                     Current Plan
                 </span>
             @endif

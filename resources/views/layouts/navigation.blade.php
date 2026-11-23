@@ -68,9 +68,9 @@
         }
     "
     :class="[ isMobile ? (sidebarMobileOpen ? 'fixed inset-y-0 left-0 translate-x-0 shadow-2xl z-40' : 'fixed inset-y-0 left-0 -translate-x-full z-40') : 'relative translate-x-0 z-30', wide ? (isMobile ? 'w-72' : 'w-64') : 'w-16' ]"
-    class="h-full flex flex-col bg-shell text-shell-foreground select-none overflow-x-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
+    class="h-full flex flex-col bg-[var(--chrome-surface)] text-shell-foreground select-none overflow-x-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
 
-    {{-- Header: DEMURE Luxury Brand Logo + Circular Collapse/Expand Toggle --}}
+    {{-- Header: DEMURE Luxury Brand Logo + Seamless Collapse/Expand Toggle --}}
     <div class="h-16 flex items-center shrink-0 transition-all duration-200" :class="wide ? 'justify-between px-4' : 'justify-center px-0'">
         <div x-show="wide" class="flex items-center min-w-0">
             <a href="{{ $homeUrl }}" wire:navigate
@@ -99,11 +99,11 @@
             </button>
         </div>
 
-        {{-- Circular Collapse Trigger Button (Desktop/Laptop/iPad - when wide) --}}
+        {{-- Seamless Sidebar Collapse Chevron (Desktop/Laptop/iPad - when wide) --}}
         <button type="button" @click="expanded = false" x-show="wide && !sidebarMobileOpen" x-cloak title="Collapse sidebar"
             aria-label="Collapse sidebar"
-            class="hidden md:flex w-11 h-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-shell-foreground bg-card hover:bg-shell-accent hover:text-shell-foreground-active border border-shell-border active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring transition-all duration-150 cursor-pointer shadow-2xs">
-            <span class="material-symbols-rounded text-[16px]">chevron_left</span>
+            class="hidden md:inline-flex w-7 h-7 rounded-md items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring">
+            <span class="material-symbols-rounded text-[18px] transition-transform duration-200" :class="expanded ? '' : 'rotate-180'">chevron_left</span>
         </button>
 
         {{-- Close drawer (mobile) --}}
@@ -208,52 +208,54 @@
                 :class="openPopover ? 'rotate-90 text-shell-foreground-active' : ''">chevron_right</span>
         </button>
 
-        {{-- Dropdown Profile Popover --}}
-        <div x-show="openPopover" x-cloak @click.outside="openPopover = false"
-            @keydown.escape.window="openPopover = false"
-            role="menu"
-            aria-label="User profile and settings menu"
-            x-transition:enter="transition-all duration-150 ease-[cubic-bezier(0.16,1,0.3,1)]"
-            x-transition:enter-start="opacity-0 scale-95 translate-y-1"
-            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-            x-transition:leave="transition-all duration-100 ease-in"
-            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-            x-transition:leave-end="opacity-0 scale-95 translate-y-1"
-            class="absolute bottom-full mb-2 bg-card text-shell-foreground-active rounded-2xl shadow-xl border border-shell-border overflow-hidden z-50 divide-y divide-shell-border"
-            :class="wide ? 'left-3 right-3' : 'left-2 w-56 md:left-full md:ml-2'">
-            <div class="px-3.5 py-3 bg-card">
-                <p class="text-xs font-bold text-foreground truncate">{{ auth()->user()->name ?? 'User' }}</p>
-                <p class="text-[11px] text-muted-foreground truncate mt-0.5">{{ auth()->user()->email ?? '' }}</p>
-                @if ($roleName)
-                    <span
-                        class="inline-flex items-center mt-2 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-muted text-foreground border border-border">{{ $roleName }}</span>
-                @endif
-            </div>
-            <div class="p-1.5 space-y-0.5 bg-card">
-                <a href="{{ route('profile.edit') }}" wire:navigate
-                    @click="if (window.apeironPosCartDirty && !confirm('You have an active cart in POS. Leaving this page will cancel the current cart. Continue?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; } if (sidebarMobileOpen) { sidebarMobileOpen = false; }"
-                    role="menuitem"
-                    class="flex items-center gap-2.5 px-2.5 min-h-[44px] md:min-h-[36px] rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all duration-150 motion-reduce:transition-none">
-                    <span class="material-symbols-rounded text-[16px]" aria-hidden="true">person</span> My Profile
-                </a>
-                @if ($navRegistry->find('nav.admin.settings.general') !== null && $navResolver->isVisible($navRegistry->find('nav.admin.settings.general'), $authUser))
-                <a href="{{ route('settings.index') }}" wire:navigate
-                    @click="if (window.apeironPosCartDirty && !confirm('You have an active cart in POS. Leaving this page will cancel the current cart. Continue?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; } if (sidebarMobileOpen) { sidebarMobileOpen = false; }"
-                    role="menuitem"
-                    class="flex items-center gap-2.5 px-2.5 min-h-[44px] md:min-h-[36px] rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all duration-150 motion-reduce:transition-none">
-                    <span class="material-symbols-rounded text-[16px]" aria-hidden="true">settings</span> Settings
-                </a>
-                @endif
-                <form method="POST" action="{{ route('logout') }}"
-                    @submit="if (window.apeironPosCartDirty && !confirm('You have an active cart in POS. Signing out will cancel the current cart. Continue?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; }">
-                    @csrf
-                    <button type="submit"
+        {{-- Dropdown Profile Popover (Teleported to body so never clipped by sidebar overflow) --}}
+        <template x-teleport="body">
+            <div x-show="openPopover" x-cloak @click.outside="openPopover = false"
+                @keydown.escape.window="openPopover = false"
+                role="menu"
+                aria-label="User profile and settings menu"
+                x-transition:enter="transition-all duration-150 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                x-transition:enter-start="opacity-0 scale-95 translate-y-1"
+                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                x-transition:leave="transition-all duration-100 ease-in"
+                x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                x-transition:leave-end="opacity-0 scale-95 translate-y-1"
+                class="fixed z-[70] bg-card text-foreground rounded-2xl shadow-xl border border-border overflow-hidden divide-y divide-border w-60"
+                :class="wide ? 'left-3 bottom-16' : 'left-[72px] bottom-3'">
+                <div class="px-3.5 py-3 bg-card">
+                    <p class="text-xs font-bold text-foreground truncate">{{ auth()->user()->name ?? 'User' }}</p>
+                    <p class="text-[11px] text-muted-foreground truncate mt-0.5">{{ auth()->user()->email ?? '' }}</p>
+                    @if ($roleName)
+                        <span
+                            class="inline-flex items-center mt-2 px-1.5 py-0.5 rounded text-[10px] font-medium bg-muted text-foreground border border-border">{{ $roleName }}</span>
+                    @endif
+                </div>
+                <div class="p-1.5 space-y-0.5 bg-card">
+                    <a href="{{ route('profile.edit') }}" wire:navigate
+                        @click="if (window.apeironPosCartDirty && !confirm('You have an active cart in POS. Leaving this page will cancel the current cart. Continue?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; } if (sidebarMobileOpen) { sidebarMobileOpen = false; } openPopover = false;"
                         role="menuitem"
-                        class="flex w-full items-center gap-2.5 px-2.5 min-h-[44px] md:min-h-[36px] rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 transition-all duration-150 cursor-pointer motion-reduce:transition-none">
-                        <span class="material-symbols-rounded text-[16px]" aria-hidden="true">logout</span> Sign Out
-                    </button>
-                </form>
+                        class="flex items-center gap-2.5 px-2.5 min-h-[44px] md:min-h-[36px] rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all duration-150 motion-reduce:transition-none">
+                        <span class="material-symbols-rounded text-[16px]" aria-hidden="true">person</span> My Profile
+                    </a>
+                    @if ($navRegistry->find('nav.admin.settings.general') !== null && $navResolver->isVisible($navRegistry->find('nav.admin.settings.general'), $authUser))
+                    <a href="{{ route('settings.index') }}" wire:navigate
+                        @click="if (window.apeironPosCartDirty && !confirm('You have an active cart in POS. Leaving this page will cancel the current cart. Continue?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; } if (sidebarMobileOpen) { sidebarMobileOpen = false; } openPopover = false;"
+                        role="menuitem"
+                        class="flex items-center gap-2.5 px-2.5 min-h-[44px] md:min-h-[36px] rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all duration-150 motion-reduce:transition-none">
+                        <span class="material-symbols-rounded text-[16px]" aria-hidden="true">settings</span> Settings
+                    </a>
+                    @endif
+                    <form method="POST" action="{{ route('logout') }}"
+                        @submit="if (window.apeironPosCartDirty && !confirm('You have an active cart in POS. Signing out will cancel the current cart. Continue?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; }">
+                        @csrf
+                        <button type="submit"
+                            role="menuitem"
+                            class="flex w-full items-center gap-2.5 px-2.5 min-h-[44px] md:min-h-[36px] rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 transition-all duration-150 cursor-pointer motion-reduce:transition-none">
+                            <span class="material-symbols-rounded text-[16px]" aria-hidden="true">logout</span> Sign Out
+                        </button>
+                    </form>
+                </div>
             </div>
-        </div>
+        </template>
     </div>
 </aside>

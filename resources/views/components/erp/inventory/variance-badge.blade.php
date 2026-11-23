@@ -21,8 +21,8 @@
 @endphp
 
 <div {{ $attributes->twMerge('inline-flex flex-col items-start gap-1') }}>
-    {{-- Main Variance Pill --}}
-    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-xs font-bold numeric font-sans {{ $badgeClasses }}">
+    {{-- Main Variance Tag --}}
+    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs font-bold numeric font-sans {{ $badgeClasses }}">
         @if ($isSurplus)
             <span class="material-symbols-rounded text-xs" aria-hidden="true">trending_up</span>
             <span>+{{ number_format($diff, 2) }} {{ $unit }}</span>

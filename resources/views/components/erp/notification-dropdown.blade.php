@@ -150,7 +150,7 @@
             <div class="flex items-center gap-2">
                 <span class="text-xs font-semibold text-shell-foreground-active">Notifications</span>
                 <template x-if="unreadTotal > 0">
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-destructive-muted text-destructive border border-destructive-border" x-text="unreadTotal + ' New'"></span>
+                    <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-destructive-muted text-destructive border border-destructive-border" x-text="unreadTotal + ' New'"></span>
                 </template>
             </div>
             <button type="button"

@@ -121,7 +121,7 @@
                                         <span class="material-symbols-rounded text-[24px]">{{ $module['icon'] }}</span>
                                     </div>
                                     @if (!empty($module['badge']))
-                                        <span class="text-[10px] font-semibold tracking-wide uppercase px-2 py-0.5 rounded-full {{ $isModActive ? 'bg-shell-accent text-shell-foreground-active border border-shell-border' : 'bg-shell-accent text-shell-foreground border border-shell-border' }}">
+                                        <span class="text-[10px] font-semibold tracking-wide uppercase px-1.5 py-0.5 rounded {{ $isModActive ? 'bg-shell-accent text-shell-foreground-active border border-shell-border' : 'bg-shell-accent text-shell-foreground border border-shell-border' }}">
                                             {{ $module['badge'] }}
                                         </span>
                                     @endif
@@ -139,7 +139,7 @@
                                     <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-shell-accent/40 text-shell-foreground border border-shell-border/40">
                                         <span class="material-symbols-rounded text-[24px]">{{ $module['icon'] }}</span>
                                     </div>
-                                    <span class="text-[10px] font-semibold tracking-wide uppercase px-2 py-0.5 rounded-full bg-shell-accent text-shell-foreground border border-shell-border">
+                                    <span class="text-[10px] font-semibold tracking-wide uppercase px-1.5 py-0.5 rounded bg-shell-accent text-shell-foreground border border-shell-border">
                                         Soon
                                     </span>
                                 </div>

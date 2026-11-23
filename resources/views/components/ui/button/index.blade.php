@@ -48,7 +48,7 @@
 
     switch ($variant ?? 'primary') {
         case 'primary':
-            $typeClasses = 'border-transparent no-underline bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
+            $typeClasses = 'border-transparent no-underline bg-foreground text-background hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
             break;
         case 'secondary':
             $typeClasses = 'border-border no-underline text-foreground bg-card hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
@@ -67,7 +67,7 @@
             $typeClasses = 'border-transparent no-underline text-foreground hover:underline px-0 h-auto focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded-sm';
             break;
         default:
-            $typeClasses = 'border-transparent no-underline bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
+            $typeClasses = 'border-transparent no-underline bg-foreground text-background hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
             break;
     }
 
@@ -77,7 +77,7 @@
 
 @if ($tag === 'a')
     <a href="{{ $href }}"
-        {{ $attributes->twMerge($sizeClasses.' '.$typeClasses.' relative cursor-pointer border inline-flex items-center justify-center font-semibold whitespace-nowrap select-none transition-all duration-150 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50') }}
+        {{ $attributes->twMerge($sizeClasses.' '.$typeClasses.' relative cursor-pointer border inline-flex items-center justify-center font-semibold whitespace-nowrap select-none transition-all duration-150 focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:border-border disabled:opacity-75') }}
     >
         @if ($icon)
             <span class="material-symbols-rounded text-[20px] leading-none shrink-0" aria-hidden="true">{{ $icon }}</span>
@@ -90,7 +90,7 @@
 @else
     <button
         type="{{ $type ?? 'button' }}"
-        {{ $attributes->twMerge($sizeClasses.' '.$typeClasses.' relative cursor-pointer border inline-flex items-center justify-center font-semibold whitespace-nowrap select-none transition-all duration-150 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50') }}
+        {{ $attributes->twMerge($sizeClasses.' '.$typeClasses.' relative cursor-pointer border inline-flex items-center justify-center font-semibold whitespace-nowrap select-none transition-all duration-150 focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:border-border disabled:opacity-75') }}
     >
         @if ($loading ?? false)
             <span class="absolute flex h-full w-full items-center justify-center">

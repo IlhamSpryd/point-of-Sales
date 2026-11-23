@@ -48,7 +48,7 @@
         </div>
 
         <div class="flex items-center gap-2">
-            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] font-bold {{ $priorityConfig['class'] }}">
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-[10px] font-bold {{ $priorityConfig['class'] }}">
                 <span class="size-1.5 rounded-full {{ $priorityConfig['dot'] }}" aria-hidden="true"></span>
                 <span>{{ $priorityConfig['label'] }}</span>
             </span>

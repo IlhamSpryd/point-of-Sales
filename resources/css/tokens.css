@@ -20,6 +20,9 @@
        docs/ui-ux-audit/color-system/02 §11 (contrast-verified) ── */
 
     /* Surfaces */
+    --chrome-surface: #FFFFFF;
+    --chrome-foreground: #09090B;
+    --chrome-border: #E4E4E7;
     --background: #F7F7F8;
     --foreground: #09090B;
     --card: #FFFFFF;
@@ -155,10 +158,15 @@
 .dark {
     color-scheme: dark;
 
+    /* Chrome Surface (Dark Mode Chrome per Wave 2.2) */
+    --chrome-surface: #0B0B0E;
+    --chrome-foreground: #FAFAFA;
+    --chrome-border: rgba(255, 255, 255, 0.09);
+
     --background: #0E0E11;
     --foreground: #FAFAFA;
 
-    --card: #16161A;
+    --card: #18181D;
     --card-foreground: #FAFAFA;
 
     --popover: #1F1F25;
@@ -176,7 +184,7 @@
     --accent: #27272A;
     --accent-foreground: #FAFAFA;
 
-    --border: rgb(255 255 255 / 0.10);
+    --border: rgba(255, 255, 255, 0.09);
     --border-strong: rgb(255 255 255 / 0.18);
     --border-input: rgb(255 255 255 / 0.30);
     --input: rgb(255 255 255 / 0.30);
@@ -242,11 +250,11 @@
     --chart-seq-3: #D4D4D8;
     --chart-seq-4: #FAFAFA;
 
-    --shell: #0E0E11;
+    --shell: #121216;
     --shell-foreground: #B4B4BE;
     --shell-foreground-active: #FAFAFA;
-    --shell-accent: #16161A;
-    --shell-border: rgb(255 255 255 / 0.10);
+    --shell-accent: #18181D;
+    --shell-border: rgba(255, 255, 255, 0.09);
     --shell-ring: #FAFAFA;
 
     --overlay-scrim: rgb(0 0 0 / 0.60);
@@ -374,6 +382,10 @@
     --color-chart-seq-2: var(--chart-seq-2);
     --color-chart-seq-3: var(--chart-seq-3);
     --color-chart-seq-4: var(--chart-seq-4);
+
+    /* ── Chrome Surface ── */
+    --color-chrome-surface: var(--chrome-surface);
+    --color-chrome-border: var(--chrome-border);
 
     /* ── Shell ── */
     --color-shell: var(--shell);
