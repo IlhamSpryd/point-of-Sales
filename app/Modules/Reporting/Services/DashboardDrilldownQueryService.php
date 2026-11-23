@@ -93,11 +93,11 @@ class DashboardDrilldownQueryService
             ->whereIn('o.order_status', ['paid', 'completed'])
             ->when($storeId !== null, fn ($q) => $q->where('o.store_id', $storeId))
             ->select(
-                DB::raw("COALESCE(oi.product_name_snapshot, pr.name, 'Product') as product_name"),
+                DB::raw("COALESCE(oi.product_name_snapshot, pr.product_name, 'Product') as product_name"),
                 DB::raw('SUM(oi.qty) as total_qty'),
                 DB::raw('COALESCE(SUM(oi.order_subtotal), 0) as total_sales')
             )
-            ->groupBy(DB::raw("COALESCE(oi.product_name_snapshot, pr.name, 'Product')"))
+            ->groupBy(DB::raw("COALESCE(oi.product_name_snapshot, pr.product_name, 'Product')"))
             ->orderByDesc('total_sales')
             ->limit(5)
             ->get()
@@ -191,11 +191,11 @@ class DashboardDrilldownQueryService
             ->whereRaw('HOUR(CONVERT_TZ(o.created_at, "+00:00", "+07:00")) = ?', [$hour])
             ->when($storeId !== null, fn ($q) => $q->where('o.store_id', $storeId))
             ->select(
-                DB::raw("COALESCE(oi.product_name_snapshot, pr.name, 'Product') as product_name"),
+                DB::raw("COALESCE(oi.product_name_snapshot, pr.product_name, 'Product') as product_name"),
                 DB::raw('SUM(oi.qty) as qty'),
                 DB::raw('COALESCE(SUM(oi.order_subtotal), 0) as total')
             )
-            ->groupBy(DB::raw("COALESCE(oi.product_name_snapshot, pr.name, 'Product')"))
+            ->groupBy(DB::raw("COALESCE(oi.product_name_snapshot, pr.product_name, 'Product')"))
             ->orderByDesc('qty')
             ->limit(5)
             ->get();
