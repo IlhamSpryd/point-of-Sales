@@ -5,7 +5,16 @@
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
-# Stage 1: Frontend Asset Compilation (Vite + Tailwind CSS v4)
+# Stage 1: Composer Vendor Dependencies (For PHP & Tailwind Scan)
+# ------------------------------------------------------------------------------
+FROM composer:2 AS composer-builder
+WORKDIR /app
+COPY composer.json composer.lock ./
+COPY packages ./packages
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts --ignore-platform-reqs
+
+# ------------------------------------------------------------------------------
+# Stage 2: Frontend Asset Compilation (Vite + Tailwind CSS v4)
 # ------------------------------------------------------------------------------
 FROM node:20-alpine AS frontend-builder
 WORKDIR /app
@@ -13,9 +22,12 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --no-audit --prefer-offline
 
+COPY --from=composer-builder /app/vendor/laravel/framework/src/Illuminate/Pagination/resources/views ./vendor/laravel/framework/src/Illuminate/Pagination/resources/views
 COPY resources ./resources
 COPY public ./public
 COPY app ./app
+COPY packages ./packages
+COPY config ./config
 COPY vite.config.js ./
 RUN npm run build
 
@@ -70,12 +82,8 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 WORKDIR /var/www/html
 
-# Copy dependency definition files first (Docker layer caching)
-COPY composer.json composer.lock ./
-COPY packages ./packages
-
-# Install vendor dependencies without running scripts
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+# Copy vendor dependencies from composer-builder stage
+COPY --from=composer-builder /app/vendor ./vendor
 
 # Copy full application source
 COPY . .

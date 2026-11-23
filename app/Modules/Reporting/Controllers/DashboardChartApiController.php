@@ -52,8 +52,9 @@ class DashboardChartApiController extends Controller
         $tenantId = (int) $request->user()->tenant_id;
         $storeId = $request->filled('store_id') ? (int) $request->input('store_id') : null;
         $period = (string) $request->input('period', '30d');
+        $metric = (string) $request->input('metric', 'revenue');
 
-        $data = $this->overviewQueryService->getPaymentMethodBreakdown($tenantId, $storeId, $period);
+        $data = $this->overviewQueryService->getPaymentMethodBreakdown($tenantId, $storeId, $period, $metric);
 
         return response()->json($data);
     }

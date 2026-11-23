@@ -4,6 +4,7 @@ import commandPalette from './components/commandPalette';
 import { erpMotion, initErpMotion, registerGsapAlpineDirectives } from './motion/erp-motion';
 import { initSidebarPersistence } from './navigation/sidebar-persistence';
 import dashboardChart from './components/dashboardCharts';
+import dashboardEcharts from './components/dashboardEcharts';
 import './echo';
 
 /**
@@ -44,43 +45,7 @@ function erpChart(...args) {
     };
 }
 
-/**
- * Dynamic proxy component for dashboardEcharts.
- * Only loads ./components/dashboardEcharts (and Apache ECharts) asynchronously when an
- * x-data="dashboardEcharts(...)" component is mounted.
- */
-function dashboardEcharts(...args) {
-    let instance = null;
-    let destroyed = false;
 
-    return {
-        type: args[0]?.type || 'revenue',
-        loading: true,
-
-        init() {
-            import('./components/dashboardEcharts')
-                .then(({ default: factory }) => {
-                    if (destroyed) return;
-                    instance = factory(...args);
-                    Object.assign(this, instance);
-                    if (typeof instance.init === 'function') {
-                        instance.init.call(this);
-                    }
-                })
-                .catch((err) => {
-                    console.error('[dashboardEcharts] Dynamic component import failed:', err);
-                });
-        },
-
-        destroy() {
-            destroyed = true;
-            if (instance && typeof instance.destroy === 'function') {
-                instance.destroy.call(this);
-                instance = null;
-            }
-        },
-    };
-}
 
 if (typeof window !== 'undefined') {
     window.Swal = Swal;

@@ -63,7 +63,7 @@
             </div>
 
             <!-- ECharts Stacked Bar Container -->
-            <div class="relative w-full h-[220px] select-none mt-2">
+            <div class="relative w-full h-[240px] select-none mt-2">
                 <div x-show="loading" class="absolute inset-0 bg-card/60 backdrop-blur-xs flex items-center justify-center z-10" x-cloak>
                     <span class="w-2 h-2 rounded-full bg-accent animate-ping"></span>
                 </div>
@@ -144,7 +144,7 @@
 
             @if($hasMargin && !empty($profCombo['labels'] ?? []))
                 <!-- ECharts Dual Axis Combo Container -->
-                <div class="relative w-full h-[220px] select-none mt-2">
+                <div class="relative w-full h-[240px] select-none mt-2">
                     <div x-show="loading" class="absolute inset-0 bg-card/60 backdrop-blur-xs flex items-center justify-center z-10" x-cloak>
                         <span class="w-2 h-2 rounded-full bg-accent animate-ping"></span>
                     </div>

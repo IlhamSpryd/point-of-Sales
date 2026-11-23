@@ -297,12 +297,6 @@ class DashboardOperationsQueryService
             $avgCogs = (float) $r->avg_cogs;
             $sold = (int) $r->units_sold;
 
-            // Fallback to standard 32.5% COGS benchmark if product has 0 standard cost and 0 snapshot
-            if ($totCogs <= 0 && $rev > 0) {
-                $totCogs = round($rev * 0.325, 2);
-                $avgCogs = $sold > 0 ? round($totCogs / $sold, 2) : 0.0;
-            }
-
             $profit = max(0.0, $rev - $totCogs);
             $margin = $rev > 0 ? round(($profit / $rev) * 100, 1) : 0.0;
             $items[] = [
@@ -350,8 +344,7 @@ class DashboardOperationsQueryService
 
         $price = (float) ($p->product_price ?? 0);
         if ($totCost <= 0) {
-            $stdCost = (float) ($p->standard_cost ?? 0);
-            $totCost = $stdCost > 0 ? $stdCost : round($price * 0.325, 2);
+            $totCost = (float) ($p->standard_cost ?? 0);
         }
         $dist = [];
         $balances = DB::table('product_stock_balances as psb')->join('stores as s', fn ($j) => $j->on('psb.store_id', '=', 's.id')->on('psb.tenant_id', '=', 's.tenant_id'))

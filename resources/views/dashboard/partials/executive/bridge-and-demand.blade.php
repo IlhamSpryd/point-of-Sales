@@ -132,13 +132,13 @@
                             Revenue
                         </button>
                     </div>
-
-                    <!-- Active telemetry hover feedback -->
-                    <div class="text-[11px] font-medium text-foreground bg-secondary px-2 py-0.5 rounded border border-border truncate max-w-[220px]"
-                         x-text="activeCellText"
-                         title="Active Traffic Telemetry">
-                    </div>
                 </div>
+            </div>
+
+            <!-- Dedicated Telemetry Sub-header (never clipped) -->
+            <div class="flex items-center gap-2 py-1 px-2.5 rounded-md bg-secondary border border-border text-[11px] font-medium text-foreground mb-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-positive shrink-0"></span>
+                <span x-text="activeCellText" class="truncate" title="Active Traffic Telemetry"></span>
             </div>
 
             <!-- Heatmap Grid (7 Days x 15 Hours) -->
@@ -166,7 +166,7 @@
                                     $dayNum = ($dIdx + 1) % 7; // Convert to 0=Sun..6=Sat for query
                                 @endphp
                                 <button type="button"
-                                     class="h-5.5 rounded flex items-center justify-center text-[9.5px] font-medium tabular-nums transition-transform hover:scale-110 cursor-pointer {{ $intensity > 0.5 ? 'text-primary-foreground font-bold' : 'text-foreground' }}"
+                                     class="h-5.5 rounded flex items-center justify-center text-[9.5px] font-medium tabular-nums transition-transform hover:scale-110 cursor-pointer {{ $intensity > 0.45 ? 'text-white font-bold' : 'text-foreground' }}"
                                      style="background-color: rgba(16, 163, 127, {{ max(0.08, $intensity) }});"
                                      @click="$dispatch('open-dashboard-drilldown', { drilldownType: 'hourly', day_of_week: {{ $dayNum }}, hour: {{ $h }}, day_name: '{{ $dName }}', time_label: '{{ sprintf('%02d:00', $h) }} WIB' })"
                                      @mouseenter="activeCellText = metric === 'revenue' ? '{{ $dName }} {{ sprintf('%02d:00', $h) }}: {{ $revFormatted }}' : '{{ $dName }} {{ sprintf('%02d:00', $h) }}: {{ number_format($txVal) }} tx'"

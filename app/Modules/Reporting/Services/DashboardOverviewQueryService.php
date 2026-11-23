@@ -214,9 +214,10 @@ class DashboardOverviewQueryService
      *
      * @return array<string, mixed>
      */
-    public function getPaymentMethodBreakdown(int $tenantId, ?int $storeId, string $period = '30d'): array
+    public function getPaymentMethodBreakdown(int $tenantId, ?int $storeId, string $period = '30d', string $metric = 'revenue'): array
     {
         $range = $this->resolveDateRange($period);
+        $valKey = $metric === 'transactions' ? 'tx' : 'amount';
         $startDateStr = $range['start']->toDateString();
         $endDateStr = $range['end']->toDateString();
 
@@ -300,10 +301,10 @@ class DashboardOverviewQueryService
             $dStr = $curr->format('Y-m-d');
             $stackedLabels[] = $curr->format('d M');
             $dayData = $dailyMap[$dStr] ?? [];
-            $stackedQris[] = (float) ($dayData['QRIS']['amount'] ?? 0);
-            $stackedCard[] = (float) ($dayData['Card / EDC']['amount'] ?? 0);
-            $stackedCash[] = (float) ($dayData['Cash']['amount'] ?? 0);
-            $stackedInvoice[] = (float) ($dayData['Bank Transfer / Invoice']['amount'] ?? 0);
+            $stackedQris[] = (float) ($dayData['QRIS'][$valKey] ?? 0);
+            $stackedCard[] = (float) ($dayData['Card / EDC'][$valKey] ?? 0);
+            $stackedCash[] = (float) ($dayData['Cash'][$valKey] ?? 0);
+            $stackedInvoice[] = (float) ($dayData['Bank Transfer / Invoice'][$valKey] ?? 0);
             $curr->addDay();
         }
 

@@ -67,12 +67,19 @@ export default function dashboardEcharts(config = {}) {
             const container = this.$refs.chartContainer;
             if (!container) return;
 
+            // Pastikan kontainer telah ter-render dan memiliki dimensi lebar/tinggi > 0
+            if (container.clientWidth === 0 || container.clientHeight === 0) {
+                await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            }
+            if (isDisposed || !this.$refs.chartContainer) return;
+
             try {
                 const echarts = await loadEcharts();
                 if (isDisposed || !this.$refs.chartContainer) return;
 
                 if (chartInstance) {
                     chartInstance.dispose();
+                    chartInstance = null;
                 }
 
                 chartInstance = echarts.init(this.$refs.chartContainer, null, {
@@ -80,6 +87,13 @@ export default function dashboardEcharts(config = {}) {
                 });
 
                 this.renderCurrentChart();
+
+                // Force double resize to guarantee canvas fills full container width and height
+                requestAnimationFrame(() => {
+                    if (chartInstance && !isDisposed) {
+                        chartInstance.resize();
+                    }
+                });
 
                 // Click to drilldown listener
                 chartInstance.on('click', (params) => {
@@ -370,11 +384,12 @@ export default function dashboardEcharts(config = {}) {
                     },
                 },
                 series: seriesList.map(s => {
-                    const color = s.name === 'QRIS' ? t.qrisColor :
-                                 (s.name.includes('Card') ? t.cardColor :
-                                 (s.name.includes('Cash') ? t.cashColor : t.invoiceColor));
+                    const sName = String(s.name || '');
+                    const color = sName === 'QRIS' ? t.qrisColor :
+                                 (sName.includes('Card') ? t.cardColor :
+                                 (sName.includes('Cash') ? t.cashColor : t.invoiceColor));
                     return {
-                        name: s.name,
+                        name: sName,
                         type: 'bar',
                         stack: 'total',
                         barMaxWidth: 18,

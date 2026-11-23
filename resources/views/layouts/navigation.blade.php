@@ -180,8 +180,8 @@
                             :href="$hubUrl"
                             :active="$isActive"
                             :label="$hub->label"
-                            class="w-11 h-11 min-h-[44px] min-w-[44px] justify-center rounded-[var(--radius-card)] active:scale-95 focus-visible:ring-inset-0 motion-reduce:transition-none {{ $isActive ? 'bg-shell-foreground-active text-white shadow-xs' : '' }}">
-                            <span class="material-symbols-rounded text-[20px] {{ $isActive ? 'text-white' : 'text-shell-foreground group-hover:text-shell-foreground-active' }}" aria-hidden="true">{{ $hub->icon }}</span>
+                            class="w-11 h-11 min-h-[44px] min-w-[44px] justify-center rounded-[var(--radius-card)] active:scale-95 focus-visible:ring-inset-0 motion-reduce:transition-none {{ $isActive ? 'bg-shell-foreground-active text-background shadow-xs' : '' }}">
+                            <span class="material-symbols-rounded text-[20px] {{ $isActive ? 'text-background' : 'text-shell-foreground group-hover:text-shell-foreground-active' }}" aria-hidden="true">{{ $hub->icon }}</span>
                             <span class="sr-only">{{ $hub->label }}</span>
                         </x-erp.nav-link>
                     </li>
@@ -201,7 +201,7 @@
             :class="[wide ? 'w-full p-2 hover:bg-shell-accent' : 'w-9 h-9 justify-center p-0 hover:bg-shell-accent rounded-xl', openPopover ? 'bg-shell-accent' : '']"
             title="{{ auth()->user()->name ?? 'Profile' }}">
             <div
-                class="w-7 h-7 rounded-full bg-shell-foreground-active text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                class="w-7 h-7 rounded-full bg-shell-foreground-active text-background flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
                 {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
             </div>
             <div x-show="wide" x-cloak class="ml-2.5 flex-1 text-left overflow-hidden transition-all duration-150">
