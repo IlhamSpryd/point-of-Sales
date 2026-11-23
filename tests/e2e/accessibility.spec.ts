@@ -187,5 +187,141 @@ test.describe('Apeiron Accessibility & Interaction Suite', () => {
             }
         }
     });
+
+    test('Wave 2.2 Multi-Domain Visual, Theme Switch, Seamless Chrome & Collapsed Popover Crawler at 1366x768', async ({ page }) => {
+        const consoleErrors: string[] = [];
+        page.on('pageerror', error => {
+            consoleErrors.push(error.message);
+        });
+        page.on('console', msg => {
+            if (msg.type() === 'error') {
+                const text = msg.text();
+                // Filter out third-party gateway CSP reports or favicon 404s
+                if (!text.includes('Content Security Policy') && !text.includes('Failed to load resource') && !text.includes('favicon')) {
+                    consoleErrors.push(text);
+                }
+            }
+        });
+
+        // Step 1: Login as admin
+        await page.goto('/login');
+        await page.waitForLoadState('networkidle');
+        await page.fill('#email', 'admin@pos.test');
+        await page.fill('#password', '12345678');
+        await page.click('button[type="submit"]');
+        await page.waitForURL(/.*dashboard.*/i);
+        await page.waitForLoadState('networkidle');
+
+        // Step 2: Ensure Light Mode initially to verify Light Mode Chrome
+        const themeSwitch = page.locator('header button[role="switch"]');
+        await expect(themeSwitch).toBeVisible();
+
+        const isDarkInitially = await page.evaluate(() => document.documentElement.classList.contains('dark'));
+        if (isDarkInitially) {
+            await themeSwitch.click();
+            await page.waitForTimeout(250);
+        }
+
+        // Assertion 1: Header & Sidebar Background computed color in Light Mode is rgb(255, 255, 255)
+        const headerBgLight = await page.evaluate(() => {
+            const header = document.querySelector('header');
+            return header ? window.getComputedStyle(header).backgroundColor : '';
+        });
+        expect(headerBgLight).toBe('rgb(255, 255, 255)');
+
+        const sidebarBgLight = await page.evaluate(() => {
+            const sidebar = document.querySelector('#main-sidebar');
+            return sidebar ? window.getComputedStyle(sidebar).backgroundColor : '';
+        });
+        expect(sidebarBgLight).toBe('rgb(255, 255, 255)');
+
+        // Assertion 2: Main content wrapper has borderTopLeftRadius >= 16px on desktop (curved inner seam)
+        const mainRadius = await page.evaluate(() => {
+            const main = document.querySelector('#main-content');
+            if (!main) return 0;
+            const style = window.getComputedStyle(main);
+            return parseFloat(style.borderTopLeftRadius) || 0;
+        });
+        expect(mainRadius).toBeGreaterThanOrEqual(16);
+
+        // Assertion 3: Interactive Theme Switch Button functionality
+        const ariaCheckedLight = await themeSwitch.getAttribute('aria-checked');
+        expect(ariaCheckedLight).toBe('false');
+
+        // Click to toggle to Dark Mode
+        await themeSwitch.click();
+        await page.waitForTimeout(250);
+
+        const isDarkNow = await page.evaluate(() => document.documentElement.classList.contains('dark'));
+        expect(isDarkNow).toBe(true);
+
+        const ariaCheckedDark = await themeSwitch.getAttribute('aria-checked');
+        expect(ariaCheckedDark).toBe('true');
+
+        const savedThemeInStorage = await page.evaluate(() => localStorage.getItem('apeiron-theme'));
+        expect(savedThemeInStorage).toBe('dark');
+
+        // Assertion 4: Collapsed Sidebar Avatar Popover within viewport bounds
+        const collapseChevron = page.locator('#sidebar-collapse-chevron, [aria-label*="sidebar" i], [title*="sidebar" i]').first();
+        if (await collapseChevron.isVisible()) {
+            await collapseChevron.click();
+            await page.waitForTimeout(300);
+        }
+
+        const avatarBtn = page.locator('#main-sidebar button:has(img), #main-sidebar button:has(.rounded-full)').last();
+        if (await avatarBtn.isVisible()) {
+            await avatarBtn.click();
+            await page.waitForTimeout(250);
+
+            // Check popover menu is visible and within viewport
+            const popover = page.locator('#sidebar-user-popover, div[role="menu"]').first();
+            if (await popover.isVisible()) {
+                const box = await popover.boundingBox();
+                if (box) {
+                    const viewport = page.viewportSize();
+                    expect(box.x).toBeGreaterThanOrEqual(0);
+                    expect(box.y).toBeGreaterThanOrEqual(0);
+                    if (viewport) {
+                        expect(box.x + box.width).toBeLessThanOrEqual(viewport.width + 10);
+                        expect(box.y + box.height).toBeLessThanOrEqual(viewport.height + 10);
+                    }
+                }
+            }
+        }
+
+        // Expand sidebar back
+        if (await collapseChevron.isVisible()) {
+            await collapseChevron.click();
+            await page.waitForTimeout(200);
+        }
+
+        // Assertion 5: Crawl representative routes across 9 Domains without fatal console errors
+        const routesToCrawl = [
+            '/dashboard',
+            '/transaction',
+            '/products',
+            '/customers',
+            '/finance',
+            '/analytics',
+            '/reports/sales',
+            '/settings',
+        ];
+
+        for (const route of routesToCrawl) {
+            await page.goto(route);
+            await page.waitForLoadState('networkidle');
+            await page.waitForTimeout(200);
+
+            // Verify .dark is preserved across navigation
+            const isDarkOnRoute = await page.evaluate(() => document.documentElement.classList.contains('dark'));
+            expect(isDarkOnRoute).toBe(true);
+
+            // Verify 0 horizontal overflow
+            const hasHScroll = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+            expect(hasHScroll).toBe(false);
+        }
+
+        expect(consoleErrors).toEqual([]);
+    });
 });
 

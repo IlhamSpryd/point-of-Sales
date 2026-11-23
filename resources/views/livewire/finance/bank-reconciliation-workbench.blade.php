@@ -59,7 +59,7 @@
                     <div class="flex items-center gap-2">
                         <span class="font-sans font-bold text-foreground text-sm">{{ $session->session_number }}</span>
                         <span class="inline-flex items-center gap-1.5 text-xs font-medium text-foreground">
-                            <span class="w-1.5 h-1.5 rounded-full {{ $session->status->value === 'COMPLETED' ? 'bg-emerald-500' : 'bg-amber-500' }}"></span>
+                            <span class="w-1.5 h-1.5 rounded-full {{ $session->status->value === 'COMPLETED' ? 'bg-positive' : 'bg-warning' }}"></span>
                             {{ $session->status->value }}
                         </span>
                     </div>

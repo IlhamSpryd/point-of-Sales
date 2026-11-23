@@ -207,12 +207,12 @@
                     <div class="p-3 rounded-xl border border-border flex items-center justify-between text-xs bg-muted/30">
                         <span class="font-medium text-foreground">{{ ucwords(str_replace('_', ' ', (string) $gate)) }}</span>
                         @if (is_array($result) ? ($result['passed'] ?? false) : (bool) $result)
-                            <span class="text-xs font-medium text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> PASSED
+                            <span class="text-xs font-medium text-positive inline-flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-positive"></span> PASSED
                             </span>
                         @else
-                            <span class="text-xs font-medium text-amber-600 dark:text-amber-400 inline-flex items-center gap-1">
-                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> PENDING
+                            <span class="text-xs font-medium text-warning inline-flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-warning"></span> PENDING
                             </span>
                         @endif
                     </div>

@@ -28,7 +28,7 @@
             el.classList.toggle('ring-2', idx === this.cartCursor);
             el.classList.toggle('ring-foreground', idx === this.cartCursor);
         });
-        const row = document.querySelector(`[data-cart-index="${this.cartCursor}"]`);
+        const row = document.querySelector(`[data-cart-index='${this.cartCursor}']`);
         if (row) row.scrollIntoView({ block: 'nearest' });
     },
     bumpCartCursor(dir) {
