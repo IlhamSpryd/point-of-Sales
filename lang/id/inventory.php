@@ -36,4 +36,3 @@ return [
         'adjustment_posted' => 'Penyesuaian stok berhasil diposting.',
     ],
 ];
-

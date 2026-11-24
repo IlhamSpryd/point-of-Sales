@@ -41,4 +41,3 @@ return [
         'category' => 'Filter berdasarkan Kategori',
     ],
 ];
-

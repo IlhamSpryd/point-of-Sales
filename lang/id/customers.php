@@ -22,4 +22,3 @@ return [
         'description' => 'Tambahkan pelanggan atau daftarkan langsung saat transaksi kasir POS.',
     ],
 ];
-

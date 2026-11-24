@@ -45,4 +45,3 @@ return [
         'disburse' => 'Bayarkan Gaji',
     ],
 ];
-

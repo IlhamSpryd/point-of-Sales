@@ -26,4 +26,3 @@ return [
         'quick_actions' => 'Operasional Cepat',
     ],
 ];
-

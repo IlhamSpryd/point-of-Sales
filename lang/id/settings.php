@@ -38,4 +38,3 @@ return [
         'inclusive' => 'Harga Termasuk Pajak',
     ],
 ];
-

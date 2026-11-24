@@ -44,4 +44,3 @@ return [
         'bulk_updated' => 'Produk terpilih berhasil diperbarui.',
     ],
 ];
-

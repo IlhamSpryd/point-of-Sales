@@ -38,4 +38,3 @@ return [
         'close_period' => 'Tutup Periode Akuntansi',
     ],
 ];
-

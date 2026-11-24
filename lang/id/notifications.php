@@ -12,4 +12,3 @@ return [
     'order_received' => 'Pesanan baru :order diterima.',
     'shift_closed' => 'Shift kasir telah berhasil direkonsiliasi dan ditutup.',
 ];
-

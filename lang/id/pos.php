@@ -69,4 +69,3 @@ return [
         'thank_you' => 'Terima kasih atas kunjungan Anda!',
     ],
 ];
-

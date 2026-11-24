@@ -22,4 +22,3 @@ return [
         'description' => 'Tambahkan pemasok pertama untuk mulai membuat pesanan pembelian.',
     ],
 ];
-

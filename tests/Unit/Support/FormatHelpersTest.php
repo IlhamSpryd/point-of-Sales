@@ -35,4 +35,3 @@ class FormatHelpersTest extends TestCase
         $this->assertStringContainsString('2026', Date::display($dt));
     }
 }
-

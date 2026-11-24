@@ -36,4 +36,3 @@ return [
         'debit_note' => 'Nota Debit',
     ],
 ];
-

@@ -44,4 +44,3 @@ return [
         'audit_logs' => 'Log Audit',
     ],
 ];
-

@@ -35,4 +35,3 @@ return [
         'record_payment' => 'Catat Pembayaran Pelanggan',
     ],
 ];
-

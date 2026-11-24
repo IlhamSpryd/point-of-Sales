@@ -15,4 +15,3 @@ return [
         'delete' => 'Delete Table',
     ],
 ];
-
