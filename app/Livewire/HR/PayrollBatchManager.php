@@ -164,8 +164,7 @@ class PayrollBatchManager extends Component
 
             $storeId = app(TenantContext::class)->getStoreId() ?? $currentUser?->store_id;
             if (! $storeId) {
-                $firstStore = Store::withoutGlobalScopes()->where('tenant_id', $tenantId)->first();
-                $storeId = $firstStore instanceof Store ? $firstStore->id : 0;
+                $storeId = (int) (Store::where('tenant_id', $tenantId)->value('id') ?? 0);
             }
             if (! $storeId) {
                 throw new \DomainException('Cannot finalize payroll batch without a valid store context.');
