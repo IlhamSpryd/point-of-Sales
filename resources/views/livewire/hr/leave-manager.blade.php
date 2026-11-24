@@ -4,7 +4,7 @@
 
     <!-- Header & Action Halaman -->
     <x-erp.page-header
-        title="Employee Leave & Absence Management"
+        title="Leave Management"
         description="Manage annual leave, sick leave, time-off requests, and track employee leave balances.">
         <x-slot:breadcrumbs>
             <x-ui.breadcrumbs.item href="{{ route('hr.employees.index') }}">Dashboard</x-ui.breadcrumbs.item>

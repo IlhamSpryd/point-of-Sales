@@ -295,7 +295,7 @@ class NavigationGovernanceTest extends TestCase
         $this->assertNotNull($taxClassesNode);
         $this->assertSame('nav.catalog.master', $taxClassesNode->parent);
 
-        $settingsHub = $this->registry->find('nav.admin.settings');
+        $settingsHub = $this->registry->find('nav.settings');
         $this->assertNotNull($settingsHub);
         $this->assertNotContains('tax-classes.*', $settingsHub->active);
 

@@ -1,13 +1,12 @@
 <div class="space-y-6" data-gsap="page-enter">
-    <x-erp.module-sub-nav module="pos-ops" />
+    <x-erp.module-sub-nav module="organization" />
 
     <!-- Header -->
     <x-erp.page-header
         title="Channel Integration (Channel Mapping)"
         description="Map external delivery platform SKUs (GrabFood, GoFood) to internal product inventory.">
         <x-slot:breadcrumbs>
-            <x-ui.breadcrumbs.item href="{{ route('stores.index') }}">Dashboard</x-ui.breadcrumbs.item>
-            <x-ui.breadcrumbs.item href="{{ route('products.index') }}">Catalog</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item href="{{ route('settings.index') }}">Settings</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item active>Channel Integrations</x-ui.breadcrumbs.item>
         </x-slot:breadcrumbs>
     </x-erp.page-header>

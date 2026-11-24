@@ -103,24 +103,19 @@ class SidebarIntegrityTest extends TestCase
         $registry = app(\App\Platform\Navigation\NavigationRegistry::class);
 
         $expectedDomains = [
-            'overview',
-            'frontline',
-            'catalog',
-            'supply_chain',
-            'sales_customer',
-            'finance',
-            'workforce',
-            'analytics',
-            'administration',
+            'core',
+            'operations',
+            'finance_insights',
+            'settings',
         ];
 
         $this->assertEquals(
             $expectedDomains,
             array_map(static fn ($d): string => (string) $d->domain, $registry->domains()),
-            'Navigation must expose exactly nine canonical business domains (ADR-NAV-014).'
+            'Navigation must expose exactly four canonical business domains (ADR-NAV-014).'
         );
 
-        $this->assertCount(19, $registry->hubs(), 'Navigation must expose exactly nineteen L1 hub rows.');
+        $this->assertCount(10, $registry->hubs(), 'Navigation must expose exactly ten L1 hub rows.');
 
         foreach ([...$registry->hubs(), ...$registry->pages()] as $node) {
             $this->assertNotSame('', $node->id);
@@ -142,14 +137,14 @@ class SidebarIntegrityTest extends TestCase
         app(\App\Modules\Organization\Services\RoleService::class)->provisionDefaultRoles($this->tenant->id);
 
         $expectedHubs = [
-            'Owner' => 19,
-            'Manager' => 18,
+            'Owner' => 10,
+            'Manager' => 10,
             'Kasir' => 3,
-            'Waiter' => 3,
-            'Inventory' => 5,
-            'Finance' => 4,
-            'Sales' => 4,
-            'Supervisor' => 4,
+            'Waiter' => 2,
+            'Inventory' => 2,
+            'Finance' => 3,
+            'Sales' => 2,
+            'Supervisor' => 2,
             'Cook' => 1,
         ];
 
@@ -172,10 +167,20 @@ class SidebarIntegrityTest extends TestCase
             $hubs = array_sum(array_map(static fn (array $s): int => count($s['hubs']), $sections));
 
             if ($roleName === 'Owner') {
-                $this->assertCount(19, $registry->hubs());
+                $this->assertCount(10, $registry->hubs());
             }
 
             $this->assertLessThanOrEqual($expected, $hubs, "{$roleName} sees more hubs than permitted.");
+        }
+
+        // Cook must resolve Frontline Desk landing directly to kds.index (zero 403)
+        $cook = User::where('tenant_id', $this->tenant->id)->whereHas('role', fn ($q) => $q->where('name', 'Cook'))->first();
+        if ($cook !== null) {
+            $cookSections = $resolver->sidebar($cook);
+            $this->assertCount(1, $cookSections);
+            $frontlineHub = $cookSections[0]['hubs'][0];
+            $this->assertSame('Frontline Desk', $frontlineHub->label);
+            $this->assertSame(route('kds.index'), $resolver->landingUrlForHub($frontlineHub, $cook));
         }
 
         // Kasir must never reach back-office hubs.
@@ -188,9 +193,9 @@ class SidebarIntegrityTest extends TestCase
                 }
             }
             $this->assertContains('POS Terminal', $labels);
-            $this->assertNotContains('Finance & Accounting', $labels);
-            $this->assertNotContains('Users & Access', $labels);
-            $this->assertNotContains('Workforce & Payroll', $labels);
+            $this->assertNotContains('Finance & GL', $labels);
+            $this->assertNotContains('Settings', $labels);
+            $this->assertNotContains('Workforce', $labels);
         }
     }
 
@@ -223,13 +228,13 @@ class SidebarIntegrityTest extends TestCase
 
         $response = $this->actingAs($user)->get(route('inventory.ingredients'));
         $response->assertOk();
-        $response->assertSee('Inventory Navigation');
-        $response->assertSee('Raw Materials &amp; Stock', false);
+        $response->assertSee('Inventory &amp; Supply Navigation', false);
+        $response->assertSee('Stock');
         $response->assertSee('Direct Receipts');
-        $response->assertSee('Stock Adjustments');
-        $response->assertSee('Stock Count (Opname)');
-        $response->assertSee('Inter-Branch Transfers');
-        $response->assertSee('Direct Supplier Returns');
+        $response->assertSee('Adjustments');
+        $response->assertSee('Opname');
+        $response->assertSee('Transfers');
+        $response->assertSee('Supplier Returns');
         $response->assertSee('Stock Ledger');
     }
 
@@ -273,7 +278,7 @@ class SidebarIntegrityTest extends TestCase
         $response->assertSee('aria-label="Close navigation menu"', false);
 
         // WCAG Active visual accent indicator token & active page
-        $response->assertSee('before:bg-shell-foreground-active', false);
+        $response->assertSee('before:bg-foreground', false);
         $response->assertSee('aria-current="page"', false);
 
         // Navigation items

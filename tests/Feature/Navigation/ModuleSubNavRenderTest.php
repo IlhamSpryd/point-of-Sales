@@ -65,15 +65,15 @@ class ModuleSubNavRenderTest extends TestCase
         $response = $this->actingAs($this->owner)->get(route('inventory.ingredients'));
 
         $response->assertOk();
-        $response->assertSee('Inventory Navigation', false);
+        $response->assertSee('Inventory &amp; Supply Navigation', false);
 
         foreach ([
-            'Raw Materials &amp; Stock',
+            'Stock',
             'Direct Receipts',
-            'Stock Adjustments',
-            'Stock Count (Opname)',
-            'Inter-Branch Transfers',
-            'Direct Supplier Returns',
+            'Adjustments',
+            'Opname',
+            'Transfers',
+            'Supplier Returns',
             'Stock Ledger',
         ] as $label) {
             $response->assertSee($label, false);
@@ -85,7 +85,7 @@ class ModuleSubNavRenderTest extends TestCase
         $response = $this->actingAs($this->owner)->get(route('finance.index'));
 
         $response->assertOk();
-        $response->assertSee('Finance &amp; Accounting Navigation', false);
+        $response->assertSee('Finance &amp; GL Navigation', false);
         $response->assertSee('Fixed Assets', false);
     }
 
@@ -94,18 +94,18 @@ class ModuleSubNavRenderTest extends TestCase
         $response = $this->actingAs($this->owner)->get(route('purchasing.orders.index'));
 
         $response->assertOk();
-        $response->assertSee('Procurement Navigation', false);
-        $response->assertSee('PO Goods Receipt (GRN)', false);
-        $response->assertSee('PO Purchase Returns', false);
-        $response->assertSee('Supplier Invoices (3-Way)', false);
+        $response->assertSee('Inventory &amp; Supply Navigation', false);
+        $response->assertSee('Goods Receipts (GRN)', false);
+        $response->assertSee('PO Returns', false);
+        $response->assertSee('Supplier Invoices', false);
     }
 
     public function test_single_page_hub_suppresses_the_pill_bar(): void
     {
-        $response = $this->actingAs($this->owner)->get(route('manufacturing.orders.index'));
+        $response = $this->actingAs($this->owner)->get(route('dashboard'));
 
         $response->assertOk();
-        $response->assertDontSee('Manufacturing Navigation', false);
+        $response->assertDontSee('Dashboard Navigation', false);
     }
 
     public function test_legacy_module_prop_mapping_still_resolves(): void
@@ -114,8 +114,8 @@ class ModuleSubNavRenderTest extends TestCase
 
         $html = Blade::render('<x-erp.module-sub-nav module="inventory" />');
 
-        $this->assertStringContainsString('Stock Count (Opname)', $html);
-        $this->assertStringContainsString('Inventory Navigation', $html);
+        $this->assertStringContainsString('Opname', $html);
+        $this->assertStringContainsString('Inventory &amp; Supply Navigation', $html);
     }
 
     public function test_explicit_hub_prop_overrides_route_detection(): void
@@ -136,7 +136,7 @@ class ModuleSubNavRenderTest extends TestCase
         $html = (string) $response->getContent();
 
         $this->assertMatchesRegularExpression(
-            '/aria-current="page"[^>]*>\s*(<span[^>]*>)?\s*Stock Count \(Opname\)/s',
+            '/aria-current="page"[^>]*>\s*(<span[^>]*>)?\s*Opname/s',
             $html,
             'The active pill must carry aria-current="page".',
         );

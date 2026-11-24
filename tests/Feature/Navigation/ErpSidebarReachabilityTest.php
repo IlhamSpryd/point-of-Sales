@@ -106,12 +106,11 @@ class ErpSidebarReachabilityTest extends TestCase
         $response->assertOk();
 
         // Check key ERP module entry points in sidebar
-        $response->assertSee('Procurement');
-        $response->assertSee('Customers &amp; Loyalty', false);
-        $response->assertSee('Product Catalog');
-        $response->assertSee('Inventory');
+        $response->assertSee('Inventory &amp; Supply', false);
+        $response->assertSee('Sales &amp; Customers', false);
+        $response->assertSee('Catalog');
         $response->assertSee('POS Terminal');
-        $response->assertSee('System Settings');
+        $response->assertSee('Settings');
     }
 
     public function test_purchasing_hub_is_reachable_and_renders_sub_nav(): void
@@ -121,9 +120,9 @@ class ErpSidebarReachabilityTest extends TestCase
         $response->assertOk();
         $response->assertSee('Suppliers');
         $response->assertSee('Purchase Orders');
-        $response->assertSee('PO Goods Receipt (GRN)');
-        $response->assertSee('Supplier Invoices (3-Way)');
-        $response->assertSee('PO Purchase Returns');
+        $response->assertSee('Goods Receipts (GRN)');
+        $response->assertSee('Supplier Invoices');
+        $response->assertSee('PO Returns');
     }
 
     public function test_customer_crm_hub_is_reachable_and_renders_sub_nav(): void
@@ -131,10 +130,10 @@ class ErpSidebarReachabilityTest extends TestCase
         $response = $this->actingAs($this->ownerUser)->get(route('customers.index'));
 
         $response->assertOk();
-        $response->assertSee('Customer Directory');
+        $response->assertSee('Customers');
         $response->assertSee('Customer Groups');
-        $response->assertSee('B2B Credit Control');
-        $response->assertSee('Loyalty &amp; Gift Cards', false);
+        $response->assertSee('Store Credit');
+        $response->assertSee('Loyalty');
     }
 
     public function test_sales_b2b_hub_is_reachable_and_renders_sub_nav(): void
@@ -142,10 +141,10 @@ class ErpSidebarReachabilityTest extends TestCase
         $response = $this->actingAs($this->ownerUser)->get(route('sales.orders.index'));
 
         $response->assertOk();
-        $response->assertSee('Sales Orders (SO)');
+        $response->assertSee('Sales Orders');
         $response->assertSee('Quotations');
-        $response->assertSee('AR Invoices');
-        $response->assertSee('Returns &amp; Credit Notes', false);
+        $response->assertSee('Invoices');
+        $response->assertSee('Sales Returns');
     }
 
     public function test_finance_hub_is_reachable_by_owner(): void
@@ -153,8 +152,8 @@ class ErpSidebarReachabilityTest extends TestCase
         $response = $this->actingAs($this->ownerUser)->get(route('finance.index'));
 
         $response->assertOk();
-        $response->assertSee('Finance & Accounting');
-        $response->assertSee('General Ledger');
+        $response->assertSee('Finance &amp; GL', false);
+        $response->assertSee('Chart of Accounts');
     }
 
     public function test_kds_is_reachable_by_kitchen_and_frontline_staff(): void
@@ -198,16 +197,16 @@ class ErpSidebarReachabilityTest extends TestCase
 
     public function test_sales_and_finance_and_kitchen_roles_render_active_sidebar_items(): void
     {
-        // Sales role sees Sales Orders (B2B)
+        // Sales role sees Sales & Customers
         $salesResp = $this->actingAs($this->salesUser)->get(route('sales.orders.index'));
         $salesResp->assertOk();
-        $salesResp->assertSee('Sales Orders (B2B)');
+        $salesResp->assertSee('Sales &amp; Customers', false);
 
-        // Finance role sees Sales Orders (B2B) and Finance & Accounting
+        // Finance role sees Sales & Customers and Finance & GL
         $finResp = $this->actingAs($this->financeUser)->get(route('finance.index'));
         $finResp->assertOk();
-        $finResp->assertSee('Finance & Accounting');
-        $finResp->assertSee('Sales Orders (B2B)');
+        $finResp->assertSee('Finance &amp; GL', false);
+        $finResp->assertSee('Sales &amp; Customers', false);
 
         // Cook role sees KDS
         $cookResp = $this->actingAs($this->cookUser)->get(route('kds.index'));
@@ -263,17 +262,17 @@ class ErpSidebarReachabilityTest extends TestCase
     {
         $promoResp = $this->actingAs($this->ownerUser)->get(route('pricing.promotions.index'));
         $promoResp->assertOk();
-        $promoResp->assertSee('Pricing & Promotions Navigation');
-        $promoResp->assertSee('Promotion Campaigns');
-        $promoResp->assertSee('Vouchers &amp; Coupons', false);
+        $promoResp->assertSee('Catalog Navigation');
+        $promoResp->assertSee('Promotions');
+        $promoResp->assertSee('Vouchers');
 
         $voucherResp = $this->actingAs($this->ownerUser)->get(route('pricing.vouchers.index'));
         $voucherResp->assertOk();
-        $voucherResp->assertSee('Pricing & Promotions Navigation');
+        $voucherResp->assertSee('Catalog Navigation');
 
         $discountResp = $this->actingAs($this->ownerUser)->get(route('discounts.index'));
         $discountResp->assertOk();
-        $discountResp->assertSee('Pricing & Promotions Navigation');
+        $discountResp->assertSee('Catalog Navigation');
     }
 
     public function test_owner_role_immutability_and_permission_normalization(): void

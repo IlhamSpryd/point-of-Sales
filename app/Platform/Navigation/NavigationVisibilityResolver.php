@@ -30,6 +30,11 @@ use Illuminate\Support\Facades\Route;
  */
 final class NavigationVisibilityResolver
 {
+    /** @var list<string> */
+    private const CANONICAL_ROLES = [
+        'Owner', 'Admin', 'Manager', 'Finance', 'Sales', 'Kasir', 'Waiter', 'Barista', 'Inventory', 'Supervisor', 'Cook',
+    ];
+
     /** @var array<string, list<array{domain: NavigationNode, hubs: list<NavigationNode>}>> */
     private array $sidebarCache = [];
 
@@ -161,8 +166,10 @@ final class NavigationVisibilityResolver
             return true;
         }
 
-        // Custom-role / fine-grained path: an explicit ability grant wins.
-        if ($this->hasAnyAbility($node, $user)) {
+        $isCanonical = in_array($roleName, self::CANONICAL_ROLES, true);
+
+        // Custom-role / fine-grained path: an explicit ability grant wins for non-canonical roles.
+        if (! $isCanonical && $this->hasAnyAbility($node, $user)) {
             return true;
         }
 

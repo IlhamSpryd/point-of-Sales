@@ -1,13 +1,12 @@
 <div class="space-y-6" data-gsap="page-enter">
-    <x-erp.module-sub-nav module="pos-ops" />
+    <x-erp.module-sub-nav module="organization" />
 
     <!-- Header -->
     <x-erp.page-header
         title="Channel Integration (OFD Channel Config)"
         description="Kelola pengaturan kanal Online Food Delivery (GrabFood & GoFood) per cabang, komisi platform, harga khusus, dan verifikasi webhook HMAC.">
         <x-slot:breadcrumbs>
-            <x-ui.breadcrumbs.item href="{{ route('stores.index') }}">Dashboard</x-ui.breadcrumbs.item>
-            <x-ui.breadcrumbs.item href="{{ route('products.index') }}">Catalog</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item href="{{ route('settings.index') }}">Settings</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item href="{{ route('integrations.channel-mapping') }}">Channel Integrations</x-ui.breadcrumbs.item>
             <x-ui.breadcrumbs.item active>OFD Config</x-ui.breadcrumbs.item>
         </x-slot:breadcrumbs>

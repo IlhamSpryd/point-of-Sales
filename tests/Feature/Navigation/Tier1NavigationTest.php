@@ -115,7 +115,7 @@ class Tier1NavigationTest extends TestCase
 
         // Breadcrumbs container uses semantic WCAG aria-label="Breadcrumb" (ADR-NAV-004)
         $response->assertSee('aria-label="Breadcrumb"', false);
-        $response->assertSee('Supply Chain', false);
-        $response->assertSee('Raw Materials &amp; Stock', false);
+        $response->assertSee('Operations', false);
+        $response->assertSee('Inventory &amp; Supply', false);
     }
 }

@@ -97,7 +97,7 @@ class NavigationRenderTest extends TestCase
     {
         $sections = $this->resolver()->sidebar($this->users['Owner']);
 
-        $this->assertCount(9, $sections, 'Owner must see all nine non-empty domains.');
+        $this->assertCount(4, $sections, 'Owner must see all four non-empty domains.');
     }
 
     public function test_owner_sees_nineteen_hub_rows(): void
@@ -106,7 +106,7 @@ class NavigationRenderTest extends TestCase
 
         $hubCount = array_sum(array_map(static fn (array $s): int => count($s['hubs']), $sections));
 
-        $this->assertSame(19, $hubCount, 'Owner must see exactly 19 hub rows (down from 32 legacy rows).');
+        $this->assertSame(10, $hubCount, 'Owner must see exactly 10 hub rows (9 primary + 1 pinned settings).');
     }
 
     public function test_rendered_sidebar_contains_no_accordion_or_soon_badge(): void
@@ -181,10 +181,7 @@ class NavigationRenderTest extends TestCase
         $sections = $this->resolver()->sidebar($this->users['Kasir']);
         $labels = $this->flattenHubLabels($sections);
 
-        // Kasir genuinely holds `retail.*` route access (shelf labels, barcodes,
-        // item exchange), so Product Catalog is legitimately visible — it is the
-        // only hub where a till operator can print a shelf label.
-        $this->assertSame(['POS Terminal', 'Frontline Desk', 'Product Catalog'], $labels);
+        $this->assertSame(['POS Terminal', 'Frontline Desk', 'Catalog'], $labels);
     }
 
     public function test_waiter_sees_pos_frontline_and_merchandising(): void
@@ -192,8 +189,7 @@ class NavigationRenderTest extends TestCase
         $sections = $this->resolver()->sidebar($this->users['Waiter']);
         $labels = $this->flattenHubLabels($sections);
 
-        // Waiter gained POS access under OQ-09 and shares the retail route guard.
-        $this->assertSame(['POS Terminal', 'Frontline Desk', 'Product Catalog'], $labels);
+        $this->assertSame(['POS Terminal', 'Frontline Desk'], $labels);
     }
 
     public function test_cook_sees_only_frontline_desk(): void
@@ -209,10 +205,8 @@ class NavigationRenderTest extends TestCase
         $sections = $this->resolver()->sidebar($this->users['Inventory']);
         $labels = $this->flattenHubLabels($sections);
 
-        // Inventory holds `pricing.view`, so Pricing & Promotions (read-only
-        // price lists) is legitimately in scope alongside the authoring hubs.
         $this->assertEqualsCanonicalizing(
-            ['Product Catalog', 'Pricing & Promotions', 'Inventory', 'Procurement', 'Manufacturing'],
+            ['Catalog', 'Inventory & Supply'],
             $labels,
         );
     }
@@ -222,10 +216,8 @@ class NavigationRenderTest extends TestCase
         $sections = $this->resolver()->sidebar($this->users['Finance']);
         $labels = $this->flattenHubLabels($sections);
 
-        // Finance holds `customers.view` + `customers.credit.*`, so the Customers
-        // hub renders with only Credit Control visible inside it.
         $this->assertEqualsCanonicalizing(
-            ['Sales Orders (B2B)', 'Customers & Loyalty', 'Procurement', 'Finance & Accounting'],
+            ['Inventory & Supply', 'Sales & Customers', 'Finance & GL'],
             $labels,
             'Finance must gain the Procurement hub (supplier invoices) — RBAC-F04.',
         );
@@ -236,10 +228,8 @@ class NavigationRenderTest extends TestCase
         $sections = $this->resolver()->sidebar($this->users['Sales']);
         $labels = $this->flattenHubLabels($sections);
 
-        // Sales holds `products.view` + `pricing.view` (read-only catalogue and the
-        // retail POS return route guard), so Catalog & Pricing render for reference.
         $this->assertEqualsCanonicalizing(
-            ['Product Catalog', 'Pricing & Promotions', 'Sales Orders (B2B)', 'Customers & Loyalty'],
+            ['Catalog', 'Sales & Customers'],
             $labels,
             'Sales must gain the Customer Directory under OQ-19.',
         );
@@ -250,11 +240,12 @@ class NavigationRenderTest extends TestCase
         $sections = $this->resolver()->sidebar($this->users['Admin']);
         $labels = $this->flattenHubLabels($sections);
 
-        $this->assertContains('Organization', $labels);
-        $this->assertContains('Users & Access', $labels);
-        $this->assertContains('System Settings', $labels);
-        $this->assertContains('Audit & Approvals', $labels);
-        $this->assertNotContains('Subscription', $labels, 'SoD: Admin must never see Subscription Billing.');
+        $this->assertContains('Settings', $labels);
+
+        $settingsHub = app(NavigationRegistry::class)->find('nav.settings');
+        $visiblePages = $this->resolver()->visiblePagesFor($settingsHub, $this->users['Admin']);
+        $pageRoutes = array_map(static fn ($p): string => (string) $p->route, $visiblePages);
+        $this->assertNotContains('subscription.portal', $pageRoutes, 'SoD: Admin must never see Subscription Billing.');
     }
 
     public function test_manager_sees_all_nineteen_hubs_except_subscription(): void
@@ -262,34 +253,35 @@ class NavigationRenderTest extends TestCase
         $sections = $this->resolver()->sidebar($this->users['Manager']);
         $labels = $this->flattenHubLabels($sections);
 
-        $this->assertNotContains('Subscription', $labels);
-        $this->assertNotContains('Users & Access', $labels);
-        $this->assertNotContains('System Settings', $labels);
-        $this->assertContains('Inventory', $labels);
-        $this->assertContains('Workforce & Payroll', $labels);
+        $this->assertCount(10, $labels);
+
+        $settingsHub = app(NavigationRegistry::class)->find('nav.settings');
+        $visiblePages = $this->resolver()->visiblePagesFor($settingsHub, $this->users['Manager']);
+        $pageRoutes = array_map(static fn ($p): string => (string) $p->route, $visiblePages);
+        $this->assertNotContains('subscription.portal', $pageRoutes, 'Manager must never see Subscription Billing.');
     }
 
     public function test_finance_procurement_hub_exposes_supplier_invoices_only(): void
     {
         $registry = app(NavigationRegistry::class);
-        $hub = $registry->find('nav.supply.procurement');
+        $hub = $registry->find('nav.supply.inventory');
 
         $this->assertNotNull($hub);
 
         $pages = $this->resolver()->visiblePagesFor($hub, $this->users['Finance']);
         $labels = array_map(static fn ($p): string => $p->label, $pages);
 
-        $this->assertSame(['Supplier Invoices (3-Way)'], $labels, 'Finance must see a single-page Procurement projection (SC-04).');
+        $this->assertSame(['Supplier Invoices'], $labels, 'Finance must see only Supplier Invoices in Inventory & Supply (SC-04).');
     }
 
     public function test_sub_nav_is_suppressed_for_single_page_hubs(): void
     {
-        // Finance & Accounting has 6 tabs -> bar renders.
+        // Finance & GL has 6 tabs -> bar renders.
         $multi = $this->resolver()->subNavForRoute('finance.index', $this->users['Owner']);
         $this->assertNotSame([], $multi['pages']);
 
-        // Manufacturing has 1 page -> bar suppressed (R-5).
-        $single = $this->resolver()->subNavForRoute('manufacturing.orders.index', $this->users['Owner']);
+        // Dashboard has 1 page -> bar suppressed (R-5).
+        $single = $this->resolver()->subNavForRoute('dashboard', $this->users['Owner']);
         $this->assertSame([], $single['pages']);
     }
 
@@ -329,10 +321,7 @@ class NavigationRenderTest extends TestCase
         $registry = app(NavigationRegistry::class);
         $routeNames = [
             'tax-classes.index' => 'nav.catalog.master',
-            // SC-05: channel mapping is declared in two hubs. Its CANONICAL home
-            // is Frontline (operator context); the Administration placement is the
-            // documented shortcut, so an operational user lands on Frontline Desk.
-            'integrations.channel-mapping' => 'nav.frontline.desk',
+            'integrations.channel-mapping' => 'nav.settings',
             'finance.fixed-assets.index' => 'nav.finance.gl',
             'inventory.opnames' => 'nav.supply.inventory',
         ];

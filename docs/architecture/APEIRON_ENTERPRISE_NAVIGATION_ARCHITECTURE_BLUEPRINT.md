@@ -5,14 +5,14 @@
 | Field              | Value                                                                                                                               |
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Document ID        | `ARCH-NAV-001`                                                                                                                      |
-| Version            | 2.0.0 (Accepted & Implemented — Ratified Wave 5 & Wave 7)                                                                           |
-| Status             | Architecture Blueprint — **ACCEPTED & FULLY IMPLEMENTED** (9 Domains × 19 Hubs × 45 Pages + Dual-Vertical Adaptive Filtering)       |
+| Version            | 3.0.0 (Accepted & Implemented — Ratified Wave 8 Tier-1 Calm Hub Architecture)                                                      |
+| Status             | Architecture Blueprint — **ACCEPTED & FULLY IMPLEMENTED** (4 Domains × 10 Hubs × 65 Pages + Zero-Scroll & Hyper-Performance)        |
 | Author role        | Principal Enterprise Architect / Information Architecture Specialist                                                                |
 | Repository root    | `/home/ilhamspryd/Projects/apeironSystem/point-of-Sales`                                                                            |
 | Evidence baseline  | `config/navigation/domains/*.php`, 13 route files, `php artisan route:list`, 85 navigation test suites (G-1..G-6 passing)           |
-| Companion document | `docs/architecture/APEIRON_NAVIGATION_ROUTE_MAPPING.md`                                                                             |
+| Companion document | `docs/architecture/APEIRON_NAVIGATION_ROUTE_MAPPING.md`, `docs/audit/APEIRON_WAVE8_SIDEBAR_IA_AND_HYPER_PERFORMANCE_REPORT.md`     |
 
-> **Scope declaration.** This architecture blueprint has been fully implemented in production as of Wave 5 and extended with Dual-Vertical Adaptive Filtering (F&B / Retail / Hybrid) in Wave 7. Implementation is canonicalized under `config/navigation/domains/*.php`, `app/Platform/Navigation/NavigationRegistry.php`, and `app/Platform/Navigation/NavigationVisibilityResolver.php`.
+> **Scope declaration.** This architecture blueprint has been fully implemented in production as of Wave 8 Tier-1 Calm Hub Architecture. Implementation is canonicalized under `config/navigation/domains/{core,operations,finance_insights,settings}.php`, `app/Platform/Navigation/NavigationRegistry.php`, and `app/Platform/Navigation/NavigationVisibilityResolver.php`. The system guarantees zero vertical scroll on 1366×768 (expanded $\le$ 605px, micro-rail $\sim$530px), $\le$ 5 horizontal tabs + More ▾ overflow with active illumination, and dynamic authorized landing URL resolution.
 
 ---
 

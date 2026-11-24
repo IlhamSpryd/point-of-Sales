@@ -344,10 +344,10 @@ class EnterpriseProductionUatTest extends TestCase
         $resolver = app(NavigationVisibilityResolver::class);
         $abilityEvaluator = app(AbilityEvaluator::class);
 
-        // 1. Owner sees the compact 19-hub sidebar and reaches finance.fixed-assets.index (HTTP 200)
+        // 1. Owner sees the compact 10-hub sidebar and reaches finance.fixed-assets.index (HTTP 200)
         $ownerSections = $resolver->sidebar($owner);
         $ownerHubCount = array_sum(array_map(static fn (array $s): int => count($s['hubs']), $ownerSections));
-        $this->assertSame(19, $ownerHubCount, 'Owner must see exactly 19 L1 hubs.');
+        $this->assertSame(10, $ownerHubCount, 'Owner must see exactly 10 Calm Hubs.');
 
         $this->actingAs($owner)
             ->get(route('finance.fixed-assets.index'))

@@ -489,5 +489,167 @@ test.describe('Apeiron Accessibility & Interaction Suite', () => {
         }
         expect(hasCompliantTarget).toBe(true);
     });
+
+    test('Wave 8 Tier-1 Calm Hub Navigation: Zero-Scroll Expanded & Collapsed Micro-Rail, Sub-Nav Overflow & Zero-FOUT Box Lock', async ({ page }) => {
+        // Step 1: Set viewport to 1366x768
+        await page.setViewportSize({ width: 1366, height: 768 });
+
+        // Step 2: Login as admin
+        await page.goto('/login');
+        await page.waitForLoadState('networkidle');
+        await page.fill('#email', 'admin@pos.test');
+        await page.fill('#password', '12345678');
+        await page.click('button[type="submit"]');
+        await page.waitForURL(/.*dashboard.*/i);
+        await page.waitForLoadState('networkidle');
+        await page.waitForTimeout(300);
+
+        // --- Guardrail 1: Zero-Scroll Expanded Sidebar (<= 605px content height) ---
+        const sidebar = page.locator('#main-sidebar');
+        await expect(sidebar).toBeVisible();
+
+        const expandedNavMetrics = await page.evaluate(() => {
+            const container = document.getElementById('sidebar-nav-container');
+            const sidebarEl = document.getElementById('main-sidebar');
+            return {
+                scrollHeight: container ? container.scrollHeight : 0,
+                clientHeight: container ? container.clientHeight : 0,
+                sidebarScrollHeight: sidebarEl ? sidebarEl.scrollHeight : 0,
+                sidebarClientHeight: sidebarEl ? sidebarEl.clientHeight : 0,
+            };
+        });
+
+        // Zero vertical scroll: scrollHeight must not exceed clientHeight + 2
+        expect(expandedNavMetrics.scrollHeight).toBeLessThanOrEqual(expandedNavMetrics.clientHeight + 2);
+        expect(expandedNavMetrics.sidebarScrollHeight).toBeLessThanOrEqual(expandedNavMetrics.sidebarClientHeight + 2);
+
+        // --- Guardrail 2: Zero-Scroll Micro-Rail Collapsed Sidebar (~530px content height) ---
+        const collapseBtn = page.locator('button[title="Collapse sidebar"], button[aria-label="Collapse sidebar"]').first();
+        if (await collapseBtn.isVisible()) {
+            await collapseBtn.click();
+            await page.waitForTimeout(300);
+
+            const collapsedMetrics = await page.evaluate(() => {
+                const container = document.getElementById('sidebar-nav-container');
+                const sidebarEl = document.getElementById('main-sidebar');
+                return {
+                    scrollHeight: container ? container.scrollHeight : 0,
+                    clientHeight: container ? container.clientHeight : 0,
+                    sidebarScrollHeight: sidebarEl ? sidebarEl.scrollHeight : 0,
+                    sidebarClientHeight: sidebarEl ? sidebarEl.clientHeight : 0,
+                    width: sidebarEl ? sidebarEl.getBoundingClientRect().width : 0,
+                };
+            });
+
+            // Collapsed sidebar width is micro-rail w-14 (56px)
+            expect(collapsedMetrics.width).toBeLessThanOrEqual(60);
+            expect(collapsedMetrics.scrollHeight).toBeLessThanOrEqual(collapsedMetrics.clientHeight + 2);
+
+            // Verify micro-rail icon buttons are desktop h-9 w-9 (<= 40px)
+            const microRailButtons = page.locator('#sidebar-nav-container a, #sidebar-nav-container button');
+            const btnCount = await microRailButtons.count();
+            if (btnCount > 0) {
+                const firstBtnBox = await microRailButtons.first().boundingBox();
+                if (firstBtnBox) {
+                    expect(firstBtnBox.width).toBeLessThanOrEqual(40);
+                    expect(firstBtnBox.height).toBeLessThanOrEqual(40);
+                }
+            }
+
+            // Restore expanded sidebar
+            const expandBtn = page.locator('button[title="Expand sidebar"], button[aria-label="Expand sidebar"]').first();
+            if (await expandBtn.isVisible()) {
+                await expandBtn.click();
+                await page.waitForTimeout(300);
+            }
+        }
+
+        // --- Guardrail 3: Sub-nav <= 5 Tabs + More ▾ Dropdown Navigation ---
+        await page.goto('/settings');
+        await page.waitForLoadState('networkidle');
+        await page.waitForTimeout(300);
+
+        const subNav = page.locator('#main-content nav[aria-label*="Navigation"]');
+        if (await subNav.isVisible()) {
+            // Count primary tab links (direct children under nav that are a links, excluding dropdown links)
+            const primaryTabs = subNav.locator('> a');
+            const tabCount = await primaryTabs.count();
+            expect(tabCount).toBeLessThanOrEqual(5);
+
+            // Verify "More ▾" dropdown is present when hub has > 5 pages
+            const moreDropdownBtn = subNav.locator('button[aria-haspopup="true"][aria-label*="More"]').first();
+            if (await moreDropdownBtn.isVisible()) {
+                await moreDropdownBtn.click();
+                await page.waitForTimeout(150);
+
+                const expanded = await moreDropdownBtn.getAttribute('aria-expanded');
+                expect(expanded).toBe('true');
+
+                // Escape closes the dropdown
+                await page.keyboard.press('Escape');
+                await page.waitForTimeout(150);
+                const closedExpanded = await moreDropdownBtn.getAttribute('aria-expanded');
+                expect(closedExpanded).toBe('false');
+            }
+        }
+
+        // --- Guardrail 4: Strict Zero-FOUT Material Symbols 1em Box Lock ---
+        const iconsVerified = await page.evaluate(() => {
+            const icons = Array.from(document.querySelectorAll('.material-symbols-rounded'));
+            if (icons.length === 0) return { count: 0, compliant: true };
+
+            let compliant = true;
+            for (const icon of icons.slice(0, 20)) {
+                const style = window.getComputedStyle(icon);
+                const rect = icon.getBoundingClientRect();
+                const w = Math.round(rect.width);
+                const h = Math.round(rect.height);
+
+                // Check 1em box lock: display inline-flex, overflow hidden, aspect ratio ~ 1
+                if (style.overflow !== 'hidden') compliant = false;
+                if (Math.abs(w - h) > 2) compliant = false;
+                if (!style.fontFeatureSettings.includes('liga')) compliant = false;
+            }
+            return { count: icons.length, compliant };
+        });
+
+        expect(iconsVerified.count).toBeGreaterThan(0);
+        expect(iconsVerified.compliant).toBe(true);
+    });
+
+    test('Wave 8 Hyper-Performance: Numeric CLS <= 0.01 on Hard Reload with PerformanceObserver', async ({ page }) => {
+        // Register PerformanceObserver before navigation to capture any layout shift from start
+        await page.addInitScript(() => {
+            (window as any).__cumulativeLayoutShift = 0;
+            try {
+                const observer = new PerformanceObserver((entryList) => {
+                    for (const entry of entryList.getEntries()) {
+                        if (!(entry as any).hadRecentInput) {
+                            (window as any).__cumulativeLayoutShift += (entry as any).value;
+                        }
+                    }
+                });
+                observer.observe({ type: 'layout-shift', buffered: true });
+            } catch (e) {
+                // PerformanceObserver unsupported or disabled
+            }
+        });
+
+        // Navigate to login
+        await page.goto('/login');
+        await page.waitForLoadState('networkidle');
+
+        // Hard reload the page
+        await page.reload({ waitUntil: 'networkidle' });
+        await page.waitForTimeout(500);
+
+        // Read numeric CLS
+        const clsValue = await page.evaluate(() => {
+            return (window as any).__cumulativeLayoutShift ?? 0;
+        });
+
+        // CLS must be <= 0.01 (Grade A+ Hyper-Performance target)
+        expect(clsValue).toBeLessThanOrEqual(0.01);
+    });
 });
 

@@ -126,7 +126,7 @@
                         aria-label="More {{ $hubNode->label }} navigation tabs"
                         class="relative h-9 md:h-9 min-h-[40px] md:min-h-0 px-2.5 py-1.5 text-[12px] inline-flex items-center justify-center gap-1 rounded-[6px] transition-colors duration-150 whitespace-nowrap cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-shell-ring {{ $hasActiveMore ? 'text-foreground font-semibold bg-accent/50' : 'text-muted-foreground hover:text-foreground hover:bg-accent/70 font-medium bg-transparent' }}">
                         <span>{{ $hasActiveMore ? $activeMorePage->label : 'More' }}</span>
-                        <span class="material-symbols-rounded text-[16px] transition-transform duration-150" :class="open ? 'rotate-180' : ''" aria-hidden="true">expand_more</span>
+                        <svg class="w-3.5 h-3.5 transition-transform duration-150" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         @if ($hasActiveMore)
                             <span class="h-[2px] bg-foreground rounded-t-full absolute bottom-0 inset-x-2" aria-hidden="true"></span>
                         @endif
@@ -159,7 +159,7 @@
                                    class="flex items-center justify-between px-2.5 py-1.5 text-xs rounded-lg font-medium transition-colors {{ $isMoreActive ? 'bg-accent text-accent-foreground font-semibold' : 'text-muted-foreground hover:text-foreground hover:bg-muted' }}">
                                     <span class="truncate">{{ $morePage->label }}</span>
                                     @if ($isMoreActive)
-                                        <span class="material-symbols-rounded text-[14px] text-accent-foreground" aria-hidden="true">check</span>
+                                        <svg class="w-3.5 h-3.5 text-accent-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                     @endif
                                 </a>
                             @endforeach

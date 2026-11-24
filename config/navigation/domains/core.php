@@ -49,7 +49,7 @@ return [
             'label' => 'Frontline Desk',
             'route' => 'orders.index',
             'active' => ['orders.*', 'shifts.*', 'tables.*', 'kds.*'],
-            'roles' => ['Owner', 'Manager', 'Kasir', 'Waiter', 'Supervisor', 'Cook'],
+            'roles' => ['Owner', 'Manager', 'Kasir', 'Waiter', 'Supervisor'],
             'abilities' => ['orders.view'],
             'scope' => 'store',
             'icon' => 'storefront',
