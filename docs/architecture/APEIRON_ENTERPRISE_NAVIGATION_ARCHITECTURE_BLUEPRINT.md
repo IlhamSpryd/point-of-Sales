@@ -5,14 +5,14 @@
 | Field              | Value                                                                                                                               |
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Document ID        | `ARCH-NAV-001`                                                                                                                      |
-| Version            | 1.0.0 (Proposed — Awaiting Ratification)                                                                                            |
-| Status             | Architecture Blueprint — **No implementation performed**                                                                            |
+| Version            | 2.0.0 (Accepted & Implemented — Ratified Wave 5 & Wave 7)                                                                           |
+| Status             | Architecture Blueprint — **ACCEPTED & FULLY IMPLEMENTED** (9 Domains × 19 Hubs × 45 Pages + Dual-Vertical Adaptive Filtering)       |
 | Author role        | Principal Enterprise Architect / Information Architecture Specialist                                                                |
 | Repository root    | `/home/ilhamspryd/Projects/apeironSystem/point-of-Sales`                                                                            |
-| Evidence baseline  | `config/navigation.php` (1099 lines), 13 route files, `php artisan route:list --json` (≈250 named routes), 5 navigation test suites |
+| Evidence baseline  | `config/navigation/domains/*.php`, 13 route files, `php artisan route:list`, 85 navigation test suites (G-1..G-6 passing)           |
 | Companion document | `docs/architecture/APEIRON_NAVIGATION_ROUTE_MAPPING.md`                                                                             |
 
-> **Scope declaration.** This document is a _planning artefact_. No application code, route, migration, Blade component, or configuration file was modified during its production. Every claim about the current state is traceable to a file path and line reference inside the repository.
+> **Scope declaration.** This architecture blueprint has been fully implemented in production as of Wave 5 and extended with Dual-Vertical Adaptive Filtering (F&B / Retail / Hybrid) in Wave 7. Implementation is canonicalized under `config/navigation/domains/*.php`, `app/Platform/Navigation/NavigationRegistry.php`, and `app/Platform/Navigation/NavigationVisibilityResolver.php`.
 
 ---
 

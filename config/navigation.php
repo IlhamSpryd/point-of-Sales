@@ -5,6 +5,9 @@ declare(strict_types=1);
 /**
  * Enterprise Navigation Configuration — Apeiron Systems (ADR-NAV-001 / ADR-NAV-006).
  *
+ * @deprecated Monolithic navigation configuration is deprecated. Navigation is domain-modularized
+ *             under `config/navigation/domains/*.php`. Single source of truth is `NavigationRegistry`.
+ *
  * Single Source of Truth: app/Platform/Navigation/NavigationRegistry.php
  * Domain Configurations: config/navigation/domains/*.php
  *
