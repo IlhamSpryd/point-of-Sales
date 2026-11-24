@@ -21,7 +21,8 @@ class StatutoryBpjsService
         float $effectiveWage,
         CarbonInterface|string $effectiveDate,
         string $jkkRiskClass = 'class_1',
-        string $jurisdiction = 'ID'
+        string $jurisdiction = 'ID',
+        ?int $employeeAge = null
     ): array {
         $params = $this->registryService->getBpjsParameters($effectiveDate, $jurisdiction);
         $tkParams = $params['tk'];
@@ -44,15 +45,20 @@ class StatutoryBpjsService
         $jhtEmployer = round($effectiveWage * $jhtEmployerRate, 2);
         $jhtEmployee = round($effectiveWage * $jhtEmployeeRate, 2);
 
-        // 3. BPJS TK - JP (Plafon Rp11.086.300 per 2026)
-        $jpWageCap = (float) ($tkParams['jp_wage_cap'] ?? 11086300.00);
-        $jpWageBasis = min($effectiveWage, $jpWageCap);
+        // 3. BPJS TK - JP (Plafon Rp11.086.300 per 2026, Bebas bila usia >= 59 tahun per PP 45/2015)
+        if ($employeeAge !== null && $employeeAge >= 59) {
+            $jpEmployer = 0.00;
+            $jpEmployee = 0.00;
+        } else {
+            $jpWageCap = (float) ($tkParams['jp_wage_cap'] ?? 11086300.00);
+            $jpWageBasis = min($effectiveWage, $jpWageCap);
 
-        $jpEmployerRate = (float) ($tkParams['jp_employer_rate'] ?? 0.020);
-        $jpEmployeeRate = (float) ($tkParams['jp_employee_rate'] ?? 0.010);
+            $jpEmployerRate = (float) ($tkParams['jp_employer_rate'] ?? 0.020);
+            $jpEmployeeRate = (float) ($tkParams['jp_employee_rate'] ?? 0.010);
 
-        $jpEmployer = round($jpWageBasis * $jpEmployerRate, 2);
-        $jpEmployee = round($jpWageBasis * $jpEmployeeRate, 2);
+            $jpEmployer = round($jpWageBasis * $jpEmployerRate, 2);
+            $jpEmployee = round($jpWageBasis * $jpEmployeeRate, 2);
+        }
 
         // 4. BPJS TK - JKK (Tanpa Plafon, Kelompok Risiko)
         $jkkRates = $tkParams['jkk_rates'] ?? [];

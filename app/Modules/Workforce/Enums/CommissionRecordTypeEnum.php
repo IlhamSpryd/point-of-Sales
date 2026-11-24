@@ -8,6 +8,7 @@ enum CommissionRecordTypeEnum: string
 {
     case STANDARD = 'STANDARD';
     case REVERSAL = 'REVERSAL';
+    case CLAWBACK = 'CLAWBACK';
     case ADJUSTMENT = 'ADJUSTMENT';
 
     public function label(): string
@@ -15,6 +16,7 @@ enum CommissionRecordTypeEnum: string
         return match ($this) {
             self::STANDARD => 'Standard Commission',
             self::REVERSAL => 'Reversal (Return / Cancel)',
+            self::CLAWBACK => 'Clawback Deduction',
             self::ADJUSTMENT => 'Manual Adjustment',
         };
     }

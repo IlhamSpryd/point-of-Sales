@@ -7,8 +7,10 @@ namespace App\Modules\Workforce\Services;
 use App\Modules\Workforce\DTOs\PayrollCalculationItemDto;
 use App\Modules\Workforce\DTOs\PayrollCalculationResultDto;
 use App\Modules\Workforce\Enums\AttendanceStatusEnum;
+use App\Modules\Workforce\Enums\CommissionRecordStatusEnum;
 use App\Modules\Workforce\Enums\EmploymentStatusEnum;
 use App\Modules\Workforce\Enums\OvertimeStatusEnum;
+use App\Modules\Workforce\Enums\PayrollBatchStatusEnum;
 use App\Modules\Workforce\Enums\SalaryComponentTypeEnum;
 use App\Modules\Workforce\Enums\TaxCalculationMethodEnum;
 use App\Modules\Workforce\Models\AttendanceRecord;
@@ -16,6 +18,7 @@ use App\Modules\Workforce\Models\CommissionRecord;
 use App\Modules\Workforce\Models\Employee;
 use App\Modules\Workforce\Models\EmployeeCompensation;
 use App\Modules\Workforce\Models\OvertimeRecord;
+use App\Modules\Workforce\Models\PayrollRecord;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 
@@ -131,6 +134,13 @@ class PayrollCalculationPipeline
         $commissionAmount = isset($extraContext['commission_amount'])
             ? (float) $extraContext['commission_amount']
             : (float) CommissionRecord::where('employee_id', $employee->id)
+                ->whereNull('payroll_batch_id')
+                ->whereIn('status', [
+                    CommissionRecordStatusEnum::APPROVED,
+                    CommissionRecordStatusEnum::PENDING,
+                    CommissionRecordStatusEnum::EARNED,
+                    CommissionRecordStatusEnum::CLAWBACK,
+                ])
                 ->whereBetween('created_at', [$periodStart->toDateTimeString(), $periodEnd->toDateTimeString()])
                 ->sum('commission_amount');
 
@@ -160,7 +170,21 @@ class PayrollCalculationPipeline
 
         // Dasar upah tetap untuk BPJS = Gaji Pokok + Tunjangan Tetap
         $fixedWageBasis = $baseSalary + $fixedAllowances;
-        $bpjsContrib = $this->bpjsService->calculateContributions($fixedWageBasis, $periodEnd, (string) $jkkClass);
+
+        $employeeAge = null;
+        if (isset($extraContext['employee_age'])) {
+            $employeeAge = (int) $extraContext['employee_age'];
+        } elseif ($employee->birth_date !== null) {
+            $employeeAge = (int) Carbon::parse($employee->birth_date)->diffInYears($periodEnd);
+        }
+
+        $bpjsContrib = $this->bpjsService->calculateContributions(
+            effectiveWage: $fixedWageBasis,
+            effectiveDate: $periodEnd,
+            jkkRiskClass: (string) $jkkClass,
+            jurisdiction: 'ID',
+            employeeAge: $employeeAge
+        );
 
         $bpjsKsEr = $isBpjsKsActive ? (float) $bpjsContrib['ks_employer'] : 0.00;
         $bpjsKsEe = $isBpjsKsActive ? (float) $bpjsContrib['ks_employee'] : 0.00;
@@ -206,30 +230,91 @@ class PayrollCalculationPipeline
         // Bruto Pajak = Gross Earnings + BPJS KS ER + JKK ER + JKM ER
         $taxGross = $grossEarnings + $bpjsKsEr + $bpjsJkkEr + $bpjsJkmEr;
 
-        // Step 13: Eksekusi Engine Pajak PPh 21 (Metode TER / Pasal 17 Tahunan)
+        // Step 13: Eksekusi Engine Pajak PPh 21 (Metode TER / Pasal 17 Tahunan PMK 168/2023)
         $taxProfile = $employee->taxProfile;
         $ptkpStatus = $extraContext['ptkp_status'] ?? ($taxProfile !== null ? $taxProfile->ptkp_status->value : 'TK/0');
         $taxMethod = $extraContext['tax_method'] ?? ($taxProfile !== null ? $taxProfile->calculation_method : TaxCalculationMethodEnum::GROSS);
+        if (is_string($taxMethod)) {
+            $taxMethod = TaxCalculationMethodEnum::tryFrom($taxMethod) ?? TaxCalculationMethodEnum::GROSS;
+        }
         $isDtpEligible = (bool) ($extraContext['is_dtp_eligible'] ?? ($taxProfile !== null ? $taxProfile->is_eligible_for_dtp : false));
 
-        $taxResult = $this->taxService->calculateMonthlyTerTax(
-            taxGrossAmount: $taxGross,
-            ptkpStatus: (string) $ptkpStatus,
-            effectiveDate: $periodEnd,
-            isDtpEligible: $isDtpEligible,
-            taxMethod: $taxMethod instanceof TaxCalculationMethodEnum ? $taxMethod : TaxCalculationMethodEnum::GROSS
-        );
+        // Deteksi Masa Pajak Terakhir (Desember / Resign / Final Month) per PMK 168/2023
+        $isFinalMonth = ($periodEnd->month === 12
+            || $employee->employment_status === EmploymentStatusEnum::RESIGNED
+            || ($employee->termination_date !== null && Carbon::parse($employee->termination_date)->between($periodStart, $periodEnd))
+            || ! empty($extraContext['is_final_month']));
 
-        $taxCalculated = (float) $taxResult['calculated_tax'];
-        $taxDtp = (float) $taxResult['dtp_amount'];
-        $taxDeducted = (float) $taxResult['deducted_tax'];
+        $taxCalculated = 0.00;
+        $taxDtp = 0.00;
+        $taxDeducted = 0.00;
+        $taxAllowance = 0.00;
 
-        if ($taxDtp > 0) {
-            $items[] = new PayrollCalculationItemDto('TAX_PPH21_DTP', 'Insentif PPh 21 DTP PMK 105/2025', SalaryComponentTypeEnum::EMPLOYER_CONTRIBUTION, $taxDtp, false, (int) $taxResult['ter_version_id']);
-        }
+        if ($isFinalMonth) {
+            // Hitung akumulasi masa pajak 1 s.d. 11 tahun berjalan
+            $currentYear = (int) $periodEnd->year;
+            $priorRecords = PayrollRecord::where('employee_id', $employee->id)
+                ->whereHas('batch', function ($q) use ($currentYear) {
+                    $q->whereYear('period_end_date', $currentYear)
+                        ->whereIn('status', [PayrollBatchStatusEnum::FINALIZED, PayrollBatchStatusEnum::PAID]);
+                })
+                ->get();
 
-        if ($taxDeducted > 0) {
-            $items[] = new PayrollCalculationItemDto('TAX_PPH21', 'Pajak PPh 21 TER', SalaryComponentTypeEnum::DEDUCTION, $taxDeducted, false, (int) $taxResult['ter_version_id']);
+            $priorTaxesPaid = (float) ($extraContext['prior_taxes_paid'] ?? $priorRecords->sum('tax_pph21_amount'));
+            $priorGross = (float) ($extraContext['prior_gross'] ?? $priorRecords->sum('taxable_gross_amount'));
+            $priorJhtJpEe = (float) ($extraContext['prior_jht_jp_ee'] ?? $priorRecords->sum(fn ($r) => (float) $r->bpjs_tk_employee_amount));
+
+            $annualGross = $priorGross + $taxGross;
+            $annualJhtJpEe = $priorJhtJpEe + ($bpjsJhtEe + $bpjsJpEe);
+
+            $p17Result = $this->taxService->calculateAnnualPasal17Tax(
+                annualGross: $annualGross,
+                annualJhtJpEmployee: $annualJhtJpEe,
+                ptkpStatus: (string) $ptkpStatus,
+                priorTaxesPaid: $priorTaxesPaid,
+                effectiveDate: $periodEnd,
+                jurisdiction: 'ID'
+            );
+
+            $taxCalculated = (float) $p17Result['total_annual_tax'];
+            $decemberTax = (float) $p17Result['december_tax'];
+            $taxDeducted = $decemberTax;
+
+            if ($taxDeducted > 0) {
+                $items[] = new PayrollCalculationItemDto('TAX_PPH21', 'Pajak PPh 21 Pasal 17 Tahunan', SalaryComponentTypeEnum::DEDUCTION, $taxDeducted, false);
+            } elseif ($taxDeducted < 0) {
+                // Koreksi #2: Lebih potong Desember (PPh 21 < 0) -> kembalikan ke THP karyawan
+                $refundAmount = abs($taxDeducted);
+                $items[] = new PayrollCalculationItemDto('TAX_PPH21_REFUND', 'Pengembalian Lebih Potong PPh 21 Desember', SalaryComponentTypeEnum::EARNING, $refundAmount, false);
+            }
+        } else {
+            $taxResult = $this->taxService->calculateMonthlyTerTax(
+                taxGrossAmount: $taxGross,
+                ptkpStatus: (string) $ptkpStatus,
+                effectiveDate: $periodEnd,
+                isDtpEligible: $isDtpEligible,
+                taxMethod: $taxMethod
+            );
+
+            $taxCalculated = (float) $taxResult['calculated_tax'];
+            $taxDtp = (float) $taxResult['dtp_amount'];
+            $taxDeducted = (float) $taxResult['deducted_tax'];
+            $taxAllowance = (float) ($taxResult['tax_allowance'] ?? 0.00);
+
+            // Koreksi Gross-Up: Masukkan tax_allowance ke grossEarnings + PayrollItem TAX_ALLOWANCE
+            if ($taxMethod === TaxCalculationMethodEnum::GROSS_UP && $taxAllowance > 0) {
+                $grossEarnings += $taxAllowance;
+                $taxGross += $taxAllowance;
+                $items[] = new PayrollCalculationItemDto('TAX_ALLOWANCE', 'Tunjangan Pajak (Gross-Up)', SalaryComponentTypeEnum::EARNING, $taxAllowance, true);
+            }
+
+            if ($taxDtp > 0) {
+                $items[] = new PayrollCalculationItemDto('TAX_PPH21_DTP', 'Insentif PPh 21 DTP PMK 105/2025', SalaryComponentTypeEnum::EMPLOYER_CONTRIBUTION, $taxDtp, false, (int) $taxResult['ter_version_id']);
+            }
+
+            if ($taxDeducted > 0) {
+                $items[] = new PayrollCalculationItemDto('TAX_PPH21', 'Pajak PPh 21 TER', SalaryComponentTypeEnum::DEDUCTION, $taxDeducted, false, (int) $taxResult['ter_version_id']);
+            }
         }
 
         // Step 14: Kalkulasi Total Potongan Karyawan (Total Deductions)
@@ -241,10 +326,13 @@ class PayrollCalculationPipeline
             $items[] = new PayrollCalculationItemDto('TARDINESS_PENALTY', 'Denda Keterlambatan Absensi', SalaryComponentTypeEnum::DEDUCTION, $tardinessDeductions);
         }
 
-        $totalDeductions = $taxDeducted + $totalBpjsEmployee + $otherDeductions;
+        // Jika taxDeducted < 0 (lebih potong), tidak boleh menjadi potongan (malah menambah THP)
+        $positiveTaxDeduction = $taxDeducted > 0 ? $taxDeducted : 0.00;
+        $totalDeductions = $positiveTaxDeduction + $totalBpjsEmployee + $otherDeductions;
 
         // Step 15: Perhitungan Gaji Bersih Final (Net Take-Home Pay)
-        $netPay = round($grossEarnings - $totalDeductions, 0);
+        $taxRefundAddon = $taxDeducted < 0 ? abs($taxDeducted) : 0.00;
+        $netPay = round($grossEarnings - $totalDeductions + $taxRefundAddon, 0);
 
         // Step 16: Rekonsiliasi, Pembulatan Rupiah & Pembekuan Snapshot
         return new PayrollCalculationResultDto(

@@ -32,6 +32,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $reversal_source_id
  * @property CommissionRecordStatusEnum $status
  * @property int|null $payroll_record_id
+ * @property int|null $payroll_batch_id
+ * @property CarbonInterface|null $paid_at
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
  * @property-read Tenant|null $tenant
@@ -62,6 +64,8 @@ class CommissionRecord extends Model
         'reversal_source_id',
         'status',
         'payroll_record_id',
+        'payroll_batch_id',
+        'paid_at',
     ];
 
     protected function casts(): array
@@ -71,7 +75,13 @@ class CommissionRecord extends Model
             'commission_amount' => 'decimal:2',
             'type' => CommissionRecordTypeEnum::class,
             'status' => CommissionRecordStatusEnum::class,
+            'paid_at' => 'datetime',
         ];
+    }
+
+    public function payrollBatch(): BelongsTo
+    {
+        return $this->belongsTo(PayrollBatch::class, 'payroll_batch_id');
     }
 
     /**

@@ -132,28 +132,61 @@ class PayrollBatchManager extends Component
         $this->authorize('finalize', $batch);
 
         try {
-            // Create authorization approval record
-            $approval = Approval::create([
-                'tenant_id' => $tenantId,
-                'requester_user_id' => (int) Auth::id(),
-                'document_type' => 'PAYROLL_BATCH',
-                'document_id' => $batch->id,
-                'action_code' => 'PAYROLL_EXECUTION',
-                'status' => 'APPROVED',
-                'approver_user_id' => (int) Auth::id(),
-                'approved_at' => now(),
-            ]);
+            $currentUser = Auth::user();
+            $currentUserId = (int) Auth::id();
+            $creatorUserId = (int) $batch->created_by_user_id;
 
-            $finalizedBatch = $batchService->finalizeBatch($batch->id, (int) Auth::id(), $approval->id);
+            // Evaluasi Maker-Checker Guard (Segregation of Duties EXT-04)
+            $tenantUsersCount = \App\Modules\Organization\Models\User::where('tenant_id', $tenantId)
+                ->where('is_active', true)
+                ->count();
 
-            // Forward accrual journal to GL
-            try {
-                $postingService->postAccrualJournal($finalizedBatch, (int) Auth::id());
-            } catch (\Throwable) {
-                // Do not cancel finalization if posting GL journal fails
-            }
+            $isOwner = $currentUser !== null && (
+                (method_exists($currentUser, 'isOwner') && $currentUser->isOwner())
+                || (method_exists($currentUser, 'hasRole') && $currentUser->hasRole('owner'))
+                || ($currentUser->role instanceof \App\Modules\Organization\Models\Role && $currentUser->role->name === 'owner')
+            );
 
-            session()->flash('success', "Payroll batch [{$batch->batch_number}] finalized and locked successfully.");
+            $isSoloOwner = $isOwner && $tenantUsersCount <= 1;
+
+            app(\App\Platform\Workflow\MakerCheckerGuard::class)->assertCanApprove(
+                $creatorUserId,
+                $currentUserId,
+                $isSoloOwner
+            );
+
+            \Illuminate\Support\Facades\DB::transaction(function () use (
+                $tenantId,
+                $batch,
+                $currentUserId,
+                $creatorUserId,
+                $isSoloOwner,
+                $batchService,
+                $postingService
+            ) {
+                if ($isSoloOwner && $creatorUserId === $currentUserId) {
+                    \Illuminate\Support\Facades\Log::info("[Owner Self-Approval Override] Solo-owner tenant approval for payroll batch {$batch->batch_number} by User #{$currentUserId}");
+                }
+
+                // Create authorization approval record dengan requester dan approver terpisah
+                $approval = Approval::create([
+                    'tenant_id' => $tenantId,
+                    'requester_user_id' => $creatorUserId,
+                    'document_type' => 'PAYROLL_BATCH',
+                    'document_id' => $batch->id,
+                    'action_code' => 'PAYROLL_EXECUTION',
+                    'status' => 'APPROVED',
+                    'approver_user_id' => $currentUserId,
+                    'approved_at' => now(),
+                ]);
+
+                $finalizedBatch = $batchService->finalizeBatch($batch->id, $currentUserId, $approval->id);
+
+                // Forward accrual journal to GL secara atomik (tanpa silent catch!)
+                $postingService->postAccrualJournal($finalizedBatch, $currentUserId);
+            });
+
+            session()->flash('success', "Payroll batch [{$batch->batch_number}] finalized and posted to GL successfully.");
         } catch (\Throwable $e) {
             session()->flash('error', $e->getMessage());
         }

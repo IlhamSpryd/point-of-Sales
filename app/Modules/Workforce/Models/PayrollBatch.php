@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $id
  * @property int $tenant_id
  * @property string $batch_number
+ * @property string|null $active_period_key
  * @property int|null $payroll_period_id
  * @property CarbonInterface $period_start_date
  * @property CarbonInterface $period_end_date
@@ -58,6 +59,7 @@ class PayrollBatch extends Model
         'tenant_id',
         'company_id',
         'batch_number',
+        'active_period_key',
         'payroll_period_id',
         'period_start_date',
         'period_end_date',

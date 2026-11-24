@@ -102,9 +102,16 @@ class AttendanceService
 
             if ($schedule !== null && $schedule->shiftTemplate !== null) {
                 $template = $schedule->shiftTemplate;
+                $graceMinutes = (int) ($template->grace_period_minutes ?? 15);
                 if ($this->shiftTemplateService->isLate($template, $schedule->schedule_date, $now)) {
-                    $status = AttendanceStatusEnum::LATE;
-                    $lateMinutes = $this->shiftTemplateService->calculateLateMinutes($template, $schedule->schedule_date, $now);
+                    $calculatedLate = $this->shiftTemplateService->calculateLateMinutes($template, $schedule->schedule_date, $now);
+                    if ($calculatedLate > $graceMinutes) {
+                        $status = AttendanceStatusEnum::LATE;
+                        $lateMinutes = $calculatedLate;
+                    } else {
+                        $status = AttendanceStatusEnum::PRESENT;
+                        $lateMinutes = 0;
+                    }
                 }
             }
 

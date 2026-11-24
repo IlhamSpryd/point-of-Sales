@@ -11,6 +11,7 @@ enum CommissionRecordStatusEnum: string
     case EARNED = 'EARNED';
     case PROCESSED_IN_PAYROLL = 'PROCESSED_IN_PAYROLL';
     case PAID = 'PAID';
+    case CLAWBACK = 'CLAWBACK';
     case REVERSED = 'REVERSED';
     case VOIDED = 'VOIDED';
 
@@ -22,6 +23,7 @@ enum CommissionRecordStatusEnum: string
             self::EARNED => 'Earned',
             self::PROCESSED_IN_PAYROLL => 'Processed in Payroll',
             self::PAID => 'Paid Out',
+            self::CLAWBACK => 'Clawback',
             self::REVERSED => 'Reversed',
             self::VOIDED => 'Voided',
         };
@@ -33,7 +35,7 @@ enum CommissionRecordStatusEnum: string
             self::PENDING => 'bg-amber-50 text-amber-700 border-amber-200',
             self::APPROVED, self::EARNED => 'bg-emerald-50 text-emerald-700 border-emerald-200',
             self::PROCESSED_IN_PAYROLL, self::PAID => 'bg-blue-50 text-blue-700 border-blue-200',
-            self::REVERSED => 'bg-rose-50 text-rose-700 border-rose-200',
+            self::CLAWBACK, self::REVERSED => 'bg-rose-50 text-rose-700 border-rose-200',
             self::VOIDED => 'bg-gray-100 text-gray-700 border-gray-200',
         };
     }

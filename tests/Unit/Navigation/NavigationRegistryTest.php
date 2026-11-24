@@ -125,6 +125,8 @@ class NavigationRegistryTest extends TestCase
             $permitted = array_intersect($duplicateIds, $allowlist) !== [];
             $this->assertTrue($permitted, "Route [{$route}] is declared {$count} times without a shortcut allowlist entry.");
         }
+
+        $this->assertNotEmpty($counts);
     }
 
     public function test_hub_icons_are_unique(): void

@@ -35,21 +35,44 @@ class PayrollBatchService
         int $createdByUserId,
         ?int $payrollPeriodId = null
     ): PayrollBatch {
-        $yearMonth = $periodEnd->format('Ym');
-        $randomSuffix = strtoupper(Str::random(4));
-        $batchNumber = "PAY-{$yearMonth}-{$randomSuffix}";
+        return DB::transaction(function () use (
+            $tenantId,
+            $periodStart,
+            $periodEnd,
+            $cutoffDate,
+            $paymentDate,
+            $createdByUserId,
+            $payrollPeriodId
+        ) {
+            $activePeriodKey = $periodStart->toDateString().'_'.$periodEnd->toDateString();
 
-        return PayrollBatch::create([
-            'tenant_id' => $tenantId,
-            'batch_number' => $batchNumber,
-            'payroll_period_id' => $payrollPeriodId,
-            'period_start_date' => $periodStart->toDateString(),
-            'period_end_date' => $periodEnd->toDateString(),
-            'cutoff_date' => $cutoffDate->toDateString(),
-            'payment_scheduled_date' => $paymentDate->toDateString(),
-            'status' => PayrollBatchStatusEnum::DRAFT,
-            'created_by_user_id' => $createdByUserId,
-        ]);
+            // Cegah duplikasi konkurensi (Anti-Double Batch)
+            $existing = PayrollBatch::where('tenant_id', $tenantId)
+                ->where('active_period_key', $activePeriodKey)
+                ->lockForUpdate()
+                ->first();
+
+            if ($existing !== null) {
+                throw new DomainException("Batch penggajian untuk periode {$periodStart->toDateString()} s.d. {$periodEnd->toDateString()} sudah ada (#{$existing->batch_number}).");
+            }
+
+            $yearMonth = $periodEnd->format('Ym');
+            $randomSuffix = strtoupper(Str::random(4));
+            $batchNumber = "PAY-{$yearMonth}-{$randomSuffix}";
+
+            return PayrollBatch::create([
+                'tenant_id' => $tenantId,
+                'batch_number' => $batchNumber,
+                'active_period_key' => $activePeriodKey,
+                'payroll_period_id' => $payrollPeriodId,
+                'period_start_date' => $periodStart->toDateString(),
+                'period_end_date' => $periodEnd->toDateString(),
+                'cutoff_date' => $cutoffDate->toDateString(),
+                'payment_scheduled_date' => $paymentDate->toDateString(),
+                'status' => PayrollBatchStatusEnum::DRAFT,
+                'created_by_user_id' => $createdByUserId,
+            ]);
+        });
     }
 
     /**
@@ -221,7 +244,44 @@ class PayrollBatchService
         $batch->finalized_at = now();
         $batch->save();
 
+        // Kunci komisi penjualan yang masuk dalam batch menjadi PAID
+        \App\Modules\Workforce\Models\CommissionRecord::where('tenant_id', $batch->tenant_id)
+            ->whereNull('payroll_batch_id')
+            ->whereIn('status', [
+                \App\Modules\Workforce\Enums\CommissionRecordStatusEnum::APPROVED,
+                \App\Modules\Workforce\Enums\CommissionRecordStatusEnum::PENDING,
+                \App\Modules\Workforce\Enums\CommissionRecordStatusEnum::EARNED,
+                \App\Modules\Workforce\Enums\CommissionRecordStatusEnum::CLAWBACK,
+            ])
+            ->whereBetween('created_at', [
+                $batch->period_start_date->startOfDay()->toDateTimeString(),
+                $batch->period_end_date->endOfDay()->toDateTimeString(),
+            ])
+            ->update([
+                'payroll_batch_id' => $batch->id,
+                'status' => \App\Modules\Workforce\Enums\CommissionRecordStatusEnum::PAID,
+                'paid_at' => now(),
+            ]);
+
         return $batch;
+    }
+
+    /**
+     * Batalkan batch penggajian (VOIDED) dan bebaskan active_period_key.
+     */
+    public function cancelBatch(PayrollBatch $batch): PayrollBatch
+    {
+        return DB::transaction(function () use ($batch) {
+            $locked = PayrollBatch::where('id', $batch->id)->lockForUpdate()->firstOrFail();
+            if ($locked->status === PayrollBatchStatusEnum::FINALIZED || $locked->status === PayrollBatchStatusEnum::PAID) {
+                throw new DomainException("Batch [{$locked->batch_number}] sudah difinalisasi dan tidak dapat dibatalkan.");
+            }
+            $locked->status = PayrollBatchStatusEnum::VOIDED;
+            $locked->active_period_key = null;
+            $locked->save();
+
+            return $locked;
+        });
     }
 
     /**

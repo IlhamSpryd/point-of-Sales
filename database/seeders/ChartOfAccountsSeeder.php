@@ -638,6 +638,30 @@ class ChartOfAccountsSeeder extends Seeder
                 'allow_manual_journal' => true,
                 'is_reconcilable' => false,
             ],
+            [
+                'account_code' => '5305',
+                'account_name' => 'Beban Penyesuaian Gaji',
+                'account_type' => AccountTypeEnum::EXPENSE,
+                'account_subtype' => AccountSubtypeEnum::OPERATING_EXPENSE,
+                'normal_balance' => NormalBalanceEnum::DEBIT,
+                'system_account_key' => 'EXPENSE_SALARY_ADJUSTMENT',
+                'is_postable' => true,
+                'is_control_account' => false,
+                'allow_manual_journal' => true,
+                'is_reconcilable' => false,
+            ],
+            [
+                'account_code' => '5306',
+                'account_name' => 'Beban Tunjangan Pajak (Gross-Up)',
+                'account_type' => AccountTypeEnum::EXPENSE,
+                'account_subtype' => AccountSubtypeEnum::OPERATING_EXPENSE,
+                'normal_balance' => NormalBalanceEnum::DEBIT,
+                'system_account_key' => 'EXPENSE_TAX_ALLOWANCE',
+                'is_postable' => true,
+                'is_control_account' => false,
+                'allow_manual_journal' => true,
+                'is_reconcilable' => false,
+            ],
 
             // 6. OPERATING EXPENSES (6000 - 6999)
             [

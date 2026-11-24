@@ -166,6 +166,12 @@ class VoidAndRestoreOrderHandler
                     ->where('status', PromotionReservation::STATUS_COMMITTED)
                     ->update(['status' => PromotionReservation::STATUS_RELEASED]);
 
+                try {
+                    app(\App\Modules\Workforce\Services\CommissionService::class)->clawbackCommission((int) $lockedOrder->id, null, null, 'ORDER_VOID');
+                } catch (\Throwable $e) {
+                    Log::warning("Gagal clawback komisi saat void order {$lockedOrder->id}: {$e->getMessage()}");
+                }
+
                 $cashPayments = $existingPayments->filter(
                     fn ($p) => $p->payment_method === PaymentMethod::Cash
                 );

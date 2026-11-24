@@ -613,6 +613,12 @@ class ReturnRefundService
                         Log::warning("[VOUCHER RESTORE] Gagal memulihkan voucher retur #{$orderReturn->id}: {$e->getMessage()}");
                     }
                 }
+                // 11. Pembalikan / Clawback Komisi Penjualan
+                try {
+                    app(\App\Modules\Workforce\Services\CommissionService::class)->clawbackCommission((int) $lockedOrder->id, $returnItemsWithDisposition, (float) $totalRefundAmount, 'ORDER_RETURN');
+                } catch (\Throwable $e) {
+                    Log::warning("[COMMISSION CLAWBACK] Gagal clawback komisi retur #{$orderReturn->id}: {$e->getMessage()}");
+                }
 
                 // AC-3.4: Baris orders dan payments ASLI TIDAK diubah nilai nominalnya
                 // Nilai order_amount dan payment.amount historis dipertahankan utuh.
@@ -626,12 +632,7 @@ class ReturnRefundService
                     subjectType: OrderReturn::class,
                     subjectId: (int) $orderReturn->id,
                     description: "Return #{$returnNumber} and refund of ".number_format($totalRefundAmount, 2)." approved for order #{$lockedOrder->order_code}.",
-                    metadata: [
-                        'order_id' => $lockedOrder->id,
-                        'return_number' => $returnNumber,
-                        'total_refund' => $totalRefundAmount,
-                        'approved_by' => $approvedByUserId,
-                    ]
+                    metadata: ['order_id' => $lockedOrder->id, 'return_number' => $returnNumber, 'total_refund' => $totalRefundAmount, 'approved_by' => $approvedByUserId]
                 );
 
                 try {

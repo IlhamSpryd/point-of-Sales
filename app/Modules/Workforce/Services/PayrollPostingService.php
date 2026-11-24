@@ -120,6 +120,34 @@ class PayrollPostingService
             $taxPph21PayableAccount = $this->resolveAccount('TAX_PPH21_PAYABLE', $batch->tenant_id, [], '2103');
             $bpjsPayableAccount = $this->resolveAccount('BPJS_PAYABLE', $batch->tenant_id, [], '2106');
             $employeeReceivableAccount = $this->resolveAccount('EMPLOYEE_RECEIVABLE', $batch->tenant_id, [], '1135');
+            $adjustmentAccount = $this->resolveAccount('EXPENSE_SALARY_ADJUSTMENT', $batch->tenant_id, ['SALARY_EXPENSE_DIRECT'], '5305');
+            $taxAllowanceAccount = $this->resolveAccount('EXPENSE_TAX_ALLOWANCE', $batch->tenant_id, ['SALARY_EXPENSE_DIRECT'], '5306');
+
+            // Agregasi Payroll Items untuk Penyesuaian Manual & Tunjangan Pajak Gross-Up
+            $recordIds = $records->pluck('id');
+            $payrollItems = $recordIds->isNotEmpty()
+                ? \App\Modules\Workforce\Models\PayrollItem::whereIn('payroll_record_id', $recordIds)->get()
+                : collect();
+
+            $totalAdjustments = '0.00';
+            $totalTaxAllowance = '0.00';
+
+            foreach ($payrollItems as $item) {
+                if ($item->component_code === 'PAYROLL_ADJUSTMENT') {
+                    $totalAdjustments = bcadd($totalAdjustments, (string) $item->amount, 2);
+                } elseif ($item->component_code === 'TAX_ALLOWANCE') {
+                    $totalTaxAllowance = bcadd($totalTaxAllowance, (string) $item->amount, 2);
+                }
+            }
+
+            // Fallback bila adjustments_amount diset langsung di properti record
+            if (bccomp($totalAdjustments, '0.00', 2) === 0) {
+                foreach ($records as $record) {
+                    if (isset($record->adjustments_amount) && bccomp((string) $record->adjustments_amount, '0.00', 2) !== 0) {
+                        $totalAdjustments = bcadd($totalAdjustments, (string) $record->adjustments_amount, 2);
+                    }
+                }
+            }
 
             /** @var array<JournalLineDto> $lines */
             $lines = [];
@@ -168,6 +196,48 @@ class PayrollPostingService
                 );
             }
 
+            // Debet: Beban Penyesuaian Gaji (Manual Adjustments Positif)
+            if (bccomp($totalAdjustments, '0.00', 2) > 0) {
+                $lines[] = new JournalLineDto(
+                    accountId: $adjustmentAccount->id,
+                    debitAmount: $totalAdjustments,
+                    creditAmount: '0.00',
+                    description: "Beban Penyesuaian Gaji Karyawan - Batch {$batch->batch_number}",
+                    storeId: null
+                );
+            } elseif (bccomp($totalAdjustments, '0.00', 2) < 0) {
+                // Kredit: Penyesuaian Gaji Negatif
+                $lines[] = new JournalLineDto(
+                    accountId: $adjustmentAccount->id,
+                    debitAmount: '0.00',
+                    creditAmount: number_format(abs((float) $totalAdjustments), 2, '.', ''),
+                    description: "Kredit Pemotongan Penyesuaian Gaji - Batch {$batch->batch_number}",
+                    storeId: null
+                );
+            }
+
+            // Debet: Beban Tunjangan Pajak Gross-Up
+            if (bccomp($totalTaxAllowance, '0.00', 2) > 0) {
+                $lines[] = new JournalLineDto(
+                    accountId: $taxAllowanceAccount->id,
+                    debitAmount: $totalTaxAllowance,
+                    creditAmount: '0.00',
+                    description: "Beban Tunjangan Pajak (Gross-Up) - Batch {$batch->batch_number}",
+                    storeId: null
+                );
+            }
+
+            // Debet: Lebih Potong PPh 21 Desember (PPh 21 < 0) -> Eliminasi Utang Pajak
+            if (bccomp($totalTaxPph21, '0.00', 2) < 0) {
+                $lines[] = new JournalLineDto(
+                    accountId: $taxPph21PayableAccount->id,
+                    debitAmount: number_format(abs((float) $totalTaxPph21), 2, '.', ''),
+                    creditAmount: '0.00',
+                    description: "Pengembalian Lebih Potong PPh 21 Desember - Batch {$batch->batch_number}",
+                    storeId: null
+                );
+            }
+
             // Kredit: Utang Gaji (Net Pay)
             if (bccomp($totalNetPay, '0.00', 2) > 0) {
                 $lines[] = new JournalLineDto(
@@ -179,7 +249,7 @@ class PayrollPostingService
                 );
             }
 
-            // Kredit: Utang PPh 21
+            // Kredit: Utang PPh 21 (Bila Pajak Positif)
             if (bccomp($totalTaxPph21, '0.00', 2) > 0) {
                 $lines[] = new JournalLineDto(
                     accountId: $taxPph21PayableAccount->id,
