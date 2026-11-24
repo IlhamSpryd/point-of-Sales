@@ -744,6 +744,37 @@ class DefaultPostingRulesSeeder extends Seeder
             );
         }
 
+        // inventory.opname.finalized (PR-INV-01 Opname Variance)
+        $opnRule = PostingRule::firstOrCreate(
+            ['tenant_id' => $tenantId, 'event_code' => 'inventory.opname.finalized'],
+            [
+                'rule_name' => 'Penyesuaian Hasil Stock Opname Fisik',
+                'source_domain' => 'INVENTORY',
+                'description' => 'Posting jurnal otomatis selisih fisik hasil stock opname (stok bertambah atau berkurang)',
+                'is_active' => true,
+                'approval_status' => 'APPROVED',
+            ]
+        );
+
+        $opnVersion = PostingRuleVersion::firstOrCreate(
+            ['tenant_id' => $tenantId, 'posting_rule_id' => $opnRule->id, 'version_number' => 1],
+            [
+                'effective_from' => '2026-01-01',
+                'status' => 'ACTIVE',
+            ]
+        );
+
+        foreach ($adjLines as $line) {
+            PostingRuleLine::firstOrCreate(
+                [
+                    'tenant_id' => $tenantId,
+                    'posting_rule_version_id' => $opnVersion->id,
+                    'line_sequence' => $line['line_sequence'],
+                ],
+                $line
+            );
+        }
+
         // 7. inventory.transfer.shipped (PR-INV-02)
         $shipRule = PostingRule::firstOrCreate(
             ['tenant_id' => $tenantId, 'event_code' => 'inventory.transfer.shipped'],

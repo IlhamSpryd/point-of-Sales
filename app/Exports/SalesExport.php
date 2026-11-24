@@ -56,8 +56,8 @@ class SalesExport implements FromQuery, ShouldAutoSize, WithChunkReading, WithHe
                 'user' => function ($q) use ($tenantId) {
                     $q->select(['id', 'name', 'tenant_id'])->where('tenant_id', $tenantId);
                 },
-                'paymentRefunds' => function ($q) {
-                    $q->where('request_status', 'completed');
+                'orderReturns' => function ($q) {
+                    $q->where('status', 'completed');
                 },
             ])
             ->where('tenant_id', $tenantId);
@@ -84,33 +84,38 @@ class SalesExport implements FromQuery, ShouldAutoSize, WithChunkReading, WithHe
             'Kode Pesanan',
             'Kasir',
             'Metode Pembayaran',
-            'Gross Sales (Rp)',
-            'Diskon (Rp)',
-            'Pajak (Rp)',
-            'Service Charge (Rp)',
-            'Total Tagihan (Rp)',
-            'Retur & Refund (Rp)',
-            'Net Sales (Rp)',
+            'Subtotal (Gross Sales)',
+            'Diskon',
+            'Retur (DPP)',
+            'Net Sales',
+            'Service Charge',
+            'Pajak',
+            'Grand Total Dibayar',
         ];
     }
 
     public function map($order): array
     {
-        $refundAmount = (float) $order->paymentRefunds->sum('amount');
-        $netSales = max(0.00, (float) $order->order_amount - $refundAmount);
+        $dppReturned = (float) $order->orderReturns
+            ->where('status', 'completed')
+            ->sum(fn ($ret) => (float) $ret->subtotal_returned - (float) ($ret->discount_reversed ?? 0));
+
+        $gross = (float) $order->subtotal_amount;
+        $disc = (float) $order->discount_amount;
+        $netSales = max(0.00, $gross - $disc - $dppReturned);
 
         return $this->sanitizeRow([
             $order->created_at->format('d/m/Y H:i'),
             $order->order_code,
             $order->user ? $order->user->name : 'Kasir',
             strtoupper($order->payment_method?->value ?? '-'),
-            (float) $order->subtotal_amount,
-            (float) $order->discount_amount,
-            (float) $order->tax_amount,
-            (float) $order->service_charge_amount,
-            (float) $order->order_amount,
-            $refundAmount,
+            $gross,
+            $disc,
+            $dppReturned,
             $netSales,
+            (float) $order->service_charge_amount,
+            (float) $order->tax_amount,
+            (float) $order->order_amount,
         ]);
     }
 

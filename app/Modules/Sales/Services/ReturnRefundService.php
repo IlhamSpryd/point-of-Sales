@@ -359,7 +359,7 @@ class ReturnRefundService
 
                 $returnType = $totalReturnedAll >= $totalOrderQty ? OrderReturn::TYPE_FULL : OrderReturn::TYPE_PARTIAL;
 
-                $proportions = app(ReturnProportionCalculatorService::class)->calculateReturnProportions($lockedOrder, (string) $subtotalReturned, $returnType);
+                $proportions = app(\App\Modules\Sales\Domain\Services\ReturnProportionCalculatorService::class)->calculateReturnProportions($lockedOrder, (string) $subtotalReturned, $returnType);
 
                 $orderReturn = OrderReturn::forceCreate([
                     'tenant_id' => $lockedOrder->tenant_id,
@@ -949,7 +949,7 @@ class ReturnRefundService
 
                 $returnType = $totalReturnedAll >= $totalOrderQty ? OrderReturn::TYPE_FULL : OrderReturn::TYPE_PARTIAL;
 
-                $proportions = app(ReturnProportionCalculatorService::class)->calculateReturnProportions($lockedOrder, (string) $subtotalReturned, $returnType);
+                $proportions = app(\App\Modules\Sales\Domain\Services\ReturnProportionCalculatorService::class)->calculateReturnProportions($lockedOrder, (string) $subtotalReturned, $returnType);
 
                 $orderReturn = OrderReturn::forceCreate([
                     'tenant_id' => $lockedOrder->tenant_id,

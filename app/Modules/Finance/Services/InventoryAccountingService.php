@@ -14,8 +14,11 @@ use Carbon\Carbon;
 class InventoryAccountingService
 {
     public function __construct(
-        protected FinancialOutboxDispatcherService $dispatcher
-    ) {}
+        protected FinancialOutboxDispatcherService $dispatcher,
+        protected ?AccountingPeriodService $periodService = null
+    ) {
+        $this->periodService = $this->periodService ?? app(AccountingPeriodService::class);
+    }
 
     /**
      * Emisi outbox saat Goods Received Note (GRN) diposting (purchasing.grn.posted).
@@ -23,6 +26,9 @@ class InventoryAccountingService
      */
     public function recordGrnPosted(GoodsReceivedNote $grn): FinancialEventOutbox
     {
+        $accountingDate = Carbon::parse($grn->received_at ?? $grn->received_date ?? now())->toDateString();
+        $this->periodService->resolveOpenPeriodForDate($accountingDate, (int) $grn->tenant_id);
+
         $lines = $grn->lines()->get();
         $totalValuation = '0.00';
         $retailAmount = '0.00';
@@ -126,6 +132,9 @@ class InventoryAccountingService
      */
     public function recordStockAdjustmentPosted(StockAdjustment $adjustment): FinancialEventOutbox
     {
+        $accountingDate = Carbon::parse($adjustment->adjusted_at ?? $adjustment->adjustment_date ?? now())->toDateString();
+        $this->periodService->resolveOpenPeriodForDate($accountingDate, (int) $adjustment->tenant_id);
+
         $items = $adjustment->items()->get();
         $totalPositiveAmount = '0.00';
         $totalNegativeAmount = '0.00';
@@ -195,7 +204,10 @@ class InventoryAccountingService
      */
     public function recordStockOpnameApproved(StockOpname $opname): FinancialEventOutbox
     {
-        $items = $opname->items()->get();
+        $accountingDate = Carbon::parse($opname->approved_at ?? now())->toDateString();
+        $this->periodService->resolveOpenPeriodForDate($accountingDate, (int) $opname->tenant_id);
+
+        $items = $opname->items()->with(['product', 'ingredient'])->get();
         $totalPositiveAmount = '0.00';
         $totalNegativeAmount = '0.00';
         $positiveRetailAmount = '0.00';
@@ -204,11 +216,16 @@ class InventoryAccountingService
         $negativeIngredientAmount = '0.00';
 
         foreach ($items as $item) {
-            $diffQty = (string) ($item->discrepancy_quantity ?? 0);
-            $cost = (string) ($item->unit_cost ?? $item->unit_cost_snapshot ?? 0);
-            $lineVal = bcmul(bcadd(bc_num(abs((float) $diffQty)), '0', 4), bc_num($cost), 2);
-
+            $diffQty = (string) ($item->variance_quantity ?? $item->discrepancy_quantity ?? 0);
             $isIngredient = ($item->item_type === 'ingredient' || ! empty($item->ingredient_id));
+
+            if ($isIngredient) {
+                $cost = (string) ($item->ingredient?->cost_per_unit ?? $item->unit_cost ?? '0.00');
+            } else {
+                $cost = (string) ($item->product?->standard_cost ?? $item->product?->cost_price ?? $item->unit_cost ?? '0.00');
+            }
+
+            $lineVal = bcmul(bcadd(bc_num(abs((float) $diffQty)), '0', 4), bc_num($cost), 2);
 
             if (bccomp(bc_num($diffQty), '0.00', 4) > 0) {
                 if ($isIngredient) {
@@ -230,7 +247,7 @@ class InventoryAccountingService
         $payload = [
             'opname_id' => $opname->id,
             'opname_number' => $opname->opname_number,
-            'accounting_date' => Carbon::parse($opname->approved_at ?? now())->toDateString(),
+            'accounting_date' => $accountingDate,
             'positive_amount' => $totalPositiveAmount,
             'negative_amount' => $totalNegativeAmount,
             'positive_retail_amount' => $positiveRetailAmount,
@@ -261,6 +278,9 @@ class InventoryAccountingService
      */
     public function recordStockTransferShipped(StockTransfer $transfer): FinancialEventOutbox
     {
+        $accountingDate = Carbon::parse($transfer->shipped_at ?? now())->toDateString();
+        $this->periodService->resolveOpenPeriodForDate($accountingDate, (int) $transfer->tenant_id);
+
         $items = $transfer->items()->get();
         $totalTransferValue = '0.00';
         $retailTransferValue = '0.00';
@@ -311,6 +331,9 @@ class InventoryAccountingService
      */
     public function recordStockTransferReceived(StockTransfer $transfer): FinancialEventOutbox
     {
+        $accountingDate = Carbon::parse($transfer->received_at ?? now())->toDateString();
+        $this->periodService->resolveOpenPeriodForDate($accountingDate, (int) $transfer->tenant_id);
+
         $items = $transfer->items()->get();
         $totalReceivedValue = '0.00';
         $retailReceivedValue = '0.00';

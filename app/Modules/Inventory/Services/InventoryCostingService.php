@@ -34,11 +34,12 @@ class InventoryCostingService
         string|float $incomingCost,
         string|float $landedCost = 0
     ): array {
-        $qOld = (string) (float) $currentQty;
-        $cOld = (string) (float) $currentAvgCost;
-        $qIn = (string) (float) $incomingQty;
-        $cIn = (string) (float) $incomingCost;
-        $landed = (string) (float) $landedCost;
+        $toBc4 = fn ($val) => (is_numeric($val) ? bcadd((string) $val, '0', 4) : '0.0000');
+        $qOld = $toBc4($currentQty);
+        $cOld = $toBc4($currentAvgCost);
+        $qIn = $toBc4($incomingQty);
+        $cIn = $toBc4($incomingCost);
+        $landed = $toBc4($landedCost);
 
         if (bccomp($qIn, '0.0000', 4) <= 0) {
             throw new InvalidArgumentException('Kuantitas masuk harus lebih besar dari 0.');
@@ -49,10 +50,13 @@ class InventoryCostingService
         $totalInboundValue = bcadd($inboundGoodsValue, $landed, 4);
         $effectiveUnitCost = bcdiv($totalInboundValue, $qIn, 4);
 
+        // Jika stok saat ini <= 0 (negatif/kosong akibat penjualan offline), reset rata-rata ke harga masuk efektif (INV-02)
         if (bccomp($qOld, '0.0000', 4) <= 0) {
+            $totalQty = bcadd($qOld, $qIn, 4);
+
             return [
                 'new_average_cost' => bcadd($effectiveUnitCost, '0.0000', 4),
-                'total_quantity' => bcadd($qIn, '0.0000', 4),
+                'total_quantity' => bcadd($totalQty, '0.0000', 4),
                 'effective_unit_cost' => bcadd($effectiveUnitCost, '0.0000', 4),
             ];
         }
