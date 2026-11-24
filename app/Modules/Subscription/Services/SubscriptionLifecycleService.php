@@ -12,9 +12,9 @@ use Illuminate\Support\Facades\DB;
 
 class SubscriptionLifecycleService
 {
-    public const STATUS_TRIAL = 'trial';
+    public const STATUS_TRIAL = TenantSubscription::STATUS_TRIALING;
 
-    public const STATUS_ACTIVE = 'active';
+    public const STATUS_ACTIVE = TenantSubscription::STATUS_ACTIVE;
 
     public const STATUS_GRACE_PERIOD = 'grace_period';
 
@@ -35,17 +35,20 @@ class SubscriptionLifecycleService
             $sub = TenantSubscription::withoutGlobalScopes()->create([
                 'tenant_id' => $tenant->id,
                 'plan_id' => $plan->id,
-                'status' => self::STATUS_TRIAL,
-                'started_at' => $now,
-                'expires_at' => $expiresAt,
+                'status' => TenantSubscription::STATUS_TRIALING,
+                'starts_at' => $now,
+                'ends_at' => $expiresAt,
                 'trial_ends_at' => $expiresAt,
             ]);
 
             $tenant->update([
-                'plan_code' => $plan->code,
+                'subscription_plan' => $plan->code,
+                'subscription_status' => Tenant::SUBSCRIPTION_TRIALING,
                 'access_status' => Tenant::ACCESS_ACTIVE,
                 'status' => 'active',
             ]);
+
+            app(EntitlementService::class)->clearCache((int) $tenant->id);
 
             return $sub;
         });
@@ -64,16 +67,19 @@ class SubscriptionLifecycleService
             $sub = TenantSubscription::withoutGlobalScopes()->create([
                 'tenant_id' => $tenant->id,
                 'plan_id' => $plan->id,
-                'status' => self::STATUS_ACTIVE,
-                'started_at' => $now,
-                'expires_at' => $expiresAt,
+                'status' => TenantSubscription::STATUS_ACTIVE,
+                'starts_at' => $now,
+                'ends_at' => $expiresAt,
             ]);
 
             $tenant->update([
-                'plan_code' => $plan->code,
+                'subscription_plan' => $plan->code,
+                'subscription_status' => Tenant::SUBSCRIPTION_TRIALING,
                 'access_status' => Tenant::ACCESS_ACTIVE,
                 'status' => 'active',
             ]);
+
+            app(EntitlementService::class)->clearCache((int) $tenant->id);
 
             return $sub;
         });
@@ -107,8 +113,8 @@ class SubscriptionLifecycleService
                     'tenant_id' => $tenant->id,
                     'plan_id' => $defaultPlan->id,
                     'status' => self::STATUS_SUSPENDED,
-                    'started_at' => Carbon::now(),
-                    'notes' => $reason,
+                    'starts_at' => Carbon::now(),
+                    'metadata' => ['reason' => $reason],
                 ]);
             }
 
@@ -116,6 +122,8 @@ class SubscriptionLifecycleService
                 'access_status' => Tenant::ACCESS_SUSPENDED,
                 'status' => 'suspended',
             ]);
+
+            app(EntitlementService::class)->clearCache((int) $tenant->id);
 
             return $activeSub;
         });

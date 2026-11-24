@@ -77,4 +77,10 @@ class TenantSubscription extends Model
     {
         return in_array($this->status, [self::STATUS_ACTIVE, self::STATUS_TRIALING], true);
     }
+
+    public function isTrialing(): bool
+    {
+        return $this->status === self::STATUS_TRIALING
+            && ($this->trial_ends_at === null || $this->trial_ends_at->isFuture());
+    }
 }
