@@ -112,7 +112,7 @@ export default function dashboardChart(config = {}) {
         options: {
             currency: false,
             percentage: false,
-            height: config.options?.height || (config.type === 'sparkline' ? 32 : (config.type === 'stacked-bar' ? 220 : 260)),
+            height: config.options?.height || (config.type === 'sparkline' ? 40 : (config.type === 'stacked-bar' ? 220 : 240)),
             interactive: config.options?.interactive !== false && config.type !== 'sparkline',
             ariaLabel: config.options?.ariaLabel || '',
             onDrillDown: config.options?.onDrillDown || null,
@@ -675,7 +675,7 @@ export default function dashboardChart(config = {}) {
             this.svgEl.setAttribute('preserveAspectRatio', 'none');
             this.svgEl.innerHTML = `
                 <path d="${areaPath}" fill="${color}" fill-opacity="0.12" />
-                <path d="${points}" fill="none" stroke="${color}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+                <path d="${points}" fill="none" stroke="${color}" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
             `;
         },
 

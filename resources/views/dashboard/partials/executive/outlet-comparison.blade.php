@@ -142,20 +142,22 @@
     <!-- Panel 2: Sales Mix (Ranked Bars for Category & Payment Method) -->
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
         <!-- Sales Mix: Category -->
-        <div class="rounded-[10px] border border-border bg-card p-3.5 sm:p-4">
-            <h3 class="text-[13.5px] font-semibold text-foreground tracking-[-0.01em]">Revenue by Category</h3>
-            <p class="text-[11px] text-muted-foreground mt-0.5">Top performing product categories by sales contribution</p>
-            <div class="space-y-2 mt-3">
+        <div class="rounded-[8px] border border-border bg-card p-3.5 sm:p-4 flex flex-col gap-3">
+            <div>
+                <h3 class="text-[12.5px] font-semibold text-foreground tracking-[-0.01em]">Revenue by Category</h3>
+                <p class="text-[11px] text-muted-foreground mt-0.5">Top performing product categories by sales contribution</p>
+            </div>
+            <div class="space-y-1.5 mt-1">
                 @forelse($byCat as $c)
-                    <div class="space-y-1">
-                        <div class="flex items-center justify-between text-xs">
-                            <span class="font-medium text-foreground">{{ $c['name'] }}</span>
+                    <div class="py-1.5 space-y-1">
+                        <div class="flex items-center justify-between text-[11.5px]">
+                            <span class="font-medium text-foreground truncate max-w-[60%]">{{ $c['name'] }}</span>
                             <span class="tabular-nums text-muted-foreground">
                                 <strong class="text-foreground font-semibold">{{ $c['revenue_formatted'] }}</strong>
                                 ({{ $c['share_pct'] }}% · {{ number_format($c['units_sold']) }} units)
                             </span>
                         </div>
-                        <div class="h-1.5 rounded-full bg-secondary overflow-hidden">
+                        <div class="h-[4px] rounded-full bg-muted overflow-hidden">
                             <div class="h-full rounded-full bg-primary" style="width: {{ min(100, max(2, (float)$c['share_pct'])) }}%"></div>
                         </div>
                     </div>
@@ -168,20 +170,22 @@
         </div>
 
         <!-- Sales Mix: Payment Method -->
-        <div class="rounded-[10px] border border-border bg-card p-3.5 sm:p-4">
-            <h3 class="text-[13.5px] font-semibold text-foreground tracking-[-0.01em]">Settlement Tender Mix</h3>
-            <p class="text-[11px] text-muted-foreground mt-0.5">Volume share by payment gateway and cash register</p>
-            <div class="space-y-2 mt-3">
+        <div class="rounded-[8px] border border-border bg-card p-3.5 sm:p-4 flex flex-col gap-3">
+            <div>
+                <h3 class="text-[12.5px] font-semibold text-foreground tracking-[-0.01em]">Settlement Tender Mix</h3>
+                <p class="text-[11px] text-muted-foreground mt-0.5">Volume share by payment gateway and cash register</p>
+            </div>
+            <div class="space-y-1.5 mt-1">
                 @forelse($byPay as $p)
-                    <div class="space-y-1">
-                        <div class="flex items-center justify-between text-xs">
-                            <span class="font-medium text-foreground">{{ $p['name'] }}</span>
+                    <div class="py-1.5 space-y-1">
+                        <div class="flex items-center justify-between text-[11.5px]">
+                            <span class="font-medium text-foreground truncate max-w-[60%]">{{ $p['name'] }}</span>
                             <span class="tabular-nums text-muted-foreground">
                                 <strong class="text-foreground font-semibold">{{ $p['amount_formatted'] }}</strong>
                                 ({{ $p['share_pct'] }}% · {{ number_format($p['count']) }} tx)
                             </span>
                         </div>
-                        <div class="h-1.5 rounded-full bg-secondary overflow-hidden">
+                        <div class="h-[4px] rounded-full bg-muted overflow-hidden">
                             <div class="h-full rounded-full bg-positive" style="width: {{ min(100, max(2, (float)$p['share_pct'])) }}%"></div>
                         </div>
                     </div>

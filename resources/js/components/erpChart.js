@@ -205,10 +205,10 @@ export default function erpChart({ chartId, options = {} } = {}) {
             };
 
             merged.grid = {
-                top: 28,
-                right: 20,
-                bottom: 28,
-                left: 20,
+                top: 14,
+                right: 12,
+                bottom: 24,
+                left: 8,
                 containLabel: true,
                 ...(merged.grid || {}),
             };
@@ -219,14 +219,15 @@ export default function erpChart({ chartId, options = {} } = {}) {
                 backgroundColor: popoverBg,
                 borderColor: border,
                 borderWidth: 1,
+                padding: [6, 10],
                 textStyle: {
                     color: foreground,
-                    fontSize: 12,
+                    fontSize: 11.5,
                     fontFamily: '"Plus Jakarta Sans", sans-serif',
                 },
                 extraCssText: isDark
-                    ? 'box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.5); border-radius: 8px;'
-                    : 'box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.08); border-radius: 8px;',
+                    ? 'box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); border-radius: 6px;'
+                    : 'box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); border-radius: 6px;',
                 valueFormatter: (val) => {
                     if (typeof val === 'number') {
                         return 'Rp ' + Number(val).toLocaleString('id-ID');

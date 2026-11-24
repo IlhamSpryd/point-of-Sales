@@ -7,7 +7,7 @@
 @endphp
 
 <section aria-label="Revenue Analytics"
-         class="rounded-[10px] border border-border bg-card p-3.5 sm:p-4"
+         class="rounded-[8px] border border-border bg-card p-3.5 sm:p-4"
          x-data="dashboardEcharts({
              type: 'revenue',
              endpoint: '{{ route('dashboard.api.revenue-series') }}',
@@ -90,7 +90,7 @@
     </div>
 
     <!-- ECharts Render Canvas -->
-    <div class="relative w-full h-[280px] sm:h-[300px] select-none mt-3">
+    <div class="relative w-full h-[220px] sm:h-[240px] select-none mt-2.5">
         <div x-show="loading"
              class="absolute inset-0 bg-card/60 backdrop-blur-xs flex items-center justify-center z-10 transition-opacity"
              x-cloak>

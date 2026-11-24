@@ -42,39 +42,39 @@
     }
 
     $deltaClasses = match ($effectiveVariant) {
-        'positive', 'success' => 'bg-success-muted text-success border-success-border',
-        'negative', 'danger', 'destructive' => 'bg-destructive-muted text-destructive border-destructive-border',
-        'warning' => 'bg-warning-muted text-warning border-warning-border',
-        default => 'bg-muted text-muted-foreground border-border',
+        'positive', 'success' => 'text-positive font-medium',
+        'negative', 'danger', 'destructive' => 'text-destructive font-medium',
+        'warning' => 'text-warning font-medium',
+        default => 'text-muted-foreground font-medium',
     };
 
     // Icon holder is deliberately monochrome (P2: no tinted icon wells).
     $iconClasses = 'bg-muted text-muted-foreground border-border';
 @endphp
 
-<div data-gsap="kpi-card" {{ $attributes->twMerge('card-surface bg-card border border-border rounded-xl p-5 flex flex-col justify-between gap-3 shadow-xs hover:border-border-strong hover:shadow-sm transition-all duration-200') }}>
+<div data-gsap="kpi-card" {{ $attributes->twMerge('card-surface bg-card border border-border rounded-[8px] p-3.5 sm:p-4 flex flex-col justify-between gap-3 shadow-xs hover:border-border-strong hover:shadow-sm transition-all duration-200') }}>
     <div class="flex items-center justify-between gap-2">
-        <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground truncate">
+        <span class="text-[11.5px] font-medium text-muted-foreground truncate">
             {{ $displayLabel }}
         </span>
         @if ($icon)
-            <span class="inline-flex size-10 items-center justify-center rounded-xl border shrink-0 transition-transform duration-200 {{ $iconClasses }}">
-                <x-ui.icon :name="$icon" size="sm" class="currentColor" />
+            <span class="inline-flex size-7 items-center justify-center rounded-[6px] border shrink-0 transition-transform duration-200 {{ $iconClasses }}">
+                <x-ui.icon :name="$icon" size="xs" class="currentColor" />
             </span>
         @endif
     </div>
 
-    <div class="flex items-baseline justify-between gap-2 mt-1">
-        <div @class(['text-[20px] font-semibold tracking-[-0.02em] text-foreground tabular-nums whitespace-nowrap', 'numeric' => $mono])>
+    <div class="flex items-baseline justify-between gap-2 mt-0.5">
+        <div @class(['text-[18px] sm:text-[19px] font-semibold tracking-[-0.02em] text-foreground tabular-nums whitespace-nowrap', 'numeric' => $mono])>
             {{ $value }}
         </div>
 
         @if ($displayDelta !== null && $displayDelta !== '')
-            <span class="inline-flex items-center gap-1 text-xs font-semibold tabular-nums {{ $deltaClasses }}">
+            <span class="inline-flex items-center gap-1 text-[11px] font-medium tabular-nums {{ $deltaClasses }}">
                 @if ($direction === 'up')
-                    <span class="material-symbols-rounded text-[14px] leading-none shrink-0" aria-hidden="true">trending_up</span>
+                    <span class="material-symbols-rounded text-[13px] leading-none shrink-0" aria-hidden="true">trending_up</span>
                 @elseif ($direction === 'down')
-                    <span class="material-symbols-rounded text-[14px] leading-none shrink-0" aria-hidden="true">trending_down</span>
+                    <span class="material-symbols-rounded text-[13px] leading-none shrink-0" aria-hidden="true">trending_down</span>
                 @endif
                 <span>{{ $displayDelta }}</span>
             </span>
@@ -82,7 +82,7 @@
     </div>
 
     @if ($displayHint || trim($slot ?? '') !== '')
-        <div class="text-xs font-medium text-muted-foreground mt-1 leading-normal flex items-center gap-1">
+        <div class="text-[11px] font-medium text-muted-foreground mt-0.5 leading-normal flex items-center gap-1">
             {{ $displayHint ?? $slot }}
         </div>
     @endif

@@ -218,8 +218,8 @@ export default function dashboardEcharts(config = {}) {
                     backgroundColor: t.tooltipBg,
                     borderColor: t.tooltipBorder,
                     borderWidth: 1,
-                    textStyle: { color: t.textColor, fontFamily: t.fontFamily, fontSize: 12 },
-                    extraCssText: 'border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); padding: 10px 12px;',
+                    textStyle: { color: t.textColor, fontFamily: t.fontFamily, fontSize: 11.5 },
+                    extraCssText: 'border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.12); padding: 6px 10px;',
                     formatter: (items) => {
                         if (!items || items.length === 0) return '';
                         let out = `<div class="font-semibold text-xs mb-1.5">${items[0].axisValue}</div>`;
@@ -229,7 +229,7 @@ export default function dashboardEcharts(config = {}) {
                             out += `
                                 <div class="flex items-center justify-between gap-4 text-xs py-0.5">
                                     <span class="flex items-center gap-1.5" style="color: ${it.color}">
-                                        <span class="w-2 h-2 rounded-full" style="background: ${it.color}"></span>
+                                        <span class="w-1.5 h-1.5 rounded-full" style="background: ${it.color}"></span>
                                         ${it.seriesName}
                                     </span>
                                     <span class="font-semibold tabular-nums">${formatted}</span>
@@ -241,31 +241,35 @@ export default function dashboardEcharts(config = {}) {
                     }
                 },
                 grid: {
-                    left: '2%',
-                    right: '3%',
-                    top: '12%',
-                    bottom: '8%',
+                    top: 14,
+                    right: 12,
+                    bottom: 24,
+                    left: 8,
                     containLabel: true,
                 },
                 xAxis: {
                     type: 'category',
                     data: labels,
-                    axisLine: { lineStyle: { color: t.borderColor } },
+                    axisLine: { lineStyle: { color: t.borderColor, width: 0.75 } },
                     axisTick: { show: false },
                     axisLabel: {
                         color: t.mutedTextColor,
                         fontFamily: t.fontFamily,
-                        fontSize: 11,
+                        fontSize: 10.5,
                         interval: Math.max(0, Math.floor(labels.length / 7) - 1),
                     },
+                    splitLine: { show: false },
                 },
                 yAxis: {
                     type: 'value',
-                    splitLine: { lineStyle: { color: t.splitLineColor, type: 'dashed' } },
+                    splitLine: {
+                        show: true,
+                        lineStyle: { color: t.splitLineColor, type: 'dashed', dashOffset: 3, width: 0.75 }
+                    },
                     axisLabel: {
                         color: t.mutedTextColor,
                         fontFamily: t.fontFamily,
-                        fontSize: 11,
+                        fontSize: 10.5,
                         formatter: (val) => formatCompactIDR(val),
                     },
                 },
@@ -274,37 +278,37 @@ export default function dashboardEcharts(config = {}) {
                         name: 'Gross Revenue',
                         type: isBar ? 'bar' : 'line',
                         data: gross,
-                        itemStyle: { color: isBar ? (t.isDark ? '#27272A' : '#E4E4E7') : t.primaryColor },
-                        lineStyle: { width: 1.75, color: t.primaryColor },
+                        itemStyle: { color: isBar ? (t.isDark ? '#27272A' : '#E4E4E7') : t.primaryColor, borderRadius: [3, 3, 0, 0] },
+                        lineStyle: { width: 1.5, color: t.primaryColor },
                         showSymbol: false,
                         smooth: true,
-                        barMaxWidth: 16,
+                        barMaxWidth: 20,
                     }] : []),
                     ...(this.activeSeries.net ? [{
                         name: 'Net Revenue',
                         type: isBar ? 'bar' : 'line',
                         data: net,
-                        itemStyle: { color: t.accentColor },
-                        lineStyle: { width: 2.25, color: t.accentColor },
+                        itemStyle: { color: t.accentColor, borderRadius: [3, 3, 0, 0] },
+                        lineStyle: { width: 1.5, color: t.accentColor },
                         areaStyle: isBar ? undefined : {
                             color: {
                                 type: 'linear',
                                 x: 0, y: 0, x2: 0, y2: 1,
                                 colorStops: [
-                                    { offset: 0, color: t.isDark ? 'rgba(74, 222, 128, 0.20)' : 'rgba(16, 163, 127, 0.16)' },
+                                    { offset: 0, color: t.isDark ? 'rgba(74, 222, 128, 0.16)' : 'rgba(16, 163, 127, 0.12)' },
                                     { offset: 1, color: 'transparent' }
                                 ]
                             }
                         },
                         showSymbol: false,
                         smooth: true,
-                        barMaxWidth: 16,
+                        barMaxWidth: 20,
                     }] : []),
                     ...(this.activeSeries.prior && prior.length > 0 ? [{
                         name: 'Prior Period',
                         type: 'line',
                         data: prior,
-                        lineStyle: { width: 1.5, type: 'dashed', color: t.priorColor },
+                        lineStyle: { width: 1.25, type: 'dashed', color: t.priorColor },
                         itemStyle: { color: t.priorColor },
                         showSymbol: false,
                         smooth: true,
@@ -313,7 +317,7 @@ export default function dashboardEcharts(config = {}) {
                         name: 'Target Penjualan',
                         type: 'line',
                         data: target,
-                        lineStyle: { width: 1.5, type: 'dotted', color: t.targetColor },
+                        lineStyle: { width: 1.25, type: 'dotted', color: t.targetColor },
                         itemStyle: { color: t.targetColor },
                         showSymbol: false,
                     }] : [])
@@ -374,31 +378,35 @@ export default function dashboardEcharts(config = {}) {
                     show: false,
                 },
                 grid: {
-                    left: '2%',
-                    right: '3%',
-                    top: '8%',
-                    bottom: '8%',
+                    top: 14,
+                    right: 12,
+                    bottom: 24,
+                    left: 8,
                     containLabel: true,
                 },
                 xAxis: {
                     type: 'category',
                     data: labels,
-                    axisLine: { lineStyle: { color: t.borderColor } },
+                    axisLine: { lineStyle: { color: t.borderColor, width: 0.75 } },
                     axisTick: { show: false },
                     axisLabel: {
                         color: t.mutedTextColor,
                         fontFamily: t.fontFamily,
-                        fontSize: 11,
+                        fontSize: 10.5,
                         interval: Math.max(0, Math.floor(labels.length / 7) - 1),
                     },
+                    splitLine: { show: false },
                 },
                 yAxis: {
                     type: 'value',
-                    splitLine: { lineStyle: { color: t.splitLineColor, type: 'dashed' } },
+                    splitLine: {
+                        show: true,
+                        lineStyle: { color: t.splitLineColor, type: 'dashed', dashOffset: 3, width: 0.75 }
+                    },
                     axisLabel: {
                         color: t.mutedTextColor,
                         fontFamily: t.fontFamily,
-                        fontSize: 11,
+                        fontSize: 10.5,
                         formatter: (val) => isTx ? `${val} tx` : formatCompactIDR(val),
                     },
                 },
@@ -411,8 +419,8 @@ export default function dashboardEcharts(config = {}) {
                         name: sName,
                         type: 'bar',
                         stack: 'total',
-                        barMaxWidth: 18,
-                        itemStyle: { color },
+                        barMaxWidth: 20,
+                        itemStyle: { color, borderRadius: [3, 3, 0, 0] },
                         data: s.data || s.values || [],
                     };
                 })
@@ -733,7 +741,7 @@ export default function dashboardEcharts(config = {}) {
                     data: vals,
                     showSymbol: false,
                     smooth: true,
-                    lineStyle: { width: 1.5, color },
+                    lineStyle: { width: 1.25, color },
                     areaStyle: {
                         color: {
                             type: 'linear',
@@ -743,7 +751,7 @@ export default function dashboardEcharts(config = {}) {
                                 { offset: 1, color: 'transparent' }
                             ]
                         },
-                        opacity: 0.15
+                        opacity: 0.12
                     }
                 }]
             };

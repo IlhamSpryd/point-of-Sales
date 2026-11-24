@@ -2,7 +2,7 @@
     'id' => null,
     'options' => [],
     'option' => null,
-    'height' => 'h-72 sm:h-80',
+    'height' => 'h-[220px] sm:h-[240px]',
 ])
 
 @php
