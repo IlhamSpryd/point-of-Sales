@@ -8,11 +8,32 @@ use App\Modules\Organization\Models\Company;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
 class SetTenantContext
 {
+    /** @var array<int, int|null> */
+    private static array $inRequestCompanyCache = [];
+
+    /** @var array<string, array<int, int>> */
+    private static array $inRequestStoresCache = [];
+
+    public static function invalidateTenantContext(int $tenantId, ?int $userId = null): void
+    {
+        self::$inRequestCompanyCache = [];
+        self::$inRequestStoresCache = [];
+
+        try {
+            Cache::forget("tenant:{$tenantId}:ctx:v1");
+            if ($userId !== null) {
+                Cache::forget("user:{$userId}:stores:v1");
+            }
+        } catch (\Throwable) {
+        }
+    }
+
     public function __construct(
         private TenantContext $tenantContext,
         private StoreResolver $storeResolver,
@@ -130,30 +151,65 @@ class SetTenantContext
 
         // 6b. Resolve active company under tenant (Tier 2 DEC-001 / Founder Decision 1 & 4)
         $sessionCompanyId = $request->hasSession() ? $request->session()->get('active_company_id') : null;
-        $activeCompany = null;
+        $activeCompanyId = null;
         if ($sessionCompanyId !== null) {
             $activeCompany = Company::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->where('is_active', true)
                 ->find($sessionCompanyId);
+            $activeCompanyId = $activeCompany?->id;
         }
-        if (! $activeCompany) {
-            $activeCompany = Company::getDefaultCompanyForTenant($tenantId)
-                ?? Company::withoutGlobalScopes()
+
+        if (! $activeCompanyId) {
+            $resolveDefaultCompany = function () use ($tenantId): ?int {
+                $defaultComp = Company::getDefaultCompanyForTenant($tenantId);
+                if ($defaultComp) {
+                    return (int) $defaultComp->id;
+                }
+
+                $fallbackId = Company::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
                     ->where('is_active', true)
                     ->orderByDesc('is_default')
-                    ->first();
+                    ->value('id');
+
+                return $fallbackId ? (int) $fallbackId : null;
+            };
+
+            if (isset(self::$inRequestCompanyCache[$tenantId])) {
+                $activeCompanyId = self::$inRequestCompanyCache[$tenantId];
+            } elseif (! app()->runningUnitTests()) {
+                /** @var int|null $cachedCompanyId */
+                $cachedCompanyId = Cache::remember("tenant:{$tenantId}:ctx:v1", 60, $resolveDefaultCompany);
+                $activeCompanyId = $cachedCompanyId;
+                self::$inRequestCompanyCache[$tenantId] = $activeCompanyId;
+            } else {
+                $activeCompanyId = $resolveDefaultCompany();
+                self::$inRequestCompanyCache[$tenantId] = $activeCompanyId;
+            }
         }
-        if ($activeCompany) {
-            $this->tenantContext->setCompanyId($activeCompany->id);
+
+        if ($activeCompanyId) {
+            $this->tenantContext->setCompanyId($activeCompanyId);
             if ($request->hasSession()) {
-                $request->session()->put('active_company_id', $activeCompany->id);
+                $request->session()->put('active_company_id', $activeCompanyId);
             }
         }
 
         // 7. Resolve active store (cabang). TIDAK PERNAH dari input request.
-        $allowed = $this->storeResolver->allowedStoreIdsFor($user, $tenantId);
+        $userKey = "{$user->id}:{$tenantId}";
+        if (isset(self::$inRequestStoresCache[$userKey])) {
+            $allowed = self::$inRequestStoresCache[$userKey];
+        } elseif (! app()->runningUnitTests()) {
+            $allowed = Cache::remember("user:{$user->id}:stores:v1", 60, function () use ($user, $tenantId) {
+                return $this->storeResolver->allowedStoreIdsFor($user, $tenantId);
+            });
+            self::$inRequestStoresCache[$userKey] = $allowed;
+        } else {
+            $allowed = $this->storeResolver->allowedStoreIdsFor($user, $tenantId);
+            self::$inRequestStoresCache[$userKey] = $allowed;
+        }
+
         $sessionStoreId = $request->hasSession() ? $request->session()->get('active_store_id') : null;
         $isOwner = $user->role?->name === 'Owner' || (bool) ($user->role?->is_admin ?? false);
         $wantsAllStores = $isOwner && ($sessionStoreId === 'all' || $sessionStoreId === null);
@@ -191,6 +247,8 @@ class SetTenantContext
 
     public function terminate(Request $request, Response $response): void
     {
+        self::$inRequestCompanyCache = [];
+        self::$inRequestStoresCache = [];
         $this->tenantContext->clear();
     }
 }

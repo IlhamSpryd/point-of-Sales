@@ -43,7 +43,7 @@
 
     <!-- Self-Hosted Fonts Preload (Offline First & Zero External Latency) -->
     <link rel="preload" href="{{ asset('fonts/plus-jakarta-sans.woff2') }}" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="{{ asset('fonts/material-symbols-rounded.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ asset('fonts/material-symbols-rounded.woff2?v=w8') }}" as="font" type="font/woff2" crossorigin>
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])

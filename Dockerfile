@@ -75,6 +75,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # Copy PHP and OPcache configuration
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/99-enterprise-php.ini
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/10-opcache.ini
+COPY docker/php/www.conf /usr/local/etc/php-fpm.d/zz-apeiron.conf
 
 # Copy entrypoint script
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh

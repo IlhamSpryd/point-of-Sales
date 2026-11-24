@@ -173,8 +173,8 @@ class OfdChannelConfigManager extends Component
             ->orderBy('name')
             ->get(['id', 'name']);
 
-        $webhookUrl = url('/api/v1/webhooks/'.$this->provider);
-        $headerName = $this->provider === 'grabfood' ? 'X-Grab-Signature' : 'X-Gofood-Signature';
+        $webhookUrl = url('/api/webhooks/'.$this->provider.'/orders');
+        $headerName = $this->provider === 'grabfood' ? 'X-Grab-Signature' : 'X-Gojek-Signature';
 
         return view('livewire.integration.ofd-channel-config-manager', [
             'priceLists' => $priceLists,
