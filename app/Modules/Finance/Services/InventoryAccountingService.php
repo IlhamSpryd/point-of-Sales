@@ -10,6 +10,7 @@ use App\Modules\Inventory\Models\StockOpname;
 use App\Modules\Inventory\Models\StockTransfer;
 use App\Modules\Purchasing\Models\GoodsReceivedNote;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class InventoryAccountingService
 {
