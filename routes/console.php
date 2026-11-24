@@ -106,3 +106,17 @@ Schedule::command('sanctum:prune-expired --hours=24')
     ->withoutOverlapping(30)
     ->onOneServer()
     ->runInBackground();
+
+// EXP-02: Pembersihan otomatis file ekspor lawas (> 7 hari) dan status Expired
+Schedule::command('exports:prune --days=7')
+    ->dailyAt('04:00')
+    ->withoutOverlapping(30)
+    ->onOneServer()
+    ->runInBackground();
+
+// BILL-02: Evaluasi status siklus hidup langganan (active/trialing -> past_due -> suspended)
+Schedule::command('subscription:evaluate-status')
+    ->dailyAt('00:05')
+    ->withoutOverlapping(30)
+    ->onOneServer()
+    ->runInBackground();

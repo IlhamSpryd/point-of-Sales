@@ -66,6 +66,7 @@ class SubscriptionBillingOrchestrator implements SubscriptionPaymentSettlementIn
             'result_tenant_id' => $tenantId,
             'result_user_id' => $user?->id,
             'plan_id' => $targetPlan->id,
+            'expected_amount' => (string) $totalAmount->toDecimal(),
             'notes' => "Self-serve upgrade ke {$targetPlan->name} ({$billingCycle}) - Order {$orderCode}",
             'correlation_id' => $orderCode,
             'started_at' => now(),
@@ -231,8 +232,18 @@ class SubscriptionBillingOrchestrator implements SubscriptionPaymentSettlementIn
             $orderRecord = ProvisioningRequest::where('notes', 'like', "%{$orderId}%")->first();
         }
 
-        $tenantId = $orderRecord?->result_tenant_id;
-        $planId = $orderRecord?->plan_id;
+        // Fail-Closed Guard (BILL-01, Koreksi #2): Tolak mutlak jika order record tidak ditemukan
+        if ($orderRecord === null) {
+            Log::warning('[SUBSCRIPTION WEBHOOK] ProvisioningRequest record not found for order reference.', [
+                'order_id' => $orderId,
+                'status' => $transactionStatus,
+            ]);
+
+            return false;
+        }
+
+        $tenantId = $orderRecord->result_tenant_id;
+        $planId = $orderRecord->plan_id;
 
         // Fallback: parse SUB-{tenantId}-{planId}-... format
         if (($tenantId === null || $planId === null) && preg_match('/^SUB[-_](\d+)[-_](\d+)/i', $orderId, $matches)) {
@@ -249,13 +260,36 @@ class SubscriptionBillingOrchestrator implements SubscriptionPaymentSettlementIn
             return false;
         }
 
-        // Strict Idempotency Check 1: Provisioning request already completed
-        if ($orderRecord !== null && $orderRecord->status === ProvisioningRequest::STATUS_COMPLETED) {
+        // Strict Idempotency Check 1: Provisioning request already completed (anti-replay)
+        if ($orderRecord->status === ProvisioningRequest::STATUS_COMPLETED) {
             Log::info("[SUBSCRIPTION WEBHOOK] Order {$orderId} already completed. Idempotent skip.", [
                 'tenant_id' => $tenantId,
             ]);
 
             return true;
+        }
+
+        // Anti-Amount-Tampering: Validasi keras nominal pembayaran dengan BCMath (BILL-01)
+        if ($isSettled) {
+            $targetPlan = Plan::find($planId);
+            $expectedAmount = (string) ($orderRecord->expected_amount ?? ($targetPlan->price ?? '0.00'));
+            $paidAmount = (string) ($rawPayload['gross_amount'] ?? '0.00');
+
+            if (bccomp($paidAmount, $expectedAmount, 2) < 0) {
+                Log::critical("[SUBSCRIPTION FRAUD DETECTED] Webhook gross_amount ({$paidAmount}) lebih rendah dari expected ({$expectedAmount})!", [
+                    'order_id' => $orderId,
+                    'expected' => $expectedAmount,
+                    'paid' => $paidAmount,
+                    'tenant_id' => $tenantId,
+                ]);
+
+                $orderRecord->update([
+                    'status' => ProvisioningRequest::STATUS_FAILED,
+                    'error_message' => "Pembayaran tidak mencukupi: Diharapkan Rp {$expectedAmount}, Diterima Rp {$paidAmount}",
+                ]);
+
+                return false;
+            }
         }
 
         // Strict Idempotency Check 2: TenantSubscription already activated with this payment reference
@@ -285,7 +319,7 @@ class SubscriptionBillingOrchestrator implements SubscriptionPaymentSettlementIn
 
         // Non-settled terminal states: deny, cancel, expire
         if (in_array($transactionStatus, ['deny', 'cancel', 'expire'], true)) {
-            if ($orderRecord !== null && $orderRecord->status === ProvisioningRequest::STATUS_PENDING) {
+            if ($orderRecord->status === ProvisioningRequest::STATUS_PENDING) {
                 $orderRecord->update([
                     'status' => ProvisioningRequest::STATUS_FAILED,
                     'error_message' => "Midtrans transaction status: {$transactionStatus}",

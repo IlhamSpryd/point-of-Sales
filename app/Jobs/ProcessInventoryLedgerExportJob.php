@@ -95,23 +95,26 @@ class ProcessInventoryLedgerExportJob implements ShouldBeUnique, ShouldQueue
             $itemType = (string) ($params['item_type'] ?? 'all');
             $itemId = isset($params['item_id']) ? (int) $params['item_id'] : null;
 
+            $format = strtolower((string) ($params['format'] ?? 'xlsx'));
+            $ext = $format === 'csv' ? 'csv' : 'xlsx';
             $dir = "exports/tenant_{$this->tenantId}";
             Storage::disk('local')->makeDirectory($dir);
-            $filename = $dir.'/inventory_ledger_'.$start->format('Ymd').'-'.$end->format('Ymd').'_'.$this->exportTask->id.'.xlsx';
+            $filename = $dir.'/inventory_ledger_'.$start->format('Ymd').'-'.$end->format('Ymd').'_'.$this->exportTask->id.'.'.$ext;
+            $fullPath = Storage::disk('local')->path($filename);
 
-            Excel::store(
-                new InventoryLedgerExport(
-                    startDate: $start,
-                    endDate: $end,
-                    storeId: $this->storeId,
-                    itemType: $itemType,
-                    itemId: $itemId
-                ),
-                $filename,
-                'local'
+            $exportInstance = new InventoryLedgerExport(
+                startDate: $start,
+                endDate: $end,
+                storeId: $this->storeId,
+                itemType: $itemType,
+                itemId: $itemId
             );
 
-            $fullPath = Storage::disk('local')->path($filename);
+            if ($ext === 'csv') {
+                $exportInstance->streamCsv($fullPath);
+            } else {
+                Excel::store($exportInstance, $filename, 'local');
+            }
 
             $fileSize = Storage::disk('local')->exists($filename) ? Storage::disk('local')->size($filename) : (file_exists($fullPath) ? filesize($fullPath) : null);
 

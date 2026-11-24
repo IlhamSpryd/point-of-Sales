@@ -94,20 +94,34 @@ class SetTenantContext
         }
 
         // 5b. Block operational access when tenant is suspended (billing, admin, or manual)
+        // Shift Safe Expiry Exemption (BILL-02, Koreksi #5):
+        // Kecualikan rute penutupan shift kasir dan penyelesaian meja agar kasir shift malam tidak terkunci mendadak.
         if ($tenant->isSuspended()) {
-            if ($request->expectsJson() || $request->is('api/*') || $request->wantsJson()) {
-                return response()->json([
-                    'error' => 'TENANT_SUSPENDED',
-                    'message' => 'Your business workspace is currently suspended. Please contact customer support.',
-                ], 403);
-            }
+            $isGraceRoute = $request->is('logout')
+                || $request->is('*/logout')
+                || $request->is('*shifts/*/close*')
+                || $request->is('*shifts/close*')
+                || $request->is('*kasir/shift/close*')
+                || $request->is('*tables/*/release*')
+                || $request->is('*orders/*/pay*')
+                || $request->is('subscription*')
+                || $request->is('*/subscription*');
 
-            if ($request->hasSession()) {
-                Auth::guard('web')->logout();
-                $request->session()->invalidate();
-                $request->session()->regenerateToken();
+            if (! $isGraceRoute) {
+                if ($request->expectsJson() || $request->is('api/*') || $request->wantsJson()) {
+                    return response()->json([
+                        'error' => 'TENANT_SUSPENDED',
+                        'message' => 'Your business workspace is currently suspended. Please contact customer support.',
+                    ], 403);
+                }
+
+                if ($request->hasSession()) {
+                    Auth::guard('web')->logout();
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+                }
+                abort(403, 'Your business workspace is currently suspended. Please contact customer support.');
             }
-            abort(403, 'Your business workspace is currently suspended. Please contact customer support.');
         }
 
         // 5c. Block operational access when tenant is purged (EXT-06, UU PDP)

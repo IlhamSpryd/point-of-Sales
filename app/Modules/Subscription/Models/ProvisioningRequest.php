@@ -50,6 +50,7 @@ class ProvisioningRequest extends Model
         'result_tenant_id',
         'result_user_id',
         'plan_id',
+        'expected_amount',
         'notes',
         'error_message',
         'started_at',
@@ -65,6 +66,7 @@ class ProvisioningRequest extends Model
         'lease_expires_at' => 'datetime',
         'attempt_count' => 'integer',
         'plan_id' => 'integer',
+        'expected_amount' => 'decimal:2',
     ];
 
     /**

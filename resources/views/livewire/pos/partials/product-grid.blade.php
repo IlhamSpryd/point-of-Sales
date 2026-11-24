@@ -73,6 +73,7 @@
                 wire:model.live.debounce.300ms="search"
                 id="search-input"
                 placeholder="Search product name, SKU, or scan barcode (F2)..."
+                @keydown.enter.prevent="$wire.handleSearchEnter($el.value)"
                 class="w-full h-10 pl-9 pr-20 rounded-lg bg-card border border-border text-foreground placeholder-muted-foreground text-xs focus:outline-none focus:border-foreground focus:ring-1 focus:ring-ring transition-all">
             <div class="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none">
                 <span class="px-1.5 py-0.5 rounded bg-muted border border-border text-muted-foreground text-xs font-medium tabular-nums uppercase tracking-wide">F2</span>

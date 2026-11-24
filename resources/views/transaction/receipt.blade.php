@@ -117,6 +117,11 @@
                     <span>Service Charge</span><span>{{ number_format($order->service_charge_amount, 0, ',', '.') }}</span>
                 </div>
             @endif
+            @if (($order->rounding_adjustment ?? 0) != 0)
+                <div class="flex justify-between text-foreground">
+                    <span>Pembulatan</span><span>{{ ($order->rounding_adjustment > 0 ? '+' : '').number_format($order->rounding_adjustment, 0, ',', '.') }}</span>
+                </div>
+            @endif
             <div class="flex justify-between font-bold text-[13px] mt-1 border-t border-dashed border-foreground pt-1">
                 <span>TOTAL</span><span>{{ number_format($order->order_amount, 0, ',', '.') }}</span>
             </div>

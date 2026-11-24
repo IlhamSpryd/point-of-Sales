@@ -169,12 +169,13 @@ class CheckoutOrderHandler
                 }
 
                 $activeShift = null;
+                $isOfflineRecon = (bool) ($data['offline_post_close_reconciliation'] ?? false);
                 if (! empty($data['shift_id'])) {
                     $activeShift = Shift::allBranchesInTenant()->where('id', $data['shift_id'])->lockForUpdate()->first();
-                    if (! $activeShift || $activeShift->status !== 'open') {
+                    if (! $isOfflineRecon && (! $activeShift || $activeShift->status !== 'open')) {
                         throw new ShiftClosedException('Your register shift was just closed. This transaction has been cancelled, please open a new shift before proceeding.');
                     }
-                    if ($activeShift->user_id !== $userId) {
+                    if (! $isOfflineRecon && $activeShift->user_id !== $userId) {
                         throw ValidationException::withMessages(['shift_id' => 'Shift does not belong to current cashier.']);
                     }
                 }
@@ -413,6 +414,7 @@ class CheckoutOrderHandler
                     'source_reference' => $data['source_reference'] ?? null,
                     'created_by_device_id' => $resolvedDeviceId,
                     'is_offline_sync' => (bool) ($data['is_offline_sync'] ?? false),
+                    'offline_post_close_reconciliation' => (bool) ($data['offline_post_close_reconciliation'] ?? false),
                     'offline_synced_at' => ! empty($data['is_offline_sync']) ? ($data['offline_synced_at'] ?? now()) : null,
                     'offline_client_uuid' => $data['offline_client_uuid'] ?? null,
                 ]);

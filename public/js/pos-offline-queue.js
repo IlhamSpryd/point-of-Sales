@@ -11,17 +11,23 @@
     let dbPromise = null;
     let currentDb = null;
     let currentTenantId = null;
+    let currentUserId = null;
 
     function getActiveTenantId() {
         const metaTenant = document.querySelector('meta[name="tenant-id"]')?.getAttribute('content');
         return metaTenant || window.__APEIRON_BOOT__?.tenantId || window.ApeironTenantId || null;
     }
 
-    function getDbName(tenantId) {
+    function getActiveUserId() {
+        const metaUser = document.querySelector('meta[name="user-id"]')?.getAttribute('content');
+        return metaUser || window.__APEIRON_BOOT__?.userId || window.ApeironUserId || '0';
+    }
+
+    function getDbName(tenantId, userId) {
         if (!tenantId) {
             throw new Error('[OFFLINE POS] Konteks tenant_id tidak ditemukan. Akses IndexedDB dibatalkan demi keamanan multi-tenant.');
         }
-        return `apeiron_pos_tenant_${tenantId}`;
+        return `apeiron_pos_tenant_${tenantId}_user_${userId || '0'}`;
     }
 
     function closeDatabase() {
@@ -35,27 +41,31 @@
         }
         dbPromise = null;
         currentTenantId = null;
+        currentUserId = null;
     }
 
     function openDatabase() {
         const tenantId = getActiveTenantId();
+        const userId = getActiveUserId();
         if (!tenantId) {
             const err = new Error('[OFFLINE POS] Konteks tenant_id tidak ditemukan. Akses IndexedDB ditolak demi isolasi multi-tenant (DEC-001).');
             console.error(err.message);
             return Promise.reject(err);
         }
 
-        // Jika tenant beralih pada sesi terminal yang sama, tutup database tenant sebelumnya
-        if (currentTenantId && String(currentTenantId) !== String(tenantId)) {
+        // Jika tenant atau user beralih pada terminal tablet bersama, tutup database sebelumnya
+        if ((currentTenantId && String(currentTenantId) !== String(tenantId)) ||
+            (currentUserId && String(currentUserId) !== String(userId))) {
             closeDatabase();
         }
 
-        if (dbPromise && currentDb && String(currentTenantId) === String(tenantId)) {
+        if (dbPromise && currentDb && String(currentTenantId) === String(tenantId) && String(currentUserId) === String(userId)) {
             return dbPromise;
         }
 
         currentTenantId = tenantId;
-        const dbName = getDbName(tenantId);
+        currentUserId = userId;
+        const dbName = getDbName(tenantId, userId);
 
         dbPromise = new Promise((resolve, reject) => {
             const request = window.indexedDB.open(dbName, DB_VERSION);
@@ -119,13 +129,24 @@
 
             const db = await openDatabase();
             const uuid = orderPayload.offline_client_uuid || this.generateUuid();
+            const parsedUserId = parseInt(userId, 10) || null;
+            const parsedShiftId = window.__APEIRON_BOOT__?.shiftId || window.ApeironShiftId || null;
 
             const record = {
                 offline_client_uuid: uuid,
                 tenant_id: String(tenantId),
+                offline_created_by_user_id: parsedUserId,
+                offline_shift_id: parsedShiftId ? parseInt(parsedShiftId, 10) : null,
                 idempotency_key: orderPayload.idempotency_key || ('offline-sync-' + uuid),
                 payment_method: 'cash',
-                payload: { ...orderPayload, offline_client_uuid: uuid, payment_method: 'cash', tenant_id: String(tenantId) },
+                payload: {
+                    ...orderPayload,
+                    offline_client_uuid: uuid,
+                    offline_created_by_user_id: parsedUserId,
+                    offline_shift_id: parsedShiftId ? parseInt(parsedShiftId, 10) : null,
+                    payment_method: 'cash',
+                    tenant_id: String(tenantId)
+                },
                 sync_status: 'pending',
                 created_at: new Date().toISOString()
             };
@@ -263,12 +284,22 @@
         }
     };
 
-    // Deteksi logout: tutup handle database seketika
+    // Deteksi logout: peringatan antrean luring & tutup handle database seketika
     document.addEventListener('submit', (e) => {
         const form = e.target;
         if (form && typeof form.getAttribute === 'function') {
             const action = form.getAttribute('action') || '';
             if (action.includes('logout')) {
+                ApeironOfflinePos.getPendingCount().then((count) => {
+                    if (count > 0) {
+                        const ok = window.confirm(`Peringatan: Ada ${count} transaksi offline yang belum tersinkronisasi. Pastikan sinkronisasi selesai sebelum berganti kasir. Tetap logout?`);
+                        if (!ok) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return;
+                        }
+                    }
+                }).catch(() => {});
                 ApeironOfflinePos.closeDatabase();
             }
         }

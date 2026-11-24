@@ -7,10 +7,10 @@ namespace App\Exports;
 use App\Core\Context\TenantContext;
 use App\Exports\Concerns\SanitizesSpreadsheetFormulas;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
-use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithCustomChunkSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
@@ -19,13 +19,17 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ProductsExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithStyles
+/**
+ * Ekspor Data Produk Anti-OOM (EXP-01).
+ * Menggunakan FromQuery + WithCustomChunkSize(1000) dan fixed column widths untuk memori flat < 50 MB.
+ */
+class ProductsExport implements FromQuery, WithColumnWidths, WithCustomChunkSize, WithHeadings, WithMapping, WithStyles
 {
     use SanitizesSpreadsheetFormulas;
 
     public function __construct(protected Builder $query) {}
 
-    public function collection(): Collection
+    public function query(): Builder
     {
         $tenantId = app(TenantContext::class)->requireTenantId();
         $storeId = app(TenantContext::class)->getStoreId();
@@ -41,7 +45,34 @@ class ProductsExport implements FromCollection, ShouldAutoSize, WithHeadings, Wi
             'brand' => fn ($q) => $q->where('tenant_id', $tenantId),
             'baseUom' => fn ($q) => $q->where('tenant_id', $tenantId),
             'taxClass' => fn ($q) => $q->where('tenant_id', $tenantId),
-        ])->get();
+        ]);
+    }
+
+    public function chunkSize(): int
+    {
+        return 1000;
+    }
+
+    public function columnWidths(): array
+    {
+        return [
+            'A' => 10,
+            'B' => 18,
+            'C' => 30,
+            'D' => 18,
+            'E' => 20,
+            'F' => 18,
+            'G' => 12,
+            'H' => 15,
+            'I' => 15,
+            'J' => 15,
+            'K' => 18,
+            'L' => 15,
+            'M' => 14,
+            'N' => 15,
+            'O' => 12,
+            'P' => 12,
+        ];
     }
 
     public function headings(): array
@@ -64,22 +95,6 @@ class ProductsExport implements FromCollection, ShouldAutoSize, WithHeadings, Wi
             'Stock',
             'Status',
         ];
-    }
-
-    /**
-     * Mencegah CSV Formula Injection (Excel / LibreOffice injection).
-     */
-    private function sanitizeFormula(?string $value): ?string
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        if (preg_match('/^[\=\+\-\@\t\r]/', $value)) {
-            return "'".$value;
-        }
-
-        return $value;
     }
 
     public function map($product): array
@@ -145,5 +160,28 @@ class ProductsExport implements FromCollection, ShouldAutoSize, WithHeadings, Wi
         $sheet->getStyle("K2:K{$lastRow}")->getNumberFormat()->setFormatCode('#,##0');
 
         return [];
+    }
+
+    /**
+     * Generator Streaming CSV murni (Anti-OOM) dengan memori flat < 50 MB.
+     */
+    public function streamCsv(string $filePath): void
+    {
+        $handle = fopen($filePath, 'w');
+        if ($handle === false) {
+            throw new \RuntimeException("Gagal membuka file ekspor CSV untuk penulisan: {$filePath}");
+        }
+
+        try {
+            fputcsv($handle, $this->headings());
+            $q = $this->query();
+            $q->chunkById(1000, function ($products) use ($handle) {
+                foreach ($products as $product) {
+                    fputcsv($handle, $this->map($product));
+                }
+            });
+        } finally {
+            fclose($handle);
+        }
     }
 }

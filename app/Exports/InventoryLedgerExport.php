@@ -12,7 +12,7 @@ use App\Modules\Inventory\Models\StockMovement;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
@@ -24,7 +24,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 /**
  * Export Kartu Stok (Stock Card / Inventory Ledger).
  */
-class InventoryLedgerExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithStyles
+class InventoryLedgerExport implements FromCollection, WithColumnWidths, WithHeadings, WithMapping, WithStyles
 {
     use SanitizesSpreadsheetFormulas;
 
@@ -168,6 +168,23 @@ class InventoryLedgerExport implements FromCollection, ShouldAutoSize, WithHeadi
         ]);
     }
 
+    public function columnWidths(): array
+    {
+        return [
+            'A' => 20,
+            'B' => 18,
+            'C' => 14,
+            'D' => 28,
+            'E' => 16,
+            'F' => 18,
+            'G' => 14,
+            'H' => 16,
+            'I' => 18,
+            'J' => 24,
+            'K' => 16,
+        ];
+    }
+
     public function styles(Worksheet $sheet): array
     {
         $lastRow = $sheet->getHighestRow();
@@ -193,5 +210,104 @@ class InventoryLedgerExport implements FromCollection, ShouldAutoSize, WithHeadi
                 ],
             ],
         ];
+    }
+
+    /**
+     * Generator Streaming CSV murni (Anti-OOM) dengan chunkById(1000) dan memori flat < 50 MB.
+     */
+    public function streamCsv(string $filePath): void
+    {
+        $handle = fopen($filePath, 'w');
+        if ($handle === false) {
+            throw new \RuntimeException("Gagal membuka file ekspor CSV untuk penulisan: {$filePath}");
+        }
+
+        try {
+            fputcsv($handle, $this->headings());
+            $tenantId = app(TenantContext::class)->requireTenantId();
+            $targetStoreId = $this->storeId ?? app(TenantContext::class)->getStoreId();
+
+            if ($this->itemType === 'all' || $this->itemType === 'product') {
+                $productMovementsQuery = StockMovement::query()
+                    ->where('tenant_id', $tenantId)
+                    ->whereBetween('created_at', [$this->startDate->startOfDay(), $this->endDate->endOfDay()])
+                    ->with(['product', 'store']);
+
+                if ($targetStoreId !== null) {
+                    $productMovementsQuery->where('store_id', $targetStoreId);
+                }
+
+                if ($this->itemId !== null && $this->itemType === 'product') {
+                    $productMovementsQuery->where('product_id', $this->itemId);
+                }
+
+                $productMovementsQuery->chunkById(1000, function ($movements) use ($handle) {
+                    foreach ($movements as $pm) {
+                        $typeVal = $pm->type instanceof \BackedEnum ? $pm->type->value : (string) $pm->type;
+                        $isPositive = $pm->type instanceof StockMovementType ? $pm->type->isPositive() : true;
+                        $rawQty = (string) $pm->quantity;
+                        $signedQty = $isPositive ? $rawQty : '-'.abs((float) $rawQty);
+                        $unitCost = (string) ($pm->unit_cost ?? '0.0000');
+                        $totalCost = bcmul((string) abs((float) $rawQty), $unitCost, 2);
+
+                        fputcsv($handle, $this->sanitizeRow([
+                            $pm->created_at?->format('Y-m-d H:i:s'),
+                            $pm->store->name ?? "Cabang #{$pm->store_id}",
+                            'Produk',
+                            $pm->product->product_name ?? "Produk #{$pm->product_id}",
+                            $pm->product->product_code ?? '-',
+                            strtoupper($typeVal),
+                            $signedQty,
+                            number_format((float) $unitCost, 2, '.', ''),
+                            number_format((float) $totalCost, 2, '.', ''),
+                            $pm->reason ?? '-',
+                            $pm->order_id ? "Order #{$pm->order_id}" : '-',
+                        ]));
+                    }
+                });
+            }
+
+            if ($this->itemType === 'all' || $this->itemType === 'ingredient') {
+                $ingredientMovementsQuery = IngredientStockMovement::query()
+                    ->where('tenant_id', $tenantId)
+                    ->whereBetween('created_at', [$this->startDate->startOfDay(), $this->endDate->endOfDay()])
+                    ->with(['ingredient', 'store']);
+
+                if ($targetStoreId !== null) {
+                    $ingredientMovementsQuery->where('store_id', $targetStoreId);
+                }
+
+                if ($this->itemId !== null && $this->itemType === 'ingredient') {
+                    $ingredientMovementsQuery->where('ingredient_id', $this->itemId);
+                }
+
+                $ingredientMovementsQuery->chunkById(1000, function ($movements) use ($handle) {
+                    foreach ($movements as $im) {
+                        $typeVal = $im->type->value;
+                        $isPositive = $im->type->isPositive();
+                        $rawQty = (string) $im->quantity;
+                        $signedQty = $isPositive ? $rawQty : '-'.abs((float) $rawQty);
+                        $unitCost = (string) ($im->unit_cost ?? '0.0000');
+                        $totalCost = bcmul((string) abs((float) $rawQty), $unitCost, 2);
+
+                        fputcsv($handle, $this->sanitizeRow([
+                            $im->created_at?->format('Y-m-d H:i:s'),
+                            $im->store->name ?? "Cabang #{$im->store_id}",
+                            'Bahan Baku',
+                            $im->ingredient->name ?? "Bahan #{$im->ingredient_id}",
+                            $im->ingredient->code ?? '-',
+                            strtoupper($typeVal),
+                            $signedQty,
+                            number_format((float) $unitCost, 2, '.', ''),
+                            number_format((float) $totalCost, 2, '.', ''),
+                            $im->reason ?? '-',
+                            $im->order_id ? "Order #{$im->order_id}" : '-',
+                        ]));
+                    }
+                });
+            }
+        } finally {
+            fclose($handle);
+        }
     }
 }

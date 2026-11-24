@@ -63,8 +63,7 @@ class OfflineOrderSyncService
             }
 
             // Pemeriksaan Idempotensi: Jika UUID sudah tersinkronkan sebelumnya, kembalikan record tanpa membuat duplikasi
-            $existing = Order::withoutGlobalScopes()
-                ->where('tenant_id', $tenantId)
+            $existing = Order::where('tenant_id', $tenantId)
                 ->where('offline_client_uuid', $uuid)
                 ->first();
 
@@ -90,16 +89,43 @@ class OfflineOrderSyncService
                     app(TenantContext::class)->setTenantId($tenantId);
                     app(TenantContext::class)->setStoreId($storeId);
 
-                    // Selesaikan shift_id aktif kasir
-                    $shiftId = $orderPayload['shift_id'] ?? null;
+                    // Selesaikan attribution user dan shift kasir (Shared-Tablet Offline Attribution Guard PWA-01)
+                    $creatorUserId = isset($orderPayload['offline_created_by_user_id']) ? (int) $orderPayload['offline_created_by_user_id'] : $userId;
+                    $creatorShiftId = isset($orderPayload['offline_shift_id']) ? (int) $orderPayload['offline_shift_id'] : ($orderPayload['shift_id'] ?? null);
+
+                    $targetUserId = $userId;
+                    if ($creatorUserId > 0) {
+                        $validCreator = \App\Modules\Organization\Models\User::where('tenant_id', $tenantId)
+                            ->where('id', $creatorUserId)
+                            ->exists();
+                        if ($validCreator) {
+                            $targetUserId = $creatorUserId;
+                        }
+                    }
+
+                    $shiftId = null;
+                    $isPostCloseReconciliation = false;
+
+                    if ($creatorShiftId) {
+                        $originShift = Shift::where('tenant_id', $tenantId)
+                            ->where('id', $creatorShiftId)
+                            ->first();
+
+                        if ($originShift) {
+                            $shiftId = $originShift->id;
+                            if ($originShift->status !== 'open') {
+                                $isPostCloseReconciliation = true;
+                            }
+                        }
+                    }
+
                     if (! $shiftId) {
-                        $shiftId = Shift::withoutGlobalScopes()
-                            ->where('tenant_id', $tenantId)
+                        $shiftId = Shift::where('tenant_id', $tenantId)
                             ->where('store_id', $storeId)
-                            ->where(function ($q) use ($userId) {
-                                $q->where('active_cashier_id', $userId)
-                                    ->orWhere(function ($sub) use ($userId) {
-                                        $sub->whereNull('active_cashier_id')->where('user_id', $userId);
+                            ->where(function ($q) use ($targetUserId) {
+                                $q->where('active_cashier_id', $targetUserId)
+                                    ->orWhere(function ($sub) use ($targetUserId) {
+                                        $sub->whereNull('active_cashier_id')->where('user_id', $targetUserId);
                                     });
                             })
                             ->where('status', 'open')
@@ -107,17 +133,19 @@ class OfflineOrderSyncService
                     }
 
                     if (! $shiftId) {
-                        // Fallback ke shift terbuka mana pun pada store tersebut
-                        $shiftId = Shift::withoutGlobalScopes()
-                            ->where('tenant_id', $tenantId)
-                            ->where('store_id', $storeId)
-                            ->where('status', 'open')
-                            ->value('id');
+                        if ($targetUserId !== $userId) {
+                            $isPostCloseReconciliation = true;
+                        } else {
+                            $shiftId = Shift::where('tenant_id', $tenantId)
+                                ->where('store_id', $storeId)
+                                ->where('status', 'open')
+                                ->value('id');
+                        }
                     }
 
                     $orderPayload['tenant_id'] = $tenantId;
                     $orderPayload['store_id'] = $storeId;
-                    $orderPayload['user_id'] = $userId;
+                    $orderPayload['user_id'] = $targetUserId;
                     $orderPayload['shift_id'] = $shiftId;
                     $orderPayload['created_by_device_id'] = $deviceId ?? ($orderPayload['device_id'] ?? null);
                     $orderPayload['offline_client_uuid'] = $uuid;
@@ -125,10 +153,14 @@ class OfflineOrderSyncService
                     $orderPayload['idempotency_key'] = (! empty($rawKey) && strlen($rawKey) <= 36) ? $rawKey : (string) Str::uuid();
                     $orderPayload['payment_method'] = 'cash';
                     $orderPayload['is_offline_sync'] = true;
+                    $orderPayload['offline_post_close_reconciliation'] = $isPostCloseReconciliation;
                     $orderPayload['offline_synced_at'] = now();
+                    if ($isPostCloseReconciliation) {
+                        $orderPayload['source_reference'] = trim(($orderPayload['source_reference'] ?? '').' [OFFLINE POST-CLOSE RECONCILIATION]');
+                    }
 
                     // Eksekusi transaksi melalui TransactionService
-                    $order = $this->transactionService->createTransaction($orderPayload, $userId);
+                    $order = $this->transactionService->createTransaction($orderPayload, $targetUserId);
 
                     return $order;
                 });

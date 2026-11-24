@@ -120,6 +120,29 @@ trait ManagesPosCartAndVariants
     }
 
     /**
+     * Penanganan terpadu input pencarian / scanner saat tombol Enter ditekan (BAR-01).
+     * Jika query cocok persis dengan barcode/SKU, tambahkan ke keranjang dan bersihkan kolom pencarian.
+     * Jika tidak cocok, pertahankan teks pencarian untuk memfilter katalog produk di grid.
+     */
+    public function handleSearchEnter(string $query): void
+    {
+        $code = trim($query);
+        if ($code === '') {
+            return;
+        }
+
+        $storeId = app(TenantContext::class)->getStoreId();
+        $res = app(PosCartCoordinatorService::class)->resolveBarcode($code, $storeId);
+
+        if ($res['action'] !== 'error') {
+            $this->scanBarcode($code);
+            $this->search = '';
+        } else {
+            $this->search = $code;
+        }
+    }
+
+    /**
      * @param  array{is_scale: bool, prefix: string, item_code: string, weight_grams: int, weight_kg: numeric-string, embedded_price: int, check_digit: int}  $scaleData
      */
     public function addScaleProductToCart(Product $product, array $scaleData): void
