@@ -277,12 +277,16 @@ class CheckoutController extends Controller
             }
 
             $order = DB::transaction(function () use ($transactionItems, $request, $tableId, $customerId, $idempotencyKey, $systemUserId, $table) {
+                $isCash = $request->validated('payment_method') === 'cash';
                 $createdOrder = $this->transactionService->createTransaction([
                     'items' => $transactionItems,
                     'payment_method' => $request->validated('payment_method'),
                     'cash_received' => null,
-                    'is_self_order_cash' => $request->validated('payment_method') === 'cash',
+                    'is_self_order_cash' => $isCash,
                     'table_id' => $tableId,
+                    'table_session_id' => $request->session()->get('current_table_session_id'),
+                    'payment_timing' => $isCash ? 'pay_later' : 'pay_first',
+                    'sent_to_kitchen_at' => $isCash ? now() : null,
                     'order_type' => 'dine_in',
                     'customer_id' => $customerId,
                     'idempotency_key' => $idempotencyKey,

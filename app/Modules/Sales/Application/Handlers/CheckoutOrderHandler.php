@@ -340,6 +340,7 @@ class CheckoutOrderHandler
                     $cashReceivedForReceipt = $cashTenderedTotal > 0 ? $cashTenderedTotal : ($cashLegTotal > 0 ? $cashLegTotal : null);
                     $orderChangeForReceipt = $cashChangeTotal > 0 ? $cashChangeTotal : max(0, (int) ($cashReceivedForReceipt ?? 0) - $cashLegTotal);
 
+                    $isDeferredCash = false;
                     $initialStatus = OrderStatus::Paid;
                 } else {
                     $dominantPaymentMethod = $data['payment_method'] ?? 'cash';
@@ -393,10 +394,13 @@ class CheckoutOrderHandler
                     'operational_unit_id' => $data['operational_unit_id'] ?? null,
                     'payment_method' => $dominantPaymentMethod,
                     'table_id' => $tableId,
+                    'table_session_id' => $data['table_session_id'] ?? null,
                     'table_number' => $tableNumber,
                     'customer_id' => $data['customer_id'] ?? null,
                     'order_type' => $orderType->value,
                     'origin_channel' => $data['origin_channel'] ?? 'pos_cashier',
+                    'payment_timing' => $data['payment_timing'] ?? ($isDeferredCash ? 'pay_later' : ($initialStatus === OrderStatus::Paid ? 'paid' : 'pay_first')),
+                    'sent_to_kitchen_at' => $data['sent_to_kitchen_at'] ?? ($initialStatus === OrderStatus::Paid ? now() : ($isDeferredCash ? now() : null)),
                     'source_reference' => $data['source_reference'] ?? null,
                     'created_by_device_id' => $resolvedDeviceId,
                     'is_offline_sync' => (bool) ($data['is_offline_sync'] ?? false),

@@ -133,6 +133,39 @@ class EnsureTableSession
             abort(403, 'Branch is currently inactive.');
         }
 
+        if (! $store->supportsFnb()) {
+            $this->clearSession($request, $sessionTenantId, $sessionStoreId, $tableId);
+            abort(403, 'Branch does not support table management.');
+        }
+
+        $sessionId = $request->session()->get('current_table_session_id');
+        $sessionToken = $request->session()->get('current_table_session_token');
+
+        if ($sessionId !== null) {
+            $tableSession = \Illuminate\Support\Facades\DB::table('table_sessions')
+                ->where('id', $sessionId)
+                ->where('table_id', $tableId)
+                ->where('tenant_id', $table->tenant_id)
+                ->first();
+
+            if (! $tableSession || $tableSession->status !== 'active' || ($tableSession->expires_at && \Illuminate\Support\Carbon::parse($tableSession->expires_at)->isPast())) {
+                $this->clearSession($request, $sessionTenantId, $sessionStoreId, $tableId);
+
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Table session has expired or been closed. Please scan the QR code again.',
+                    ], 410);
+                }
+                abort(410, 'Table session has expired or been closed. Please scan the QR code again.');
+            }
+
+            if ($sessionToken && $tableSession->session_token !== $sessionToken) {
+                $this->clearSession($request, $sessionTenantId, $sessionStoreId, $tableId);
+                abort(403, 'Invalid table session token.');
+            }
+        }
+
         $entitlementService = app(EntitlementService::class);
         if (! $entitlementService->isSelfOrderEnabled((int) $table->tenant_id, (int) $table->store_id)) {
             $this->clearSession($request, $sessionTenantId, $sessionStoreId, $tableId);
@@ -161,6 +194,8 @@ class EnsureTableSession
             'current_tenant_id',
             'current_store_id',
             'current_qr_token_version',
+            'current_table_session_id',
+            'current_table_session_token',
             'customer_cart',
         ];
 

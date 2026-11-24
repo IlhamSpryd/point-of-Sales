@@ -61,4 +61,3 @@ class EnsureVerticalCapability
         return $next($request);
     }
 }
-

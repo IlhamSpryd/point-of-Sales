@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Services;
 
-use App\Enums\OrderStatus;
 use App\Enums\PreparationStatus;
 use App\Events\KdsItemUpdated;
 use App\Modules\Sales\Models\OrderItem;
@@ -29,9 +28,9 @@ class KdsService
         return DB::transaction(function () use ($orderItemId, $staffId) {
             $item = OrderItem::with('order')->lockForUpdate()->findOrFail($orderItemId);
 
-            if ($item->order?->order_status !== OrderStatus::Paid) {
+            if (! $item->order?->canBeProcessedInKitchen()) {
                 throw ValidationException::withMessages([
-                    'kds' => 'Only PAID orders can be processed in the kitchen.',
+                    'kds' => 'Only PAID orders or authorized Open-Tab Dine-In orders can be processed in the kitchen.',
                 ]);
             }
 
@@ -62,9 +61,9 @@ class KdsService
         return DB::transaction(function () use ($orderItemId, $staffId) {
             $item = OrderItem::with('order')->lockForUpdate()->findOrFail($orderItemId);
 
-            if ($item->order?->order_status !== OrderStatus::Paid) {
+            if (! $item->order?->canBeProcessedInKitchen()) {
                 throw ValidationException::withMessages([
-                    'kds' => 'Only PAID orders can be processed in the kitchen.',
+                    'kds' => 'Only PAID orders or authorized Open-Tab Dine-In orders can be processed in the kitchen.',
                 ]);
             }
 
@@ -98,9 +97,9 @@ class KdsService
         return DB::transaction(function () use ($orderItemId, $staffId, $canManage) {
             $item = OrderItem::with('order')->lockForUpdate()->findOrFail($orderItemId);
 
-            if ($item->order?->order_status !== OrderStatus::Paid) {
+            if (! $item->order?->canBeProcessedInKitchen()) {
                 throw ValidationException::withMessages([
-                    'kds' => 'Only PAID orders can be processed in the kitchen.',
+                    'kds' => 'Only PAID orders or authorized Open-Tab Dine-In orders can be processed in the kitchen.',
                 ]);
             }
 
@@ -130,9 +129,9 @@ class KdsService
         return DB::transaction(function () use ($orderItemId, $staffId, $canManage) {
             $item = OrderItem::with('order')->lockForUpdate()->findOrFail($orderItemId);
 
-            if ($item->order?->order_status !== OrderStatus::Paid) {
+            if (! $item->order?->canBeProcessedInKitchen()) {
                 throw ValidationException::withMessages([
-                    'kds' => 'Only PAID orders can be processed in the kitchen.',
+                    'kds' => 'Only PAID orders or authorized Open-Tab Dine-In orders can be processed in the kitchen.',
                 ]);
             }
 

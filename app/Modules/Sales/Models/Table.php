@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -146,6 +147,22 @@ class Table extends Model
         }
 
         return $query;
+    }
+
+    public function sessions(): HasMany
+    {
+        return $this->hasMany(TableSession::class, 'table_id');
+    }
+
+    public function activeSession(): HasOne
+    {
+        return $this->hasOne(TableSession::class, 'table_id')
+            ->where('status', 'active')
+            ->where(function ($q) {
+                $q->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->latest('id');
     }
 
     public function isAvailable(): bool

@@ -7,6 +7,7 @@ namespace App\Modules\Sales\Services;
 use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\Table;
+use App\Modules\Sales\Models\TableSession;
 use DomainException;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -164,45 +165,96 @@ class TableService
     }
 
     /**
+     * Membuka atau mengambil TableSession aktif untuk kunjungan tamu di meja.
+     * QR Code statis pada meja tidak berubah, tetapi token sesi dinamis dirotasi per kunjungan.
+     */
+    public function openTableSession(Table $table, ?string $guestName = null, int $guestCount = 1, ?string $pin = null): TableSession
+    {
+        return app(\App\Core\Context\TenantContext::class)->runAs((int) $table->tenant_id, (int) $table->store_id, function () use ($table, $guestName, $guestCount, $pin) {
+            return DB::transaction(function () use ($table, $guestName, $guestCount, $pin) {
+                $existing = TableSession::where('tenant_id', $table->tenant_id)
+                    ->where('table_id', $table->id)
+                    ->where('status', 'active')
+                    ->where(function ($q) {
+                        $q->whereNull('expires_at')
+                            ->orWhere('expires_at', '>', now());
+                    })
+                    ->latest('id')
+                    ->first();
+
+                if ($existing) {
+                    return $existing;
+                }
+
+                return TableSession::create([
+                    'tenant_id' => $table->tenant_id,
+                    'store_id' => $table->store_id,
+                    'table_id' => $table->id,
+                    'session_token' => bin2hex(random_bytes(32)),
+                    'check_in_pin' => $pin,
+                    'status' => 'active',
+                    'guest_name' => $guestName,
+                    'guest_count' => max(1, $guestCount),
+                    'opened_at' => now(),
+                    'expires_at' => now()->addMinutes(180),
+                ]);
+            });
+        });
+    }
+
+    /**
      * Release table to 'available'.
      */
     public function releaseTable(Table $table, ?int $actorId = null): Table
     {
-        return DB::transaction(function () use ($table, $actorId) {
-            /** @var Table $lockedTable */
-            $lockedTable = Table::forBranch((int) $table->store_id)
-                ->where('id', $table->id)
-                ->lockForUpdate()
-                ->firstOrFail();
+        return app(\App\Core\Context\TenantContext::class)->runAs((int) $table->tenant_id, (int) $table->store_id, function () use ($table, $actorId) {
+            return DB::transaction(function () use ($table, $actorId) {
+                /** @var Table $lockedTable */
+                $lockedTable = Table::forBranch((int) $table->store_id)
+                    ->where('id', $table->id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
-            $activeOrders = Order::forBranch((int) $lockedTable->store_id)
-                ->where('table_id', $lockedTable->id)
-                ->whereIn('order_status', ['pending'])
-                ->get();
+                $activeOrders = Order::forBranch((int) $lockedTable->store_id)
+                    ->where('table_id', $lockedTable->id)
+                    ->whereIn('order_status', ['pending'])
+                    ->get();
 
-            if ($activeOrders->isNotEmpty()) {
-                $orderCodes = $activeOrders->pluck('order_code')->implode(', ');
-                throw new DomainException("Cannot release table '{$lockedTable->table_name}' because it has pending unpaid orders ({$orderCodes}).");
-            }
+                if ($activeOrders->isNotEmpty()) {
+                    $orderCodes = $activeOrders->pluck('order_code')->implode(', ');
+                    throw new DomainException("Cannot release table '{$lockedTable->table_name}' because it has pending unpaid orders ({$orderCodes}).");
+                }
 
-            $lockedTable->update([
-                'operational_status' => 'available',
-            ]);
+                $lockedTable->update([
+                    'operational_status' => 'available',
+                ]);
 
-            try {
-                app(AuditTrailService::class)->log(
-                    tenantId: (int) $lockedTable->tenant_id,
-                    action: 'table.released',
-                    userId: $actorId ?? auth()->id(),
-                    storeId: (int) $lockedTable->store_id,
-                    subjectType: Table::class,
-                    subjectId: (int) $lockedTable->id,
-                    description: "Table '{$lockedTable->table_name}' released and marked available."
-                );
-            } catch (\Throwable) {
-            }
+                // Tutup sesi meja aktif agar token sesi sebelumnya tidak bisa di-replay dari luar restoran
+                DB::table('table_sessions')
+                    ->where('tenant_id', $lockedTable->tenant_id)
+                    ->where('table_id', $lockedTable->id)
+                    ->where('status', 'active')
+                    ->update([
+                        'status' => 'closed',
+                        'closed_at' => now(),
+                        'updated_at' => now(),
+                    ]);
 
-            return $lockedTable;
+                try {
+                    app(AuditTrailService::class)->log(
+                        tenantId: (int) $lockedTable->tenant_id,
+                        action: 'table.released',
+                        userId: $actorId ?? auth()->id(),
+                        storeId: (int) $lockedTable->store_id,
+                        subjectType: Table::class,
+                        subjectId: (int) $lockedTable->id,
+                        description: "Table '{$lockedTable->table_name}' released and marked available."
+                    );
+                } catch (\Throwable) {
+                }
+
+                return $lockedTable;
+            });
         });
     }
 

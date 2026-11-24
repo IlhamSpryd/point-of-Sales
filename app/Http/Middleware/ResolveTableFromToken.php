@@ -62,6 +62,10 @@ class ResolveTableFromToken
             abort(403, 'Cabang sedang tidak aktif.');
         }
 
+        if (! $store->supportsFnb()) {
+            abort(403, 'Cabang Retail tidak mendukung pemesanan mandiri meja (F&B only).');
+        }
+
         $entitlementService = app(EntitlementService::class);
         if (! $entitlementService->isSelfOrderEnabled((int) $table->tenant_id, (int) $table->store_id)) {
             abort(403, 'Fitur pemesanan mandiri (self-order) tidak aktif untuk cabang ini.');
@@ -99,11 +103,16 @@ class ResolveTableFromToken
             $request->session()->regenerate();
         }
 
+        $tableService = app(\App\Modules\Sales\Services\TableService::class);
+        $tableSession = $tableService->openTableSession($table);
+
         $request->session()->put('current_table_id', $table->id);
         $request->session()->put('current_table_name', $table->table_name);
         $request->session()->put('current_tenant_id', $table->tenant_id);
         $request->session()->put('current_store_id', $table->store_id);
         $request->session()->put('current_qr_token_version', (int) ($table->qr_token_version ?? 1));
+        $request->session()->put('current_table_session_id', $tableSession->id);
+        $request->session()->put('current_table_session_token', $tableSession->session_token);
 
         return $next($request);
     }

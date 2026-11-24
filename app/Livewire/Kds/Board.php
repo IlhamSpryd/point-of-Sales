@@ -205,6 +205,10 @@ class Board extends Component
                 $q->whereIn('order_status', [OrderStatus::Paid->value, OrderStatus::Completed->value])
                     ->orWhere(function (Builder $sub) {
                         $sub->where('order_type', 'dine_in')
+                            ->where(function (Builder $timing) {
+                                $timing->where('payment_timing', 'pay_later')
+                                    ->orWhereNotNull('sent_to_kitchen_at');
+                            })
                             ->whereIn('order_status', [OrderStatus::Pending->value, 'open', 'pending'])
                             ->whereNull('snap_token')
                             ->whereDoesntHave('paymentAttempts', function (Builder $pa) {

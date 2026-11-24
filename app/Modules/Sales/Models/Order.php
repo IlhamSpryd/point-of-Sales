@@ -161,6 +161,18 @@ class Order extends Model implements PosOrderReaderInterface
         'offline_client_uuid',
         'currency_code',
         'exchange_rate',
+        'table_session_id',
+        'payment_timing',
+        'sent_to_kitchen_at',
+        'order_channel',
+        'external_order_id',
+        'external_short_code',
+        'driver_name',
+        'driver_phone',
+        'platform_commission_rate',
+        'platform_commission_amount',
+        'merchant_promo_subsidy',
+        'net_payout_amount',
     ];
 
     /**
@@ -177,7 +189,12 @@ class Order extends Model implements PosOrderReaderInterface
             'fulfillment_status' => OrderFulfillmentStatus::class,
             'payment_method' => PaymentMethod::class,
             'voided_at' => 'datetime',
+            'sent_to_kitchen_at' => 'datetime',
             'is_offline_sync' => 'boolean',
+            'platform_commission_rate' => 'decimal:2',
+            'platform_commission_amount' => 'decimal:2',
+            'merchant_promo_subsidy' => 'decimal:2',
+            'net_payout_amount' => 'decimal:2',
             'offline_synced_at' => 'datetime',
             'exchange_rate' => 'string',
         ];
@@ -379,5 +396,28 @@ class Order extends Model implements PosOrderReaderInterface
     public function salesOrder(): BelongsTo
     {
         return $this->belongsTo(SalesOrder::class, 'sales_order_id');
+    }
+
+    public function tableSession(): BelongsTo
+    {
+        return $this->belongsTo(TableSession::class, 'table_session_id');
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->order_status === OrderStatus::Paid || $this->order_status === OrderStatus::Completed;
+    }
+
+    public function isOpenTab(): bool
+    {
+        $rawType = $this->getAttribute('order_type');
+        $orderType = $rawType instanceof \BackedEnum ? $rawType->value : (string) $rawType;
+
+        return $orderType === 'dine_in' && ($this->payment_timing === 'pay_later' || $this->sent_to_kitchen_at !== null);
+    }
+
+    public function canBeProcessedInKitchen(): bool
+    {
+        return $this->isPaid() || $this->isOpenTab();
     }
 }
