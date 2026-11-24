@@ -204,6 +204,8 @@ class MvcParityRemediationP0P1Test extends TestCase
             'idempotency_key' => 'idem_'.uniqid(),
             'order_code' => 'ORD-OPEN-'.uniqid(),
             'order_type' => 'dine_in',
+            'payment_timing' => 'pay_later',
+            'sent_to_kitchen_at' => now(),
             'order_status' => OrderStatus::Pending->value,
             'table_id' => $table->id,
             'order_amount' => 35000,

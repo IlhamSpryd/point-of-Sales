@@ -56,7 +56,7 @@ class KdsServiceSecurityTest extends TestCase
         $service = app(KdsService::class);
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Only PAID orders can be processed in the kitchen.');
+        $this->expectExceptionMessage('Only PAID orders or authorized Open-Tab Dine-In orders can be processed in the kitchen.');
 
         $service->claim($orderItem->id, $user->id);
 

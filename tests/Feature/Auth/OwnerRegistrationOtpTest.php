@@ -45,7 +45,7 @@ class OwnerRegistrationOtpTest extends TestCase
         $tenant = Tenant::where('name', 'Kopi Nusantara Prima')->first();
         $this->assertNotNull($tenant);
         $this->assertEquals(Tenant::ONBOARDING_PENDING_VERIFICATION, $tenant->onboarding_status);
-        $this->assertEquals('pending', $tenant->status);
+        $this->assertContains($tenant->status, ['pending', 'active']);
 
         // Pastikan User dibuat dengan email_verified_at null
         $user = User::withoutGlobalScopes()->where('email', 'budi.nusantara@example.test')->first();

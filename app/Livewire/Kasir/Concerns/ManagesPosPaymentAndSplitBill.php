@@ -146,7 +146,7 @@ trait ManagesPosPaymentAndSplitBill
         if (! $this->canCheckout() || count($this->cart) === 0) {
             return;
         }
-        if (! $this->orderType) {
+        if (! $this->orderType || ($this->orderType === 'dine_in' && ! $this->tableId)) {
             $this->orderType = 'takeaway';
         }
 
