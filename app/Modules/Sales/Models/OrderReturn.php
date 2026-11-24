@@ -77,6 +77,16 @@ class OrderReturn extends Model implements OrderReturnReaderInterface
         return (string) ($this->tax_returned ?? '0.00');
     }
 
+    public function getDiscountReversed(): float|string
+    {
+        return (string) ($this->discount_reversed ?? '0.00');
+    }
+
+    public function getServiceChargeReturned(): float|string
+    {
+        return (string) ($this->service_charge_returned ?? '0.00');
+    }
+
     public function getCreatedAt(): mixed
     {
         return $this->created_at;

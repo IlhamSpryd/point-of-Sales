@@ -298,7 +298,16 @@ class CheckoutOrderHandler
                     $lineNets
                 );
 
-                ['tax_amount' => $taxAmount, 'total_amount' => $totalAmount] = $this->totalsCalculator->calculateOrderTotals($subtotalAmount, $discountAmount);
+                $calculatedTotals = $this->totalsCalculator->calculateOrderTotals(
+                    $subtotalAmount,
+                    $discountAmount,
+                    $data['service_charge_amount'] ?? 0
+                );
+                $taxAmount = $calculatedTotals['tax_amount'];
+                $totalAmount = $calculatedTotals['total_amount'];
+                $dppAmount = (float) $calculatedTotals['dpp_amount'];
+                $serviceChargeAmount = (float) $calculatedTotals['service_charge_amount'];
+                $roundingAdjustment = (float) $calculatedTotals['rounding_adjustment'];
 
                 $dominantPaymentMethod = 'cash';
                 $cashReceivedForReceipt = null;
@@ -359,11 +368,6 @@ class CheckoutOrderHandler
                 do {
                     $orderCode = 'POS-'.strtoupper(Str::random(6)).'-'.rand(100, 999);
                 } while (Order::where('order_code', $orderCode)->exists());
-
-                $dppAmount = max(0, (float) $subtotalAmount - (float) $discountAmount);
-                $serviceChargeAmount = (float) ($data['service_charge_amount'] ?? 0);
-                $expectedTotal = (int) round($dppAmount + $serviceChargeAmount + $taxAmount);
-                $roundingAdjustment = (float) ($totalAmount - $expectedTotal);
 
                 $order = Order::forceCreate([
                     'user_id' => $userId,

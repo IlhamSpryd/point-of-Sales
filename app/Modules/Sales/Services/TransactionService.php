@@ -49,9 +49,18 @@ class TransactionService
      *
      * @return array{tax_amount: int, total_amount: int}
      */
-    public function calculateOrderTotals(float $subtotalAmount, float $discountAmount = 0): array
-    {
-        return $this->totalsCalculator->calculateOrderTotals($subtotalAmount, $discountAmount);
+    public function calculateOrderTotals(
+        float|int|string $subtotalAmount,
+        float|int|string $discountAmount = 0,
+        float|int|string $serviceChargeAmount = 0,
+        ?bool $taxInclusive = null
+    ): array {
+        return $this->totalsCalculator->calculateOrderTotals(
+            $subtotalAmount,
+            $discountAmount,
+            $serviceChargeAmount,
+            $taxInclusive
+        );
     }
 
     /**

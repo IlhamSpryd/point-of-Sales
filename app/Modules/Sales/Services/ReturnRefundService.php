@@ -87,7 +87,8 @@ class ReturnRefundService
         int $actorUserId,
         string $supervisorPin,
         string $reason,
-        string $idempotencyKey
+        string $idempotencyKey,
+        bool $restockInventory = true
     ): OrderReturn {
         $tenantContext = app(TenantContext::class);
         $tenantId = (int) $tenantContext->requireTenantId();
@@ -105,7 +106,8 @@ class ReturnRefundService
             $actorUserId,
             $supervisorPin,
             $reason,
-            $idempotencyKey
+            $idempotencyKey,
+            $restockInventory
         ) {
             // 1. Cek Idempotensi
             $existingReturn = OrderReturn::withoutGlobalScopes()
@@ -132,7 +134,8 @@ class ReturnRefundService
                 $actorUser,
                 $approvedByUserId,
                 $reason,
-                $idempotencyKey
+                $idempotencyKey,
+                $restockInventory
             ) {
                 // 3.1 Lock Order
                 $lockedOrder = Order::withoutGlobalScopes()
@@ -254,7 +257,9 @@ class ReturnRefundService
                     // AC-3.1: Larangan Restock untuk produk F&B berbasis resep
                     $product = $lockedProducts->get($orderItem->product_id);
                     if ($disposition->isRestock() && $product && $product->ingredients->isNotEmpty()) {
-                        throw new DomainException("Restock Prohibited: Recipe-based F&B product ('{$product->product_name}') cannot be restocked into sellable inventory.");
+                        throw_if($restockInventory, DomainException::class, "Restock Prohibited: Recipe-based F&B product ('{$product->product_name}') cannot be restocked into sellable inventory.");
+                        $disposition = ReturnDispositionEnum::WriteOffWaste;
+                        $dispositionReason = ($dispositionReason ? $dispositionReason.' | ' : '').'Automatic write_off_waste';
                     }
 
                     $linePrice = (float) $orderItem->order_price;
@@ -354,6 +359,8 @@ class ReturnRefundService
 
                 $returnType = $totalReturnedAll >= $totalOrderQty ? OrderReturn::TYPE_FULL : OrderReturn::TYPE_PARTIAL;
 
+                $proportions = app(ReturnProportionCalculatorService::class)->calculateReturnProportions($lockedOrder, (string) $subtotalReturned, $returnType);
+
                 $orderReturn = OrderReturn::forceCreate([
                     'tenant_id' => $lockedOrder->tenant_id,
                     'store_id' => $lockedOrder->store_id,
@@ -365,9 +372,9 @@ class ReturnRefundService
                     'status' => OrderReturn::STATUS_COMPLETED,
                     'return_type' => $returnType,
                     'subtotal_returned' => $subtotalReturned,
-                    'discount_reversed' => 0.00,
-                    'tax_returned' => 0.00,
-                    'service_charge_returned' => 0.00,
+                    'discount_reversed' => $proportions['discount_reversed'],
+                    'tax_returned' => $proportions['tax_returned'],
+                    'service_charge_returned' => $proportions['service_charge_returned'],
                     'total_refundable_amount' => $totalRefundAmount,
                     'reason' => $reason,
                     'requested_by_user_id' => $actorUserId,
@@ -431,6 +438,10 @@ class ReturnRefundService
                         }
                     }
 
+                    $lineDiscountReversed = ($orderItem->qty > 0 && (float) ($orderItem->item_discount_amount ?? 0) > 0)
+                        ? bcmul(bcdiv((string) $orderItem->item_discount_amount, (string) $orderItem->qty, 6), (string) $qty, 2)
+                        : '0.00';
+
                     OrderReturnItem::forceCreate([
                         'tenant_id' => $lockedOrder->tenant_id,
                         'store_id' => $lockedOrder->store_id,
@@ -439,7 +450,7 @@ class ReturnRefundService
                         'product_id' => $orderItem->product_id,
                         'quantity_returned' => $qty,
                         'unit_price_snapshot' => $vItem['unit_price'],
-                        'line_discount_reversed' => 0.00,
+                        'line_discount_reversed' => $lineDiscountReversed,
                         'line_writeoff_or_refund_amount' => $vItem['line_amount'],
                         'disposition' => $disposition,
                         'disposition_reason' => $vItem['disposition_reason'],
@@ -715,7 +726,8 @@ class ReturnRefundService
         ?int $customerInvoiceId = null,
         bool $autoApplyToInvoice = true,
         ?int $shiftId = null,
-        ?int $deviceId = null
+        ?int $deviceId = null,
+        bool $restockInventory = true
     ): array {
         $tenantContext = app(TenantContext::class);
         $tenantId = (int) $tenantContext->requireTenantId();
@@ -734,7 +746,8 @@ class ReturnRefundService
             $customerInvoiceId,
             $autoApplyToInvoice,
             $shiftId,
-            $deviceId
+            $deviceId,
+            $restockInventory
         ) {
             // 1. Cek Idempotensi
             $existingReturn = OrderReturn::withoutGlobalScopes()
@@ -774,7 +787,8 @@ class ReturnRefundService
                 $customerInvoiceId,
                 $autoApplyToInvoice,
                 $shiftId,
-                $deviceId
+                $deviceId,
+                $restockInventory
             ) {
                 // Resolusi Shift & Device jika tidak disertakan
                 $resolvedShiftId = $shiftId ?: ($order->shift_id ?: Shift::withoutGlobalScopes()
@@ -905,7 +919,9 @@ class ReturnRefundService
 
                     $product = $lockedProducts->get($orderItem->product_id);
                     if ($disposition->isRestock() && $product && $product->ingredients->isNotEmpty()) {
-                        throw new DomainException("Restock Prohibited: Recipe-based F&B product ('{$product->product_name}') cannot be restocked into sellable inventory.");
+                        throw_if($restockInventory, DomainException::class, "Restock Prohibited: Recipe-based F&B product ('{$product->product_name}') cannot be restocked into sellable inventory.");
+                        $disposition = ReturnDispositionEnum::WriteOffWaste;
+                        $dispositionReason = ($dispositionReason ? $dispositionReason.' | ' : '').'Automatic write_off_waste';
                     }
 
                     $linePrice = (string) $orderItem->order_price;
@@ -923,16 +939,6 @@ class ReturnRefundService
                     ];
                 }
 
-                // Kalkulasi pajak proporsional jika ada
-                $taxReturned = '0.00';
-                $orderTotalAmount = (string) ($lockedOrder->order_amount ?? $lockedOrder->total_amount ?? '0.00');
-                $orderTaxAmount = (string) ($lockedOrder->tax_amount ?? '0.00');
-                if (bccomp(bc_num($orderTotalAmount), '0.00', 2) > 0 && bccomp(bc_num($orderTaxAmount), '0.00', 2) > 0) {
-                    $taxRatio = bcdiv($orderTaxAmount, $orderTotalAmount, 6);
-                    $taxReturned = bcmul($subtotalReturned, $taxRatio, 2);
-                }
-                $totalRefundableAmount = bcadd($subtotalReturned, $taxReturned, 2);
-
                 // 5. Buat Record OrderReturn
                 $returnNumber = 'RET-'.now()->format('Ymd').'-'.strtoupper(Str::random(6));
                 $cnNumber = 'SCN-'.now()->format('Ymd').'-'.strtoupper(Str::random(6));
@@ -942,6 +948,8 @@ class ReturnRefundService
                     + collect($validatedReturnItems)->sum('quantity');
 
                 $returnType = $totalReturnedAll >= $totalOrderQty ? OrderReturn::TYPE_FULL : OrderReturn::TYPE_PARTIAL;
+
+                $proportions = app(ReturnProportionCalculatorService::class)->calculateReturnProportions($lockedOrder, (string) $subtotalReturned, $returnType);
 
                 $orderReturn = OrderReturn::forceCreate([
                     'tenant_id' => $lockedOrder->tenant_id,
@@ -956,10 +964,10 @@ class ReturnRefundService
                     'status' => OrderReturn::STATUS_COMPLETED,
                     'return_type' => $returnType,
                     'subtotal_returned' => $subtotalReturned,
-                    'discount_reversed' => 0.00,
-                    'tax_returned' => $taxReturned,
-                    'service_charge_returned' => 0.00,
-                    'total_refundable_amount' => $totalRefundableAmount,
+                    'discount_reversed' => $proportions['discount_reversed'],
+                    'tax_returned' => $proportions['tax_returned'],
+                    'service_charge_returned' => $proportions['service_charge_returned'],
+                    'total_refundable_amount' => $proportions['net_refund_amount'],
                     'reason' => $reason,
                     'requested_by_user_id' => $actorUserId,
                     'approved_by_user_id' => $approvedByUserId,
@@ -1020,6 +1028,10 @@ class ReturnRefundService
                         }
                     }
 
+                    $lineDiscountReversed = ($orderItem->qty > 0 && (float) ($orderItem->item_discount_amount ?? 0) > 0)
+                        ? bcmul(bcdiv((string) $orderItem->item_discount_amount, (string) $orderItem->qty, 6), (string) $qty, 2)
+                        : '0.00';
+
                     OrderReturnItem::forceCreate([
                         'tenant_id' => $lockedOrder->tenant_id,
                         'store_id' => $lockedOrder->store_id,
@@ -1028,7 +1040,7 @@ class ReturnRefundService
                         'product_id' => $orderItem->product_id,
                         'quantity_returned' => $qty,
                         'unit_price_snapshot' => $vItem['unit_price'],
-                        'line_discount_reversed' => 0.00,
+                        'line_discount_reversed' => $lineDiscountReversed,
                         'line_writeoff_or_refund_amount' => $vItem['line_amount'],
                         'disposition' => $disposition,
                         'disposition_reason' => $vItem['disposition_reason'],

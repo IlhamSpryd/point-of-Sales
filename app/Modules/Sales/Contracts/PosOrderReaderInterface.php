@@ -25,5 +25,9 @@ interface PosOrderReaderInterface
 
     public function getSubtotal(): float|string;
 
+    public function getServiceChargeAmount(): float|string;
+
+    public function getRoundingAdjustment(): float|string;
+
     public function getCreatedAt(): mixed;
 }

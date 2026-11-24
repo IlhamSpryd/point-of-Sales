@@ -17,38 +17,95 @@ use Illuminate\Validation\ValidationException;
 class OrderTotalsCalculatorService
 {
     /**
-     * Calculate order tax and rounded total.
+     * Calculate order tax, service charge, and rounded total using BCMath / Money value semantics.
      *
-     * @return array{tax_amount: int, total_amount: int}
+     * @return array{tax_amount: int, total_amount: int, dpp_amount: int, service_charge_amount: int, rounding_adjustment: int}
      */
-    public function calculateOrderTotals(float $subtotalAmount, float $discountAmount = 0): array
-    {
-        $discountedSubtotal = max(0, $subtotalAmount - $discountAmount);
-        $tenantId = app(TenantContext::class)->getTenantId();
-        $taxRate = $tenantId !== null ? (float) Setting::get('tax_rate', config('pos.tax_rate', 0.11)) : (float) config('pos.tax_rate', 0.11);
-        $taxAmount = (int) round($discountedSubtotal * $taxRate);
-        $totalAmount = (int) ($discountedSubtotal + $taxAmount);
+    public function calculateOrderTotals(
+        float|int|string $subtotalAmount,
+        float|int|string $discountAmount = 0,
+        float|int|string $serviceChargeAmount = 0,
+        ?bool $taxInclusive = null
+    ): array {
+        $subtotalStr = bcadd((string) $subtotalAmount, '0', 4);
+        $discountStr = bcadd((string) $discountAmount, '0', 4);
 
-        $roundingValue = $tenantId !== null ? (int) Setting::get('rounding_value', config('pos.rounding_value', 100)) : (int) config('pos.rounding_value', 100);
-        $roundingBehavior = $tenantId !== null ? (string) Setting::get('rounding_behavior', config('pos.rounding_behavior', 'ROUND_NEAREST')) : (string) config('pos.rounding_behavior', 'ROUND_NEAREST');
+        $dppStr = bccomp($subtotalStr, $discountStr, 4) > 0
+            ? bcsub($subtotalStr, $discountStr, 4)
+            : '0.0000';
+
+        $tenantId = app(TenantContext::class)->getTenantId();
+
+        // 1. Service Charge Calculation
+        $scRateStr = $tenantId !== null
+            ? (string) Setting::get('service_charge_rate', '0.0')
+            : '0.0';
+
+        $scInputStr = bcadd((string) $serviceChargeAmount, '0', 4);
+        if (bccomp($scInputStr, '0.0000', 4) > 0) {
+            $scAmountStr = $scInputStr;
+        } elseif (bccomp($scRateStr, '0.0', 4) > 0) {
+            $scAmountStr = bcmul($dppStr, $scRateStr, 4);
+        } else {
+            $scAmountStr = '0.0000';
+        }
+        $scAmountInt = (int) round((float) $scAmountStr, 0, PHP_ROUND_HALF_UP);
+
+        // 2. Tax Calculation
+        $taxRateStr = $tenantId !== null
+            ? (string) Setting::get('tax_rate', (string) config('pos.tax_rate', '0.11'))
+            : (string) config('pos.tax_rate', '0.11');
+
+        $isTaxInclusive = $taxInclusive ?? ($tenantId !== null ? (bool) Setting::get('tax_inclusive', false) : false);
+
+        if ($isTaxInclusive) {
+            // In inclusive mode: DPP includes tax: dppExTax = dpp / (1 + tax_rate)
+            $divisor = bcadd('1', $taxRateStr, 6);
+            $dppExTax = bccomp($divisor, '0', 6) > 0 ? bcdiv($dppStr, $divisor, 4) : $dppStr;
+            $taxAmountRaw = bcsub($dppStr, $dppExTax, 4);
+            $taxAmountInt = (int) round((float) $taxAmountRaw, 0, PHP_ROUND_HALF_UP);
+            $unroundedTotal = (int) round((float) bcadd($dppStr, (string) $scAmountInt, 4), 0, PHP_ROUND_HALF_UP);
+        } else {
+            // Standar F&B / PB1: Tax = DPP * tax_rate
+            $taxAmountRaw = bcmul($dppStr, $taxRateStr, 4);
+            $taxAmountInt = (int) round((float) $taxAmountRaw, 0, PHP_ROUND_HALF_UP);
+            $unroundedTotal = (int) round((float) bcadd(bcadd($dppStr, (string) $scAmountInt, 4), (string) $taxAmountInt, 4), 0, PHP_ROUND_HALF_UP);
+        }
+
+        // 3. Cash Rounding
+        $roundingValue = $tenantId !== null
+            ? (int) Setting::get('rounding_value', config('pos.rounding_value', 100))
+            : (int) config('pos.rounding_value', 100);
+
+        $roundingBehavior = $tenantId !== null
+            ? (string) Setting::get('rounding_behavior', config('pos.rounding_behavior', 'ROUND_NEAREST'))
+            : (string) config('pos.rounding_behavior', 'ROUND_NEAREST');
 
         if ($roundingValue <= 0 || $roundingBehavior === 'NONE') {
             return [
-                'tax_amount' => $taxAmount,
-                'total_amount' => $totalAmount,
+                'tax_amount' => $taxAmountInt,
+                'total_amount' => $unroundedTotal,
+                'dpp_amount' => (int) round((float) $dppStr, 0, PHP_ROUND_HALF_UP),
+                'service_charge_amount' => $scAmountInt,
+                'rounding_adjustment' => 0,
             ];
         }
 
-        $totalAmount = (int) match ($roundingBehavior) {
-            'ROUND_NEAREST' => round($totalAmount / $roundingValue) * $roundingValue,
-            'ROUND_UP' => ceil($totalAmount / $roundingValue) * $roundingValue,
-            'ROUND_DOWN' => floor($totalAmount / $roundingValue) * $roundingValue,
-            default => round($totalAmount),
+        $roundedTotal = (int) match ($roundingBehavior) {
+            'ROUND_NEAREST' => round($unroundedTotal / $roundingValue) * $roundingValue,
+            'ROUND_UP' => ceil($unroundedTotal / $roundingValue) * $roundingValue,
+            'ROUND_DOWN' => floor($unroundedTotal / $roundingValue) * $roundingValue,
+            default => round($unroundedTotal),
         };
 
+        $roundingAdjustment = $roundedTotal - $unroundedTotal;
+
         return [
-            'tax_amount' => $taxAmount,
-            'total_amount' => $totalAmount,
+            'tax_amount' => $taxAmountInt,
+            'total_amount' => $roundedTotal,
+            'dpp_amount' => (int) round((float) $dppStr, 0, PHP_ROUND_HALF_UP),
+            'service_charge_amount' => $scAmountInt,
+            'rounding_adjustment' => $roundingAdjustment,
         ];
     }
 
@@ -113,8 +170,8 @@ class OrderTotalsCalculatorService
             customPrice: $customPrice
         );
         $extraPrice = $selectedModifiers->sum('extra_price');
-        $unitPrice = $baseProductPrice + $extraPrice;
-        $lineSubtotal = $unitPrice * $qty;
+        $unitPrice = (float) bcadd((string) $baseProductPrice, (string) $extraPrice, 2);
+        $lineSubtotal = (float) bcmul((string) $unitPrice, (string) $qty, 2);
 
         return [
             'product_id' => $product->id,

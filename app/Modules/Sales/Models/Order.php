@@ -106,6 +106,16 @@ class Order extends Model implements PosOrderReaderInterface
         return (string) ($this->subtotal ?? $this->subtotal_amount ?? '0.00');
     }
 
+    public function getServiceChargeAmount(): float|string
+    {
+        return (string) ($this->service_charge_amount ?? '0.00');
+    }
+
+    public function getRoundingAdjustment(): float|string
+    {
+        return (string) ($this->rounding_adjustment ?? '0.00');
+    }
+
     public function getCreatedAt(): mixed
     {
         return $this->created_at;

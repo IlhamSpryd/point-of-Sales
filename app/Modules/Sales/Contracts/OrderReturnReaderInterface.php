@@ -25,6 +25,10 @@ interface OrderReturnReaderInterface
 
     public function getTaxReturned(): float|string;
 
+    public function getDiscountReversed(): float|string;
+
+    public function getServiceChargeReturned(): float|string;
+
     public function getCreatedAt(): mixed;
 
     public function getCompletedAt(): mixed;

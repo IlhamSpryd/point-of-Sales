@@ -166,6 +166,38 @@ class VoidAndRestoreOrderHandler
                     ->where('status', PromotionReservation::STATUS_COMMITTED)
                     ->update(['status' => PromotionReservation::STATUS_RELEASED]);
 
+                $cashPayments = $existingPayments->filter(
+                    fn ($p) => $p->payment_method === PaymentMethod::Cash || (string) $p->payment_method === 'cash'
+                );
+                $totalCashPaid = (int) $cashPayments->sum('amount');
+                if ($totalCashPaid > 0) {
+                    $openShift = \App\Modules\Sales\Models\Shift::withoutGlobalScopes()
+                        ->where('tenant_id', $lockedOrder->tenant_id)
+                        ->where('store_id', $lockedOrder->store_id)
+                        ->where('status', 'open')
+                        ->latest('id')
+                        ->first();
+
+                    if ($openShift) {
+                        \App\Modules\Sales\Models\CashDrawerMovement::forceCreate([
+                            'tenant_id' => $lockedOrder->tenant_id,
+                            'store_id' => $lockedOrder->store_id,
+                            'device_id' => $openShift->device_id,
+                            'shift_id' => $openShift->id,
+                            'type' => \App\Enums\CashDrawerMovementTypeEnum::CashOut,
+                            'category' => \App\Enums\CashDrawerMovementCategoryEnum::Refund,
+                            'amount' => $totalCashPaid,
+                            'reason' => "Void order #{$lockedOrder->order_code}: pengeluaran kas kembali ke pelanggan",
+                            'receipt_reference' => $lockedOrder->order_code,
+                            'created_by' => $userId,
+                            'approved_by' => $userId,
+                            'idempotency_key' => "void_cdm:{$lockedOrder->order_code}:{$lockedOrder->id}",
+                        ]);
+                    }
+                }
+
+                app(\App\Modules\Finance\Services\FinancialOutboxDispatcherService::class)->dispatchPosOrderVoided($lockedOrder);
+
                 \App\Modules\Organization\Models\ActivityLog::create([
                     'tenant_id' => $lockedOrder->tenant_id,
                     'store_id' => $lockedOrder->store_id,

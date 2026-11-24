@@ -131,6 +131,51 @@ class DefaultPostingRulesSeeder extends Seeder
                 'zero_amount_behavior' => 'SKIP_LINE',
                 'description_template' => 'Konsumsi Bahan Baku F&B POS',
             ],
+            [
+                'line_sequence' => 10,
+                'side' => 'DEBIT',
+                'amount_source_key' => 'store_credit_amount',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'STORE_CREDIT_LIABILITY',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Pelunasan Menggunakan Kredit Toko POS',
+            ],
+            [
+                'line_sequence' => 11,
+                'side' => 'DEBIT',
+                'amount_source_key' => 'loyalty_redemption_amount',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'LOYALTY_LIABILITY',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Pelunasan Menggunakan Poin Loyalitas POS',
+            ],
+            [
+                'line_sequence' => 12,
+                'side' => 'DEBIT',
+                'amount_source_key' => 'rounding_loss_amount',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'ROUNDING_LOSS_EXPENSE',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Beban Selisih Pembulatan Kas POS',
+            ],
+            [
+                'line_sequence' => 13,
+                'side' => 'CREDIT',
+                'amount_source_key' => 'service_charge_amount',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'SERVICE_CHARGE_REVENUE',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Pendapatan Biaya Layanan (Service Charge) POS',
+            ],
+            [
+                'line_sequence' => 14,
+                'side' => 'CREDIT',
+                'amount_source_key' => 'rounding_gain_amount',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'ROUNDING_GAIN_INCOME',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Pendapatan Selisih Pembulatan Kas POS',
+            ],
         ];
 
         foreach ($posLines as $line) {
@@ -228,6 +273,24 @@ class DefaultPostingRulesSeeder extends Seeder
                 'zero_amount_behavior' => 'SKIP_LINE',
                 'description_template' => 'Pengalihan HPP F&B ke Beban Waste',
             ],
+            [
+                'line_sequence' => 8,
+                'side' => 'DEBIT',
+                'amount_source_key' => 'service_charge_returned',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'SERVICE_CHARGE_REVENUE',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Pembatalan Service Charge Retur POS',
+            ],
+            [
+                'line_sequence' => 9,
+                'side' => 'CREDIT',
+                'amount_source_key' => 'discount_reversed',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'SALES_DISCOUNT',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Pembalikan Diskon Retur POS',
+            ],
         ];
 
         foreach ($retLines as $line) {
@@ -235,6 +298,166 @@ class DefaultPostingRulesSeeder extends Seeder
                 [
                     'tenant_id' => $tenantId,
                     'posting_rule_version_id' => $retVersion->id,
+                    'line_sequence' => $line['line_sequence'],
+                ],
+                $line
+            );
+        }
+
+        // pos.order.voided
+        $voidRule = PostingRule::firstOrCreate(
+            ['tenant_id' => $tenantId, 'event_code' => 'pos.order.voided'],
+            [
+                'rule_name' => 'Pembalik Transaksi Penjualan Kasir POS (Void)',
+                'source_domain' => 'POS',
+                'description' => 'Posting jurnal pembalik pendapatan, kas/kliring, PPN, service charge, diskon, dan HPP saat pesanan di-void',
+                'is_active' => true,
+                'approval_status' => 'APPROVED',
+            ]
+        );
+
+        $voidVersion = PostingRuleVersion::firstOrCreate(
+            ['tenant_id' => $tenantId, 'posting_rule_id' => $voidRule->id, 'version_number' => 1],
+            [
+                'effective_from' => '2026-01-01',
+                'status' => 'ACTIVE',
+            ]
+        );
+
+        $voidLines = [
+            [
+                'line_sequence' => 1,
+                'side' => 'DEBIT',
+                'amount_source_key' => 'subtotal',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'SALES_RETAIL',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Pembalikan Pendapatan Penjualan Void',
+            ],
+            [
+                'line_sequence' => 2,
+                'side' => 'DEBIT',
+                'amount_source_key' => 'tax_amount',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'TAX_OUTPUT_PPN',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Pembalikan PPN Keluaran Void',
+            ],
+            [
+                'line_sequence' => 3,
+                'side' => 'DEBIT',
+                'amount_source_key' => 'service_charge_amount',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'SERVICE_CHARGE_REVENUE',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Pembalikan Biaya Layanan Void',
+            ],
+            [
+                'line_sequence' => 4,
+                'side' => 'DEBIT',
+                'amount_source_key' => 'rounding_gain_amount',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'ROUNDING_GAIN_INCOME',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Pembalikan Pendapatan Pembulatan Void',
+            ],
+            [
+                'line_sequence' => 5,
+                'side' => 'DEBIT',
+                'amount_source_key' => 'cogs_retail',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'INVENTORY_RETAIL_PRODUCT',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Pemulihan Persediaan Retail Void',
+            ],
+            [
+                'line_sequence' => 6,
+                'side' => 'DEBIT',
+                'amount_source_key' => 'cogs_food',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'INVENTORY_FNB_INGREDIENT',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Pemulihan Bahan Baku F&B Void',
+            ],
+            [
+                'line_sequence' => 7,
+                'side' => 'CREDIT',
+                'amount_source_key' => 'cash_amount',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'CASH_MAIN',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Pembalik Penerimaan Kas Void',
+            ],
+            [
+                'line_sequence' => 8,
+                'side' => 'CREDIT',
+                'amount_source_key' => 'pg_clearing_amount',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'PG_CLEARING',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Pembalik Kliring Non-Tunai Void',
+            ],
+            [
+                'line_sequence' => 9,
+                'side' => 'CREDIT',
+                'amount_source_key' => 'store_credit_amount',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'STORE_CREDIT_LIABILITY',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Pembalik Pelunasan Kredit Toko Void',
+            ],
+            [
+                'line_sequence' => 10,
+                'side' => 'CREDIT',
+                'amount_source_key' => 'loyalty_redemption_amount',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'LOYALTY_LIABILITY',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Pembalik Pelunasan Poin Loyalitas Void',
+            ],
+            [
+                'line_sequence' => 11,
+                'side' => 'CREDIT',
+                'amount_source_key' => 'discount_amount',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'SALES_DISCOUNT',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Pembalik Diskon Penjualan Void',
+            ],
+            [
+                'line_sequence' => 12,
+                'side' => 'CREDIT',
+                'amount_source_key' => 'rounding_loss_amount',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'ROUNDING_LOSS_EXPENSE',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Pembalik Beban Pembulatan Void',
+            ],
+            [
+                'line_sequence' => 13,
+                'side' => 'CREDIT',
+                'amount_source_key' => 'cogs_retail',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'COGS_RETAIL',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Pembalik Beban Pokok Retail Void',
+            ],
+            [
+                'line_sequence' => 14,
+                'side' => 'CREDIT',
+                'amount_source_key' => 'cogs_food',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'COGS_FNB',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Pembalik Beban Pokok F&B Void',
+            ],
+        ];
+
+        foreach ($voidLines as $line) {
+            PostingRuleLine::firstOrCreate(
+                [
+                    'tenant_id' => $tenantId,
+                    'posting_rule_version_id' => $voidVersion->id,
                     'line_sequence' => $line['line_sequence'],
                 ],
                 $line
