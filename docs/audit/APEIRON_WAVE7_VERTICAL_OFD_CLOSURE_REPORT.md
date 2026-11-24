@@ -134,7 +134,7 @@ All four pillars identified in the forensic audit have been remediated with zero
 | Test Category | Suite / Command | Result | Assertion Count | Exit Code |
 | :--- | :--- | :---: | :---: | :---: |
 | **Wave 7A Feature** | `tests/Feature/Vertical/Wave7DualVerticalOnboardingAndNavigationTest.php` | **3 / 3 Passed** | 16 | 0 |
-| **Wave 7B Feature** | `tests/Feature/Sales/Wave7TableSessionAndKdsOpenTabTest.php` | **4 / 4 Passed** | 22 | 0 |
+| **Wave 7B Feature** | `tests/Feature/Fnb/Wave7TableSessionAndKdsOpenTabTest.php` | **4 / 4 Passed** | 22 | 0 |
 | **Wave 7C Feature** | `tests/Feature/Integration/Wave7GrabFoodGoFoodOfdTest.php` | **3 / 3 Passed** | 25 | 0 |
 | **Navigation Matrix** | `tests/Feature/Navigation/` (G-1..G-6 Governance Suites) | **85 / 85 Passed** | 256 | 0 |
 | **Architecture Gate** | `tests/Arch/` (`TenantScopeBypassTest`, `NoGodClassTest`, etc.) | **7 / 7 Passed** | 28 | 0 |
@@ -155,3 +155,4 @@ With Wave 7 complete:
 4. **Documentation:** 100% of architecture documentation matches the live codebase.
 
 The system is certified **Grade A+ (99.0/100)** and ready for production deployment.
+
