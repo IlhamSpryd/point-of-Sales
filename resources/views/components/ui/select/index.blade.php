@@ -10,7 +10,7 @@
     $hasError = $errorKey && isset($errors) && $errors->has($errorKey);
 
     $classes = \Illuminate\Support\Arr::toCssClasses([
-        'text-foreground bg-card border-input h-9 w-full min-w-0 cursor-pointer appearance-none rounded-medium border pl-3 pr-9 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-disabled-bg disabled:text-muted-foreground disabled:border-border md:text-sm focus-visible:border-ring focus-visible:ring-ring focus-visible:ring-1 aria-invalid:ring-destructive-border aria-invalid:border-destructive',
+        'text-foreground bg-card border-input h-[30px] sm:h-8 w-full min-w-0 cursor-pointer appearance-none rounded-[6px] border pl-2.5 pr-8 text-[12px] shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-disabled-bg disabled:text-muted-foreground disabled:border-border focus-visible:border-ring focus-visible:ring-ring focus-visible:ring-1 aria-invalid:ring-destructive-border aria-invalid:border-destructive',
         'border-destructive ring-destructive-border' => $hasError,
     ]);
 @endphp

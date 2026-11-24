@@ -26,7 +26,7 @@
         {{-- Desktop: Notion-style compact pagination --}}
         <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
-                <p class="text-sm text-muted-foreground font-medium">
+                <p class="text-[11.5px] text-muted-foreground font-medium">
                     Showing
                     <span class="font-semibold text-foreground numeric">{{ $paginator->firstItem() ?? 0 }}</span>
                     to
@@ -41,12 +41,12 @@
                 <span class="relative z-0 inline-flex items-center gap-1">
                     {{-- Previous Page --}}
                     @if ($paginator->onFirstPage())
-                        <span aria-disabled="true" class="relative inline-flex items-center p-2 text-muted-foreground bg-card rounded-lg cursor-not-allowed">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        <span aria-disabled="true" class="relative inline-flex items-center justify-center h-7 w-7 text-muted-foreground bg-card rounded-[6px] cursor-not-allowed">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                         </span>
                     @else
-                        <a href="{{ $paginator->previousPageUrl() }}" wire:navigate rel="prev" class="relative inline-flex items-center p-2 text-muted-foreground bg-card rounded-lg hover:bg-muted hover:text-foreground transition-colors duration-200 active:scale-[0.98]" aria-label="Previous Page">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        <a href="{{ $paginator->previousPageUrl() }}" wire:navigate rel="prev" class="relative inline-flex items-center justify-center h-7 w-7 text-muted-foreground bg-card rounded-[6px] hover:bg-muted hover:text-foreground transition-colors duration-150 active:scale-[0.98]" aria-label="Previous Page">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                         </a>
                     @endif
 
@@ -54,16 +54,16 @@
                     @foreach ($elements as $element)
                         {{-- "Three Dots" Separator --}}
                         @if (is_string($element))
-                            <span class="relative inline-flex items-center px-2 py-1.5 text-sm font-medium text-muted-foreground">{{ $element }}</span>
+                            <span class="relative inline-flex items-center justify-center h-7 px-1.5 text-[12px] font-medium text-muted-foreground">{{ $element }}</span>
                         @endif
 
                         {{-- Array Of Links --}}
                         @if (is_array($element))
                             @foreach ($element as $page => $url)
                                 @if ($page == $paginator->currentPage())
-                                    <span aria-current="page" class="relative inline-flex items-center px-3 py-1.5 text-sm font-semibold text-primary-foreground bg-primary rounded-lg shadow-xs numeric">{{ $page }}</span>
+                                    <span aria-current="page" class="relative inline-flex items-center justify-center h-7 min-w-[28px] px-2 text-[12px] font-semibold text-primary-foreground bg-primary rounded-[6px] shadow-xs numeric">{{ $page }}</span>
                                 @else
-                                    <a href="{{ $url }}" wire:navigate class="relative inline-flex items-center px-3 py-1.5 text-sm font-medium text-muted-foreground rounded-lg hover:bg-muted hover:text-foreground transition-colors duration-200 active:scale-[0.98] numeric">{{ $page }}</a>
+                                    <a href="{{ $url }}" wire:navigate class="relative inline-flex items-center justify-center h-7 min-w-[28px] px-2 text-[12px] font-medium text-muted-foreground rounded-[6px] hover:bg-muted hover:text-foreground transition-colors duration-150 active:scale-[0.98] numeric">{{ $page }}</a>
                                 @endif
                             @endforeach
                         @endif
@@ -71,12 +71,12 @@
 
                     {{-- Next Page --}}
                     @if ($paginator->hasMorePages())
-                        <a href="{{ $paginator->nextPageUrl() }}" wire:navigate rel="next" class="relative inline-flex items-center p-2 text-muted-foreground bg-card rounded-lg hover:bg-muted hover:text-foreground transition-colors duration-200 active:scale-[0.98]" aria-label="Next Page">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        <a href="{{ $paginator->nextPageUrl() }}" wire:navigate rel="next" class="relative inline-flex items-center justify-center h-7 w-7 text-muted-foreground bg-card rounded-[6px] hover:bg-muted hover:text-foreground transition-colors duration-150 active:scale-[0.98]" aria-label="Next Page">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </a>
                     @else
-                        <span aria-disabled="true" class="relative inline-flex items-center p-2 text-muted-foreground bg-card rounded-lg cursor-not-allowed">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        <span aria-disabled="true" class="relative inline-flex items-center justify-center h-7 w-7 text-muted-foreground bg-card rounded-[6px] cursor-not-allowed">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </span>
                     @endif
                 </span>

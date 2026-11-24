@@ -6,29 +6,29 @@
     'resetMethod' => null,
 ])
 
-<div {{ $attributes->twMerge('card-surface p-3.5 sm:p-4 mb-5 flex flex-col lg:flex-row lg:items-center justify-between gap-3') }}>
-    <div class="flex flex-1 flex-col sm:flex-row sm:items-center gap-2.5">
+<div {{ $attributes->twMerge('card-surface p-3 sm:p-3.5 mb-4 rounded-[8px] flex flex-col lg:flex-row lg:items-center justify-between gap-2.5') }}>
+    <div class="flex flex-1 flex-col sm:flex-row sm:items-center gap-2">
         @if ($searchAction)
             <form action="{{ $searchAction }}" method="GET" class="relative w-full sm:max-w-xs">
-                <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-muted-foreground" aria-hidden="true">search</span>
+                <span class="material-symbols-rounded pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[16px] text-muted-foreground" aria-hidden="true">search</span>
                 <input
                     type="search"
                     name="{{ $searchName }}"
                     value="{{ request($searchName) }}"
                     placeholder="{{ $searchPlaceholder }}"
                     aria-label="{{ $searchPlaceholder }}"
-                    class="h-9 w-full rounded-medium border border-input bg-background pl-9 pr-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring outline-none"
+                    class="h-[30px] sm:h-8 w-full rounded-[6px] border border-input bg-background pl-8 pr-2.5 text-[12px] text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring outline-none"
                 />
             </form>
         @elseif ($searchModel)
             <div class="relative w-full sm:max-w-xs">
-                <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-muted-foreground" aria-hidden="true">search</span>
+                <span class="material-symbols-rounded pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[16px] text-muted-foreground" aria-hidden="true">search</span>
                 <input
                     type="search"
                     wire:model.live.debounce.300ms="{{ $searchModel }}"
                     placeholder="{{ $searchPlaceholder }}"
                     aria-label="{{ $searchPlaceholder }}"
-                    class="h-9 w-full rounded-medium border border-input bg-background pl-9 pr-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring outline-none"
+                    class="h-[30px] sm:h-8 w-full rounded-[6px] border border-input bg-background pl-8 pr-2.5 text-[12px] text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring outline-none"
                 />
             </div>
         @endif

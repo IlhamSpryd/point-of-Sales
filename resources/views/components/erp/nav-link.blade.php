@@ -5,6 +5,7 @@
     'label' => null,
     'class' => null,
     'closeMobile' => true,
+    'variant' => 'sidebar',
 ])
 
 {{--
@@ -25,8 +26,13 @@
 --}}
 
 @php
-    $activeClasses = 'bg-shell-accent text-shell-foreground-active font-semibold border border-shell-border shadow-2xs';
-    $idleClasses = 'text-shell-foreground hover:text-shell-foreground-active hover:bg-shell-accent/60';
+    if ($variant === 'subnav') {
+        $activeClasses = 'text-foreground font-semibold bg-transparent';
+        $idleClasses = 'text-muted-foreground hover:text-foreground hover:bg-accent/70 font-medium bg-transparent';
+    } else {
+        $activeClasses = 'bg-shell-accent text-shell-foreground-active font-semibold border border-shell-border shadow-2xs';
+        $idleClasses = 'text-shell-foreground hover:text-shell-foreground-active hover:bg-shell-accent/60';
+    }
 
     $merged = $class ?? '';
 @endphp

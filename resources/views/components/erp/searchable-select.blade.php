@@ -200,7 +200,7 @@
         :aria-expanded="open"
         aria-haspopup="listbox"
         aria-controls="{{ $listboxId }}"
-        class="h-9 w-full min-w-0 px-3 py-1.5 bg-background border border-input rounded-control text-xs sm:text-sm flex items-center justify-between gap-2 shadow-xs transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring disabled:cursor-not-allowed disabled:bg-disabled-bg disabled:text-muted-foreground disabled:border-border select-none cursor-pointer"
+        class="h-[30px] sm:h-8 w-full min-w-0 px-2.5 py-1 bg-background border border-input rounded-[6px] text-[12px] flex items-center justify-between gap-2 shadow-xs transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:border-ring disabled:cursor-not-allowed disabled:bg-disabled-bg disabled:text-muted-foreground disabled:border-border select-none cursor-pointer"
         :class="{ 'border-ring ring-1 ring-ring': open }"
     >
         <span

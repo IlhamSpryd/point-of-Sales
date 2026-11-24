@@ -13,27 +13,27 @@
 @php
     switch ($size ?? 'md') {
         case 'xs':
-            $sizeClasses = 'h-7 px-2.5 text-xs rounded-md gap-1';
+            $sizeClasses = 'h-6 px-2 text-[11px] rounded-[4px] gap-1';
             $loaderClasses = 'size-3';
             break;
         case 'sm':
-            $sizeClasses = 'h-8 px-3 text-xs rounded-lg gap-1.5';
+            $sizeClasses = 'h-7 px-2 text-[11.5px] rounded-[6px] gap-1';
             $loaderClasses = 'size-3.5';
             break;
         case 'md':
-            $sizeClasses = 'h-9 px-3.5 text-xs sm:text-sm rounded-lg gap-1.5';
+            $sizeClasses = 'h-[30px] sm:h-8 px-2.5 sm:px-3 text-[12px] rounded-[6px] gap-1.5';
             $loaderClasses = 'size-3.5';
             break;
         case 'lg':
-            $sizeClasses = 'h-10 px-5 text-sm rounded-lg gap-2';
+            $sizeClasses = 'h-9 px-3.5 text-[12.5px] rounded-[6px] gap-1.5';
             $loaderClasses = 'size-4';
             break;
         case 'icon':
-            $sizeClasses = 'size-9 p-0 rounded-lg';
+            $sizeClasses = 'size-8 p-0 rounded-[6px]';
             $loaderClasses = 'size-4';
             break;
         case 'icon-sm':
-            $sizeClasses = 'size-8 p-0 rounded-md';
+            $sizeClasses = 'size-7 p-0 rounded-[4px]';
             $loaderClasses = 'size-3.5';
             break;
         case 'icon-touch':
@@ -41,7 +41,7 @@
             $loaderClasses = 'size-5';
             break;
         default:
-            $sizeClasses = 'h-9 px-3.5 text-xs sm:text-sm rounded-lg gap-1.5';
+            $sizeClasses = 'h-[30px] sm:h-8 px-2.5 sm:px-3 text-[12px] rounded-[6px] gap-1.5';
             $loaderClasses = 'size-3.5';
             break;
     }
@@ -80,7 +80,7 @@
         {{ $attributes->twMerge($sizeClasses.' '.$typeClasses.' relative cursor-pointer border inline-flex items-center justify-center font-semibold whitespace-nowrap select-none transition-all duration-150 focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:border-border disabled:opacity-75') }}
     >
         @if ($icon)
-            <span class="material-symbols-rounded text-[20px] leading-none shrink-0" aria-hidden="true">{{ $icon }}</span>
+            <span class="material-symbols-rounded text-[16px] leading-none shrink-0" aria-hidden="true">{{ $icon }}</span>
         @endif
         {{ $slot }}
         @if ($hotkey)

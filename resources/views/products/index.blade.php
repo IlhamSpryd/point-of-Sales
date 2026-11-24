@@ -32,25 +32,25 @@
         >
             <x-slot:actions>
                 <a href="{{ route('products.export') }}" class="flex-1 sm:flex-none">
-                    <x-ui.button variant="secondary" type="button" class="w-full h-10" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                        <span class="material-symbols-rounded text-[20px]">download</span> Export Excel <span class="sr-only">Export</span>
+                    <x-ui.button variant="secondary" type="button" class="w-full" x-on:click="window.erpMotion?.pulseHighlight($el)">
+                        <span class="material-symbols-rounded text-[16px]">download</span> Export Excel <span class="sr-only">Export</span>
                     </x-ui.button>
                 </a>
 
                 @if($canManage)
-                    <x-ui.button variant="secondary" type="button" @click="showImportModal = true" class="flex-1 sm:flex-none h-10" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                        <span class="material-symbols-rounded text-[20px]">upload</span> Import CSV <span class="sr-only">Import</span>
+                    <x-ui.button variant="secondary" type="button" @click="showImportModal = true" class="flex-1 sm:flex-none" x-on:click="window.erpMotion?.pulseHighlight($el)">
+                        <span class="material-symbols-rounded text-[16px]">upload</span> Import CSV <span class="sr-only">Import</span>
                     </x-ui.button>
 
                     <button type="button" x-show="selectedIds.length > 0" x-cloak @click="showBulkModal = true"
-                        class="inline-flex items-center gap-1.5 px-3.5 h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shadow-xs transition-all animate-pulse">
-                        <span class="material-symbols-rounded text-[20px]">edit_note</span>
+                        class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 h-[30px] sm:h-8 rounded-[6px] bg-primary text-primary-foreground hover:bg-primary/90 text-[12px] font-semibold shadow-xs transition-all animate-pulse">
+                        <span class="material-symbols-rounded text-[16px]">edit_note</span>
                         <span>Bulk Edit (<span x-text="selectedIds.length"></span>)</span>
                     </button>
 
                     <a href="{{ route('products.create') }}" class="flex-1 sm:flex-none" wire:navigate>
-                        <x-ui.button variant="primary" type="button" class="w-full h-10" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                            <span class="material-symbols-rounded text-[20px]">add</span> Add Product <span class="sr-only">Add Product</span>
+                        <x-ui.button variant="primary" type="button" class="w-full" x-on:click="window.erpMotion?.pulseHighlight($el)">
+                            <span class="material-symbols-rounded text-[16px]">add</span> Add Product <span class="sr-only">Add Product</span>
                         </x-ui.button>
                     </a>
                 @endif
@@ -85,19 +85,19 @@
             >
                 <x-slot:head>
                     @if($canManage)
-                        <th scope="col" class="px-4 py-4 w-10 text-center">
+                        <th scope="col" class="px-2.5 py-2 w-8 text-center">
                             <input type="checkbox" x-model="selectAll" @change="toggleAll()"
-                                class="rounded border-border text-primary focus:ring-ring h-4 w-4">
+                                class="rounded border-border text-primary focus:ring-ring h-3.5 w-3.5">
                         </th>
                     @endif
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Product</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category & Brand</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Selling Price</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Physical Stock</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                    <th scope="col" class="px-3 py-2 text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Product</th>
+                    <th scope="col" class="px-3 py-2 text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+                    <th scope="col" class="px-3 py-2 text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Category & Brand</th>
+                    <th scope="col" class="px-3 py-2 text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider text-right">Selling Price</th>
+                    <th scope="col" class="px-3 py-2 text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider text-right">Physical Stock</th>
+                    <th scope="col" class="px-3 py-2 text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
                     @if($canManage)
-                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
+                        <th scope="col" class="px-3 py-2 text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                     @endif
                 </x-slot:head>
 
@@ -127,23 +127,23 @@
                     @endphp
                     <tr class="hover:bg-muted/40 transition-colors duration-200">
                         @if($canManage)
-                            <td class="px-4 py-4 text-center">
+                            <td class="px-2.5 py-2 text-center">
                                 <input type="checkbox" value="{{ $product->id }}" x-model="selectedIds"
-                                    class="product-checkbox rounded border-border text-primary focus:ring-ring h-4 w-4">
+                                    class="product-checkbox rounded border-border text-primary focus:ring-ring h-3.5 w-3.5">
                             </td>
                         @endif
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
+                        <td class="px-3 py-2">
+                            <div class="flex items-center gap-2.5">
                                 @if($product->photo_url)
-                                    <img src="{{ $product->photo_url }}" alt="{{ $product->product_name }}" loading="lazy" class="w-10 h-10 rounded-xl object-cover border border-border">
+                                    <img src="{{ $product->photo_url }}" alt="{{ $product->product_name }}" loading="lazy" class="w-7 h-7 rounded-[6px] object-cover border border-border shrink-0">
                                 @else
-                                    <div class="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
-                                        <span class="material-symbols-rounded">image</span>
+                                    <div class="w-7 h-7 rounded-[6px] bg-muted border border-border flex items-center justify-center shrink-0 overflow-hidden text-muted-foreground">
+                                        <span class="material-symbols-rounded text-[14px]">image</span>
                                     </div>
                                 @endif
                                 <div>
-                                    <div class="font-semibold text-foreground text-sm">{{ $product->product_name }}</div>
-                                    <div class="font-sans font-medium text-xs text-muted-foreground tracking-wide">
+                                    <div class="font-semibold text-foreground text-[12px] leading-tight">{{ $product->product_name }}</div>
+                                    <div class="font-sans font-medium text-[11px] text-muted-foreground tracking-wide">
                                         {{ $product->product_code }}
                                         @if($product->barcode)
                                              <span class="text-muted-foreground/80 ml-1">[{{ $product->barcode }}]</span>
@@ -152,36 +152,36 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4">
-                            <span class="text-xs text-muted-foreground font-medium">
+                        <td class="px-3 py-2">
+                            <span class="text-[12px] text-muted-foreground font-medium">
                                 {{ $typeBadges[$prodType]['label'] ?? ucwords(str_replace('_', ' ', (string) $prodType)) }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-sm text-muted-foreground">
+                        <td class="px-3 py-2 text-[12px] text-muted-foreground">
                             <div class="font-medium text-foreground">{{ $product->category?->category_name ?? '—' }}</div>
-                            <div class="text-xs text-muted-foreground/80">{{ $product->brand?->name ?? 'No Brand' }}</div>
+                            <div class="text-[11px] text-muted-foreground/80">{{ $product->brand?->name ?? 'No Brand' }}</div>
                         </td>
-                        <td class="px-6 py-4 text-sm font-semibold text-foreground text-right tabular-nums numeric">
+                        <td class="px-3 py-2 text-[12px] font-semibold text-foreground text-right tabular-nums numeric">
                             Rp {{ number_format($product->product_price, 0, ',', '.') }}
                         </td>
-                        <td class="px-6 py-4 text-sm text-muted-foreground text-right tabular-nums numeric">
+                        <td class="px-3 py-2 text-[12px] text-muted-foreground text-right tabular-nums numeric">
                             @if($product->track_inventory)
                                 <span class="font-semibold {{ $product->stock <= 0 ? 'text-destructive' : 'text-foreground' }}">
                                     {{ $product->stock }}
                                 </span>
-                                <span class="text-xs text-muted-foreground/80 ml-0.5">{{ $product->baseUom?->code ?? 'Pcs' }}</span>
+                                <span class="text-[11px] text-muted-foreground/80 ml-0.5">{{ $product->baseUom?->code ?? 'Pcs' }}</span>
                             @else
-                                <span class="text-xs text-muted-foreground/80 italic">Untracked</span>
+                                <span class="text-[11px] text-muted-foreground/80 italic">Untracked</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                        <td class="px-3 py-2">
+                            <span class="inline-flex items-center gap-1.5 text-[12px] text-foreground font-medium">
                                 <span class="w-1.5 h-1.5 rounded-full {{ $statusDotColor }}"></span>
                                 {{ $statusBadges[$prodStatus]['label'] ?? $prodStatus }}
                             </span>
                         </td>
                         @if($canManage)
-                            <td class="px-6 py-4 text-right">
+                            <td class="px-3 py-2 text-right">
                                 <x-ui.table-actions>
                                     <x-ui.table-action-item icon="edit" href="{{ route('products.edit', $product->id) }}" wire:navigate>
                                         Edit

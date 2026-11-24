@@ -115,7 +115,7 @@
     </div>
 
     {{-- Main Navigation Container --}}
-    <nav id="sidebar-nav-container" class="flex-1 min-h-0 py-3 pb-4 overflow-y-auto overflow-x-hidden scrollbar-hide" :class="wide ? 'px-3' : 'px-1.5 flex flex-col items-center'"
+    <nav id="sidebar-nav-container" class="flex-1 min-h-0 py-3 pb-6 overflow-y-auto overflow-x-hidden scrollbar-hide" :class="wide ? 'px-3' : 'px-1.5 flex flex-col items-center'"
         aria-label="Main navigation">
 
         {{-- MODE A: Expanded — 9 domain labels -> 19 hub rows (max depth 3, ADR-NAV-003) --}}

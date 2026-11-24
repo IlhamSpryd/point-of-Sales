@@ -7,7 +7,7 @@
         />
     </x-slot:header>
 
-    <div class="p-5 lg:p-6 space-y-6" data-gsap="page-enter">
+    <div class="space-y-6" data-gsap="page-enter">
         @include('finance.partials.sub-nav')
 
         <!-- KPI Summary Cards -->

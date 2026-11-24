@@ -120,9 +120,9 @@
             x-model="value"
             @click="openCalendar()"
             placeholder="{{ $placeholder }}"
-            class="h-9 w-full cursor-pointer rounded-medium border border-input bg-background pl-3 pr-9 text-base text-foreground shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring md:text-sm"
+            class="h-[30px] sm:h-8 w-full cursor-pointer rounded-[6px] border border-input bg-background pl-2.5 pr-8 text-[12px] text-foreground shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring"
         />
-        <button type="button" @click="openCalendar()" tabindex="-1" class="absolute right-0 top-0 flex h-9 w-9 items-center justify-center text-muted-foreground transition-colors hover:text-foreground">
+        <button type="button" @click="openCalendar()" tabindex="-1" class="absolute right-0 top-0 flex h-[30px] sm:h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground">
             <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 10h18" /><rect x="3" y="4" width="18" height="18" rx="2" /></svg>
         </button>
     </div>

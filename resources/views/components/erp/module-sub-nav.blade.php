@@ -67,7 +67,7 @@
 
 @if ($hubNode !== null && $pages !== [])
     {{-- Semantic token compatibility: bg-primary text-primary-foreground --}}
-    <div class="w-full mb-6 border-b border-border">
+    <div class="w-full mb-4 border-b border-border">
         <nav aria-label="{{ $resolvedAriaLabel }}"
             x-data
             x-init="$nextTick(() => {
@@ -77,7 +77,7 @@
                     $el.scrollTo({ left: Math.max(0, offset), behavior: 'instant' });
                 }
             })"
-            class="flex items-center gap-6 overflow-x-auto scrollbar-hide -mb-px">
+            class="flex items-center gap-1 sm:gap-1.5 h-9 overflow-x-auto scrollbar-hide no-scrollbar -mb-px">
             @foreach ($pages as $page)
                 @php
                     /** @var \App\Platform\Navigation\NavigationNode $page */
@@ -90,8 +90,12 @@
                     :href="$pageUrl"
                     :active="$isActive"
                     :close-mobile="false"
-                    class="pb-3 pt-1 border-b-2 text-xs transition-colors motion-reduce:transition-none whitespace-nowrap min-h-[40px] inline-flex items-center {{ $isActive ? 'border-foreground text-foreground font-medium' : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border font-normal' }}">
+                    variant="subnav"
+                    class="relative h-9 md:h-9 min-h-[40px] md:min-h-0 px-2.5 py-1.5 text-[12px] inline-flex items-center justify-center rounded-[6px] transition-colors duration-150 whitespace-nowrap">
                     <span>{{ $page->label }}</span>
+                    @if ($isActive)
+                        <span class="h-[2px] bg-foreground rounded-t-full absolute bottom-0 inset-x-2" aria-hidden="true"></span>
+                    @endif
                 </x-erp.nav-link>
             @endforeach
         </nav>

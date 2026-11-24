@@ -12,6 +12,6 @@
     $monoClass = $mono ? 'tabular-nums' : '';
 @endphp
 
-<th scope="col" {{ $attributes->twMerge("h-10 whitespace-nowrap px-4 {$alignClass} {$monoClass} align-middle text-xs font-semibold uppercase tracking-wider text-muted-foreground") }}>
+<th scope="col" {{ $attributes->twMerge("h-8 whitespace-nowrap px-3 py-2 {$alignClass} {$monoClass} align-middle text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground") }}>
     {{ $slot }}
 </th>

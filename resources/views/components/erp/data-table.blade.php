@@ -33,7 +33,7 @@
         'w-full overflow-x-auto table-scroll-shadow custom-scrollbar',
         'hidden lg:block' => $hideOnMobile,
     ])>
-        <table class="data-table table-standard relative w-full min-w-full caption-bottom text-xs sm:text-sm border-collapse {{ $fixed ? 'table-fixed' : '' }}">
+        <table class="data-table table-standard relative w-full min-w-full caption-bottom text-[12px] border-collapse {{ $fixed ? 'table-fixed' : '' }}">
             @isset($colgroup)
                 <colgroup>
                     {{ $colgroup }}
@@ -50,7 +50,7 @@
                                 $key = $col['key'] ?? null;
                                 $isCurrentSort = $key && $sortField === $key;
                             @endphp
-                            <th scope="col" class="px-4 py-3 text-2xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap {{ $align === 'right' ? 'text-right' : ($align === 'center' ? 'text-center' : 'text-left') }} {{ !empty($col['numeric']) ? 'tabular-nums numeric' : '' }} {{ $col['class'] ?? '' }}">
+                            <th scope="col" class="px-3 py-2 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap {{ $align === 'right' ? 'text-right' : ($align === 'center' ? 'text-center' : 'text-left') }} {{ !empty($col['numeric']) ? 'tabular-nums numeric' : '' }} {{ $col['class'] ?? '' }}">
                                 @if($isSortable && $key)
                                     <button type="button" wire:click="sortBy('{{ $key }}')" class="group inline-flex items-center gap-1.5 font-semibold text-muted-foreground hover:text-foreground transition-colors focus:outline-hidden focus-visible:ring-1 focus-visible:ring-ring rounded-sm {{ $align === 'right' ? 'flex-row-reverse' : '' }}">
                                         <span>{{ $col['label'] ?? '' }}</span>

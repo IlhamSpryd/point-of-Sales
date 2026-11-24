@@ -261,14 +261,20 @@
             </header>
 
             <!-- Main Scrollable Area (Full-Bleed Fluid Workspace with Curved Inner Seam) -->
+            @php
+                $isFullBleedWorkspace = ($noPadding ?? false)
+                    || request()->is('transaction*')
+                    || request()->is('kds*')
+                    || request()->routeIs('transaction*', 'kds*');
+            @endphp
             <main
-                class="flex-1 overflow-y-auto overflow-x-hidden w-full bg-shell flex flex-col lg:rounded-tl-[20px] lg:border-t lg:border-l border-border"
+                class="flex-1 overflow-y-auto overflow-x-hidden w-full bg-shell flex flex-col lg:rounded-tl-[20px] lg:border-t lg:border-l border-border {{ $isFullBleedWorkspace ? '' : 'px-5 sm:px-6 lg:px-7 pt-4 pb-8' }}"
                 :class="{ 'opacity-60 transition-opacity duration-150 pointer-events-none': navigating }"
                 id="main-content"
                 data-gsap="page-enter">
                 <!-- Page Heading -->
                 @isset($header)
-                    <div class="mb-6 shrink-0">
+                    <div class="mb-4 shrink-0">
                         {{ $header }}
                     </div>
                 @endisset
