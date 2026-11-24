@@ -88,6 +88,9 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
     // Channel Mapping Manager (Omnichannel)
     Route::middleware(['role:Owner,Admin,Manager', 'enforce.entitlement:omnichannel'])->group(function () {
         Route::get('/integrations/channel-mapping', ChannelMappingManager::class)->name('integrations.channel-mapping');
+        Route::get('/integrations/ofd-channels', \App\Livewire\Integration\OfdChannelConfigManager::class)
+            ->middleware('vertical:fnb')
+            ->name('integrations.ofd-channels');
     });
 
     // B2B Sales, Quotations, Sales Orders & Accounts Receivable (AR)

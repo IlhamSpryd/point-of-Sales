@@ -12,6 +12,18 @@
         </x-slot:breadcrumbs>
     </x-erp.page-header>
 
+    <!-- Integration Tabs Switcher -->
+    <div class="flex items-center gap-2 border-b border-border pb-2">
+        <a href="{{ route('integrations.channel-mapping') }}"
+            class="px-3.5 py-1.5 rounded-md text-xs font-semibold bg-foreground text-background shadow-xs transition-colors">
+            SKU Mapping
+        </a>
+        <a href="{{ route('integrations.ofd-channels') }}"
+            class="px-3.5 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+            OFD Channel Config (GrabFood / GoFood)
+        </a>
+    </div>
+
     @if (session()->has('message'))
         <x-ui.alert type="success" title="Success" class="rounded-2xl">
             {{ session('message') }}

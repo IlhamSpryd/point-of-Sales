@@ -602,7 +602,10 @@ class CheckoutOrderHandler
                 }
 
                 if ($order->order_status === OrderStatus::Paid) {
-                    app(\App\Modules\Finance\Services\FinancialOutboxDispatcherService::class)->dispatchPosOrderPaid($order);
+                    $outbox = app(\App\Modules\Finance\Services\FinancialOutboxDispatcherService::class);
+                    in_array($order->order_channel, ['grabfood', 'gofood'], true)
+                        ? $outbox->dispatchOfdOrderCompleted($order, (float) $order->platform_commission_amount, (float) $order->merchant_promo_subsidy)
+                        : $outbox->dispatchPosOrderPaid($order);
                 }
 
                 KdsOrderCreated::dispatch($order);
@@ -628,10 +631,6 @@ class CheckoutOrderHandler
         return $this->paymentTenderService->payPendingOrder($order, $rawPaymentLegs, $userId, $shiftId, $deviceId);
     }
 
-    /**
-     * @param  array<int|string, mixed>  $rawLegs
-     * @return array<int, array{method: PaymentMethod, amount: int, reference_number: ?string, idempotency_key: ?string, amount_tendered?: int, change_amount?: int}>
-     */
     public function parsePaymentLegs(array $rawLegs): array
     {
         return $this->paymentTenderService->parsePaymentLegs($rawLegs);

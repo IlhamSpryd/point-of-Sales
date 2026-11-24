@@ -197,7 +197,7 @@ trait ManagesPosPaymentAndSplitBill
         $idempotencyKey = $idempotencyKey ?? $this->idempotencyKey;
 
         $rules = [
-            'orderType' => ['required', 'in:dine_in,takeaway'],
+            'orderType' => ['required', 'in:dine_in,takeaway,counter_retail,delivery,grabfood,gofood'],
             'cart' => ['required', 'array', 'min:1'],
         ];
 
@@ -259,6 +259,21 @@ trait ManagesPosPaymentAndSplitBill
                 $this->paymentMethod
             );
             $isMidtransGatewayOrder = $useMidtransGateway || collect($legs)->contains(fn ($l) => ! empty($l['use_midtrans_gateway']));
+
+            $isOfd = in_array($this->orderType, ['grabfood', 'gofood'], true);
+            if ($isOfd && empty(trim((string) $this->externalShortCode))) {
+                throw ValidationException::withMessages([
+                    'externalShortCode' => 'Kode Order / PIN Driver wajib diisi untuk pesanan '.ucfirst((string) $this->orderType).'.',
+                ]);
+            }
+
+            if ($isOfd && empty($normalizedLegs)) {
+                $normalizedLegs = [[
+                    'method' => 'ewallet',
+                    'amount' => (int) $this->totalAmount(),
+                    'reference_number' => strtoupper((string) $this->orderType).'-'.($this->externalShortCode ?: 'POS'),
+                ]];
+            }
 
             if (empty($normalizedLegs)) {
                 throw ValidationException::withMessages(['cart' => 'At least one payment method is required before processing the transaction.']);
@@ -329,6 +344,11 @@ trait ManagesPosPaymentAndSplitBill
                     'origin_channel' => $originChannel,
                     'external_short_code' => $isOfd ? ($this->externalShortCode ?? null) : null,
                     'driver_name' => $isOfd ? ($this->driverName ?? null) : null,
+                    'driver_phone' => $isOfd ? ($this->driverPhone ?? null) : null,
+                    'platform_commission_rate' => $isOfd ? $this->ofdCommissionRate() : 0.00,
+                    'platform_commission_amount' => $isOfd ? $this->estimatedOfdCommission() : 0.00,
+                    'merchant_promo_subsidy' => $isOfd ? $this->merchantPromoSubsidy : 0.00,
+                    'net_payout_amount' => $isOfd ? $this->estimatedOfdNetPayout() : (int) $this->totalAmount(),
                     'device_id' => $this->deviceId,
                     'shift_id' => $shiftId,
                     'discount_id' => $this->selectedDiscountId,

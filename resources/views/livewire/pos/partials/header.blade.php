@@ -19,31 +19,39 @@
 
     <div class="flex items-center gap-2 shrink-0">
         <!-- Segmented Channel / Order Type Toggle -->
-        @if ($this->isTablesEnabled)
-            <div class="inline-flex p-0.5 bg-muted rounded-lg border border-border h-9 items-center">
+        @if ($this->supportsFnb())
+            <div class="inline-flex p-0.5 bg-muted rounded-lg border border-border min-h-[44px] h-11 items-center">
                 <button type="button" wire:click="setOrderType('dine_in')"
-                    class="px-3 py-1 rounded-md {{ $orderType === 'dine_in' ? 'bg-foreground text-background font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground' }} text-xs font-medium transition-all cursor-pointer">
+                    class="min-h-[40px] px-3 py-1.5 rounded-md {{ $orderType === 'dine_in' ? 'bg-foreground text-background font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground' }} text-xs font-medium transition-all cursor-pointer">
                     Dine-In
                 </button>
                 <button type="button" wire:click="setOrderType('takeaway')"
-                    class="px-3 py-1 rounded-md {{ $orderType === 'takeaway' ? 'bg-foreground text-background font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground' }} text-xs font-medium transition-all cursor-pointer">
+                    class="min-h-[40px] px-3 py-1.5 rounded-md {{ $orderType === 'takeaway' ? 'bg-foreground text-background font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground' }} text-xs font-medium transition-all cursor-pointer">
                     Takeaway
+                </button>
+                <button type="button" wire:click="setOrderType('grabfood')"
+                    class="min-h-[40px] px-3 py-1.5 rounded-md {{ $orderType === 'grabfood' ? 'bg-foreground text-background font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground' }} text-xs font-medium transition-all cursor-pointer">
+                    GrabFood
+                </button>
+                <button type="button" wire:click="setOrderType('gofood')"
+                    class="min-h-[40px] px-3 py-1.5 rounded-md {{ $orderType === 'gofood' ? 'bg-foreground text-background font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground' }} text-xs font-medium transition-all cursor-pointer">
+                    GoFood
                 </button>
             </div>
         @else
-            <div class="inline-flex p-0.5 bg-muted rounded-lg border border-border h-9 items-center">
+            <div class="inline-flex p-0.5 bg-muted rounded-lg border border-border min-h-[44px] h-11 items-center">
                 <button type="button" wire:click="setOrderType('counter_retail')"
-                    class="px-3 py-1 rounded-md {{ ($orderType === 'counter_retail' || $orderType === 'dine_in') ? 'bg-foreground text-background font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground' }} text-xs font-medium transition-all cursor-pointer">
+                    class="min-h-[40px] px-3 py-1.5 rounded-md {{ ($orderType === 'counter_retail' || $orderType === 'dine_in') ? 'bg-foreground text-background font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground' }} text-xs font-medium transition-all cursor-pointer">
                     Counter POS
                 </button>
                 <button type="button" wire:click="setOrderType('takeaway')"
-                    class="px-3 py-1 rounded-md {{ $orderType === 'takeaway' ? 'bg-foreground text-background font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground' }} text-xs font-medium transition-all cursor-pointer">
+                    class="min-h-[40px] px-3 py-1.5 rounded-md {{ $orderType === 'takeaway' ? 'bg-foreground text-background font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground' }} text-xs font-medium transition-all cursor-pointer">
                     Delivery / Pickup
                 </button>
             </div>
         @endif
 
-        @if ($orderType === 'dine_in' && $this->isTablesEnabled)
+        @if ($orderType === 'dine_in' && $this->supportsFnb() && $this->isTablesEnabled)
             <div class="relative">
                 <select wire:model.live="tableId"
                     class="h-9 pl-8 pr-7 bg-card border border-border hover:bg-muted transition-colors text-foreground text-xs font-medium rounded-lg shadow-2xs appearance-none cursor-pointer focus:outline-none focus:border-foreground focus:ring-1 focus:ring-ring">

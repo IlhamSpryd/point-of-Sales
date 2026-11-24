@@ -41,6 +41,10 @@ class CreateOrder extends Component
 
     public ?string $driverName = null;
 
+    public ?string $driverPhone = null;
+
+    public float $merchantPromoSubsidy = 0.00;
+
     public string $search = '';
 
     #[Locked]
@@ -112,7 +116,81 @@ class CreateOrder extends Component
     {
         $allowed = ['dine_in', 'takeaway', 'counter_retail', 'delivery', 'grabfood', 'gofood'];
         $this->orderType = in_array($type, $allowed, true) ? $type : 'dine_in';
+        if (! in_array($this->orderType, ['grabfood', 'gofood'], true)) {
+            $this->externalShortCode = null;
+            $this->driverName = null;
+            $this->driverPhone = null;
+            $this->merchantPromoSubsidy = 0.00;
+        }
         $this->updatedOrderType();
+    }
+
+    public function isOfd(): bool
+    {
+        return in_array($this->orderType, ['grabfood', 'gofood'], true);
+    }
+
+    public function supportsFnb(): bool
+    {
+        $storeId = $this->activeStoreId ?? app(TenantContext::class)->getStoreId();
+        if ($storeId) {
+            $store = \App\Modules\Organization\Models\Store::find($storeId);
+            if ($store) {
+                return $store->supportsFnb();
+            }
+        }
+        $tenantId = app(TenantContext::class)->getTenantId();
+        if ($tenantId) {
+            $tenant = \App\Modules\Organization\Models\Tenant::find($tenantId);
+            if ($tenant) {
+                return $tenant->supportsFnb();
+            }
+        }
+
+        return true;
+    }
+
+    #[Computed]
+    public function ofdConfig(): ?\App\Modules\Integration\Models\OfdChannelConfig
+    {
+        if (! $this->isOfd()) {
+            return null;
+        }
+
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $userStoreId = $user ? (int) $user->store_id : 0;
+        $storeId = (int) (app(\App\Core\Context\TenantContext::class)->getStoreId() ?? $userStoreId);
+
+        return \App\Modules\Integration\Models\OfdChannelConfig::query()
+            ->where('provider', $this->orderType)
+            ->when($storeId, fn ($q) => $q->where('store_id', $storeId))
+            ->where('is_active', true)
+            ->first();
+    }
+
+    #[Computed]
+    public function ofdCommissionRate(): float
+    {
+        $config = $this->ofdConfig();
+
+        return $config ? (float) $config->commission_rate_pct : 20.00;
+    }
+
+    #[Computed]
+    public function estimatedOfdCommission(): float
+    {
+        return round($this->subtotal() * ($this->ofdCommissionRate() / 100), 2);
+    }
+
+    #[Computed]
+    public function estimatedOfdNetPayout(): float
+    {
+        $tax = (float) $this->taxAmount();
+        $subtotal = (float) $this->subtotal();
+        $promo = (float) $this->merchantPromoSubsidy;
+        $commission = (float) $this->estimatedOfdCommission();
+
+        return max(0, round($subtotal + $tax - $promo - $commission, 2));
     }
 
     public function updatedSearch(): void

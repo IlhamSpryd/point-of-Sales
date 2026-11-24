@@ -61,6 +61,9 @@
 
     <!-- Order Items List & Calculation Summary -->
     <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
+        @if (in_array($orderType, ['grabfood', 'gofood'], true))
+            @include('livewire.pos.partials.ofd-assisted-panel')
+        @endif
         @include('livewire.pos.partials.cart-items')
         @include('livewire.pos.partials.cart-summary')
     </div>

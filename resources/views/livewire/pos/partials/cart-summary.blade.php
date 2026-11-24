@@ -125,7 +125,7 @@
     </div>
 
     {{-- Fast Cash Tender Tray --}}
-    @unless ($pendingOrderId)
+    @unless ($pendingOrderId || $this->isOfd())
         @if ($this->canCheckout && count($this->cartLines) > 0)
             <div class="p-2 rounded-xl bg-muted/60 border border-border space-y-1.5 my-0.5">
                 <div class="flex items-center justify-between text-xs text-foreground font-semibold">
@@ -155,7 +155,7 @@
     @php($isWaiterRole = auth()->user()?->role?->name === 'Waiter')
 
     {{-- Fast Payment Method Bar (Tunai, QRIS, EDC Kartu, Transfer) --}}
-    @unless ($isWaiterRole || $pendingOrderId)
+    @unless ($isWaiterRole || $pendingOrderId || $this->isOfd())
         <div class="grid grid-cols-4 gap-1.5 py-0.5">
             <button class="min-h-[44px] h-11 px-1 rounded-md bg-primary text-primary-foreground text-xs text-center font-medium shadow-2xs transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none cursor-pointer"
                 type="button"
@@ -208,6 +208,23 @@
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-rounded text-lg">restaurant</span>
                     <span class="text-sm font-medium">Kirim ke Dapur (KDS)</span>
+                </div>
+                <span class="text-sm font-semibold tabular-nums">
+                    Rp {{ number_format($this->totalAmount, 0, ',', '.') }}
+                </span>
+            </button>
+        @elseif ($this->isOfd())
+            <button wire:click.prevent="submitOrder" id="btn-proses-ofd"
+                wire:loading.attr="disabled" wire:target="submitOrder"
+                wire:loading.class.add="pointer-events-none"
+                aria-label="Selesaikan Pesanan OFD"
+                class="w-full min-h-[44px] h-11 px-4 rounded-lg bg-foreground hover:opacity-90 text-background transition-all flex items-center justify-between shadow-sm disabled:bg-muted disabled:text-muted-foreground disabled:border disabled:border-border disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
+                @disabled(!$this->canCheckout || count($this->cartLines) === 0 || empty($externalShortCode))>
+                <div class="flex items-center gap-2">
+                    <span wire:loading wire:target="submitOrder" class="h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current"></span>
+                    <span wire:loading.remove wire:target="submitOrder" class="material-symbols-rounded text-lg">moped</span>
+                    <span wire:loading.remove wire:target="submitOrder" class="text-sm font-semibold">Selesaikan Pesanan {{ strtoupper($orderType) }}</span>
+                    <span wire:loading wire:target="submitOrder" class="text-sm font-medium">Memproses OFD...</span>
                 </div>
                 <span class="text-sm font-semibold tabular-nums">
                     Rp {{ number_format($this->totalAmount, 0, ',', '.') }}

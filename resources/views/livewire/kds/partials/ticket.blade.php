@@ -1,8 +1,14 @@
 @php
     // Variabel dari pemanggil: $item (OrderItem), $variant ('pending' | 'brewing' | 'ready')
     $order = $item->order;
-    $isTakeaway = $order->order_type?->value === 'takeaway';
-    $place = $order->table?->table_name ?? ($isTakeaway ? 'Takeaway' : 'Cashier');
+    $orderChannel = $order->order_channel ?? null;
+    $orderTypeValue = $order->order_type?->value ?? (string) $order->order_type;
+    $isOfdOrder = in_array($orderChannel, ['grabfood', 'gofood'], true) || in_array($orderTypeValue, ['grabfood', 'gofood'], true);
+    $ofdProvider = strtoupper($orderChannel ?: ($orderTypeValue ?? 'OFD'));
+    $ofdCode = $order->external_short_code ? '#' . $order->external_short_code : ($order->external_order_id ? '#' . substr($order->external_order_id, 0, 8) : '');
+
+    $isTakeaway = $orderTypeValue === 'takeaway';
+    $place = $isOfdOrder ? ($ofdProvider . ($ofdCode ? ' ' . $ofdCode : '')) : ($order->table?->table_name ?? ($isTakeaway ? 'Takeaway' : 'Cashier'));
     $options = collect($item->options ?? []);
     $showSla = $variant !== 'ready';
     $sla = $showSla ? $item->slaLevel() : 'ok';
@@ -27,9 +33,15 @@
             <x-ui.badge :variant="$isPaid ? 'success' : 'warning'">
                 {{ $isPaid ? 'PAID' : 'OPEN TAB' }}
             </x-ui.badge>
-            <x-ui.badge :variant="$isTakeaway ? 'primary' : 'secondary'">
-                {{ $isTakeaway ? 'Takeaway' : 'Dine-in' }}
-            </x-ui.badge>
+            @if ($isOfdOrder)
+                <x-ui.badge variant="primary" class="font-bold">
+                    {{ $ofdProvider }}{{ $ofdCode ? ' · ' . $ofdCode : '' }}
+                </x-ui.badge>
+            @else
+                <x-ui.badge :variant="$isTakeaway ? 'primary' : 'secondary'">
+                    {{ $isTakeaway ? 'Takeaway' : 'Dine-in' }}
+                </x-ui.badge>
+            @endif
         </div>
     </div>
 
