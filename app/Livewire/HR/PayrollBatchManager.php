@@ -7,6 +7,7 @@ namespace App\Livewire\HR;
 use App\Core\Context\TenantContext;
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Modules\Organization\Models\Approval;
+use App\Modules\Organization\Models\Store;
 use App\Modules\Workforce\Enums\PayrollBatchStatusEnum;
 use App\Modules\Workforce\Models\PayrollBatch;
 use App\Modules\Workforce\Models\PayrollRecord;
@@ -149,8 +150,8 @@ class PayrollBatchManager extends Component
 
             $isOwner = $currentUser !== null && (
                 (method_exists($currentUser, 'isOwner') && $currentUser->isOwner())
-                || (method_exists($currentUser, 'hasRole') && $currentUser->hasRole('owner'))
-                || ($currentUser->role instanceof \App\Modules\Organization\Models\Role && $currentUser->role->name === 'owner')
+                || (method_exists($currentUser, 'hasRole') && ($currentUser->hasRole('Owner') || $currentUser->hasRole('owner')))
+                || ($currentUser->role instanceof \App\Modules\Organization\Models\Role && strtolower((string) $currentUser->role->name) === 'owner')
             );
 
             $isSoloOwner = $isOwner && $tenantUsersCount <= 1;
@@ -161,8 +162,18 @@ class PayrollBatchManager extends Component
                 $isSoloOwner
             );
 
+            $storeId = app(TenantContext::class)->getStoreId() ?? $currentUser?->store_id;
+            if (! $storeId) {
+                $firstStore = Store::withoutGlobalScopes()->where('tenant_id', $tenantId)->first();
+                $storeId = $firstStore instanceof Store ? $firstStore->id : 0;
+            }
+            if (! $storeId) {
+                throw new \DomainException('Cannot finalize payroll batch without a valid store context.');
+            }
+
             \Illuminate\Support\Facades\DB::transaction(function () use (
                 $tenantId,
+                $storeId,
                 $batch,
                 $currentUserId,
                 $creatorUserId,
@@ -171,19 +182,33 @@ class PayrollBatchManager extends Component
                 $postingService
             ) {
                 if ($isSoloOwner && $creatorUserId === $currentUserId) {
+                    app(\App\Platform\Audit\ImmutableAuditWriter::class)->write(
+                        tenantId: $tenantId,
+                        action: 'workforce.payroll.owner_self_approval_override',
+                        userId: $currentUserId,
+                        storeId: (int) $storeId,
+                        subjectType: PayrollBatch::class,
+                        subjectId: $batch->id,
+                        description: "Solo-owner self-approval override for payroll batch {$batch->batch_number} by User #{$currentUserId}",
+                        payload: [
+                            'batch_number' => $batch->batch_number,
+                            'solo_owner_override' => true,
+                        ]
+                    );
                     \Illuminate\Support\Facades\Log::info("[Owner Self-Approval Override] Solo-owner tenant approval for payroll batch {$batch->batch_number} by User #{$currentUserId}");
                 }
 
                 // Create authorization approval record dengan requester dan approver terpisah
                 $approval = Approval::create([
                     'tenant_id' => $tenantId,
+                    'store_id' => $storeId,
                     'requester_user_id' => $creatorUserId,
-                    'document_type' => 'PAYROLL_BATCH',
-                    'document_id' => $batch->id,
-                    'action_code' => 'PAYROLL_EXECUTION',
-                    'status' => 'APPROVED',
                     'approver_user_id' => $currentUserId,
-                    'approved_at' => now(),
+                    'action_code' => 'PAYROLL_EXECUTION',
+                    'target_entity_type' => 'PAYROLL_BATCH',
+                    'target_entity_id' => $batch->id,
+                    'status' => 'APPROVED',
+                    'reason' => "Finalization approval for batch {$batch->batch_number}",
                 ]);
 
                 $finalizedBatch = $batchService->finalizeBatch($batch->id, $currentUserId, $approval->id);

@@ -6,9 +6,11 @@ namespace Tests\Feature\Workforce;
 
 use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
+use App\Livewire\HR\PayrollBatchManager;
 use App\Modules\Finance\Enums\AccountingPeriodStatusEnum;
 use App\Modules\Finance\Models\AccountingPeriod;
 use App\Modules\Organization\Models\Approval;
+use App\Modules\Organization\Models\Role;
 use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
@@ -45,6 +47,7 @@ use Database\Seeders\ChartOfAccountsSeeder;
 use Database\Seeders\StatutoryRuleVersionsSeeder;
 use DomainException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class Wave9WorkforcePayrollIntegrityTest extends TestCase
@@ -586,5 +589,131 @@ class Wave9WorkforcePayrollIntegrityTest extends TestCase
         // Jika tenant multi-user (allowSelfApproval = false), self-approval HARUS ditolak
         $this->expectException(SegregationOfDutiesViolationException::class);
         $guard->assertCanApprove(10, 10, false);
+    }
+
+    /**
+     * Test Solo-Owner Self-Approval Override via Livewire logs to activity_logs & Multi-User blocks self-approval
+     */
+    public function test_livewire_payroll_finalize_enforces_maker_checker_and_solo_owner_audit_log(): void
+    {
+        $ownerRole = Role::create([
+            'tenant_id' => $this->tenant->id,
+            'role_code' => 'ROL-OWNER-W9',
+            'name' => 'Owner',
+            'permissions' => ['*'],
+            'is_active' => true,
+        ]);
+
+        $this->user->role_id = $ownerRole->id;
+        $this->user->is_active = true;
+        $this->user->save();
+
+        AccountingPeriod::create([
+            'tenant_id' => $this->tenant->id,
+            'period_code' => 'PER-2026-11',
+            'period_name' => 'November 2026',
+            'start_date' => '2026-11-01',
+            'end_date' => '2026-11-30',
+            'fiscal_year' => 2026,
+            'period_number' => 11,
+            'status' => AccountingPeriodStatusEnum::OPEN->value,
+            'is_locked' => false,
+        ]);
+
+        // 1. Solo-Owner (active users = 1) diizinkan melakukan explicit override & tercatat di activity_logs
+        $soloBatch = $this->batchService->createBatch(
+            tenantId: $this->tenant->id,
+            periodStart: Carbon::parse('2026-11-01'),
+            periodEnd: Carbon::parse('2026-11-30'),
+            cutoffDate: Carbon::parse('2026-11-25'),
+            paymentDate: Carbon::parse('2026-11-30'),
+            createdByUserId: $this->user->id
+        );
+
+        PayrollRecord::create([
+            'tenant_id' => $this->tenant->id,
+            'payroll_batch_id' => $soloBatch->id,
+            'employee_id' => $this->employee->id,
+            'employee_number_snapshot' => $this->employee->employee_number,
+            'full_name_snapshot' => $this->employee->full_name,
+            'department_name_snapshot' => 'Operations',
+            'job_title_snapshot' => 'Staff',
+            'primary_store_id' => $this->store->id,
+            'primary_store_name_snapshot' => $this->store->name,
+            'ptkp_status_snapshot' => 'TK/0',
+            'tax_calculation_method_snapshot' => 'GROSS',
+            'bank_name_snapshot' => 'BCA',
+            'bank_account_number_snapshot' => '1234567890',
+            'basic_salary_amount' => 4000000.00,
+            'fixed_allowances_amount' => 0.00,
+            'variable_allowances_amount' => 0.00,
+            'overtime_amount' => 0.00,
+            'commissions_amount' => 0.00,
+            'gross_earnings_amount' => 4000000.00,
+            'taxable_gross_amount' => 4000000.00,
+            'tax_pph21_amount' => 0.00,
+            'tax_pph21_dtp_amount' => 0.00,
+            'bpjs_ks_employer_amount' => 0.00,
+            'bpjs_ks_employee_amount' => 0.00,
+            'bpjs_tk_employer_amount' => 0.00,
+            'bpjs_tk_employee_amount' => 0.00,
+            'other_deductions_amount' => 0.00,
+            'net_pay_amount' => 4000000.00,
+            'payslip_token' => 'token-w9-solo',
+        ]);
+
+        $soloBatch->status = PayrollBatchStatusEnum::CALCULATED;
+        $soloBatch->total_employees = 1;
+        $soloBatch->total_gross_amount = 4000000.00;
+        $soloBatch->total_net_amount = 4000000.00;
+        $soloBatch->save();
+
+        Livewire::actingAs($this->user)
+            ->test(PayrollBatchManager::class)
+            ->call('finalize', $soloBatch->id)
+            ->assertHasNoErrors();
+
+        $this->assertEquals(PayrollBatchStatusEnum::FINALIZED, $soloBatch->fresh()->status);
+        $this->assertDatabaseHas('activity_logs', [
+            'tenant_id' => $this->tenant->id,
+            'user_id' => $this->user->id,
+            'action' => 'workforce.payroll.owner_self_approval_override',
+            'subject_id' => $soloBatch->id,
+        ]);
+
+        // 2. Multi-user tenant (>1 active user) WAJIB memblokir self-approval oleh pembuat batch
+        User::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'is_active' => true,
+        ]);
+
+        AccountingPeriod::create([
+            'tenant_id' => $this->tenant->id,
+            'period_code' => 'PER-2027-01',
+            'period_name' => 'Januari 2027',
+            'start_date' => '2027-01-01',
+            'end_date' => '2027-01-31',
+            'fiscal_year' => 2027,
+            'period_number' => 1,
+            'status' => AccountingPeriodStatusEnum::OPEN->value,
+            'is_locked' => false,
+        ]);
+
+        $multiBatch = $this->batchService->createBatch(
+            tenantId: $this->tenant->id,
+            periodStart: Carbon::parse('2027-01-01'),
+            periodEnd: Carbon::parse('2027-01-31'),
+            cutoffDate: Carbon::parse('2027-01-25'),
+            paymentDate: Carbon::parse('2027-01-31'),
+            createdByUserId: $this->user->id
+        );
+        $multiBatch->status = PayrollBatchStatusEnum::CALCULATED;
+        $multiBatch->save();
+
+        Livewire::actingAs($this->user)
+            ->test(PayrollBatchManager::class)
+            ->call('finalize', $multiBatch->id);
+
+        $this->assertEquals(PayrollBatchStatusEnum::CALCULATED, $multiBatch->fresh()->status);
     }
 }
