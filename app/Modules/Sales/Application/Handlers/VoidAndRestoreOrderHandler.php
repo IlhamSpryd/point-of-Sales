@@ -167,7 +167,7 @@ class VoidAndRestoreOrderHandler
                     ->update(['status' => PromotionReservation::STATUS_RELEASED]);
 
                 $cashPayments = $existingPayments->filter(
-                    fn ($p) => $p->payment_method === PaymentMethod::Cash || (string) $p->payment_method === 'cash'
+                    fn ($p) => $p->payment_method === PaymentMethod::Cash
                 );
                 $totalCashPaid = (int) $cashPayments->sum('amount');
                 if ($totalCashPaid > 0) {

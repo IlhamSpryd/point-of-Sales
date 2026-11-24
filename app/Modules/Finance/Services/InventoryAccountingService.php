@@ -220,9 +220,9 @@ class InventoryAccountingService
             $isIngredient = ($item->item_type === 'ingredient' || ! empty($item->ingredient_id));
 
             if ($isIngredient) {
-                $cost = (string) ($item->ingredient?->cost_per_unit ?? $item->unit_cost ?? '0.00');
+                $cost = (string) ($item->ingredient->cost_per_unit ?? $item->unit_cost ?? '0.00');
             } else {
-                $cost = (string) ($item->product?->standard_cost ?? $item->product?->cost_price ?? $item->unit_cost ?? '0.00');
+                $cost = (string) ($item->product->standard_cost ?? $item->product->cost_price ?? $item->unit_cost ?? '0.00');
             }
 
             $lineVal = bcmul(bcadd(bc_num(abs((float) $diffQty)), '0', 4), bc_num($cost), 2);

@@ -948,9 +948,9 @@ class ReturnRefundService
                     + collect($validatedReturnItems)->sum('quantity');
 
                 $returnType = $totalReturnedAll >= $totalOrderQty ? OrderReturn::TYPE_FULL : OrderReturn::TYPE_PARTIAL;
-
                 $proportions = app(\App\Modules\Sales\Domain\Services\ReturnProportionCalculatorService::class)->calculateReturnProportions($lockedOrder, (string) $subtotalReturned, $returnType);
-
+                $taxReturned = $proportions['tax_returned'];
+                $totalRefundableAmount = $proportions['net_refund_amount'];
                 $orderReturn = OrderReturn::forceCreate([
                     'tenant_id' => $lockedOrder->tenant_id,
                     'store_id' => $lockedOrder->store_id,
@@ -965,9 +965,9 @@ class ReturnRefundService
                     'return_type' => $returnType,
                     'subtotal_returned' => $subtotalReturned,
                     'discount_reversed' => $proportions['discount_reversed'],
-                    'tax_returned' => $proportions['tax_returned'],
+                    'tax_returned' => $taxReturned,
                     'service_charge_returned' => $proportions['service_charge_returned'],
-                    'total_refundable_amount' => $proportions['net_refund_amount'],
+                    'total_refundable_amount' => $totalRefundableAmount,
                     'reason' => $reason,
                     'requested_by_user_id' => $actorUserId,
                     'approved_by_user_id' => $approvedByUserId,

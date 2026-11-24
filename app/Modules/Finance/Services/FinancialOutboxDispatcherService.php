@@ -148,13 +148,8 @@ class FinancialOutboxDispatcherService
         $tax = $toBc($order->getTaxAmount());
         $total = $toBc($order->getTotalAmount());
         $discount = $toBc($order->getDiscountAmount());
-        $serviceCharge = method_exists($order, 'getServiceChargeAmount')
-            ? $toBc($order->getServiceChargeAmount())
-            : '0.00';
-
-        $roundingRaw = method_exists($order, 'getRoundingAdjustment')
-            ? $order->getRoundingAdjustment()
-            : '0.00';
+        $serviceCharge = $toBc($order->getServiceChargeAmount());
+        $roundingRaw = $order->getRoundingAdjustment();
         $roundingVal = is_numeric($roundingRaw) ? (float) $roundingRaw : 0.0;
 
         $roundingGainAmount = '0.00';
@@ -233,12 +228,8 @@ class FinancialOutboxDispatcherService
             $orderCode = $orderRow ? (string) ($orderRow->order_code ?? '') : null;
         }
 
-        $discReversed = method_exists($orderReturn, 'getDiscountReversed')
-            ? $orderReturn->getDiscountReversed()
-            : (DB::table('order_returns')->where('id', $orderReturn->getId())->value('discount_reversed') ?? '0.00');
-        $scReturned = method_exists($orderReturn, 'getServiceChargeReturned')
-            ? $orderReturn->getServiceChargeReturned()
-            : (DB::table('order_returns')->where('id', $orderReturn->getId())->value('service_charge_returned') ?? '0.00');
+        $discReversed = $orderReturn->getDiscountReversed();
+        $scReturned = $orderReturn->getServiceChargeReturned();
 
         $accountingDate = Carbon::parse($orderReturn->getCompletedAt() ?? now())->toDateString();
         if ($orderReturn->getOrderId()) {
@@ -284,12 +275,12 @@ class FinancialOutboxDispatcherService
     /**
      * Emisi event outbox saat Order POS dibatalkan/void (pos.order.voided).
      */
-    public function dispatchPosOrderVoided(PosOrderReaderInterface|\App\Modules\Sales\Models\Order $order, ?string $accountingDate = null): FinancialEventOutbox
+    public function dispatchPosOrderVoided(PosOrderReaderInterface $order, ?string $accountingDate = null): FinancialEventOutbox
     {
-        $orderId = method_exists($order, 'getId') ? $order->getId() : (int) $order->id;
-        $tenantId = method_exists($order, 'getTenantId') ? $order->getTenantId() : (int) $order->tenant_id;
-        $storeId = method_exists($order, 'getStoreId') ? $order->getStoreId() : ($order->store_id !== null ? (int) $order->store_id : null);
-        $orderNumber = method_exists($order, 'getOrderNumber') ? $order->getOrderNumber() : (string) ($order->order_code ?? $order->order_number ?? $orderId);
+        $orderId = $order->getId();
+        $tenantId = $order->getTenantId();
+        $storeId = $order->getStoreId();
+        $orderNumber = $order->getOrderNumber();
 
         // 1. Ekstraksi COGS Retail & F&B
         $retailMovements = StockMovement::withoutGlobalScopes()
@@ -301,7 +292,7 @@ class FinancialOutboxDispatcherService
         $cogsRetail = '0.00';
         foreach ($retailMovements as $mov) {
             $qty = abs((float) $mov->quantity);
-            $cost = (string) ($mov->product?->standard_cost ?? $mov->product?->cost_price ?? $mov->unit_cost ?? '0.00');
+            $cost = (string) ($mov->product->standard_cost ?? $mov->product->cost_price ?? $mov->unit_cost ?? '0.00');
             $lineCost = bcmul(bc_num($qty), bc_num($cost), 2);
             $cogsRetail = bcadd($cogsRetail, $lineCost, 2);
         }
@@ -369,13 +360,12 @@ class FinancialOutboxDispatcherService
 
         $toBc = fn ($val) => (is_numeric($val) ? bcadd((string) $val, '0', 2) : '0.00');
 
-        $subtotal = method_exists($order, 'getSubtotal') ? $toBc($order->getSubtotal()) : $toBc($order->subtotal_amount ?? 0);
-        $tax = method_exists($order, 'getTaxAmount') ? $toBc($order->getTaxAmount()) : $toBc($order->tax_amount ?? 0);
-        $total = method_exists($order, 'getTotalAmount') ? $toBc($order->getTotalAmount()) : $toBc($order->order_amount ?? 0);
-        $discount = method_exists($order, 'getDiscountAmount') ? $toBc($order->getDiscountAmount()) : $toBc($order->discount_amount ?? 0);
-        $serviceCharge = method_exists($order, 'getServiceChargeAmount') ? $toBc($order->getServiceChargeAmount()) : $toBc($order->service_charge_amount ?? 0);
-
-        $roundingRaw = method_exists($order, 'getRoundingAdjustment') ? $order->getRoundingAdjustment() : ($order->rounding_adjustment ?? 0);
+        $subtotal = $toBc($order->getSubtotal());
+        $tax = $toBc($order->getTaxAmount());
+        $total = $toBc($order->getTotalAmount());
+        $discount = $toBc($order->getDiscountAmount());
+        $serviceCharge = $toBc($order->getServiceChargeAmount());
+        $roundingRaw = $order->getRoundingAdjustment();
         $roundingVal = is_numeric($roundingRaw) ? (float) $roundingRaw : 0.0;
         $roundingGainAmount = '0.00';
         $roundingLossAmount = '0.00';
@@ -388,7 +378,7 @@ class FinancialOutboxDispatcherService
         // 3. Tentukan accounting_date reversal (Koreksi #4)
         $resolvedDate = $accountingDate;
         if (! $resolvedDate) {
-            $createdAt = method_exists($order, 'getCreatedAt') ? $order->getCreatedAt() : ($order->created_at ?? now());
+            $createdAt = $order->getCreatedAt();
             $origOrderDate = Carbon::parse($createdAt ?? now())->toDateString();
             try {
                 app(AccountingPeriodService::class)->resolveOpenPeriodForDate($origOrderDate, $tenantId);

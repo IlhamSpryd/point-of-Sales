@@ -16,6 +16,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $tenant_id
  * @property int $plan_id
+ * @property string $status
+ * @property \Illuminate\Support\Carbon|null $starts_at
+ * @property \Illuminate\Support\Carbon|null $ends_at
+ * @property \Illuminate\Support\Carbon|null $trial_ends_at
  * @property array<string, mixed>|null $metadata
  */
 class TenantSubscription extends Model
@@ -81,6 +85,6 @@ class TenantSubscription extends Model
     public function isTrialing(): bool
     {
         return $this->status === self::STATUS_TRIALING
-            && ($this->trial_ends_at === null || $this->trial_ends_at->isFuture());
+            && ($this->trial_ends_at === null || \Carbon\Carbon::parse($this->trial_ends_at)->isFuture());
     }
 }
