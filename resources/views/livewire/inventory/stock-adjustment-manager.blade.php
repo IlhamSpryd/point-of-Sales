@@ -217,7 +217,7 @@
                                 <div class="grid grid-cols-12 gap-2 text-xs">
                                     <div class="col-span-12 sm:col-span-6">
                                         <input type="text" wire:model="items.{{ $index }}.reason_note" placeholder="Line note (optional)"
-                                               class="w-full text-xs py-1 px-2 rounded-lg border border-border bg-card placeholder-slate-400">
+                                               class="w-full text-xs py-1 px-2 rounded-lg border border-border bg-card placeholder:text-muted-foreground">
                                     </div>
                                     <div class="col-span-12 sm:col-span-6">
                                         <input type="number" step="0.0001" min="0" wire:model="items.{{ $index }}.unit_cost_snapshot" placeholder="Unit cost snapshot (0 = auto WAC)"

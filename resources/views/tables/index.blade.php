@@ -145,14 +145,14 @@
                                 <x-ui.table-action-item icon="merge_type" @click="openMerge({{ $table->id }}, '{{ addslashes($table->table_name) }}')" aria-label="Merge Tables">
                                     Gabung Meja (Merge)
                                 </x-ui.table-action-item>
-                                <x-ui.table-action-item icon="meeting_room" onclick="if(confirm('Release table {{ addslashes($table->table_name) }}? Please ensure all active orders are settled.')) document.getElementById('release-form-{{ $table->id }}').submit()" aria-label="Release Table">
+                                <x-ui.table-action-item icon="meeting_room" onclick="confirmSubmit('release-form-{{ $table->id }}', '{{ addslashes($table->table_name) }}', { title: 'Kosongkan Meja', message: 'Pastikan semua pesanan aktif di meja ini sudah diselesaikan.', confirmText: 'Kosongkan Meja' })" aria-label="Release Table">
                                     Release Table
                                 </x-ui.table-action-item>
                             @endif
                             <x-ui.table-action-item icon="edit" href="{{ route('tables.edit', $routeToken) }}" wire:navigate aria-label="Edit Table">
                                 Edit Table
                             </x-ui.table-action-item>
-                            <x-ui.table-action-item icon="sync" onclick="if(confirm('Rotate QR token for table {{ addslashes($table->table_name) }}? The physical QR code will need to be reprinted, and any existing customer sessions will be invalidated.')) document.getElementById('rotate-qr-form-{{ $table->id }}').submit()" aria-label="Rotate QR">
+                            <x-ui.table-action-item icon="sync" onclick="confirmSubmit('rotate-qr-form-{{ $table->id }}', '{{ addslashes($table->table_name) }}', { title: 'Rotasi QR Code', message: 'QR code fisik perlu dicetak ulang, dan sesi pelanggan aktif akan dihentikan.', confirmText: 'Rotasi QR' })" aria-label="Rotate QR">
                                 Rotate QR Code
                             </x-ui.table-action-item>
                             <x-ui.table-action-item icon="delete" variant="destructive" onclick="confirmSubmit('delete-form-{{ $table->id }}', '{{ addslashes($table->table_name) }}')" aria-label="Delete Table">
@@ -232,9 +232,9 @@
                         </div>
                         <div class="flex flex-col gap-1 shrink-0">
                             @if($table->operational_status === 'occupied')
-                                <form action="{{ route('tables.release', $routeToken) }}" method="POST">
+                                <form id="release-form-mobile-{{ $table->id }}" action="{{ route('tables.release', $routeToken) }}" method="POST">
                                     @csrf
-                                    <button type="submit" onclick="return confirm('Release table {{ $table->table_name }}?')" class="size-8 flex items-center justify-center rounded-lg text-positive hover:text-positive hover:bg-positive-muted transition-colors" aria-label="Release Table" title="Release Table">
+                                    <button type="button" onclick="confirmSubmit('release-form-mobile-{{ $table->id }}', '{{ addslashes($table->table_name) }}', { title: 'Kosongkan Meja', message: 'Pastikan semua pesanan aktif di meja ini sudah diselesaikan.', confirmText: 'Kosongkan Meja' })" class="size-8 flex items-center justify-center rounded-lg text-positive hover:text-positive hover:bg-positive-muted transition-colors" aria-label="Release Table" title="Release Table">
                                         <span class="material-symbols-rounded text-[20px]">meeting_room</span>
                                     </button>
                                 </form>
@@ -242,9 +242,9 @@
                             <a href="{{ route('tables.edit', $routeToken) }}" class="size-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" aria-label="Edit table" wire:navigate>
                                 <span class="material-symbols-rounded text-[20px]">edit</span>
                             </a>
-                            <form action="{{ route('tables.rotate-qr', $routeToken) }}" method="POST">
+                            <form id="rotate-qr-form-mobile-{{ $table->id }}" action="{{ route('tables.rotate-qr', $routeToken) }}" method="POST">
                                 @csrf
-                                <button type="submit" onclick="return confirm('Rotate QR token for table {{ $table->table_name }}?')" class="size-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-warning hover:bg-warning-muted transition-colors" aria-label="Rotate QR" title="Rotate QR">
+                                <button type="button" onclick="confirmSubmit('rotate-qr-form-mobile-{{ $table->id }}', '{{ addslashes($table->table_name) }}', { title: 'Rotasi QR Code', message: 'QR code fisik perlu dicetak ulang, dan sesi pelanggan aktif akan dihentikan.', confirmText: 'Rotasi QR' })" class="size-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-warning hover:bg-warning-muted transition-colors" aria-label="Rotate QR" title="Rotate QR">
                                     <span class="material-symbols-rounded text-[20px]">sync</span>
                                 </button>
                             </form>

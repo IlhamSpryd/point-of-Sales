@@ -39,13 +39,13 @@
 
                 <div>
                     <!-- Form Disable 2FA -->
-                    <form method="POST" action="{{ route('two-factor.disable') }}" onsubmit="return confirm('Are you sure you want to disable two-factor authentication?');" class="flex items-center gap-2">
+                    <form id="form-disable-2fa" method="POST" action="{{ route('two-factor.disable') }}" class="flex items-center gap-2">
                         @csrf
                         @method('DELETE')
                         @if (! empty($user->password_hash) || ! empty($user->password))
                             <input type="password" name="password" placeholder="Confirm password" required class="text-xs px-3 py-1.5 rounded-lg border border-border focus:ring-1 focus:ring-ring">
                         @endif
-                        <button type="submit" id="btn-disable-2fa" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-destructive text-destructive bg-destructive-muted hover:bg-destructive-muted transition-colors cursor-pointer">
+                        <button type="button" onclick="confirmSubmit('form-disable-2fa', '', { title: 'Nonaktifkan 2FA', message: 'Apakah Anda yakin ingin menonaktifkan autentikasi dua faktor?', confirmText: 'Nonaktifkan' })" id="btn-disable-2fa" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-destructive text-destructive bg-destructive-muted hover:bg-destructive-muted transition-colors cursor-pointer">
                             <span class="material-symbols-rounded text-sm">lock_open</span>
                             <span>{{ __('Disable 2FA') }}</span>
                         </button>

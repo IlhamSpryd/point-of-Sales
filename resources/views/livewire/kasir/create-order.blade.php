@@ -205,6 +205,7 @@
         ? 'https://app.midtrans.com/snap/snap.js'
         : 'https://app.sandbox.midtrans.com/snap/snap.js';
 @endphp
+@assets
 @if ($midtransClientKey)
     <script src="{{ $midtransSnapSrc }}" data-client-key="{{ $midtransClientKey }}"></script>
 @endif
@@ -212,3 +213,4 @@
     window.ApeironTenantId = @js(auth()->user()?->tenant_id);
 </script>
 <script src="{{ asset('js/pos-offline-queue.js') }}"></script>
+@endassets

@@ -42,21 +42,21 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-border">
                 <div>
-                    <x-form-label for="code">Price List Code <span class="text-danger-600">*</span></x-form-label>
+                    <x-form-label for="code">Price List Code <span class="text-destructive">*</span></x-form-label>
                     <input type="text" id="code" name="code" value="{{ old('code', $priceList->code) }}" required maxlength="64"
                         class="w-full h-10 px-3 rounded-xl border border-border text-sm uppercase focus:border-primary focus:ring-1 focus:ring-ring">
                     <x-input-error :messages="$errors->get('code')" class="mt-1" />
                 </div>
 
                 <div>
-                    <x-form-label for="name">Price Rule Name <span class="text-danger-600">*</span></x-form-label>
+                    <x-form-label for="name">Price Rule Name <span class="text-destructive">*</span></x-form-label>
                     <input type="text" id="name" name="name" value="{{ old('name', $priceList->name) }}" required maxlength="150"
                         class="w-full h-10 px-3 rounded-xl border border-border text-sm focus:border-primary focus:ring-1 focus:ring-ring">
                     <x-input-error :messages="$errors->get('name')" class="mt-1" />
                 </div>
 
                 <div>
-                    <x-form-label for="type">Rule Type / Scope <span class="text-danger-600">*</span></x-form-label>
+                    <x-form-label for="type">Rule Type / Scope <span class="text-destructive">*</span></x-form-label>
                     <select id="type" name="type" x-model="type" required
                         class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-card focus:border-primary focus:ring-1 focus:ring-ring">
                         <option value="standard">Standard (Global / General)</option>
@@ -185,7 +185,7 @@
                                     </td>
                                     <td class="px-4 py-2.5 text-center">
                                         <button type="button" @click="removeItem(index)"
-                                            class="text-danger-500 hover:text-danger-700 p-1 rounded-lg hover:bg-danger-50 transition-colors">
+                                            class="text-destructive hover:text-destructive p-1 rounded-lg hover:bg-destructive-muted transition-colors">
                                             <span class="material-symbols-rounded text-[20px]">delete</span>
                                         </button>
                                     </td>

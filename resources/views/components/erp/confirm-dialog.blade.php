@@ -33,6 +33,7 @@
                 window.confirmSubmit(formId, itemName);
             };
         },
+        triggerEl: null,
         openConfirm(detail = {}) {
             const payload = Array.isArray(detail) ? detail[0] : detail;
             const opts = payload || {};
@@ -45,6 +46,8 @@
             this.formToSubmit = opts.formId || null;
             this.wireMethod = opts.wireMethod || null;
             this.wireArgs = Array.isArray(opts.wireArgs) ? opts.wireArgs : [];
+            // Capture the focused element so we can return focus on close (WCAG 2.1 §2.4.3)
+            this.triggerEl = document.activeElement || null;
             this.open = true;
         },
         confirm() {
@@ -53,16 +56,25 @@
                 const form = document.getElementById(this.formToSubmit);
                 if (form) {
                     form.submit();
+                    // returnFocus after form navigation is handled by the browser
                     return;
                 }
             }
             const cb = this.onConfirmCallback;
             if (typeof cb === 'function') {
                 cb();
+                this.returnFocus();
                 return;
             }
             if (this.wireMethod && this.$wire) {
                 this.$wire.call(this.wireMethod, ...this.wireArgs);
+            }
+            this.returnFocus();
+        },
+        returnFocus() {
+            // Return keyboard focus to the triggering element (WCAG 2.1 §2.4.3)
+            if (this.triggerEl && typeof this.triggerEl.focus === 'function') {
+                this.$nextTick(() => { this.triggerEl.focus(); });
             }
         }
     }"

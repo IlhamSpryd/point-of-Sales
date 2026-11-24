@@ -10,9 +10,9 @@
                 <span class="capitalize text-muted-foreground">{{ $orderType === 'dine_in' ? ($tableId ? 'Table ' . ($this->activeTables->firstWhere('id', $tableId)?->table_name ?? $tableId) : 'dine in') : ($orderType === 'counter_retail' ? 'counter' : 'takeaway') }}</span>
             </span>
             <button class="text-muted-foreground hover:text-destructive transition-colors p-1 rounded hover:bg-secondary disabled:opacity-30 disabled:pointer-events-none"
-                title="Clear Cart" type="button"
+                title="Clear Cart" aria-label="Kosongkan Keranjang" type="button"
                 @if (count($this->cartLines) === 0) disabled @endif
-                x-on:click="if (confirm('Clear all items from the current cart?')) { $wire.clearCart(); }">
+                x-on:click="window.dispatchEvent(new CustomEvent('erp-confirm', { detail: { title: 'Kosongkan Keranjang', message: 'Hapus semua item dari keranjang saat ini?', confirmText: 'Kosongkan', onConfirm: () => $wire.clearCart() } }))">
                 <span class="material-symbols-rounded text-[16px] block">delete_sweep</span>
             </button>
         </div>

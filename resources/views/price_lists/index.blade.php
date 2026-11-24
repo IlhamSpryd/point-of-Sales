@@ -162,17 +162,17 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Price List Code <span class="text-destructive">*</span></label>
-                        <input type="text" name="code" value="{{ old('code') }}" required maxlength="64" placeholder="e.g. PL-WHOLESALE-01" class="w-full rounded-xl border border-border px-3.5 py-2 text-sm uppercase focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-ring">
+                        <input type="text" name="code" value="{{ old('code') }}" required maxlength="64" placeholder="e.g. PL-WHOLESALE-01" class="w-full rounded-xl border border-border px-3.5 py-2 text-sm uppercase focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring">
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Price Rule Name <span class="text-destructive">*</span></label>
-                        <input type="text" name="name" value="{{ old('name') }}" required maxlength="150" placeholder="e.g. Wholesale Price Min. 10 Pcs" class="w-full rounded-xl border border-border px-3.5 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-ring">
+                        <input type="text" name="name" value="{{ old('name') }}" required maxlength="150" placeholder="e.g. Wholesale Price Min. 10 Pcs" class="w-full rounded-xl border border-border px-3.5 py-2 text-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring">
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Rule Type / Scope <span class="text-destructive">*</span></label>
-                        <select name="type" x-model="type" required class="w-full rounded-xl border border-border bg-card px-3.5 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-ring">
+                        <select name="type" x-model="type" required class="w-full rounded-xl border border-border bg-card px-3.5 py-2 text-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring">
                             <option value="standard">Standard (Global / General)</option>
                             <option value="wholesale">Tiered Wholesale (Volume Qty)</option>
                             <option value="customer_tier">Loyalty Member Tier</option>
@@ -184,7 +184,7 @@
 
                     <div>
                         <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Execution Priority</label>
-                        <input type="number" name="priority" value="{{ old('priority', 0) }}" min="0" class="w-full rounded-xl border border-border px-3.5 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-ring">
+                        <input type="number" name="priority" value="{{ old('priority', 0) }}" min="0" class="w-full rounded-xl border border-border px-3.5 py-2 text-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring">
                     </div>
                 </div>
 
@@ -237,7 +237,7 @@
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <input type="checkbox" id="pl_is_active" name="is_active" value="1" checked class="rounded border-border text-primary-600 focus:ring-primary-500">
+                    <input type="checkbox" id="pl_is_active" name="is_active" value="1" checked class="rounded border-border text-primary focus:ring-ring">
                     <label for="pl_is_active" class="text-sm font-medium text-foreground">Activate this price rule immediately</label>
                 </div>
 
@@ -245,7 +245,7 @@
                 <div class="pt-3 border-t border-border">
                     <div class="flex items-center justify-between mb-2">
                         <h5 class="text-sm font-bold text-foreground">Product Pricing Rules</h5>
-                        <button type="button" @click="addItem()" class="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-800 font-semibold">
+                        <button type="button" @click="addItem()" class="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 font-semibold">
                             <span class="material-symbols-rounded text-sm">add</span> Add Row
                         </button>
                     </div>

@@ -31,7 +31,7 @@
         <div x-show="lines.length === 0" x-cloak
              class="card-surface flex flex-col items-center text-center px-6 py-16">
             <div class="w-16 h-16 rounded-3xl bg-secondary flex items-center justify-center mb-4">
-                <span class="material-symbols-rounded text-[32px] text-primary-300">shopping_bag</span>
+                <span class="material-symbols-rounded text-[32px] text-muted-foreground">shopping_bag</span>
             </div>
             <h1 class="text-[17px] font-bold">Your cart is empty</h1>
             <p class="text-[14px] text-muted-foreground mt-1 mb-6">Discover our menu and add items to begin your order.</p>
@@ -61,7 +61,7 @@
                                 <img :src="line.photo" :alt="line.name" loading="lazy" class="w-full h-full object-cover">
                             </template>
                             <template x-if="!line.photo">
-                                <span class="material-symbols-rounded text-[32px] text-primary-300">coffee</span>
+                                <span class="material-symbols-rounded text-[32px] text-muted-foreground">coffee</span>
                             </template>
                         </div>
 

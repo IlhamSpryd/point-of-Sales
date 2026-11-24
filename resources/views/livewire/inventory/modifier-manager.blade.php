@@ -127,7 +127,7 @@
                                     <h5 class="text-sm font-bold text-foreground">Additional Ingredients (Optional BOM)</h5>
                                     <p class="text-xs text-muted-foreground mt-0.5">Specify ingredients to automatically deduct from stock when this modifier is selected.</p>
                                 </div>
-                                <button type="button" @click="addIngredient" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-card border border-border rounded-xl hover:bg-muted transition-colors shadow-sm">
+                                <button type="button" @click="addIngredient" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary bg-card border border-border rounded-xl hover:bg-muted transition-colors shadow-sm">
                                     <span class="material-symbols-rounded text-[16px]">add</span> Add Ingredient
                                 </button>
                             </div>

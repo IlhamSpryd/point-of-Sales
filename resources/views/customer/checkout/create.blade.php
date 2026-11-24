@@ -81,7 +81,7 @@
                                 <span class="block text-[13px] text-muted-foreground mt-0.5">{{ $hint }}</span>
                             </span>
                             <span class="w-6 h-6 rounded-full border-[1.5px] flex items-center justify-center shrink-0 transition-all duration-200"
-                                  :class="method === '{{ $value }}' ? 'bg-primary border-foreground text-primary-foreground' : 'border-primary-300 text-transparent'">
+                                  :class="method === '{{ $value }}' ? 'bg-primary border-foreground text-primary-foreground' : 'border-ring text-transparent'">
                                 <span class="material-symbols-rounded text-[16px]">check</span>
                             </span>
                         </button>

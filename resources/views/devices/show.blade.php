@@ -69,9 +69,9 @@
                                         {{ $device->pairing_token ?? 'EXPIRED' }}
                                     </div>
                                     
-                                    <form action="{{ route('devices.regenerate-token', $device) }}" method="POST" onsubmit="return confirm('Regenerate a new pairing token? The existing token will become invalid.');">
+                                    <form id="regen-token-form" action="{{ route('devices.regenerate-token', $device) }}" method="POST">
                                         @csrf
-                                        <x-ui.button type="submit" variant="secondary" class="h-12 px-4 whitespace-nowrap gap-2">
+                                        <x-ui.button type="button" onclick="confirmSubmit('regen-token-form', '', { title: 'Buat Token Baru', message: 'Token baru akan membatalkan token yang ada. Lanjutkan?', confirmText: 'Buat Token', variant: 'primary' })" variant="secondary" class="h-12 px-4 whitespace-nowrap gap-2">
                                             <span class="material-symbols-rounded text-base">refresh</span> Regenerate
                                         </x-ui.button>
                                     </form>
@@ -116,9 +116,9 @@
                                 </div>
 
                                 <div class="mt-6 pt-4 border-t border-positive flex justify-end">
-                                    <form action="{{ route('devices.revoke', $device) }}" method="POST" onsubmit="return confirm('Revoking access will immediately disconnect this physical cashier terminal. Proceed?');">
+                                    <form id="revoke-device-form" action="{{ route('devices.revoke', $device) }}" method="POST">
                                         @csrf
-                                        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-destructive bg-card hover:bg-destructive-muted border border-destructive text-sm font-semibold transition-colors duration-200 shadow-xs active:scale-95">
+                                        <button type="button" onclick="confirmSubmit('revoke-device-form', '', { title: 'Putus Akses Perangkat', message: 'Pemutusan akses akan langsung memutuskan terminal kasir fisik ini. Lanjutkan?', confirmText: 'Putus Akses' })" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-destructive bg-card hover:bg-destructive-muted border border-destructive text-sm font-semibold transition-colors duration-200 shadow-xs active:scale-95">
                                             <span class="material-symbols-rounded text-[20px]">phonelink_erase</span> Disconnect (Revoke)
                                         </button>
                                     </form>
@@ -139,9 +139,9 @@
                                 </p>
 
                                 <div class="mt-6 pt-4 border-t border-destructive flex justify-end">
-                                    <form action="{{ route('devices.regenerate-token', $device) }}" method="POST" onsubmit="return confirm('Generate a new pairing token to reactivate this device?');">
+                                    <form id="reactivate-device-form" action="{{ route('devices.regenerate-token', $device) }}" method="POST">
                                         @csrf
-                                        <x-ui.button type="submit" variant="primary" class="gap-2">
+                                        <x-ui.button type="button" onclick="confirmSubmit('reactivate-device-form', '', { title: 'Aktifkan Kembali Perangkat', message: 'Buat token pairing baru untuk mengaktifkan kembali perangkat ini?', confirmText: 'Aktifkan' })" variant="primary" class="gap-2">
                                             <span class="material-symbols-rounded text-base">replay</span> Reactivate &amp; Generate Token
                                         </x-ui.button>
                                     </form>
@@ -206,10 +206,10 @@
                     </div>
 
                     <div class="pt-4 border-t border-border">
-                        <form action="{{ route('devices.destroy', $device) }}" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete this device?');">
+                        <form id="delete-device-form" action="{{ route('devices.destroy', $device) }}" method="POST">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-destructive bg-destructive-muted hover:bg-destructive-muted text-xs font-semibold transition-colors duration-200">
+                            <button type="button" onclick="confirmDelete('delete-device-form', '{{ addslashes($device->device_name) }}')" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-destructive bg-destructive-muted hover:bg-destructive-muted text-xs font-semibold transition-colors duration-200">
                                 <span class="material-symbols-rounded text-[20px]">delete</span> Delete Device
                             </button>
                         </form>

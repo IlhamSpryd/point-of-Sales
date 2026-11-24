@@ -135,7 +135,7 @@
             @if ($products->isEmpty())
                 <div class="card-surface flex flex-col items-center px-6 py-16 text-center">
                     <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-secondary">
-                        <span class="material-symbols-rounded text-[32px] text-primary-300">coffee</span>
+                        <span class="material-symbols-rounded text-[32px] text-muted-foreground">coffee</span>
                     </div>
                     <h2 class="text-lg font-bold">Menu Unavailable</h2>
                     <p class="mt-1 text-sm text-muted-foreground">Please contact our staff for assistance.</p>
@@ -168,7 +168,7 @@
                                     @else
                                         <span class="flex h-full w-full items-center justify-center">
                                             <span
-                                                class="material-symbols-rounded text-[48px] text-primary-300">coffee</span>
+                                                class="material-symbols-rounded text-[48px] text-muted-foreground">coffee</span>
                                         </span>
                                     @endif
                                     @if ($soldOut)

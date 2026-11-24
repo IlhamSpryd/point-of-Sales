@@ -65,7 +65,7 @@
 
             {{-- Error --}}
             <div x-show="error && !loading" x-cloak role="alert" class="flex flex-col items-center py-10 text-center">
-                <span class="material-symbols-rounded mb-3 text-[32px] text-primary-300">cloud_off</span>
+                <span class="material-symbols-rounded mb-3 text-[32px] text-muted-foreground">cloud_off</span>
                 <p class="mb-4 max-w-xs text-sm font-medium text-muted-foreground" x-text="error"></p>
                 <button type="button" @click="load()"
                         class="min-h-11 rounded-xl border border-border bg-card px-5 text-sm font-semibold shadow-sm transition-all duration-200 hover:bg-card active:scale-95">
@@ -98,7 +98,7 @@
                                         <span x-show="mod.extra_price > 0" class="mt-0.5 block text-[12px] font-medium text-muted-foreground" x-text="'+' + rupiah(mod.extra_price)"></span>
                                     </span>
                                     <span class="flex h-6 w-6 shrink-0 items-center justify-center border-[1.5px] transition-all duration-200"
-                                          :class="[ group.selection_type === 'single' ? 'rounded-full' : 'rounded-md', isSelected(group, mod.id) ? 'border-foreground bg-primary text-primary-foreground' : 'border-primary-300 text-transparent' ]">
+                                          :class="[ group.selection_type === 'single' ? 'rounded-full' : 'rounded-md', isSelected(group, mod.id) ? 'border-foreground bg-primary text-primary-foreground' : 'border-ring text-transparent' ]">
                                         <span class="material-symbols-rounded text-[16px]">check</span>
                                     </span>
                                 </button>
@@ -111,7 +111,7 @@
                     <label for="variant-notes" class="mb-2 block text-[12px] font-bold uppercase tracking-wider text-muted-foreground">Special instructions (optional)</label>
                     <textarea id="variant-notes" x-model="notes" rows="2" maxlength="255"
                               placeholder="e.g. less ice, extra napkin"
-                              class="w-full resize-none rounded-2xl border border-border bg-card px-4 py-3 text-[15px] placeholder:text-primary-400 transition-all duration-200 focus:border-primary focus:bg-card focus:outline-none focus:ring-1 focus:ring-ring"></textarea>
+                              class="w-full resize-none rounded-2xl border border-border bg-card px-4 py-3 text-[15px] placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:bg-card focus:outline-none focus:ring-1 focus:ring-ring"></textarea>
                 </div>
             </div>
         </div>

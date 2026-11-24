@@ -30,12 +30,14 @@ if (typeof window !== 'undefined' && !window.__apeironCommandPaletteLogoutBound)
         } catch (_) {}
     };
 
-    window.addEventListener('apeiron:logout', clearActiveRecents);
-    window.addEventListener('submit', (e) => {
+    const handleLogoutSubmit = (e) => {
         if (e.target && e.target.action && e.target.action.includes('logout')) {
             clearActiveRecents();
         }
-    });
+    };
+
+    window.addEventListener('apeiron:logout', clearActiveRecents);
+    window.addEventListener('submit', handleLogoutSubmit);
 }
 
 export default function commandPalette(initialItems = []) {

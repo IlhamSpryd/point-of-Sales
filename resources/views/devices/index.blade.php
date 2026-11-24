@@ -159,12 +159,12 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Device Name <span class="text-destructive">*</span></label>
-                    <input type="text" name="device_name" value="{{ old('device_name') }}" required placeholder="e.g. Main POS Floor 1 / Bar iPad" class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                    <input type="text" name="device_name" value="{{ old('device_name') }}" required placeholder="e.g. Main POS Floor 1 / Bar iPad" class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus-visible:ring-2 focus-visible:ring-ring focus:outline-none">
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Assigned Branch <span class="text-destructive">*</span></label>
-                    <select name="store_id" required class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                    <select name="store_id" required class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus-visible:ring-2 focus-visible:ring-ring focus:outline-none">
                         <option value="">Select Branch</option>
                         @foreach($stores as $st)
                             <option value="{{ $st->id }}">{{ $st->name }} ({{ $st->code }})</option>
@@ -174,7 +174,7 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Physical Device Type <span class="text-destructive">*</span></label>
-                    <select name="device_type" required class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                    <select name="device_type" required class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus-visible:ring-2 focus-visible:ring-ring focus:outline-none">
                         <option value="pos_terminal">POS Cashier Terminal</option>
                         <option value="kds_display">Kitchen Display System (KDS)</option>
                         <option value="waiter_tablet">Server / Order-Taking Tablet</option>
@@ -183,7 +183,7 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Location / Identification Notes (Optional)</label>
-                    <textarea name="notes" rows="3" placeholder="Additional physical device location details..." class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">{{ old('notes') }}</textarea>
+                    <textarea name="notes" rows="3" placeholder="Additional physical device location details..." class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus-visible:ring-2 focus-visible:ring-ring focus:outline-none">{{ old('notes') }}</textarea>
                 </div>
             </form>
 

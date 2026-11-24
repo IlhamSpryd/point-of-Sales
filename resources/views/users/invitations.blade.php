@@ -94,7 +94,7 @@
                                     <x-ui.table-action-item icon="forward_to_inbox" onclick="document.getElementById('resend-invite-{{ $invitation->id }}').submit()" aria-label="Resend Invitation">
                                         Resend Invitation
                                     </x-ui.table-action-item>
-                                    <x-ui.table-action-item icon="cancel" variant="destructive" onclick="if(confirm('Are you sure you want to revoke this invitation?')) document.getElementById('revoke-invite-{{ $invitation->id }}').submit()" aria-label="Revoke Invitation">
+                                    <x-ui.table-action-item icon="cancel" variant="destructive" onclick="confirmSubmit('revoke-invite-{{ $invitation->id }}', '', { title: 'Cabut Undangan', message: 'Apakah Anda yakin ingin mencabut undangan ini?', confirmText: 'Cabut Undangan' })" aria-label="Revoke Invitation">
                                         Revoke Invitation
                                     </x-ui.table-action-item>
                                 </x-ui.table-actions>

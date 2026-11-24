@@ -235,7 +235,7 @@
                                 <div class="grid grid-cols-12 gap-2 text-xs">
                                     <div class="col-span-12 sm:col-span-6">
                                         <input type="text" wire:model="items.{{ $index }}.batch_number" placeholder="Batch / Lot No. (Optional)"
-                                               class="w-full text-xs py-1 px-2 rounded-lg border border-border bg-card placeholder-slate-400">
+                                               class="w-full text-xs py-1 px-2 rounded-lg border border-border bg-card placeholder:text-muted-foreground">
                                     </div>
                                     <div class="col-span-12 sm:col-span-6">
                                         <input type="date" wire:model="items.{{ $index }}.expiry_date" placeholder="Expiry Date"

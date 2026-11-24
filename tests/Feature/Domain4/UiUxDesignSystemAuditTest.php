@@ -290,10 +290,11 @@ class UiUxDesignSystemAuditTest extends TestCase
         $this->assertStringContainsString('role="alert"', $inputError);
         $this->assertStringContainsString('aria-live="assertive"', $inputError);
 
-        // SweetAlert confirm delete focus restoration
-        $swalView = File::get(resource_path('views/partials/sweetalert-confirm-delete.blade.php'));
-        $this->assertStringContainsString('returnFocus: true', $swalView);
-        $this->assertStringContainsString('triggerEl.focus()', $swalView);
+        // ERP confirm-dialog focus restoration (Wave 9C: sweetalert partial replaced by unified ERP dialog)
+        $erpConfirmDialog = File::get(resource_path('views/components/erp/confirm-dialog.blade.php'));
+        $this->assertStringContainsString('returnFocus', $erpConfirmDialog);
+        $this->assertStringContainsString('triggerEl', $erpConfirmDialog);
+        $this->assertStringContainsString('triggerEl.focus()', $erpConfirmDialog);
     }
 
     public function test_cashier_pos_out_of_stock_products_disabled_and_checkout_loading_bound(): void

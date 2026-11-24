@@ -130,6 +130,7 @@
                     @endphp
                     <div wire:key="product-{{ $product->id }}"
                         x-show="matchesCategory({{ $product->cat_id }}, {{ (!empty($product->is_favorite) || !empty($product->is_featured)) ? 'true' : 'false' }})"
+                        x-cloak
                         @if(!$isOutOfStock)
                             x-on:click="window.erpMotion?.pulseHighlight($el); $wire.{{ $clickAction }}"
                             @keydown.enter="window.erpMotion?.pulseHighlight($el); $wire.{{ $clickAction }}"

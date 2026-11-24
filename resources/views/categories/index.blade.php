@@ -146,13 +146,13 @@
                         </div>
                         @if($canManage)
                             <div class="flex items-center justify-end gap-1 mt-3 pt-3 border-t border-border">
-                                <button type="button" @click="openEdit({{ json_encode($category) }})" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200" aria-label="Edit category">
+                                <button type="button" @click="openEdit({{ json_encode($category) }})" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors duration-200" aria-label="Edit category">
                                     <span class="material-symbols-rounded text-[20px]">edit</span>
                                 </button>
                                 <form id="delete-form-mobile-{{ $category->id }}" action="{{ route('categories.destroy', $category->id) }}" method="POST" class="inline-block">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" onclick="confirmSubmit('delete-form-mobile-{{ $category->id }}', '{{ addslashes($category->category_name) }}')" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200" aria-label="Delete">
+                                    <button type="button" onclick="confirmSubmit('delete-form-mobile-{{ $category->id }}', '{{ addslashes($category->category_name) }}')" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive-muted transition-colors duration-200" aria-label="Delete">
                                         <span class="material-symbols-rounded text-[20px]">delete</span>
                                     </button>
                                 </form>

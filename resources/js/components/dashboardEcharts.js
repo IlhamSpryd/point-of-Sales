@@ -65,6 +65,7 @@ export default function dashboardEcharts(config = {}) {
     let chartInstance = null;
     let resizeObserver = null;
     let themeObserver = null;
+    let handleThemeChange = null;
     let isDisposed = false;
 
     return {
@@ -163,11 +164,12 @@ export default function dashboardEcharts(config = {}) {
                     attributeFilter: ['class'],
                 });
 
-                window.addEventListener('theme-changed', () => {
+                handleThemeChange = () => {
                     if (chartInstance && !isDisposed) {
                         this.renderCurrentChart();
                     }
-                });
+                };
+                window.addEventListener('theme-changed', handleThemeChange);
             } catch (err) {
                 console.error('[dashboardEcharts] Setup failed:', err);
             }
@@ -814,6 +816,10 @@ export default function dashboardEcharts(config = {}) {
         destroy() {
             activeDashboardCharts.delete(this);
             isDisposed = true;
+            if (handleThemeChange) {
+                window.removeEventListener('theme-changed', handleThemeChange);
+                handleThemeChange = null;
+            }
             if (resizeObserver) resizeObserver.disconnect();
             if (themeObserver) themeObserver.disconnect();
             if (chartInstance) {

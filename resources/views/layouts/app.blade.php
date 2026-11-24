@@ -292,7 +292,6 @@
     <x-qz-print />
     <x-ui.toast />
     <x-erp.confirm-dialog />
-    @include('partials.sweetalert-confirm-delete')
     <x-erp.command-palette />
 
     {{-- Safe PWA Service Worker Registration --}}

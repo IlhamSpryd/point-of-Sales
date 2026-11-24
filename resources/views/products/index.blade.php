@@ -212,7 +212,7 @@
                 <form action="{{ route('products.import') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                     @csrf
                     <div>
-                        <x-form-label for="csv_file">Select CSV File (.csv) <span class="text-danger-600">*</span></x-form-label>
+                        <x-form-label for="csv_file">Select CSV File (.csv) <span class="text-destructive">*</span></x-form-label>
                         <input type="file" id="csv_file" name="file" accept=".csv,text/csv" required
                             class="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-muted file:text-foreground hover:file:bg-accent">
                         <p class="text-xs text-muted-foreground mt-2">Max 1,000 rows per file. Required columns: <code>product_name, category_id, product_price</code>. Includes automated CSV formula sanitization.</p>
@@ -243,7 +243,7 @@
                     </template>
 
                     <div>
-                        <x-form-label for="bulk_action">Select Bulk Action <span class="text-danger-600">*</span></x-form-label>
+                        <x-form-label for="bulk_action">Select Bulk Action <span class="text-destructive">*</span></x-form-label>
                         <select id="bulk_action" name="action" x-model="bulkAction" required
                             class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-card focus:border-primary focus:ring-1 focus:ring-ring">
                             <option value="update_status">Update Product Lifecycle Status</option>

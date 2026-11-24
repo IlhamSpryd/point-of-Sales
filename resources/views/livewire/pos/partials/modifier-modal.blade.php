@@ -287,7 +287,7 @@
                                     $vStock = $variantStocks[$variant->id] ?? 0;
                                     $isOutOfStock = $selectingProduct->track_inventory && $vStock <= 0;
                                 @endphp
-                                <button type="button"
+                                <button type="button" wire:key="mod-variant-{{ $variant->id }}"
                                     @if ($isOutOfStock)
                                         disabled
                                         class="opacity-40 cursor-not-allowed bg-muted/40 border border-border text-muted-foreground p-3 rounded-xl flex flex-col justify-between text-left transition-all"

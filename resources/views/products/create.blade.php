@@ -40,7 +40,7 @@
                                 </option>
                             @endforeach
                         </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-primary-400">
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-muted-foreground">
                             <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                         </div>
                     </div>
@@ -64,7 +64,7 @@
                                 </option>
                             @endforeach
                         </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-primary-400">
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-muted-foreground">
                             <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                         </div>
                     </div>
@@ -85,7 +85,7 @@
                                 </option>
                             @endforeach
                         </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-primary-400">
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-muted-foreground">
                             <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                         </div>
                     </div>
@@ -128,7 +128,7 @@
                             <option value="non_inventory" {{ old('product_type') == 'non_inventory' ? 'selected' : '' }}>Non-Inventory (Non-Inventory)</option>
                             <option value="bundle" {{ old('product_type') == 'bundle' ? 'selected' : '' }}>Bundle / Kit (Bundle)</option>
                         </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-primary-400">
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-muted-foreground">
                             <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                         </div>
                     </div>
@@ -147,7 +147,7 @@
                             <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
                             <option value="discontinued" {{ old('status') == 'discontinued' ? 'selected' : '' }}>Discontinued</option>
                         </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-primary-400">
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-muted-foreground">
                             <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                         </div>
                     </div>
@@ -168,7 +168,7 @@
                             <option value="fifo" {{ old('costing_method') == 'fifo' ? 'selected' : '' }}>FIFO</option>
                             <option value="moving_average" {{ old('costing_method') == 'moving_average' ? 'selected' : '' }}>Moving Average</option>
                         </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-primary-400">
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-muted-foreground">
                             <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                         </div>
                     </div>
@@ -224,7 +224,7 @@
                                 @endforeach
                             @endif
                         </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-primary-400">
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-muted-foreground">
                             <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                         </div>
                     </div>
@@ -279,7 +279,7 @@
                         <h5 class="text-sm font-bold text-foreground">Bill of Materials (BOM)</h5>
                         <p class="text-xs text-muted-foreground mt-0.5">Specify raw ingredients that automatically deplete from inventory when this product is sold.</p>
                     </div>
-                    <button type="button" @click="addItem" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-card border border-border rounded-xl hover:bg-muted transition-colors shadow-sm">
+                    <button type="button" @click="addItem" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary bg-card border border-border rounded-xl hover:bg-muted transition-colors shadow-sm">
                         <span class="material-symbols-rounded text-[16px]">add</span> Add Ingredient
                     </button>
                 </div>
@@ -305,7 +305,7 @@
                     </template>
                     
                     <div x-show="items.length === 0" class="text-center py-6 bg-muted rounded-xl border border-border border-dashed">
-                        <p class="text-sm text-primary-400">No ingredients configured. Click "Add Ingredient" to define a recipe.</p>
+                        <p class="text-sm text-muted-foreground">No ingredients configured. Click "Add Ingredient" to define a recipe.</p>
                     </div>
                 </div>
             </div>
@@ -326,7 +326,7 @@
                         <h5 class="text-sm font-bold text-foreground">Variant & Modifier Groups</h5>
                         <p class="text-xs text-muted-foreground mt-0.5">Link modifier groups (e.g., Milk Choice, Temperature) available for this item.</p>
                     </div>
-                    <button type="button" @click="addGroup" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-card border border-border rounded-xl hover:bg-muted transition-colors shadow-sm">
+                    <button type="button" @click="addGroup" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary bg-card border border-border rounded-xl hover:bg-muted transition-colors shadow-sm">
                         <span class="material-symbols-rounded text-[16px]">add</span> Add Modifier Group
                     </button>
                 </div>
@@ -349,7 +349,7 @@
                     </template>
                     
                     <div x-show="selectedGroups.length === 0" class="text-center py-6 bg-muted rounded-xl border border-border border-dashed">
-                        <p class="text-sm text-primary-400">No modifier groups linked. Click "Add Modifier Group" if needed.</p>
+                        <p class="text-sm text-muted-foreground">No modifier groups linked. Click "Add Modifier Group" if needed.</p>
                     </div>
                 </div>
             </div>
@@ -359,7 +359,7 @@
                 <x-form-label for="product_photo">Product Photo (Optional)</x-form-label>
                 <div class="mt-1 flex items-center justify-center px-6 pt-5 pb-6 border-2 border-border border-dashed rounded-xl transition-colors duration-200 hover:border-border-strong bg-muted">
                     <div class="space-y-1 text-center">
-                        <span class="material-symbols-rounded text-[32px] text-primary-300">image</span>
+                        <span class="material-symbols-rounded text-[32px] text-muted-foreground">image</span>
                         <div class="flex flex-col sm:flex-row text-sm text-muted-foreground justify-center gap-1 mt-3">
                             <label for="product_photo" class="relative cursor-pointer bg-card rounded-xl font-medium text-foreground hover:text-foreground focus-within:outline-none focus-within:ring-2 focus-within:ring-ring px-3 py-1 shadow-sm border border-border transition-all duration-200 active:scale-95">
                                 <span>Upload file</span>
@@ -367,7 +367,7 @@
                             </label>
                             <p class="pl-1 shrink-0 pt-1">or drag and drop</p>
                         </div>
-                        <p class="text-xs text-primary-400 mt-2" id="file-name">PNG, JPG up to 2MB</p>
+                        <p class="text-xs text-muted-foreground mt-2" id="file-name">PNG, JPG up to 2MB</p>
                     </div>
                 </div>
                 @error('product_photo')

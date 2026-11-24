@@ -201,17 +201,17 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Role Name <span class="text-destructive">*</span></label>
-                    <input type="text" name="name" value="{{ old('name') }}" required placeholder="e.g. Supervisor, Barista, Auditor" class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                    <input type="text" name="name" value="{{ old('name') }}" required placeholder="e.g. Supervisor, Barista, Auditor" class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus-visible:ring-2 focus-visible:ring-ring focus:outline-none">
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Role Description (Optional)</label>
-                    <input type="text" name="description" value="{{ old('description') }}" placeholder="Brief summary of responsibilities for this role..." class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                    <input type="text" name="description" value="{{ old('description') }}" placeholder="Brief summary of responsibilities for this role..." class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus-visible:ring-2 focus-visible:ring-ring focus:outline-none">
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Default Dashboard Archetype</label>
-                    <select name="dashboard_archetype" class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none text-foreground">
+                    <select name="dashboard_archetype" class="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm focus-visible:ring-2 focus-visible:ring-ring focus:outline-none text-foreground">
                         <option value="executive" {{ old('dashboard_archetype', 'executive') === 'executive' ? 'selected' : '' }}>Executive BI &amp; Multi-Branch</option>
                         <option value="branch_ops" {{ old('dashboard_archetype') === 'branch_ops' ? 'selected' : '' }}>Branch Operations</option>
                         <option value="cashier_workspace" {{ old('dashboard_archetype') === 'cashier_workspace' ? 'selected' : '' }}>Cashier Workspace</option>
@@ -229,7 +229,7 @@
 
                 <div class="flex items-center gap-2 pt-1">
                     <input type="hidden" name="is_active" value="0">
-                    <input type="checkbox" id="role_is_active" name="is_active" value="1" checked class="rounded border-border text-primary-600 focus:ring-primary-500">
+                    <input type="checkbox" id="role_is_active" name="is_active" value="1" checked class="rounded border-border text-primary focus:ring-ring">
                     <label for="role_is_active" class="text-sm font-medium text-foreground">Active Role</label>
                 </div>
             </form>

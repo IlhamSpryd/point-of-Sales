@@ -233,7 +233,7 @@
                                                 <x-ui.table-action-item icon="forward_to_inbox" onclick="document.getElementById('resend-invite-modal-{{ $invitation->id }}').submit()" aria-label="Resend Invitation">
                                                     Resend Invitation
                                                 </x-ui.table-action-item>
-                                                <x-ui.table-action-item icon="cancel" variant="destructive" onclick="if(confirm('Are you sure you want to cancel this invitation?')) document.getElementById('revoke-invite-modal-{{ $invitation->id }}').submit()" aria-label="Cancel Invitation">
+                                                <x-ui.table-action-item icon="cancel" variant="destructive" onclick="confirmSubmit('revoke-invite-modal-{{ $invitation->id }}', '', { title: 'Batalkan Undangan', message: 'Apakah Anda yakin ingin membatalkan undangan ini?', confirmText: 'Batalkan Undangan' })" aria-label="Cancel Invitation">
                                                     Cancel Invitation
                                                 </x-ui.table-action-item>
                                             </x-ui.table-actions>
@@ -275,22 +275,22 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Full Name <span class="text-destructive">*</span></label>
-                        <input type="text" name="name" value="{{ old('name') }}" required placeholder="e.g. Budi Santoso" class="w-full rounded-xl border border-border bg-card px-3.5 py-2 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                        <input type="text" name="name" value="{{ old('name') }}" required placeholder="e.g. Budi Santoso" class="w-full rounded-xl border border-border bg-card px-3.5 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus:outline-none">
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Email Address <span class="text-destructive">*</span></label>
-                        <input type="email" name="email" value="{{ old('email') }}" required placeholder="budi@apeiron.id" class="w-full rounded-xl border border-border bg-card px-3.5 py-2 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                        <input type="email" name="email" value="{{ old('email') }}" required placeholder="budi@apeiron.id" class="w-full rounded-xl border border-border bg-card px-3.5 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus:outline-none">
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Phone Number / WhatsApp</label>
-                        <input type="tel" name="phone_number" value="{{ old('phone_number') }}" placeholder="+62 812 3456 7890" class="w-full rounded-xl border border-border bg-card px-3.5 py-2 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                        <input type="tel" name="phone_number" value="{{ old('phone_number') }}" placeholder="+62 812 3456 7890" class="w-full rounded-xl border border-border bg-card px-3.5 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus:outline-none">
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Role <span class="text-destructive">*</span></label>
-                        <select name="role_id" required class="w-full rounded-xl border border-border bg-card px-3.5 py-2 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                        <select name="role_id" required class="w-full rounded-xl border border-border bg-card px-3.5 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus:outline-none">
                             <option value="">Select Role</option>
                             @foreach($roles as $role)
                                 <option value="{{ $role->id }}">{{ $role->name }}</option>
@@ -300,17 +300,17 @@
 
                     <div>
                         <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Cashier PIN (4-6 Digits)</label>
-                        <input type="password" name="pin_code" placeholder="e.g. 123456" maxlength="6" class="w-full rounded-xl border border-border bg-card px-3.5 py-2 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                        <input type="password" name="pin_code" placeholder="e.g. 123456" maxlength="6" class="w-full rounded-xl border border-border bg-card px-3.5 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus:outline-none">
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Web Password <span class="text-destructive">*</span></label>
-                        <input type="password" name="password" required placeholder="••••••••" class="w-full rounded-xl border border-border bg-card px-3.5 py-2 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                        <input type="password" name="password" required placeholder="••••••••" class="w-full rounded-xl border border-border bg-card px-3.5 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus:outline-none">
                     </div>
 
                     <div class="md:col-span-2">
                         <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Confirm Password <span class="text-destructive">*</span></label>
-                        <input type="password" name="password_confirmation" required placeholder="••••••••" class="w-full rounded-xl border border-border bg-card px-3.5 py-2 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                        <input type="password" name="password_confirmation" required placeholder="••••••••" class="w-full rounded-xl border border-border bg-card px-3.5 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus:outline-none">
                     </div>
 
                     @if(isset($stores) && $stores->count() > 0)
@@ -330,7 +330,7 @@
 
                 <div class="flex items-center gap-2 pt-2">
                     <input type="hidden" name="is_active" value="0">
-                    <input type="checkbox" id="user_is_active" name="is_active" value="1" checked class="rounded border-border text-primary-600 focus:ring-primary-500">
+                    <input type="checkbox" id="user_is_active" name="is_active" value="1" checked class="rounded border-border text-primary focus:ring-ring">
                     <label for="user_is_active" class="text-sm font-medium text-foreground">Active Employee Account</label>
                 </div>
             </form>
