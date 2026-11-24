@@ -12,6 +12,7 @@ use App\Modules\Purchasing\Models\PurchaseOrder;
 use App\Modules\Purchasing\Services\GoodsReceivedNoteService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
@@ -52,12 +53,30 @@ class GoodsReceivedNoteManager extends Component
     #[Locked]
     public ?int $selectedGrnId = null;
 
-    public ?GoodsReceivedNote $selectedGrn = null;
+    #[Computed]
+    public function selectedGrn(): ?GoodsReceivedNote
+    {
+        return $this->selectedGrnId
+            ? GoodsReceivedNote::with(['purchaseOrder.supplier', 'store', 'lines.purchasable'])->find($this->selectedGrnId)
+            : null;
+    }
 
     // Form Header GRN
     public ?int $selectedPoId = null;
 
-    public ?PurchaseOrder $selectedPo = null;
+    #[Computed]
+    public function selectedPo(): ?PurchaseOrder
+    {
+        if (! $this->selectedPoId) {
+            return null;
+        }
+
+        $tenantId = app(TenantContext::class)->getTenantId();
+
+        return PurchaseOrder::with(['lines.purchasable', 'supplier', 'store'])
+            ->where('tenant_id', $tenantId)
+            ->find($this->selectedPoId);
+    }
 
     public string $receivedDate = '';
 
@@ -89,7 +108,7 @@ class GoodsReceivedNoteManager extends Component
 
         $this->resetValidation();
         $this->selectedPoId = null;
-        $this->selectedPo = null;
+        unset($this->selectedPo);
         $this->receivedDate = now()->toDateString();
         $this->deliveryOrderNumber = '';
         $this->carrierName = '';
@@ -103,19 +122,12 @@ class GoodsReceivedNoteManager extends Component
     public function updatedSelectedPoId(): void
     {
         $this->grnLines = [];
+        unset($this->selectedPo);
 
-        if (! $this->selectedPoId) {
-            $this->selectedPo = null;
-
+        $po = $this->selectedPo();
+        if (! $po) {
             return;
         }
-
-        $tenantId = app(TenantContext::class)->getTenantId();
-        $po = PurchaseOrder::with(['lines.purchasable', 'supplier', 'store'])
-            ->where('tenant_id', $tenantId)
-            ->findOrFail($this->selectedPoId);
-
-        $this->selectedPo = $po;
 
         foreach ($po->lines as $line) {
             $ordered = (float) $line->ordered_qty;
@@ -189,7 +201,7 @@ class GoodsReceivedNoteManager extends Component
         $this->authorize('view', $grn);
 
         $this->selectedGrnId = $grn->id;
-        $this->selectedGrn = $grn;
+        unset($this->selectedGrn);
         $this->showDetailModal = true;
     }
 
@@ -213,7 +225,7 @@ class GoodsReceivedNoteManager extends Component
         $this->authorize('update', $grn);
 
         $this->selectedGrnId = $grn->id;
-        $this->selectedGrn = $grn;
+        unset($this->selectedGrn);
         $this->reverseReason = '';
         $this->showReverseModal = true;
     }
@@ -288,6 +300,8 @@ class GoodsReceivedNoteManager extends Component
         return view('livewire.purchasing.goods-received-note-manager', [
             'grns' => $grns,
             'availablePos' => $availablePos,
+            'selectedGrn' => $this->selectedGrn(),
+            'selectedPo' => $this->selectedPo(),
         ]);
     }
 }

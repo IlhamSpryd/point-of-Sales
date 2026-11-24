@@ -70,8 +70,14 @@ final readonly class NavigationNode
         public string $status = 'implemented',
         public ?string $description = null,
         public array $verticals = [],
+        public bool $pinned = false,
     ) {
         $this->guard();
+    }
+
+    public function isPinned(): bool
+    {
+        return $this->pinned;
     }
 
     private function guard(): void

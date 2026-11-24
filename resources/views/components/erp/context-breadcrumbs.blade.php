@@ -39,7 +39,7 @@
                         <span class="text-foreground font-medium truncate max-w-[140px] md:max-w-[200px]"
                             aria-current="page">{{ $crumb['label'] }}</span>
                     @elseif (! empty($crumb['url']))
-                        <a href="{{ $crumb['url'] }}" wire:navigate
+                        <a href="{{ $crumb['url'] }}" wire:navigate.hover
                             class="text-muted-foreground hover:text-foreground transition-colors font-normal truncate max-w-[120px] lg:max-w-[160px] motion-reduce:transition-none">
                             {{ $crumb['label'] }}
                         </a>

@@ -13,6 +13,7 @@ use App\Modules\Customers\Services\CustomerCreditService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
@@ -50,9 +51,19 @@ class CustomerCreditManager extends Component
     #[Locked]
     public ?int $selectedCustomerId = null;
 
-    public ?Customer $selectedCustomer = null;
+    #[Computed]
+    public function selectedCustomer(): ?Customer
+    {
+        return $this->selectedCustomerId
+            ? Customer::with(['creditAccount', 'creditLogs.actor'])->find($this->selectedCustomerId)
+            : null;
+    }
 
-    public ?CustomerCreditAccount $selectedAccount = null;
+    #[Computed]
+    public function selectedAccount(): ?CustomerCreditAccount
+    {
+        return $this->selectedCustomer()?->creditAccount;
+    }
 
     // Form Edit Limit & Terms
     public string $creditLimit = '0';
@@ -75,10 +86,9 @@ class CustomerCreditManager extends Component
         Gate::authorize('manageCreditLimit', $customer);
 
         $this->selectedCustomerId = $customer->id;
-        $this->selectedCustomer = $customer;
+        unset($this->selectedCustomer, $this->selectedAccount);
 
         $account = $service->getOrCreateCreditAccount($customer);
-        $this->selectedAccount = $account;
 
         $this->creditLimit = (string) $account->credit_limit;
         $this->paymentTermsDays = (int) $account->payment_terms_days;
@@ -92,8 +102,7 @@ class CustomerCreditManager extends Component
     {
         $this->showEditModal = false;
         $this->selectedCustomerId = null;
-        $this->selectedCustomer = null;
-        $this->selectedAccount = null;
+        unset($this->selectedCustomer, $this->selectedAccount);
     }
 
     public function saveLimitAndTerms(?CustomerCreditService $service = null): void
@@ -136,10 +145,9 @@ class CustomerCreditManager extends Component
         Gate::authorize('manageCreditStatus', $customer);
 
         $this->selectedCustomerId = $customer->id;
-        $this->selectedCustomer = $customer;
+        unset($this->selectedCustomer, $this->selectedAccount);
 
         $account = $service->getOrCreateCreditAccount($customer);
-        $this->selectedAccount = $account;
 
         $this->targetStatus = $account->credit_status->value;
         $this->statusChangeReason = '';
@@ -151,8 +159,7 @@ class CustomerCreditManager extends Component
     {
         $this->showStatusModal = false;
         $this->selectedCustomerId = null;
-        $this->selectedCustomer = null;
-        $this->selectedAccount = null;
+        unset($this->selectedCustomer, $this->selectedAccount);
     }
 
     public function saveStatus(?CustomerCreditService $service = null): void
@@ -191,7 +198,7 @@ class CustomerCreditManager extends Component
         Gate::authorize('viewCredit', $customer);
 
         $this->selectedCustomerId = $customer->id;
-        $this->selectedCustomer = $customer;
+        unset($this->selectedCustomer, $this->selectedAccount);
         $this->showLogsModal = true;
     }
 
@@ -199,7 +206,7 @@ class CustomerCreditManager extends Component
     {
         $this->showLogsModal = false;
         $this->selectedCustomerId = null;
-        $this->selectedCustomer = null;
+        unset($this->selectedCustomer, $this->selectedAccount);
     }
 
     public function render(): View
@@ -240,6 +247,8 @@ class CustomerCreditManager extends Component
         return view('livewire.customers.customer-credit-manager', [
             'customers' => $customers,
             'summary' => $summary,
+            'selectedCustomer' => $this->selectedCustomer(),
+            'selectedAccount' => $this->selectedAccount(),
         ]);
     }
 }

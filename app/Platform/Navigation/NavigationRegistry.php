@@ -219,6 +219,7 @@ final class NavigationRegistry
             'status' => 'implemented',
             'description' => null,
             'verticals' => [],
+            'pinned' => false,
         ], $definition, $defaults);
 
         return new NavigationNode(
@@ -244,6 +245,7 @@ final class NavigationRegistry
             status: (string) $payload['status'],
             description: $payload['description'] !== null ? (string) $payload['description'] : null,
             verticals: array_values(array_map('strval', (array) ($payload['verticals'] ?? $payload['vertical'] ?? []))),
+            pinned: (bool) ($payload['pinned'] ?? false),
         );
     }
 

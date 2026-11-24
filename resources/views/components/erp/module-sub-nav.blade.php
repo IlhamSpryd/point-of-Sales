@@ -1,9 +1,14 @@
 {{--
-    L2 CONTEXTUAL MODULE SUB-NAVIGATION (ADR-NAV-013)
+    L2 CONTEXTUAL MODULE SUB-NAVIGATION (ADR-NAV-013 / Wave 8 Tier-1 Calm Hub)
 
-    Renders the horizontal pill bar for the hub that owns the CURRENT route.
+    Renders the horizontal tab bar for the hub that owns the CURRENT route.
     Suppressed automatically when the hub has zero or one visible page for the
     user (Governance Law R-5), so single-page hubs never show a one-item bar.
+
+    Wave 8 Tier-1 Rule: Maximum 5 primary horizontal tabs + "More ▾" dropdown
+    for tab 6+. When an item in "More ▾" is active, the dropdown trigger is
+    actively illuminated (2px bg-foreground underline) and displays the active
+    tab label for persistent wayfinding.
 
     Usage:
       <x-erp.module-sub-nav />                          -- auto-detects the hub
@@ -35,16 +40,16 @@
         $hubId = match ((string) $module) {
             'pos-ops' => 'nav.frontline.desk',
             'catalog' => 'nav.catalog.master',
-            'pricing' => 'nav.catalog.pricing',
+            'pricing' => 'nav.catalog.master',
             'inventory' => 'nav.supply.inventory',
-            'purchasing' => 'nav.supply.procurement',
+            'purchasing' => 'nav.supply.inventory',
             'sales' => 'nav.sales.orders',
-            'customers' => 'nav.sales.customers',
+            'customers' => 'nav.sales.orders',
             'finance' => 'nav.finance.gl',
             'hr' => 'nav.workforce.people',
-            'reports' => 'nav.analytics.bi',
-            'organization' => 'nav.admin.org',
-            'governance' => 'nav.admin.access',
+            'reports' => 'nav.analytics.reports',
+            'organization' => 'nav.settings',
+            'governance' => 'nav.settings',
             default => null,
         };
     }
@@ -62,6 +67,19 @@
     // R-5: a single visible page needs no pill bar.
     $pages = count($pages) > 1 ? $pages : [];
 
+    // Wave 8: Enforce maximum 5 primary horizontal tabs + More ▾ for overflow
+    $primaryPages = count($pages) > 5 ? array_slice($pages, 0, 5) : $pages;
+    $morePages = count($pages) > 5 ? array_slice($pages, 5) : [];
+
+    $activeMorePage = null;
+    foreach ($morePages as $morePage) {
+        if (request()->routeIs(...$morePage->active)) {
+            $activeMorePage = $morePage;
+            break;
+        }
+    }
+    $hasActiveMore = $activeMorePage !== null;
+
     $resolvedAriaLabel = $ariaLabel ?? (($hubNode?->label ?? 'Module').' Navigation');
 @endphp
 
@@ -78,7 +96,7 @@
                 }
             })"
             class="flex items-center gap-1 sm:gap-1.5 h-9 overflow-x-auto scrollbar-hide no-scrollbar -mb-px">
-            @foreach ($pages as $page)
+            @foreach ($primaryPages as $page)
                 @php
                     /** @var \App\Platform\Navigation\NavigationNode $page */
                     $isActive = request()->routeIs(...$page->active);
@@ -98,6 +116,57 @@
                     @endif
                 </x-erp.nav-link>
             @endforeach
+
+            @if ($morePages !== [])
+                <div class="relative inline-flex items-center" x-data="{ open: false }" @keydown.escape.stop="open = false" @click.outside="open = false">
+                    <button type="button"
+                        @click="open = !open"
+                        :aria-expanded="open.toString()"
+                        aria-haspopup="true"
+                        aria-label="More {{ $hubNode->label }} navigation tabs"
+                        class="relative h-9 md:h-9 min-h-[40px] md:min-h-0 px-2.5 py-1.5 text-[12px] inline-flex items-center justify-center gap-1 rounded-[6px] transition-colors duration-150 whitespace-nowrap cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-shell-ring {{ $hasActiveMore ? 'text-foreground font-semibold bg-accent/50' : 'text-muted-foreground hover:text-foreground hover:bg-accent/70 font-medium bg-transparent' }}">
+                        <span>{{ $hasActiveMore ? $activeMorePage->label : 'More' }}</span>
+                        <span class="material-symbols-rounded text-[16px] transition-transform duration-150" :class="open ? 'rotate-180' : ''" aria-hidden="true">expand_more</span>
+                        @if ($hasActiveMore)
+                            <span class="h-[2px] bg-foreground rounded-t-full absolute bottom-0 inset-x-2" aria-hidden="true"></span>
+                        @endif
+                    </button>
+
+                    <div x-show="open" x-cloak
+                        x-transition:enter="transition ease-out duration-100"
+                        x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                        x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                        x-transition:leave="transition ease-in duration-75"
+                        x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                        x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
+                        role="menu"
+                        aria-orientation="vertical"
+                        class="absolute left-0 sm:left-auto sm:right-0 top-full mt-1 w-52 max-h-72 overflow-y-auto rounded-xl bg-popover text-popover-foreground shadow-popover border border-border-strong p-1 z-50 divide-y divide-border/40">
+                        <div class="py-0.5 space-y-0.5">
+                            @foreach ($morePages as $morePage)
+                                @php
+                                    /** @var \App\Platform\Navigation\NavigationNode $morePage */
+                                    $isMoreActive = request()->routeIs(...$morePage->active);
+                                    $moreUrl = \Illuminate\Support\Facades\Route::has((string) $morePage->route)
+                                        ? route((string) $morePage->route)
+                                        : '#';
+                                @endphp
+                                <a href="{{ $moreUrl }}"
+                                   wire:navigate.hover
+                                   role="menuitem"
+                                   @click="open = false"
+                                   @if ($isMoreActive) aria-current="page" @endif
+                                   class="flex items-center justify-between px-2.5 py-1.5 text-xs rounded-lg font-medium transition-colors {{ $isMoreActive ? 'bg-accent text-accent-foreground font-semibold' : 'text-muted-foreground hover:text-foreground hover:bg-muted' }}">
+                                    <span class="truncate">{{ $morePage->label }}</span>
+                                    @if ($isMoreActive)
+                                        <span class="material-symbols-rounded text-[14px] text-accent-foreground" aria-hidden="true">check</span>
+                                    @endif
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            @endif
         </nav>
     </div>
 @endif

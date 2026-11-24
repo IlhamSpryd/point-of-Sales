@@ -3,24 +3,33 @@
 declare(strict_types=1);
 
 /**
- * D2 — FRONTLINE
+ * GROUP 1 — CORE (Shopify × Linear Calm Hub Architecture)
  *
- * High-frequency, shift-bound, touch-first, store-scoped operations.
- *
- * SC-01: `nav.frontline.pos` is a hub AND the fastest path to the checkout
- *        terminal (ADR-NAV-004 documented shortcut).
- * SC-02: `nav.frontline.desk` is a hub whose landing page is also its first tab.
- * SC-05: channel mapping is deliberately placed here (operator context) AND in
- *        Administration (setup context).
- *
- * @see docs/architecture/APEIRON_ENTERPRISE_NAVIGATION_ARCHITECTURE_BLUEPRINT.md §9.2, §9.4
+ * Essential daily operational hubs:
+ *  1. Dashboard
+ *  2. POS Terminal (1-click full-bleed cashier launcher)
+ *  3. Frontline Desk (Operational hub with dynamic landing for Cook -> kds.index)
  */
 return [
-    'key' => 'frontline',
-    'label' => 'Frontline',
-    'order' => 20,
-    'icon' => 'point_of_sale',
+    'key' => 'core',
+    'label' => 'Core',
+    'order' => 10,
+    'icon' => 'space_dashboard',
     'hubs' => [
+        [
+            'id' => 'nav.overview.dashboard',
+            'label' => 'Dashboard',
+            'route' => 'dashboard',
+            'active' => ['dashboard'],
+            'roles' => ['Owner', 'Manager'],
+            'abilities' => ['dashboard.view'],
+            'scope' => 'store',
+            'icon' => 'space_dashboard',
+            'order' => 10,
+            'landing' => true,
+            'aliases' => ['dashboard', 'beranda', 'ringkasan', 'home', 'ikhtisar', 'kinerja'],
+            'pages' => [],
+        ],
         [
             'id' => 'nav.frontline.pos',
             'label' => 'POS Terminal',
@@ -32,22 +41,21 @@ return [
             'icon' => 'point_of_sale',
             'order' => 20,
             'landing' => true,
-            'shortcut_of' => 'nav.frontline.desk.orders',
-            'aliases' => ['pos', 'kasir', 'checkout', 'transaksi', 'terminal', 'jual'],
+            'aliases' => ['pos', 'kasir', 'checkout', 'transaksi', 'terminal', 'jual', 'bayar', 'struk'],
             'pages' => [],
         ],
         [
             'id' => 'nav.frontline.desk',
             'label' => 'Frontline Desk',
             'route' => 'orders.index',
-            'active' => ['orders.*', 'shifts.*', 'kds.*', 'tables.*', 'integrations.channel-mapping'],
-            'roles' => ['Owner', 'Manager', 'Kasir', 'Waiter', 'Supervisor'],
+            'active' => ['orders.*', 'shifts.*', 'tables.*', 'kds.*'],
+            'roles' => ['Owner', 'Manager', 'Kasir', 'Waiter', 'Supervisor', 'Cook'],
             'abilities' => ['orders.view'],
             'scope' => 'store',
-            'icon' => 'receipt_long',
+            'icon' => 'storefront',
             'order' => 30,
             'landing' => true,
-            'aliases' => ['frontline', 'operasional', 'meja kasir'],
+            'aliases' => ['frontline', 'operasional', 'meja kasir', 'pesanan', 'shift', 'dapur', 'kds'],
             'pages' => [
                 [
                     'id' => 'nav.frontline.desk.orders',
@@ -84,7 +92,7 @@ return [
                     'order' => 33,
                     'entitlement' => 'table_management',
                     'verticals' => ['fnb'],
-                    'aliases' => ['meja', 'denah', 'qr', 'dine in', 'table'],
+                    'aliases' => ['meja', 'table', 'denah', 'qr', 'dine in'],
                 ],
                 [
                     'id' => 'nav.frontline.desk.kds',
@@ -97,19 +105,6 @@ return [
                     'order' => 34,
                     'verticals' => ['fnb'],
                     'aliases' => ['dapur', 'kds', 'kitchen', 'antrian masak', 'monitor dapur'],
-                ],
-                [
-                    'id' => 'nav.frontline.desk.channel',
-                    'label' => 'Omnichannel Mapping',
-                    'route' => 'integrations.channel-mapping',
-                    'active' => ['integrations.channel-mapping'],
-                    'roles' => ['Owner', 'Admin', 'Manager'],
-                    'abilities' => ['products.manage'],
-                    'scope' => 'store',
-                    'order' => 35,
-                    'entitlement' => 'omnichannel',
-                    'shortcut_of' => 'nav.admin.org.channel',
-                    'aliases' => ['omnichannel', 'grabfood', 'gofood', 'marketplace', 'mapping'],
                 ],
             ],
         ],

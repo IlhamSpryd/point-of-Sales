@@ -16,6 +16,7 @@ use App\Modules\Purchasing\Models\SupplierProduct;
 use App\Modules\Purchasing\Services\PurchaseOrderService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
@@ -62,7 +63,13 @@ class PurchaseOrderManager extends Component
     #[Locked]
     public ?int $selectedPoId = null;
 
-    public ?PurchaseOrder $selectedPo = null;
+    #[Computed]
+    public function selectedPo(): ?PurchaseOrder
+    {
+        return $this->selectedPoId
+            ? PurchaseOrder::with(['supplier', 'store', 'lines.purchasable'])->find($this->selectedPoId)
+            : null;
+    }
 
     // Form Header
     public ?int $storeId = null;
@@ -234,7 +241,7 @@ class PurchaseOrderManager extends Component
         $this->authorize('view', $po);
 
         $this->selectedPoId = $po->id;
-        $this->selectedPo = $po;
+        unset($this->selectedPo);
         $this->showDetailModal = true;
     }
 
@@ -272,7 +279,7 @@ class PurchaseOrderManager extends Component
         $this->authorize('update', $po);
 
         $this->selectedPoId = $po->id;
-        $this->selectedPo = $po;
+        unset($this->selectedPo);
         $this->cancelReason = '';
         $this->showCancelModal = true;
     }
@@ -351,6 +358,7 @@ class PurchaseOrderManager extends Component
             'stores' => $stores,
             'products' => $products,
             'ingredients' => $ingredients,
+            'selectedPo' => $this->selectedPo(),
         ]);
     }
 }

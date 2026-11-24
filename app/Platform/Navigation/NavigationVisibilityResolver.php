@@ -278,12 +278,41 @@ final class NavigationVisibilityResolver
     }
 
     /**
+     * Resolves the dynamic landing URL for a hub.
+     * If the hub's default route is authorized and visible, returns it.
+     * Otherwise returns the first authorized visible child page (e.g. Cook -> kds.index).
+     */
+    public function landingUrlForHub(NavigationNode $hub, ?User $user = null): string
+    {
+        $user ??= auth()->user();
+
+        // 1. If hub's own route passes authorization, use it:
+        if ($hub->route !== null && Route::has($hub->route) && $this->isVisible($hub, $user)) {
+            return route($hub->route);
+        }
+
+        // 2. Otherwise find the first visible child page that user has access to:
+        $visiblePages = $this->visiblePagesFor($hub, $user);
+        foreach ($visiblePages as $page) {
+            if ($page->route !== null && Route::has($page->route)) {
+                return route($page->route);
+            }
+        }
+
+        return $hub->route !== null && Route::has($hub->route) ? route($hub->route) : '#';
+    }
+
+    /**
      * A hub renders when at least one of its pages is visible (Governance Law
      * R-4). A hub whose single visible page is itself is still rendered as one
      * L1 row with the L2 bar suppressed (R-5).
      */
     private function hubVisibleFor(NavigationNode $hub, User $user): bool
     {
+        if ($this->isVisible($hub, $user)) {
+            return true;
+        }
+
         return $this->visiblePagesFor($hub, $user) !== [];
     }
 

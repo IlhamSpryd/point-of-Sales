@@ -2,6 +2,7 @@
     'href' => '#',
     'active' => false,
     'navigate' => true,
+    'hover' => true,
     'label' => null,
     'class' => null,
     'closeMobile' => true,
@@ -30,15 +31,17 @@
         $activeClasses = 'text-foreground font-semibold bg-transparent';
         $idleClasses = 'text-muted-foreground hover:text-foreground hover:bg-accent/70 font-medium bg-transparent';
     } else {
-        $activeClasses = 'bg-shell-accent text-shell-foreground-active font-semibold border border-shell-border shadow-2xs';
-        $idleClasses = 'text-shell-foreground hover:text-shell-foreground-active hover:bg-shell-accent/60';
+        $activeClasses = 'bg-accent text-accent-foreground font-semibold shadow-2xs';
+        $idleClasses = 'text-muted-foreground hover:text-foreground hover:bg-accent/50 font-medium';
     }
 
     $merged = $class ?? '';
 @endphp
 
 <a href="{{ $href }}"
-   @if ($navigate) wire:navigate @endif
+   @if ($navigate)
+       @if ($hover) wire:navigate.hover @else wire:navigate @endif
+   @endif
    @if ($active) aria-current="page" @endif
    @if ($label) title="{{ $label }}" @endif
    x-on:click="

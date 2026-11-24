@@ -24,7 +24,7 @@ class NavigationRegistryTest extends TestCase
         $this->registry = app(NavigationRegistry::class);
     }
 
-    public function test_registry_parses_all_nine_domains(): void
+    public function test_registry_parses_all_four_domains(): void
     {
         $keys = array_map(
             static fn (NavigationNode $domain): string => (string) $domain->domain,
@@ -32,21 +32,16 @@ class NavigationRegistryTest extends TestCase
         );
 
         $this->assertSame([
-            'overview',
-            'frontline',
-            'catalog',
-            'supply_chain',
-            'sales_customer',
-            'finance',
-            'workforce',
-            'analytics',
-            'administration',
+            'core',
+            'operations',
+            'finance_insights',
+            'settings',
         ], $keys);
     }
 
-    public function test_registry_contains_nineteen_hubs(): void
+    public function test_registry_contains_ten_hubs(): void
     {
-        $this->assertCount(19, $this->registry->hubs());
+        $this->assertCount(10, $this->registry->hubs());
     }
 
     public function test_registry_contains_forty_five_pages(): void
@@ -190,7 +185,7 @@ class NavigationRegistryTest extends TestCase
         $this->assertSame('nav.catalog.master.tax_classes', array_values($owners)[0]->id);
 
         // And the Settings hub must not claim it.
-        $settings = $this->registry->find('nav.admin.settings');
+        $settings = $this->registry->find('nav.settings');
         $this->assertNotNull($settings);
         $this->assertNotContains('tax-classes.*', $settings->active);
     }
