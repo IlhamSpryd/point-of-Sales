@@ -8,8 +8,8 @@
                 <span class="material-symbols-rounded text-lg">check_circle</span>
                 <span>{{ session('success') }}</span>
             </div>
-            <button type="button" @click="$el.parentElement.remove()" class="text-positive hover:text-positive">
-                <span class="material-symbols-rounded text-sm">close</span>
+            <button type="button" @click="$el.parentElement.remove()" aria-label="Dismiss success alert" class="text-positive hover:text-positive">
+                <span class="material-symbols-rounded text-sm" aria-hidden="true">close</span>
             </button>
         </div>
     @endif
@@ -240,6 +240,7 @@
                                                 @if (count($lines) > 2)
                                                     <button type="button"
                                                             wire:click="removeLine({{ $index }})"
+                                                            aria-label="Remove journal line"
                                                             class="p-1 rounded text-muted-foreground hover:text-destructive transition-colors">
                                                         <span class="material-symbols-rounded text-sm">delete</span>
                                                     </button>

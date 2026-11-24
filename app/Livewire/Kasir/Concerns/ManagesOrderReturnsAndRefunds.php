@@ -197,7 +197,7 @@ trait ManagesOrderReturnsAndRefunds
             $this->returnErrorMessage = $e->getMessage();
         } catch (\Throwable $e) {
             Log::error('Process return failed: '.$e->getMessage(), ['exception' => $e]);
-            $this->returnErrorMessage = 'A system error occurred while processing return/refund: '.$e->getMessage();
+            $this->returnErrorMessage = __('common.alerts.operation_failed');
         }
     }
 }

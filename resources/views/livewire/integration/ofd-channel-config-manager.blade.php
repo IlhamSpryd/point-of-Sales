@@ -125,7 +125,7 @@
                     <div>
                         <x-ui.label for="ofd-price-list">Price List Khusus (Opsional)</x-ui.label>
                         <x-ui.select id="ofd-price-list" wire:model="priceListId">
-                            <option value="">-- Gunakan Harga Default Outlet --</option>
+                            <option value="">-- Gunakan Harga Default Cabang --</option>
                             @foreach ($priceLists as $pl)
                                 <option value="{{ $pl->id }}">{{ $pl->name }}</option>
                             @endforeach

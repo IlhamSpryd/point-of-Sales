@@ -109,8 +109,11 @@ class ManufacturingOrderManager extends Component
         try {
             app(ManufacturingOrderService::class)->completeProduction($orderId);
             session()->flash('message', 'Pesanan produksi selesai. Bahan baku telah dipotong dan stok barang jadi/olahan telah ditambahkan.');
+        } catch (\DomainException|\InvalidArgumentException $e) {
+            session()->flash('error', $e->getMessage());
         } catch (\Throwable $e) {
-            session()->flash('error', 'Gagal menyelesaikan produksi: '.$e->getMessage());
+            report($e);
+            session()->flash('error', __('common.alerts.operation_failed'));
         }
     }
 

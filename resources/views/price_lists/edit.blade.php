@@ -184,7 +184,7 @@
                                             class="w-full h-9 px-3 rounded-lg border border-border text-sm text-right tabular-nums focus:border-primary focus:ring-1 focus:ring-ring">
                                     </td>
                                     <td class="px-4 py-2.5 text-center">
-                                        <button type="button" @click="removeItem(index)"
+                                        <button type="button" @click="removeItem(index)" aria-label="Remove item row"
                                             class="text-destructive hover:text-destructive p-1 rounded-lg hover:bg-destructive-muted transition-colors">
                                             <span class="material-symbols-rounded text-[20px]">delete</span>
                                         </button>

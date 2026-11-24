@@ -8,8 +8,8 @@
                 <span class="material-symbols-rounded text-lg">check_circle</span>
                 <span>{{ session('success') }}</span>
             </div>
-            <button type="button" @click="$el.parentElement.remove()" class="text-positive hover:text-positive">
-                <span class="material-symbols-rounded text-sm">close</span>
+            <button type="button" @click="$el.parentElement.remove()" aria-label="Dismiss success alert" class="text-positive hover:text-positive">
+                <span class="material-symbols-rounded text-sm" aria-hidden="true">close</span>
             </button>
         </div>
     @endif
@@ -227,8 +227,8 @@
                         class="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground rounded-xl transition-colors">
                     Cancel
                 </button>
-                <button type="submit" form="save-account-form"
-                        class="px-4 py-2 text-xs font-semibold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl transition-colors shadow-xs">
+                <button type="submit" form="save-account-form" wire:loading.attr="disabled"
+                        class="px-4 py-2 text-xs font-semibold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl transition-colors shadow-xs disabled:opacity-50">
                     Save Account
                 </button>
             </div>

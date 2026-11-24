@@ -83,7 +83,7 @@
                         'channel' => 'secondary',
                     ];
                 @endphp
-                <tr class="hover:bg-muted transition-colors duration-200">
+                <tr wire:key="price-list-{{ $pl->id }}" class="hover:bg-muted transition-colors duration-200">
                     <td class="px-3 py-2 text-center font-bold text-[12px] text-foreground tabular-nums">#{{ $pl->priority }}</td>
                     <td class="px-3 py-2">
                         <div class="font-medium text-[12px] text-foreground">{{ $pl->name }}</div>
@@ -261,7 +261,7 @@
                                 </select>
                                 <input type="number" :name="`items[${idx}][min_quantity]`" x-model="item.min_quantity" placeholder="Min. Qty" min="1" required class="w-20 rounded-lg border border-border px-2 py-1.5 text-xs text-right">
                                 <input type="number" :name="`items[${idx}][price]`" x-model="item.price" placeholder="Price (Rp)" min="0" step="100" required class="w-28 rounded-lg border border-border px-2 py-1.5 text-xs text-right">
-                                <button type="button" @click="removeItem(idx)" class="text-destructive hover:text-destructive p-1" title="Remove Row">
+                                <button type="button" @click="removeItem(idx)" aria-label="Remove item row" class="text-destructive hover:text-destructive p-1" title="Remove Row">
                                     <span class="material-symbols-rounded text-sm">delete</span>
                                 </button>
                             </div>

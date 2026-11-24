@@ -67,8 +67,11 @@ class LeaveManager extends Component
 
             $leaveService->approveLeaveRequest($tenantId, $request->id, $approval->id, (int) Auth::id());
             session()->flash('success', "Leave request #{$request->id} approved successfully.");
-        } catch (\Throwable $e) {
+        } catch (\DomainException|\InvalidArgumentException $e) {
             session()->flash('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+            session()->flash('error', __('common.alerts.operation_failed'));
         }
     }
 
@@ -93,8 +96,11 @@ class LeaveManager extends Component
         try {
             $leaveService->rejectLeaveRequest($tenantId, $request->id, (int) Auth::id(), 'Rejected by management.');
             session()->flash('success', "Leave request #{$request->id} rejected.");
-        } catch (\Throwable $e) {
+        } catch (\DomainException|\InvalidArgumentException $e) {
             session()->flash('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+            session()->flash('error', __('common.alerts.operation_failed'));
         }
     }
 

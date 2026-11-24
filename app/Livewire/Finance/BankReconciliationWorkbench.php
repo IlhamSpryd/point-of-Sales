@@ -151,8 +151,11 @@ class BankReconciliationWorkbench extends Component
             $this->selectedSessionId = $session->id;
             $this->showStartSessionModal = false;
             session()->flash('success', "Reconciliation session {$session->session_number} started successfully.");
-        } catch (\Throwable $e) {
+        } catch (DomainException|\InvalidArgumentException $e) {
             session()->flash('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+            session()->flash('error', __('common.alerts.operation_failed'));
         }
     }
 
@@ -176,8 +179,11 @@ class BankReconciliationWorkbench extends Component
             $matches = $service->autoMatch($session, $actor);
             $count = count($matches);
             session()->flash('success', "Auto-match matched {$count} transactions successfully.");
-        } catch (\Throwable $e) {
+        } catch (DomainException|\InvalidArgumentException $e) {
             session()->flash('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+            session()->flash('error', __('common.alerts.operation_failed'));
         }
     }
 
@@ -231,8 +237,11 @@ class BankReconciliationWorkbench extends Component
         try {
             $service->unmatch($match, $actor);
             session()->flash('success', 'Match unlinked successfully.');
-        } catch (\Throwable $e) {
+        } catch (DomainException|\InvalidArgumentException $e) {
             session()->flash('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+            session()->flash('error', __('common.alerts.operation_failed'));
         }
     }
 

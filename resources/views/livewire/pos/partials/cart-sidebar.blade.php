@@ -27,7 +27,7 @@
                         <span class="material-symbols-rounded text-[16px] text-muted-foreground">person</span>
                         {{ $customerName }}
                     </span>
-                    <button type="button" wire:click="clearCustomer" class="text-muted-foreground hover:text-destructive transition-colors">
+                    <button type="button" wire:click="clearCustomer" aria-label="Remove customer from order" class="text-muted-foreground hover:text-destructive transition-colors">
                         <span class="material-symbols-rounded text-[16px] block">close</span>
                     </button>
                 </div>

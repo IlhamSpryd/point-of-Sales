@@ -149,13 +149,13 @@
                                         <div class="w-32">
                                             <input type="number" step="0.0001" x-model="ing.quantity" placeholder="Quantity" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm" required>
                                         </div>
-                                        <button type="button" @click="removeIngredient(index)" class="inline-flex items-center justify-center w-[46px] h-[46px] rounded-xl text-destructive hover:bg-destructive-muted border border-transparent hover:border-destructive transition-colors" title="Remove line">
-                                            <span class="material-symbols-rounded text-[20px]">close</span>
+                                        <button type="button" @click="removeIngredient(index)" aria-label="Remove ingredient line" class="inline-flex items-center justify-center w-[46px] h-[46px] rounded-xl text-destructive hover:bg-destructive-muted border border-transparent hover:border-destructive transition-colors" title="Remove line">
+                                            <span class="material-symbols-rounded text-[20px]" aria-hidden="true">close</span>
                                         </button>
                                     </div>
                                 </template>
                                 
-                                <div x-show="ingredients.length === 0" class="text-center py-6 bg-secondary rounded-xl border border-border border-dashed">
+                                <div x-show="ingredients.length === 0" x-cloak class="text-center py-6 bg-secondary rounded-xl border border-border border-dashed">
                                     <p class="text-sm text-muted-foreground">No additional ingredients configured.</p>
                                 </div>
                             </div>
@@ -165,7 +165,7 @@
                             <x-ui.button type="button" variant="secondary" wire:click="resetModifierForm">
                                 Cancel
                             </x-ui.button>
-                            <x-ui.button type="submit" variant="primary" x-on:click="window.erpMotion?.pulseHighlight($el)">
+                            <x-ui.button type="submit" variant="primary" wire:loading.attr="disabled" x-on:click="window.erpMotion?.pulseHighlight($el)">
                                 <span class="material-symbols-rounded text-[20px]">save</span> Save Modifier
                             </x-ui.button>
                         </div>
@@ -192,7 +192,7 @@
             <!-- Loop Groups -->
             <div class="space-y-6">
             @forelse($groups as $group)
-            <div class="card-surface p-6">
+            <div wire:key="modifier-group-{{ $group->id }}" class="card-surface p-6">
                 <div class="flex items-center justify-between mb-4 pb-4 border-b border-border">
                     <div>
                         <h3 class="text-lg font-bold text-foreground">{{ $group->name }}</h3>
@@ -201,10 +201,11 @@
                         </p>
                     </div>
                     <div class="flex space-x-2">
-                        <button wire:click="editGroup({{ $group->id }})" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-accent hover:bg-accent/10 transition-colors" title="Edit Group">
-                            <span class="material-symbols-rounded text-[20px]">edit</span>
+                        <button type="button" wire:click="editGroup({{ $group->id }})" aria-label="Edit modifier group" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-accent hover:bg-accent/10 transition-colors" title="Edit Group">
+                            <span class="material-symbols-rounded text-[20px]" aria-hidden="true">edit</span>
                         </button>
                         <button type="button"
+                            aria-label="Delete modifier group"
                             x-on:click="$dispatch('erp-confirm', {
                                 title: 'Delete Modifier Group?',
                                 message: 'This group and all associated options will be permanently deleted.',

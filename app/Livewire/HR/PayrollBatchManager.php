@@ -86,8 +86,11 @@ class PayrollBatchManager extends Component
 
             $this->isCreateModalOpen = false;
             session()->flash('success', "Payroll batch [{$batch->batch_number}] initiated successfully.");
-        } catch (\Throwable $e) {
+        } catch (\DomainException|\InvalidArgumentException $e) {
             session()->flash('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+            session()->flash('error', __('common.alerts.operation_failed'));
         }
     }
 
@@ -110,8 +113,11 @@ class PayrollBatchManager extends Component
         try {
             $batchService->executeCalculation($batch);
             session()->flash('success', "Payroll calculation for batch [{$batch->batch_number}] completed.");
-        } catch (\Throwable $e) {
+        } catch (\DomainException|\InvalidArgumentException $e) {
             session()->flash('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+            session()->flash('error', __('common.alerts.operation_failed'));
         }
     }
 
@@ -187,8 +193,11 @@ class PayrollBatchManager extends Component
             });
 
             session()->flash('success', "Payroll batch [{$batch->batch_number}] finalized and posted to GL successfully.");
-        } catch (\Throwable $e) {
+        } catch (\DomainException|\InvalidArgumentException $e) {
             session()->flash('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+            session()->flash('error', __('common.alerts.operation_failed'));
         }
     }
 

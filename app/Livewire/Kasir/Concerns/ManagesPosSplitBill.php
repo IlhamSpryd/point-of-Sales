@@ -174,8 +174,11 @@ trait ManagesPosSplitBill
             $this->pendingOrderCode = null;
 
             $this->dispatch('toast', message: "Tagihan #{$order->order_code} berhasil dipecah menjadi {$count} sub-order!", type: 'success');
+        } catch (\DomainException|\InvalidArgumentException $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'destructive');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', message: 'Gagal split bill: '.$e->getMessage(), type: 'destructive');
+            report($e);
+            $this->dispatch('toast', message: __('common.alerts.operation_failed'), type: 'destructive');
         }
     }
 }

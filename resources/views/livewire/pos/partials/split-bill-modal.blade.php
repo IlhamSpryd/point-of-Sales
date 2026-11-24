@@ -12,10 +12,10 @@
                     <span class="material-symbols-rounded text-[24px]">call_split</span>
                 </div>
                 <div>
-                    <h3 id="split-bill-modal-title" class="text-base font-semibold text-foreground">
-                        Split Bill (Pisah Tagihan Meja)
-                    </h3>
-                    <p class="text-xs text-muted-foreground">Pecah pesanan aktif menjadi beberapa sub-order terpisah</p>
+                    <h2 id="split-bill-modal-title" class="text-base font-semibold text-foreground">
+                        Pisah Tagihan Meja
+                    </h2>
+                    <p class="text-xs text-muted-foreground">Pecah pesanan aktif menjadi beberapa sub-pesanan terpisah</p>
                 </div>
             </div>
         </x-slot:header>
@@ -27,7 +27,7 @@
                 <button type="button"
                     wire:click="$set('splitBillMode', 'equal')"
                     class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors {{ $splitBillMode === 'equal' ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground bg-muted' }}">
-                    Bagi Rata (Equal Split)
+                    Bagi Rata
                 </button>
                 <button type="button"
                     wire:click="$set('splitBillMode', 'amount')"
@@ -37,7 +37,7 @@
                 <button type="button"
                     wire:click="$set('splitBillMode', 'item')"
                     class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors {{ $splitBillMode === 'item' ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground bg-muted' }}">
-                    Pilih Berdasarkan Menu (Split by Item)
+                    Pilih Berdasarkan Menu
                 </button>
             </div>
 
@@ -98,8 +98,8 @@
                                         placeholder="Nominal Rp"
                                         class="form-input flex-1 p-2 rounded-lg border border-border text-xs font-semibold font-sans tabular-nums">
                                     @if (count($splitBillAmounts) > 2)
-                                        <button type="button" wire:click="removeSplitBillAmountPart({{ $idx }})" class="text-muted-foreground hover:text-destructive p-1">
-                                            <span class="material-symbols-rounded text-[18px]">delete</span>
+                                        <button type="button" wire:click="removeSplitBillAmountPart({{ $idx }})" aria-label="Hapus bagian nominal" class="text-muted-foreground hover:text-destructive p-1">
+                                            <span class="material-symbols-rounded text-[18px]" aria-hidden="true">delete</span>
                                         </button>
                                     @endif
                                 </div>
@@ -142,8 +142,8 @@
                     Tutup
                 </x-ui.button>
                 @if ($this->splitBillOrder)
-                    <x-ui.button variant="primary" wire:click="executeSplitBill" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                        Proses Split Bill
+                    <x-ui.button variant="primary" wire:click="executeSplitBill" wire:loading.attr="disabled" x-on:click="window.erpMotion?.pulseHighlight($el)">
+                        Proses Pisah Tagihan
                     </x-ui.button>
                 @endif
             </div>

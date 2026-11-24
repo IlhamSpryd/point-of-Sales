@@ -205,7 +205,7 @@
                                     <input type="number" step="0.0001" min="0.0001" wire:model="items.{{ $index }}.quantity_requested" placeholder="Qty" class="form-input w-full p-2 rounded-lg border border-border text-xs text-right font-semibold">
                                 </div>
 
-                                <button type="button" wire:click="removeItemRow({{ $index }})" class="p-1 text-destructive hover:text-destructive">
+                                <button type="button" wire:click="removeItemRow({{ $index }})" aria-label="Remove transfer item row" class="p-1 text-destructive hover:text-destructive">
                                     <span class="material-symbols-rounded text-[20px]">delete</span>
                                 </button>
                             </div>

@@ -14,17 +14,17 @@
 >
     {{-- Trigger --}}
     @if (!$headless)
-        <div @click="openPalette()">
-            @if (isset($trigger))
+        @if (isset($trigger))
+            <div @click="openPalette()">
                 {{ $trigger }}
-            @else
-                <button type="button" class="inline-flex items-center gap-2 rounded-control border border-border bg-background px-3 py-1.5 text-xs text-muted-foreground transition hover:bg-muted hover:text-foreground">
-                    <x-ui.icon name="search" size="xs" />
-                    <span>Search navigation…</span>
-                    <kbd class="ml-4 rounded border border-border bg-muted px-1.5 py-0.5 font-sans text-[10px] text-muted-foreground">⌘K</kbd>
-                </button>
-            @endif
-        </div>
+            </div>
+        @else
+            <button type="button" @click="openPalette()" class="inline-flex items-center gap-2 rounded-control border border-border bg-background px-3 py-1.5 text-xs text-muted-foreground transition hover:bg-muted hover:text-foreground">
+                <x-ui.icon name="search" size="xs" />
+                <span>Search navigation…</span>
+                <kbd class="ml-4 rounded border border-border bg-muted px-1.5 py-0.5 font-sans text-[10px] text-muted-foreground">⌘K</kbd>
+            </button>
+        @endif
     @endif
 
     {{-- Palette, teleported so it is never clipped. --}}

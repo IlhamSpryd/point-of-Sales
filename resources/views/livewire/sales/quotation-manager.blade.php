@@ -221,7 +221,7 @@
                                     <x-ui.input type="number" step="0.01" wire:model="lines.{{ $idx }}.tax_rate" placeholder="Tax %" class="text-right text-xs" />
                                 </div>
                                 <div>
-                                    <button type="button" wire:click="removeLine({{ $idx }})" class="p-1 text-muted-foreground hover:text-destructive rounded">
+                                    <button type="button" wire:click="removeLine({{ $idx }})" aria-label="Remove quotation line" class="p-1 text-muted-foreground hover:text-destructive rounded">
                                         <span class="material-symbols-rounded text-lg">delete</span>
                                     </button>
                                 </div>

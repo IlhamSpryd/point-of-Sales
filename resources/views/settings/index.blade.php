@@ -21,21 +21,21 @@
             <form action="{{ route('settings.update') }}" method="POST" class="space-y-6">
                 @csrf
 
-                {{-- Master Cabang & Outlet Guidance (Single Source of Truth) --}}
+                {{-- Master Branch Guidance (Single Source of Truth) --}}
                 <div class="p-5 rounded-2xl border border-border bg-muted/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div class="flex items-start gap-3.5">
                         <div class="p-2.5 rounded-xl bg-background border border-border text-primary shrink-0 shadow-xs">
                             <span class="material-symbols-rounded text-2xl">store</span>
                         </div>
                         <div>
-                            <h3 class="text-sm font-semibold text-foreground">Identitas & Profil Gerai Cabang (Multi-Store)</h3>
+                            <h3 class="text-sm font-semibold text-foreground">Branch Profile &amp; Receipt Identity (Multi-Branch)</h3>
                             <p class="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                                Nama toko, alamat fisik operasional, nomor telepon, dan identitas struk transaksi dikelola secara terpusat pada Master Gerai & Cabang demi menjamin integritas multi-outlet.
+                                Branch names, operational addresses, phone numbers, and receipt branding are centrally managed in Branch Management to guarantee multi-branch data integrity.
                             </p>
                         </div>
                     </div>
                     <a href="{{ route('stores.index') }}" wire:navigate class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-background border border-border hover:bg-muted text-foreground transition-colors shrink-0 shadow-xs">
-                        <span>Kelola Master Cabang</span>
+                        <span>Manage Branches</span>
                         <span class="material-symbols-rounded text-sm">arrow_forward</span>
                     </a>
                 </div>

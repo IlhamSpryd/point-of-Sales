@@ -17,7 +17,7 @@
         </div>
 
         <!-- Payment Tabs Bar -->
-        <div x-show="!receiptReady" class="grid grid-cols-5 p-2 bg-muted border-b border-border gap-1 shrink-0">
+        <div x-show="!receiptReady" x-cloak class="grid grid-cols-5 p-2 bg-muted border-b border-border gap-1 shrink-0">
             <button type="button" x-on:click="setMethod('cash')"
                 :class="method === 'cash' ? 'bg-foreground text-background font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground'"
                 class="px-3 py-2 rounded-lg font-medium text-xs transition-all flex items-center justify-center gap-1">
@@ -51,7 +51,7 @@
         </div>
 
         <!-- Body Modal Content -->
-        <div x-show="!receiptReady" class="p-5 overflow-y-auto max-h-[62vh] space-y-4 custom-scrollbar bg-card">
+        <div x-show="!receiptReady" x-cloak class="p-5 overflow-y-auto max-h-[62vh] space-y-4 custom-scrollbar bg-card">
             <!-- Net Total Due Banner -->
             <div class="flex items-center justify-between p-3.5 rounded-xl bg-muted border border-border">
                 <div>
@@ -68,7 +68,7 @@
             </div>
 
             <!-- Tab Pane: Tunai (Cash) -->
-            <div x-show="method === 'cash'" class="space-y-3.5">
+            <div x-show="method === 'cash'" x-cloak class="space-y-3.5">
                 <label class="text-xs font-semibold text-foreground uppercase tracking-wider block">
                     Cash Received
                 </label>
@@ -113,7 +113,7 @@
             </div>
 
             <!-- Tab Pane: QRIS & Digital Payment -->
-            <div x-show="method === 'qris'" class="space-y-3.5 p-4 bg-muted rounded-xl border border-border">
+            <div x-show="method === 'qris'" x-cloak class="space-y-3.5 p-4 bg-muted rounded-xl border border-border">
                 <div class="flex items-center justify-between gap-2">
                     <span class="text-xs font-semibold text-foreground uppercase tracking-wider">
                         QR Payment Mode
@@ -133,7 +133,7 @@
                 </div>
 
                 <!-- Mode 1: Dynamic QRIS & Digital Gateway -->
-                <div x-show="qrisMode === 'midtrans'" class="p-4 bg-card rounded-xl border border-border space-y-3">
+                <div x-show="qrisMode === 'midtrans'" x-cloak class="p-4 bg-card rounded-xl border border-border space-y-3">
                     <template x-if="!awaitingMidtransOrderCode">
                         <div class="flex items-start gap-3.5">
                             <div class="w-11 h-11 rounded-xl bg-muted border border-border text-foreground flex items-center justify-center shrink-0">
@@ -176,7 +176,7 @@
                 </div>
 
                 <!-- Mode 2: Manual Static QRIS -->
-                <div x-show="qrisMode === 'manual'" class="p-4 bg-card rounded-xl border border-border space-y-3">
+                <div x-show="qrisMode === 'manual'" x-cloak class="p-4 bg-card rounded-xl border border-border space-y-3">
                     <div class="flex items-center gap-3">
                         <div class="w-11 h-11 rounded-xl bg-muted border border-border flex items-center justify-center shrink-0">
                             <span class="material-symbols-rounded text-[24px] text-foreground">qr_code_2</span>
@@ -195,7 +195,7 @@
             </div>
 
             <!-- Tab Pane: EDC Kartu -->
-            <div x-show="method === 'card'" class="space-y-3 p-4 bg-muted rounded-xl border border-border">
+            <div x-show="method === 'card'" x-cloak class="space-y-3 p-4 bg-muted rounded-xl border border-border">
                 <label class="text-xs font-semibold text-foreground uppercase tracking-wider block">
                     Select Card Terminal (EDC)
                 </label>
@@ -224,7 +224,7 @@
             </div>
 
             <!-- Tab Pane: Bank Transfer -->
-            <div x-show="method === 'store_credit'" class="space-y-3 p-4 bg-muted rounded-xl border border-border">
+            <div x-show="method === 'store_credit'" x-cloak class="space-y-3 p-4 bg-muted rounded-xl border border-border">
                 <div class="space-y-2">
                     <label class="text-xs font-semibold text-foreground uppercase tracking-wider block">
                         Official Store Bank Account
@@ -263,7 +263,7 @@
             </div>
 
             <!-- Tab Pane: Split Bill (Multi-Payment Legs) -->
-            <div x-show="method === 'split'" class="space-y-3 p-4 bg-muted rounded-xl border border-border">
+            <div x-show="method === 'split'" x-cloak class="space-y-3 p-4 bg-muted rounded-xl border border-border">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-medium text-foreground">Split Payment Allocation</span>
                     <span class="tabular-nums text-xs font-bold"
@@ -272,7 +272,7 @@
                 </div>
 
                 <!-- Added Payment Legs List -->
-                <div x-show="legs.length > 0" class="space-y-2">
+                <div x-show="legs.length > 0" x-cloak class="space-y-2">
                     <template x-for="leg in legs" :key="leg.uid">
                         <div class="flex items-center justify-between gap-3 bg-card rounded-lg border border-border p-2.5">
                             <div class="flex items-center gap-2">
@@ -282,16 +282,16 @@
                                     <span class="block text-xs text-muted-foreground tabular-nums" x-text="'Rp ' + formatRupiah(leg.amount)"></span>
                                 </div>
                             </div>
-                            <button type="button" x-on:click="removeLeg(leg.uid)"
+                            <button type="button" x-on:click="removeLeg(leg.uid)" aria-label="Remove payment allocation"
                                 class="text-muted-foreground hover:text-destructive transition-colors p-1">
-                                <span class="material-symbols-rounded text-[16px]">close</span>
+                                <span class="material-symbols-rounded text-[16px]" aria-hidden="true">close</span>
                             </button>
                         </div>
                     </template>
                 </div>
 
                 <!-- Form Add Leg for Split -->
-                <div x-show="remaining > 0" class="space-y-2 pt-2 border-t border-border">
+                <div x-show="remaining > 0" x-cloak class="space-y-2 pt-2 border-t border-border">
                     <div class="grid grid-cols-4 gap-1.5">
                         <button type="button" x-on:click="splitTargetMethod = 'cash'"
                             :class="splitTargetMethod === 'cash' ? 'bg-primary text-primary-foreground' : 'bg-card border-border text-foreground'"
@@ -388,7 +388,7 @@
         </div>
 
         <!-- Footer Modal Checkout -->
-        <div x-show="!receiptReady" class="p-4 bg-muted border-t border-border flex items-center justify-between shrink-0">
+        <div x-show="!receiptReady" x-cloak class="p-4 bg-muted border-t border-border flex items-center justify-between shrink-0">
             <button type="button" x-on:click.prevent="closeModal()" wire:ignore
                 class="px-4 py-2.5 rounded-lg border border-border hover:bg-muted text-foreground font-medium text-sm transition-colors cursor-pointer"
                 aria-label="Cancel payment and return to cart">
@@ -396,15 +396,15 @@
             </button>
             {{-- R-007: tombol konfirmasi tunggal (footer). Tombol duplikat di konten telah dihapus. --}}
             <button type="button" id="btn-confirm-pay"
-                x-show="!awaitingMidtransOrderCode"
+                x-show="!awaitingMidtransOrderCode" x-cloak
                 x-on:click.prevent="submit()"
                 wire:ignore
                 :aria-busy="submitting"
                 aria-live="polite"
                 :disabled="submitting || (method === 'split' ? remaining > 0 : false)"
                 class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
-                <span x-show="submitting" class="h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current" aria-hidden="true"></span>
-                <span class="material-symbols-rounded text-[16px]" x-show="!submitting" x-text="(method === 'qris' && qrisMode === 'midtrans') ? 'qr_code_scanner' : 'check_circle'"></span>
+                <span x-show="submitting" x-cloak class="h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current" aria-hidden="true"></span>
+                <span class="material-symbols-rounded text-[16px]" x-show="!submitting" x-cloak x-text="(method === 'qris' && qrisMode === 'midtrans') ? 'qr_code_scanner' : 'check_circle'"></span>
                 <span x-text="submitting ? 'Processing Payment...' : ((method === 'qris' && qrisMode === 'midtrans') ? 'Proceed to QR Payment' : 'Confirm & Complete Order')"></span>
             </button>
             <button type="button"
@@ -423,6 +423,7 @@
     </div>
 </x-ui.modal>
 
+@assets
 <script>
     function registerCheckoutPayment() {
         if (!window.Alpine) return;
@@ -549,39 +550,43 @@
             },
 
             bindMidtransEvents() {
-                Livewire.on('midtrans-payment-pending', (e) => {
-                    const payload = Array.isArray(e) ? e[0] : (e?.detail ?? e);
-                    if (!payload?.orderCode) return;
+                if (this._midtransBound) return;
+                this._midtransBound = true;
+                this._livewireUnsubs = [
+                    Livewire.on('midtrans-payment-pending', (e) => {
+                        const payload = Array.isArray(e) ? e[0] : (e?.detail ?? e);
+                        if (!payload?.orderCode) return;
 
-                    this.method = 'qris';
-                    this.qrisMode = 'midtrans';
-                    this.awaitingMidtransOrderCode = payload.orderCode;
-                    this.awaitingSnapToken = payload.snapToken || null;
-                    this.errorMsg = '';
+                        this.method = 'qris';
+                        this.qrisMode = 'midtrans';
+                        this.awaitingMidtransOrderCode = payload.orderCode;
+                        this.awaitingSnapToken = payload.snapToken || null;
+                        this.errorMsg = '';
 
-                    if (this.awaitingSnapToken) {
-                        setTimeout(() => this.openSnapPopup(), 250);
-                    }
-                    this.startPolling();
-                });
+                        if (this.awaitingSnapToken) {
+                            setTimeout(() => this.openSnapPopup(), 250);
+                        }
+                        this.startPolling();
+                    }),
 
-                Livewire.on('midtrans-payment-failed', (e) => {
-                    const payload = Array.isArray(e) ? e[0] : (e?.detail ?? e);
-                    this.stopPolling();
-                    this.verifyingMidtrans = false;
-                    this.errorMsg = 'Midtrans payment was ' + (payload?.status || 'cancelled/expired') + '. Please create a new order.';
-                });
+                    Livewire.on('midtrans-payment-failed', (e) => {
+                        const payload = Array.isArray(e) ? e[0] : (e?.detail ?? e);
+                        this.stopPolling();
+                        this.verifyingMidtrans = false;
+                        this.errorMsg = 'Midtrans payment was ' + (payload?.status || 'cancelled/expired') + '. Please create a new order.';
+                    }),
 
-                Livewire.on('midtrans-payment-still-pending', () => {
-                    this.verifyingMidtrans = false;
-                });
+                    Livewire.on('midtrans-payment-still-pending', () => {
+                        this.verifyingMidtrans = false;
+                    }),
 
-                Livewire.on('transaction-success', () => {
-                    this.stopPolling();
-                    this.verifyingMidtrans = false;
-                    this.awaitingMidtransOrderCode = null;
-                    this.awaitingSnapToken = null;
-                });
+                    Livewire.on('transaction-success', () => {
+                        this.stopPolling();
+                        this.verifyingMidtrans = false;
+                        this.awaitingMidtransOrderCode = null;
+                        this.awaitingSnapToken = null;
+                    }),
+                ];
             },
 
             openSnapPopup() {
@@ -643,6 +648,11 @@
                 }
                 if (this._receiptReadyHandler) {
                     window.removeEventListener('pos-receipt-ready', this._receiptReadyHandler);
+                }
+                if (Array.isArray(this._livewireUnsubs)) {
+                    this._livewireUnsubs.forEach(unsub => typeof unsub === 'function' && unsub());
+                    this._livewireUnsubs = [];
+                    this._midtransBound = false;
                 }
             },
 
@@ -888,3 +898,4 @@
         document.addEventListener('livewire:init', registerTransactionSuccessListener);
     }
 </script>
+@endassets

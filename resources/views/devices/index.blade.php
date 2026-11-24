@@ -82,7 +82,7 @@
             </x-slot:head>
 
             @foreach($devices as $device)
-                <tr class="hover:bg-muted/40 transition-colors">
+                <tr wire:key="device-row-{{ $device->id }}" class="hover:bg-muted/40 transition-colors">
                     <td class="px-3 py-2 font-sans font-medium text-foreground text-[11px] whitespace-nowrap">
                         {{ $device->device_code }}
                     </td>

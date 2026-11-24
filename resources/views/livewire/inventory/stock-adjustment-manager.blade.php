@@ -208,7 +208,7 @@
                                     </div>
 
                                     <div class="col-span-12 sm:col-span-1 text-right">
-                                        <button type="button" wire:click="removeItemLine({{ $index }})" class="text-destructive hover:text-destructive">
+                                        <button type="button" wire:click="removeItemLine({{ $index }})" aria-label="Remove adjustment line" class="text-destructive hover:text-destructive">
                                             <span class="material-symbols-rounded text-[20px]">delete</span>
                                         </button>
                                     </div>

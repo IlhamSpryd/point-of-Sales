@@ -1,7 +1,7 @@
 {{-- ========================================================================= --}}
 {{-- MODAL PENGATURAN TARGET CABANG (Plan vs Actual - Owner / Admin Only)       --}}
 {{-- ========================================================================= --}}
-<div x-cloak x-show="targetModalOpen" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+<div x-cloak x-show="targetModalOpen" x-trap.inert.noscroll="targetModalOpen" @keydown.escape.window="if (targetModalOpen) targetModalOpen = false" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     {{-- Backdrop --}}
     <div x-show="targetModalOpen"
          x-transition:enter="ease-out duration-300"
@@ -38,8 +38,8 @@
                         </p>
                     </div>
                 </div>
-                <button type="button" @click="targetModalOpen = false" class="rounded-lg p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer">
-                    <span class="material-symbols-rounded text-xl">close</span>
+                <button type="button" @click="targetModalOpen = false" aria-label="Tutup dialog target cabang" class="rounded-lg p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer">
+                    <span class="material-symbols-rounded text-xl" aria-hidden="true">close</span>
                 </button>
             </div>
 
@@ -62,7 +62,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label for="target_store_id" class="block text-xs font-semibold text-foreground mb-1.5">
-                            Cabang / Outlet <span class="text-destructive">*</span>
+                            Cabang <span class="text-destructive">*</span>
                         </label>
                         <select id="target_store_id" name="store_id" x-model="targetForm.store_id" required
                                 class="w-full rounded-xl border border-border bg-background px-3.5 py-2 text-xs font-medium text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary">

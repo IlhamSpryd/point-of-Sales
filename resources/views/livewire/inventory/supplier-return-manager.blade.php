@@ -266,7 +266,7 @@
                                                    class="w-full text-xs rounded-lg border-border">
                                         </td>
                                         <td class="p-2 text-center">
-                                            <button type="button" wire:click="removeItemRow({{ $index }})" class="text-destructive hover:text-destructive">
+                                            <button type="button" wire:click="removeItemRow({{ $index }})" aria-label="Remove return item row" class="text-destructive hover:text-destructive">
                                                 <span class="material-symbols-rounded text-[20px]">delete</span>
                                             </button>
                                         </td>

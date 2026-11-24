@@ -240,8 +240,8 @@
                         class="px-4 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground rounded-xl transition-colors">
                         Cancel
                     </button>
-                    <button type="submit" form="campaign-form"
-                        class="px-5 py-2 text-sm font-semibold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl shadow-xs transition-colors">
+                    <button type="submit" form="campaign-form" wire:loading.attr="disabled"
+                        class="px-5 py-2 text-sm font-semibold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl shadow-xs transition-colors disabled:opacity-50">
                         Save Campaign
                     </button>
                 </div>

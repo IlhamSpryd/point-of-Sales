@@ -7,19 +7,21 @@ namespace App\Support\Format;
 class Rupiah
 {
     /**
-     * Format a numeric value as Indonesian Rupiah.
+     * Format a numeric value as Indonesian Rupiah using UTF-8 NBSP separator.
      *
      * @param  bool  $withCents  When true, format with 2 decimal places.
      */
     public static function format(int|float|string $amount, bool $withCents = false): string
     {
         $num = (float) $amount;
+        $prefix = $num < 0 ? "-Rp\u{00A0}" : "Rp\u{00A0}";
+        $abs = abs($num);
 
         if ($withCents) {
-            return 'Rp\u00A0'.number_format($num, 2, ',', '.');
+            return $prefix.number_format($abs, 2, ',', '.');
         }
 
-        return 'Rp\u00A0'.number_format($num, 0, ',', '.');
+        return $prefix.number_format($abs, 0, ',', '.');
     }
 
     /**
@@ -30,15 +32,15 @@ class Rupiah
         $num = (float) $amount;
 
         if (abs($num) >= 1_000_000_000) {
-            return 'Rp\u00A0'.number_format($num / 1_000_000_000, 1, ',', '.').' M';
+            return "Rp\u{00A0}".number_format($num / 1_000_000_000, 1, ',', '.').' M';
         }
 
         if (abs($num) >= 1_000_000) {
-            return 'Rp\u00A0'.number_format($num / 1_000_000, 1, ',', '.').' jt';
+            return "Rp\u{00A0}".number_format($num / 1_000_000, 1, ',', '.').' jt';
         }
 
         if (abs($num) >= 1_000) {
-            return 'Rp\u00A0'.number_format($num / 1_000, 1, ',', '.').' rb';
+            return "Rp\u{00A0}".number_format($num / 1_000, 1, ',', '.').' rb';
         }
 
         return self::format($num);

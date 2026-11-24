@@ -51,7 +51,7 @@
             </x-slot:head>
 
             @foreach($stores as $store)
-                <tr class="hover:bg-muted/40 transition-colors">
+                <tr wire:key="store-row-{{ $store->id }}" class="hover:bg-muted/40 transition-colors">
                     <td class="px-3 py-2 font-sans font-medium text-foreground text-[11px] whitespace-nowrap">
                         {{ $store->code }}
                     </td>

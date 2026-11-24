@@ -231,7 +231,7 @@
                         </thead>
                         <tbody class="divide-y divide-border">
                             @forelse($cashMovements as $move)
-                                <tr class="hover:bg-secondary/50 transition-colors">
+                                <tr wire:key="cash-move-{{ $move->id ?? $loop->index }}" class="hover:bg-secondary/50 transition-colors">
                                     <td class="py-2.5 px-3 text-muted-foreground">{{ $move->created_at->format('H:i:s') }}</td>
                                     <td class="py-2.5 px-3">
                                         <span class="text-xs text-foreground font-medium font-sans">
@@ -369,9 +369,9 @@
                     <button type="button" wire:click="$set('isMovementModalOpen', false)" class="px-4 py-2 rounded-xl border border-border text-xs font-semibold text-muted-foreground hover:bg-secondary transition-colors">
                         Cancel
                     </button>
-                    <button type="submit" form="cash-movement-form"
+                    <button type="submit" form="cash-movement-form" wire:loading.attr="disabled"
                         x-on:click="window.erpMotion?.pulseHighlight($el)"
-                        class="px-4 py-2 rounded-xl bg-foreground text-background text-xs font-bold hover:opacity-90 shadow-sm active:scale-95 transition-all">
+                        class="px-4 py-2 rounded-xl bg-foreground text-background text-xs font-bold hover:opacity-90 shadow-sm active:scale-95 transition-all disabled:opacity-50">
                         Save Movement
                     </button>
                 </div>
@@ -425,9 +425,9 @@
                     <button type="button" wire:click="$set('isHandoverModalOpen', false)" class="px-4 py-2 rounded-xl border border-border text-xs font-semibold text-muted-foreground hover:bg-secondary transition-colors">
                         Cancel
                     </button>
-                    <button type="submit" form="handover-form"
+                    <button type="submit" form="handover-form" wire:loading.attr="disabled"
                         x-on:click="window.erpMotion?.pulseHighlight($el)"
-                        class="px-4 py-2 rounded-xl bg-foreground text-background text-xs font-bold hover:opacity-90 shadow-sm active:scale-95 transition-all">
+                        class="px-4 py-2 rounded-xl bg-foreground text-background text-xs font-bold hover:opacity-90 shadow-sm active:scale-95 transition-all disabled:opacity-50">
                         Submit Handover
                     </button>
                 </div>
@@ -486,9 +486,9 @@
                     <button type="button" x-on:click="openCloseModal = false" class="px-4 py-2 rounded-xl border border-border text-xs font-semibold text-muted-foreground hover:bg-muted transition-colors">
                         Cancel
                     </button>
-                    <button type="submit" form="close-shift-form"
+                    <button type="submit" form="close-shift-form" wire:loading.attr="disabled"
                         x-on:click="window.erpMotion?.pulseHighlight($el)"
-                        class="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 shadow-sm active:scale-95 transition-all">
+                        class="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 shadow-sm active:scale-95 transition-all disabled:opacity-50">
                         Confirm Close Shift
                     </button>
                 </div>
@@ -531,9 +531,9 @@
                     <button type="button" wire:click="$set('isForceCloseModalOpen', false)" class="px-4 py-2 rounded-xl border border-border text-xs font-semibold text-muted-foreground hover:bg-secondary transition-colors">
                         Cancel
                     </button>
-                    <button type="submit" form="force-close-form"
+                    <button type="submit" form="force-close-form" wire:loading.attr="disabled"
                         x-on:click="window.erpMotion?.pulseHighlight($el)"
-                        class="px-4 py-2 rounded-xl bg-destructive hover:bg-destructive text-destructive-foreground text-xs font-bold shadow-sm active:scale-95 transition-all">
+                        class="px-4 py-2 rounded-xl bg-destructive hover:bg-destructive text-destructive-foreground text-xs font-bold shadow-sm active:scale-95 transition-all disabled:opacity-50">
                         Execute Force Close
                     </button>
                 </div>

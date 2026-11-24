@@ -34,8 +34,9 @@
                     </div>
                     <button type="button"
                             @click="closeApprovalDrawer()"
+                            aria-label="Close operational authorization drawer"
                             class="rounded-lg p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer">
-                        <span class="material-symbols-rounded text-xl">close</span>
+                        <span class="material-symbols-rounded text-xl" aria-hidden="true">close</span>
                     </button>
                 </div>
                 <p class="text-xs text-muted-foreground mt-1">

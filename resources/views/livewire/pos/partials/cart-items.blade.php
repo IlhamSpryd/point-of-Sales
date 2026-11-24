@@ -24,7 +24,7 @@
                     <span class="material-symbols-rounded text-[16px] text-muted-foreground">warning</span>
                     Revalidation Warning:
                 </span>
-                <button type="button" wire:click="$set('resumeWarnings', [])" class="text-muted-foreground hover:text-foreground font-bold">&times;</button>
+                <button type="button" wire:click="$set('resumeWarnings', [])" aria-label="Dismiss revalidation warnings" class="text-muted-foreground hover:text-foreground font-bold">&times;</button>
             </div>
             <ul class="list-disc list-inside space-y-0.5 text-xs text-muted-foreground">
                 @foreach($resumeWarnings as $warn)

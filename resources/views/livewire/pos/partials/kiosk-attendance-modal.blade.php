@@ -44,14 +44,14 @@
                     class="h-12 rounded-2xl bg-muted hover:bg-secondary hover:text-foreground text-foreground text-lg font-bold transition-colors cursor-pointer border border-border shadow-2xs flex items-center justify-center">
                     0
                 </button>
-                <button type="button" @click="deletePin()"
+                <button type="button" @click="deletePin()" aria-label="Delete digit"
                     class="h-12 rounded-2xl bg-muted hover:bg-secondary text-muted-foreground transition-colors cursor-pointer border border-border shadow-2xs flex items-center justify-center">
-                    <span class="material-symbols-rounded text-xl">backspace</span>
+                    <span class="material-symbols-rounded text-xl" aria-hidden="true">backspace</span>
                 </button>
             </div>
 
             <!-- Actions -->
-            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-border" x-show="pin.length === 6">
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-border" x-show="pin.length === 6" x-cloak>
                 <button type="button" @click="$dispatch('kiosk-clock-in', { pin }); openKiosk = false;"
                     class="py-2.5 bg-positive hover:bg-positive text-on-positive font-bold text-xs rounded-xl transition-colors cursor-pointer shadow-xs">
                     Clock In

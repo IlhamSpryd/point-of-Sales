@@ -301,7 +301,7 @@
                                         <span class="text-xs font-medium truncate">{{ $variant->variant_name }}</span>
                                         <div :class="selectedVariantId === {{ $variant->id }} ? 'bg-primary text-primary-foreground border-primary' : 'border-muted-foreground/30 bg-background'"
                                             class="w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0 mt-0.5">
-                                            <span x-show="selectedVariantId === {{ $variant->id }}" class="material-symbols-rounded text-[11px] font-bold">check</span>
+                                            <span x-show="selectedVariantId === {{ $variant->id }}" x-cloak class="material-symbols-rounded text-[11px] font-bold">check</span>
                                         </div>
                                     </div>
                                     <div class="flex items-center justify-between mt-2 pt-1.5 border-t border-border/60 text-[11px] w-full">
@@ -338,6 +338,7 @@
                                     $uomPrice = ((float) $selectingProduct->product_price) * $uom['factor'];
                                 @endphp
                                 <button type="button"
+                                    wire:key="mod-uom-{{ $uom['id'] }}"
                                     x-on:click="selectUom({{ $uom['id'] }})"
                                     :class="selectedUomId === {{ $uom['id'] }} ? 'bg-primary/5 border-2 border-primary text-foreground font-semibold shadow-xs ring-1 ring-primary/20' : 'bg-card hover:bg-muted/50 border border-border text-foreground'"
                                     class="p-3 rounded-xl flex flex-col justify-between text-left transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -345,7 +346,7 @@
                                         <span class="text-xs font-medium truncate">{{ $uom['name'] }}</span>
                                         <div :class="selectedUomId === {{ $uom['id'] }} ? 'bg-primary text-primary-foreground border-primary' : 'border-muted-foreground/30 bg-background'"
                                             class="w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0 mt-0.5">
-                                            <span x-show="selectedUomId === {{ $uom['id'] }}" class="material-symbols-rounded text-[11px] font-bold">check</span>
+                                            <span x-show="selectedUomId === {{ $uom['id'] }}" x-cloak class="material-symbols-rounded text-[11px] font-bold">check</span>
                                         </div>
                                     </div>
                                     <div class="flex items-center justify-between mt-2 pt-1.5 border-t border-border/60 text-[11px] w-full">
@@ -400,6 +401,7 @@
                                     @endphp
                                     @foreach ($group->modifiers as $mod)
                                         <button type="button"
+                                            wire:key="mod-opt-{{ $group->id ?? $loop->parent->index }}-{{ $mod->id }}"
                                             role="{{ $group->selection_type === 'single' ? 'radio' : 'checkbox' }}"
                                             :aria-checked="isModSelected({{ $mod->id }})"
                                             x-on:click="toggleMod({{ $mod->id }}, '{{ $group->selection_type }}', {{ $allModIds }}, {{ $maxSelectVal }}, {{ $isRequiredVal }})"
@@ -409,12 +411,12 @@
                                                 @if ($group->selection_type === 'single')
                                                     <div :class="isModSelected({{ $mod->id }}) ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/30 bg-background'"
                                                         class="w-4 h-4 rounded-full border flex items-center justify-center transition-colors shrink-0">
-                                                        <span x-show="isModSelected({{ $mod->id }})" class="material-symbols-rounded text-[11px] font-bold">check</span>
+                                                        <span x-show="isModSelected({{ $mod->id }})" x-cloak class="material-symbols-rounded text-[11px] font-bold">check</span>
                                                     </div>
                                                 @else
                                                     <div :class="isModSelected({{ $mod->id }}) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/30 border bg-background'"
                                                         class="w-4 h-4 rounded-md flex items-center justify-center transition-colors shrink-0">
-                                                        <span x-show="isModSelected({{ $mod->id }})" class="material-symbols-rounded text-[12px] font-bold">check</span>
+                                                        <span x-show="isModSelected({{ $mod->id }})" x-cloak class="material-symbols-rounded text-[12px] font-bold">check</span>
                                                     </div>
                                                 @endif
                                                 <span class="text-xs truncate font-medium">{{ $mod->name }}</span>

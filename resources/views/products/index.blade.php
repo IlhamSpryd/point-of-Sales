@@ -246,7 +246,7 @@
                         <x-form-label for="bulk_action">Select Bulk Action <span class="text-destructive">*</span></x-form-label>
                         <select id="bulk_action" name="action" x-model="bulkAction" required
                             class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-card focus:border-primary focus:ring-1 focus:ring-ring">
-                            <option value="update_status">Update Product Lifecycle Status</option>
+                            <option value="update_status">Update Product Status</option>
                             <option value="update_category">Move to Another Category</option>
                             <option value="update_price">Adjust Selling Price</option>
                             <option value="update_assortment">Update Branch Assortment & Availability</option>

@@ -79,9 +79,9 @@
                             </div>
                         </div>
 
-                        {{-- Breakdown per Outlet --}}
+                        {{-- Breakdown per Cabang --}}
                         <div>
-                            <h3 class="text-xs font-semibold text-foreground mb-2">Distribusi per Gerai Cabang</h3>
+                            <h3 class="text-xs font-semibold text-foreground mb-2">Distribusi per Cabang</h3>
                             <div class="space-y-1.5">
                                 <template x-for="st in paymentDetailData.stores" :key="st.store_name">
                                     <div class="flex items-center justify-between text-xs p-2 rounded bg-secondary/60 border border-border">

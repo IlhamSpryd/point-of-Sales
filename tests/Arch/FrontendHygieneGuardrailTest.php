@@ -12,7 +12,7 @@ use RecursiveIteratorIterator;
  * Wave 9C — Frontend Hygiene Guardrail Tests
  *
  * Prevents reintroduction of dead Tailwind token scale classes, legacy confirm
- * partials, and other UI hygiene regressions caught during the Wave 9C audit.
+ * partials, native onclick="confirm(...)" dialogs, and raw hex classes.
  */
 class FrontendHygieneGuardrailTest extends TestCase
 {
@@ -31,19 +31,18 @@ class FrontendHygieneGuardrailTest extends TestCase
      * No dead primary/danger numeric scale Tailwind tokens in Blade views.
      *
      * Allowed: bg-primary, text-primary-foreground, bg-destructive, text-destructive.
-     * Forbidden: ring-primary-500, text-primary-700, text-danger-NNN, bg-danger-NNN, etc.
+     * Forbidden: ring-primary-500, text-primary-700, placeholder-primary-400, text-danger-NNN, bg-danger-NNN, etc.
      */
     public function test_no_dead_primary_danger_scale_tokens_in_views(): void
     {
         /** @var list<string> $violations */
         $violations = [];
 
-        $pattern = '/(ring-primary-\d|border-primary-\d{3}|text-primary-\d{3}|bg-primary-\d{3}|focus:ring-primary-\d|hover:bg-primary-\d|text-danger-\d|bg-danger-\d|border-danger-\d|ring-danger-\d)/';
+        $pattern = '/\b(?:ring|border|text|bg|placeholder|from|to|hover:bg|hover:text|focus:ring|focus:border)-(?:primary|danger)-\d+\b/';
 
         foreach ($this->iterateBladeFiles() as $file) {
             $content = file_get_contents($file);
-            if (preg_match($pattern, $content, $matches)) {
-                preg_match_all($pattern, $content, $allMatches);
+            if ($content !== false && preg_match_all($pattern, $content, $allMatches)) {
                 $relative = str_replace($this->projectRoot.'/', '', $file);
                 foreach (array_unique($allMatches[0]) as $token) {
                     $violations[] = "{$relative}: {$token}";
@@ -69,7 +68,7 @@ class FrontendHygieneGuardrailTest extends TestCase
 
         foreach ($this->iterateBladeFiles() as $file) {
             $content = file_get_contents($file);
-            if (str_contains($content, 'placeholder-slate-')) {
+            if ($content !== false && str_contains($content, 'placeholder-slate-')) {
                 $violations[] = str_replace($this->projectRoot.'/', '', $file);
             }
         }
@@ -77,6 +76,30 @@ class FrontendHygieneGuardrailTest extends TestCase
         $this->assertEmpty(
             $violations,
             "placeholder-slate-NNN found. Use `placeholder:text-muted-foreground` instead:\n"
+            .implode("\n", $violations)
+        );
+    }
+
+    /**
+     * No native onclick="...confirm(...)" handlers in Blade views.
+     * Destructive actions must use <x-erp.confirm-dialog> via confirmSubmit()/confirmDelete() or erp-confirm.
+     */
+    public function test_no_native_confirm_onclick_in_views(): void
+    {
+        $violations = [];
+        $pattern = '/onclick=["\'][^"\']*\bconfirm\s*\(/i';
+
+        foreach ($this->iterateBladeFiles() as $file) {
+            $content = file_get_contents($file);
+            if ($content !== false && preg_match($pattern, $content, $match)) {
+                $relative = str_replace($this->projectRoot.'/', '', $file);
+                $violations[] = "{$relative}: {$match[0]}";
+            }
+        }
+
+        $this->assertEmpty(
+            $violations,
+            "Native onclick confirm() handlers found. Use ERP confirm dialog (`confirmSubmit()` / `erp-confirm`) instead:\n"
             .implode("\n", $violations)
         );
     }
@@ -107,8 +130,7 @@ class FrontendHygieneGuardrailTest extends TestCase
 
         foreach ($this->iterateBladeFiles() as $file) {
             $content = file_get_contents($file);
-            if (preg_match($pattern, $content)) {
-                preg_match_all($pattern, $content, $allMatches);
+            if ($content !== false && preg_match_all($pattern, $content, $allMatches)) {
                 $relative = str_replace($this->projectRoot.'/', '', $file);
                 foreach (array_unique($allMatches[0]) as $token) {
                     $violations[] = "{$relative}: {$token}";

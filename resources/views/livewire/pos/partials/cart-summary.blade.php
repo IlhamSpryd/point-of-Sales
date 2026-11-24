@@ -27,10 +27,10 @@
                     <span class="material-symbols-rounded text-[14px] text-muted-foreground">confirmation_number</span>
                     Voucher: {{ $voucherCode }}
                 </span>
-                <button type="button" wire:click.prevent="removeVoucher" class="text-muted-foreground hover:text-destructive font-bold p-1 text-sm leading-none cursor-pointer" title="Remove Voucher">&times;</button>
+                <button type="button" wire:click.prevent="removeVoucher" aria-label="Remove Voucher" class="text-muted-foreground hover:text-destructive font-bold p-1 text-sm leading-none cursor-pointer" title="Remove Voucher">&times;</button>
             </div>
         @elseif (!$pendingOrderId)
-            <div x-show="!openPromo" class="flex items-center justify-between text-xs px-0.5">
+            <div x-show="!openPromo" x-cloak class="flex items-center justify-between text-xs px-0.5">
                 <button type="button" @click="openPromo = true" class="text-muted-foreground hover:text-foreground font-medium flex items-center gap-1 transition-colors cursor-pointer">
                     <span class="material-symbols-rounded text-[14px] text-muted-foreground">sell</span>
                     <span>+ Add Coupon / Discount</span>
@@ -45,7 +45,7 @@
                         class="min-h-[40px] h-10 px-3 text-xs font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-md transition-colors shadow-2xs cursor-pointer">
                         Apply
                     </button>
-                    <button type="button" @click="openPromo = false" class="text-muted-foreground hover:text-foreground p-1 text-xs cursor-pointer leading-none" title="Close">
+                    <button type="button" @click="openPromo = false" aria-label="Close voucher panel" class="text-muted-foreground hover:text-foreground p-1 text-xs cursor-pointer leading-none" title="Close">
                         &times;
                     </button>
                 </div>
@@ -78,7 +78,7 @@
                 <span class="font-semibold text-foreground">Manual Discount: Rp {{ number_format($appliedManualDiscount, 0, ',', '.') }}</span>
                 <span class="text-xs text-muted-foreground block truncate">{{ $appliedManualDiscountReason }}</span>
             </div>
-            <button type="button" wire:click.prevent="removeManualDiscount" class="text-muted-foreground hover:text-destructive font-bold p-1 text-sm leading-none cursor-pointer" title="Remove Manual Discount">&times;</button>
+            <button type="button" wire:click.prevent="removeManualDiscount" aria-label="Remove Manual Discount" class="text-muted-foreground hover:text-destructive font-bold p-1 text-sm leading-none cursor-pointer" title="Remove Manual Discount">&times;</button>
         </div>
     @endif
 
@@ -217,14 +217,14 @@
             <button wire:click.prevent="submitOrder" id="btn-proses-ofd"
                 wire:loading.attr="disabled" wire:target="submitOrder"
                 wire:loading.class.add="pointer-events-none"
-                aria-label="Selesaikan Pesanan OFD"
+                aria-label="Complete {{ strtoupper($orderType) }} Order"
                 class="w-full min-h-[44px] h-11 px-4 rounded-lg bg-foreground hover:opacity-90 text-background transition-all flex items-center justify-between shadow-sm disabled:bg-muted disabled:text-muted-foreground disabled:border disabled:border-border disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
                 @disabled(!$this->canCheckout || count($this->cartLines) === 0 || empty($externalShortCode))>
                 <div class="flex items-center gap-2">
                     <span wire:loading wire:target="submitOrder" class="h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current"></span>
                     <span wire:loading.remove wire:target="submitOrder" class="material-symbols-rounded text-lg">moped</span>
-                    <span wire:loading.remove wire:target="submitOrder" class="text-sm font-semibold">Selesaikan Pesanan {{ strtoupper($orderType) }}</span>
-                    <span wire:loading wire:target="submitOrder" class="text-sm font-medium">Memproses OFD...</span>
+                    <span wire:loading.remove wire:target="submitOrder" class="text-sm font-semibold">Complete {{ strtoupper($orderType) }} Order</span>
+                    <span wire:loading wire:target="submitOrder" class="text-sm font-medium">Processing OFD...</span>
                 </div>
                 <span class="text-sm font-semibold tabular-nums">
                     Rp {{ number_format($this->totalAmount, 0, ',', '.') }}
@@ -271,7 +271,7 @@
                     aria-haspopup="dialog"
                     class="flex items-center gap-1 hover:text-foreground text-primary font-semibold transition-colors cursor-pointer">
                     <span class="material-symbols-rounded text-[14px]">call_split</span>
-                    <span>Split Bill (Pisah Tagihan)</span>
+                    <span>Split Bill</span>
                 </button>
                 <a href="{{ route('shifts.index') }}" class="flex items-center gap-1 hover:text-foreground transition-colors">
                     <span class="material-symbols-rounded text-[14px]">print</span>

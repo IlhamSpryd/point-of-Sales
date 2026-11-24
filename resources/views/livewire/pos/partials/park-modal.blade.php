@@ -39,8 +39,8 @@
                 class="px-4 py-2 rounded-lg border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors">
                 Cancel
             </button>
-            <button type="submit" form="park-cart-form"
-                class="px-5 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 shadow-sm transition-all active:scale-95 flex items-center gap-1.5">
+            <button type="submit" form="park-cart-form" wire:loading.attr="disabled"
+                class="px-5 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 shadow-sm transition-all active:scale-95 flex items-center gap-1.5 disabled:opacity-50">
                 <span class="material-symbols-rounded text-[16px]">archive</span>
                 <span>Park Order</span>
             </button>

@@ -29,7 +29,7 @@
         <x-ui.alert variant="destructive" class="mb-4">
             <div class="flex items-center justify-between w-full">
                 <span>{{ $message }}</span>
-                <button wire:click="dismissError" class="ml-4 rounded-lg p-1 hover:bg-destructive-muted">
+                <button wire:click="dismissError" type="button" aria-label="Dismiss error alert" class="ml-4 rounded-lg p-1 hover:bg-destructive-muted">
                     <span class="material-symbols-rounded text-[16px]">close</span>
                 </button>
             </div>

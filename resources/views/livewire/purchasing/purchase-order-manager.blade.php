@@ -255,7 +255,7 @@
                                         <input type="number" step="0.01" min="0" wire:model="items.{{ $i }}.unit_price" class="w-full text-xs rounded-lg border-border bg-card py-1 text-right font-medium tabular-nums" />
                                     </td>
                                     <td class="px-3 py-2 text-center">
-                                        <button type="button" wire:click="removeItem({{ $i }})" class="p-1 text-muted-foreground hover:text-destructive">
+                                        <button type="button" wire:click="removeItem({{ $i }})" aria-label="Remove item line" class="p-1 text-muted-foreground hover:text-destructive">
                                             <span class="material-symbols-rounded text-sm">close</span>
                                         </button>
                                     </td>

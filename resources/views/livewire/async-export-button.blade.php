@@ -60,7 +60,8 @@
 >
     <!-- Idle State / Request Export -->
     <button 
-        x-show="!taskId || status === 'failed'" 
+        x-show="!taskId || status === 'failed'"
+        x-cloak
         @click="if (status === 'failed') { $wire.resetExport(); status = 'idle'; errorMessage = ''; } $wire.requestExport()"
         type="button"
         class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border border-border bg-card text-foreground hover:bg-secondary transition shadow-xs w-full sm:w-auto"
@@ -71,7 +72,8 @@
     
     <!-- Processing State -->
     <button 
-        x-show="status === 'processing'" 
+        x-show="status === 'processing'"
+        x-cloak
         disabled
         type="button"
         class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border border-border bg-secondary /60 text-muted-foreground opacity-75 cursor-not-allowed w-full sm:w-auto"
@@ -85,7 +87,8 @@
 
     <!-- Completed State -->
     <a 
-        x-show="status === 'completed'" 
+        x-show="status === 'completed'"
+        x-cloak
         x-bind:href="downloadUrl"
         class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-positive text-on-positive hover:bg-positive transition shadow-xs w-full sm:w-auto"
         download

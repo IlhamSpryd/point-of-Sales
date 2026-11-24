@@ -60,7 +60,7 @@
                 </x-slot:head>
                 
                 @foreach($roles as $role)
-                    <tr class="hover:bg-secondary/70 transition-colors duration-150">
+                    <tr wire:key="role-row-{{ $role->id }}" class="hover:bg-secondary/70 transition-colors duration-150">
                         <td class="px-3 py-2 font-sans font-medium text-foreground text-[11px]">{{ $role->role_code }}</td>
                         <td class="px-3 py-2">
                             <div class="flex flex-col">
@@ -130,7 +130,7 @@
             {{-- Mobile/tablet-portrait: card list --}}
             <div class="lg:hidden flex flex-col gap-3 p-4 overflow-y-auto flex-1">
                 @forelse($roles as $role)
-                    <div class="card-surface p-4 rounded-xl border border-border">
+                    <div wire:key="role-card-{{ $role->id }}" class="card-surface p-4 rounded-xl border border-border">
                         <div class="flex justify-between items-start mb-2">
                             <div class="flex flex-col">
                                 <span class="font-bold text-foreground text-sm">{{ $role->name }}</span>

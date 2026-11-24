@@ -80,7 +80,7 @@
                 </x-slot:head>
                 
                 @foreach($users as $user)
-                    <tr class="hover:bg-muted/40 transition-colors duration-150">
+                    <tr wire:key="user-row-{{ $user->id }}" class="hover:bg-muted/40 transition-colors duration-150">
                         <td class="px-3 py-2 font-sans font-medium text-foreground text-[11px]">{{ $user->employee_id }}</td>
                         <td class="px-3 py-2">
                             <div class="flex items-center gap-2.5">
@@ -134,7 +134,7 @@
             {{-- Mobile/tablet-portrait: card list --}}
             <div class="lg:hidden flex flex-col gap-3 p-4 overflow-y-auto flex-1">
                 @forelse($users as $user)
-                    <div class="card-surface p-4 rounded-xl border border-border">
+                    <div wire:key="user-card-{{ $user->id }}" class="card-surface p-4 rounded-xl border border-border">
                         <div class="flex justify-between items-start mb-2">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-full bg-secondary text-foreground flex items-center justify-center font-bold text-sm border border-border shrink-0">
@@ -208,7 +208,7 @@
                         </thead>
                         <tbody class="divide-y divide-border">
                             @forelse($invitations as $invitation)
-                                <tr class="hover:bg-secondary/60 transition">
+                                <tr wire:key="invite-row-{{ $invitation->id }}" class="hover:bg-secondary/60 transition">
                                     <td class="px-3 py-2 text-[12px] font-medium text-foreground">
                                         {{ $invitation->email }}
                                     </td>

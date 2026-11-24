@@ -148,6 +148,7 @@
                         <div class="absolute inset-0 flex items-center justify-center bg-overlay-scrim opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                             <button type="button"
                                 @click="removeFile(index)"
+                                aria-label="Remove file"
                                 title="Remove file"
                                 class="flex size-8 items-center justify-center rounded-full bg-destructive text-destructive-foreground hover:bg-destructive transition-colors cursor-pointer shadow-xs">
                                 <span class="material-symbols-rounded text-base">delete</span>

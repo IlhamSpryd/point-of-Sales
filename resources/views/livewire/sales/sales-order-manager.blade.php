@@ -389,7 +389,7 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                     <div>
-                        <x-ui.label for="originCity">Kota Asal (Gudang/Toko)</x-ui.label>
+                        <x-ui.label for="originCity">Kota Asal (Gudang/Cabang)</x-ui.label>
                         <input id="originCity" type="text" wire:model="shippingOriginCity" class="form-input w-full p-2.5 rounded-xl border border-border text-xs font-semibold">
                     </div>
                     <div>

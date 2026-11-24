@@ -57,8 +57,11 @@ class AccountingPeriodManager extends Component
         try {
             $service->createFiscalYearPeriods($this->selectedFiscalYear, 1, $tenantId);
             session()->flash('success', "12 fiscal periods for year {$this->selectedFiscalYear} created successfully.");
-        } catch (\Throwable $e) {
+        } catch (DomainException|\InvalidArgumentException $e) {
             session()->flash('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+            session()->flash('error', __('common.alerts.operation_failed'));
         }
     }
 
@@ -79,8 +82,11 @@ class AccountingPeriodManager extends Component
         try {
             $period = $service->softClosePeriod($periodId, $actor);
             session()->flash('success', "Period {$period->period_code} set to SOFT_CLOSED successfully.");
-        } catch (\Throwable $e) {
+        } catch (DomainException|\InvalidArgumentException $e) {
             session()->flash('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+            session()->flash('error', __('common.alerts.operation_failed'));
         }
     }
 
@@ -101,8 +107,11 @@ class AccountingPeriodManager extends Component
         try {
             $period = $service->hardClosePeriod($periodId, $actor);
             session()->flash('success', "Period {$period->period_code} closed successfully (CLOSED).");
-        } catch (\Throwable $e) {
+        } catch (DomainException|\InvalidArgumentException $e) {
             session()->flash('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+            session()->flash('error', __('common.alerts.operation_failed'));
         }
     }
 
@@ -123,8 +132,11 @@ class AccountingPeriodManager extends Component
         try {
             $period = $service->lockPeriod($periodId, $actor);
             session()->flash('success', "Period {$period->period_code} permanently locked (LOCKED).");
-        } catch (\Throwable $e) {
+        } catch (DomainException|\InvalidArgumentException $e) {
             session()->flash('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+            session()->flash('error', __('common.alerts.operation_failed'));
         }
     }
 

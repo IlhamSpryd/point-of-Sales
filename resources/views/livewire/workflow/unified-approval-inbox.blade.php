@@ -177,8 +177,8 @@
                         <span class="material-symbols-rounded text-destructive text-[22px]">cancel</span>
                         Tolak Pengajuan #{{ $activeRejectingId }}
                     </h3>
-                    <button wire:click="closeRejectModal" class="text-muted-foreground hover:text-foreground">
-                        <span class="material-symbols-rounded text-[20px]">close</span>
+                    <button type="button" wire:click="closeRejectModal" aria-label="Tutup dialog penolakan" class="text-muted-foreground hover:text-foreground">
+                        <span class="material-symbols-rounded text-[20px]" aria-hidden="true">close</span>
                     </button>
                 </div>
 
@@ -221,8 +221,8 @@
                             {{ class_basename($selectedRequest->approvable_type) }} #{{ $selectedRequest->approvable_id }}
                         </p>
                     </div>
-                    <button wire:click="closeDetailModal" class="text-muted-foreground hover:text-foreground">
-                        <span class="material-symbols-rounded text-[20px]">close</span>
+                    <button type="button" wire:click="closeDetailModal" aria-label="Tutup detail persetujuan" class="text-muted-foreground hover:text-foreground">
+                        <span class="material-symbols-rounded text-[20px]" aria-hidden="true">close</span>
                     </button>
                 </div>
 

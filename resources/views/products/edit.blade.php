@@ -124,7 +124,7 @@
                 </div>
 
                 <div>
-                    <x-form-label for="status">Lifecycle Status</x-form-label>
+                    <x-form-label for="status">Product Status</x-form-label>
                     <div class="relative">
                         <select id="status" name="status"
                                 class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-card text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('status') ? 'input-error' : '' }}">
@@ -285,7 +285,7 @@
             <div>
                 <x-form-label for="product_description">Description</x-form-label>
                 <textarea id="product_description" name="product_description" rows="3"
-                          class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-card text-foreground placeholder-primary-400 focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('product_description') ? 'input-error' : '' }}" 
+                          class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('product_description') ? 'input-error' : '' }}" 
                           placeholder="Enter product description (optional)">{{ old('product_description', $product->product_description) }}</textarea>
                 @error('product_description')
                     <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
@@ -335,7 +335,7 @@
                             <div class="w-32">
                                 <input type="number" step="0.0001" x-model="item.quantity" :name="'ingredients['+index+'][quantity]'" placeholder="Quantity" class="form-input w-full px-3 py-2 rounded-xl border border-border bg-card text-foreground text-sm focus:ring-2 focus:ring-ring focus:border-primary shadow-sm" required>
                             </div>
-                            <button type="button" @click="removeItem(index)" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-destructive hover:bg-destructive-muted border border-transparent hover:border-destructive transition-colors" title="Remove row">
+                            <button type="button" @click="removeItem(index)" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-destructive hover:bg-destructive-muted border border-transparent hover:border-destructive transition-colors" title="Remove row" aria-label="Remove ingredient row">
                                 <span class="material-symbols-rounded text-[20px]">close</span>
                             </button>
                         </div>
@@ -382,7 +382,7 @@
                                     </template>
                                 </select>
                             </div>
-                            <button type="button" @click="removeGroup(index)" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-destructive hover:bg-destructive-muted border border-transparent hover:border-destructive transition-colors" title="Remove row">
+                            <button type="button" @click="removeGroup(index)" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-destructive hover:bg-destructive-muted border border-transparent hover:border-destructive transition-colors" title="Remove row" aria-label="Remove modifier group row">
                                 <span class="material-symbols-rounded text-[20px]">close</span>
                             </button>
                         </div>
