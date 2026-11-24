@@ -52,49 +52,49 @@
                 :colspan="5"
             >
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Role Code / ID</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Role Name</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Permissions & Status</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Users</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Role Code / ID</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Role Name</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Permissions & Status</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Users</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-right text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
                 </x-slot:head>
                 
                 @foreach($roles as $role)
                     <tr class="hover:bg-secondary/70 transition-colors duration-150">
-                        <td class="px-6 py-4 font-sans font-medium text-foreground text-sm">{{ $role->role_code }}</td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 font-sans font-medium text-foreground text-[11px]">{{ $role->role_code }}</td>
+                        <td class="px-3 py-2">
                             <div class="flex flex-col">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-sm font-semibold text-foreground">{{ $role->name }}</span>
+                                    <span class="text-[12px] font-semibold text-foreground">{{ $role->name }}</span>
                                     @if ($role->is_system_default)
-                                        <span class="text-xs font-normal text-muted-foreground">(Default)</span>
+                                        <span class="text-[11px] font-normal text-muted-foreground">(Default)</span>
                                     @else
-                                        <span class="text-xs font-normal text-muted-foreground">(Custom)</span>
+                                        <span class="text-[11px] font-normal text-muted-foreground">(Custom)</span>
                                     @endif
                                 </div>
-                                <span class="text-xs text-muted-foreground">{{ $role->description ?: '—' }}</span>
-                                <span class="text-[11px] text-muted-foreground mt-0.5">Cockpit: <strong class="text-foreground capitalize">{{ str_replace('_', ' ', $role->dashboard_archetype ?? 'executive') }}</strong></span>
+                                <span class="text-[11px] text-muted-foreground">{{ $role->description ?: '—' }}</span>
+                                <span class="text-[10.5px] text-muted-foreground mt-0.5">Cockpit: <strong class="text-foreground capitalize">{{ str_replace('_', ' ', $role->dashboard_archetype ?? 'executive') }}</strong></span>
                             </div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2">
                             <div class="flex flex-col items-start gap-1">
                                 @php
                                     $rawPerms = is_array($role->permissions) ? $role->permissions : [];
                                     $isWildcard = in_array('*', $rawPerms, true);
                                     $permsCount = count(array_filter($rawPerms));
                                 @endphp
-                                <span class="text-xs text-foreground font-medium">{{ $isWildcard ? 'Full Access (*)' : $permsCount.' Permissions' }}</span>
+                                <span class="text-[11px] text-foreground font-medium">{{ $isWildcard ? 'Full Access (*)' : $permsCount.' Permissions' }}</span>
                                 
-                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="inline-flex items-center gap-1.5 text-[11px] text-foreground font-medium">
                                     <span class="w-1.5 h-1.5 rounded-full {{ $role->is_active ? 'bg-success' : 'bg-destructive' }}"></span>
                                     {{ $role->is_active ? 'Active' : 'Inactive' }}
                                 </span>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-sm text-muted-foreground">
+                        <td class="px-3 py-2 text-[12px] text-muted-foreground">
                             {{ $role->users_count ?? 0 }} Users
                         </td>
-                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <td class="px-3 py-2 text-right whitespace-nowrap">
                             <x-ui.table-actions>
                                 <x-ui.table-action-item icon="edit" href="{{ route('roles.edit', $role->id) }}" aria-label="Edit role" wire:navigate>
                                     Edit Role

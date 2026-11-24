@@ -139,7 +139,7 @@
     >
         @foreach ($employees as $emp)
             <tr wire:key="employee-row-{{ $emp->id }}" class="hover:bg-muted/30 transition-colors">
-                <td class="px-6 py-4">
+                <td class="px-3 py-2 text-[12px]">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs shrink-0 select-none">
                             {{ strtoupper(substr($emp->full_name, 0, 2)) }}
@@ -154,16 +154,16 @@
                         </div>
                     </div>
                 </td>
-                <td class="px-6 py-4">
+                <td class="px-3 py-2 text-[12px]">
                     <div class="text-sm font-medium text-foreground">{{ $emp->department?->name ?? 'Unassigned' }}</div>
                     <div class="text-xs text-muted-foreground">{{ $emp->jobTitle?->name ?? '-' }}</div>
                 </td>
-                <td class="px-6 py-4">
+                <td class="px-3 py-2 text-[12px]">
                     <span class="text-xs text-muted-foreground font-medium">
                         {{ $emp->employment_type->label() }}
                     </span>
                 </td>
-                <td class="px-6 py-4 text-center">
+                <td class="px-3 py-2 text-[12px] text-center">
                     @if ($emp->employment_status === \App\Modules\Workforce\Enums\EmploymentStatusEnum::ACTIVE)
                         <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
                             <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
@@ -176,10 +176,10 @@
                         </span>
                     @endif
                 </td>
-                <td class="px-6 py-4 tabular-nums text-xs text-muted-foreground">
+                <td class="px-3 py-2 text-[12px] tabular-nums text-xs text-muted-foreground">
                     {{ $emp->hire_date ? $emp->hire_date->format('d M Y') : '-' }}
                 </td>
-                <td class="px-6 py-4 text-right whitespace-nowrap">
+                <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                     @can('update', $emp)
                     <x-ui.table-actions>
                         <x-ui.table-action-item icon="edit" wire:click="openEditModal({{ $emp->id }})">

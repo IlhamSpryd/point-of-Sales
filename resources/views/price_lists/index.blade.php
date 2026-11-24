@@ -52,15 +52,15 @@
             :colspan="$canManage ? 8 : 7"
         >
             <x-slot:head>
-                <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Priority</th>
-                <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Code & Name</th>
-                <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Rule Type</th>
-                <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Scope / Target</th>
-                <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Items</th>
-                <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Validity Period</th>
-                <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                <th scope="col" class="h-8 px-3 py-2 text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider text-center">Priority</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Code & Name</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Rule Type</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Scope / Target</th>
+                <th scope="col" class="h-8 px-3 py-2 text-right text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider font-sans tabular-nums numeric">Items</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Validity Period</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
                 @if($canManage)
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-right text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
                 @endif
             </x-slot:head>
 
@@ -84,49 +84,49 @@
                     ];
                 @endphp
                 <tr class="hover:bg-muted transition-colors duration-200">
-                    <td class="px-6 py-4 text-center font-bold text-sm text-foreground tabular-nums">#{{ $pl->priority }}</td>
-                    <td class="px-6 py-4">
-                        <div class="font-semibold text-sm text-foreground">{{ $pl->name }}</div>
-                        <div class="font-sans text-xs text-muted-foreground">{{ $pl->code }}</div>
+                    <td class="px-3 py-2 text-center font-bold text-[12px] text-foreground tabular-nums">#{{ $pl->priority }}</td>
+                    <td class="px-3 py-2">
+                        <div class="font-medium text-[12px] text-foreground">{{ $pl->name }}</div>
+                        <div class="font-sans text-[11px] text-muted-foreground">{{ $pl->code }}</div>
                     </td>
-                    <td class="px-6 py-4">
-                        <span class="text-xs text-muted-foreground font-medium">
+                    <td class="px-3 py-2">
+                        <span class="text-[11px] text-muted-foreground font-medium">
                             {{ $typeLabels[$pl->type] ?? $pl->type }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 text-sm text-muted-foreground">
+                    <td class="px-3 py-2 text-[12px] text-muted-foreground">
                         @if($pl->customer)
                             <div class="font-medium text-foreground">{{ $pl->customer->name }}</div>
-                            <div class="text-xs">Custom Customer</div>
+                            <div class="text-[11px]">Custom Customer</div>
                         @elseif($pl->loyaltyTier)
                             <div class="font-medium text-foreground">{{ $pl->loyaltyTier->name }}</div>
-                            <div class="text-xs">Member Tier</div>
+                            <div class="text-[11px]">Member Tier</div>
                         @elseif($pl->store)
                             <div class="font-medium text-foreground">{{ $pl->store->name }}</div>
-                            <div class="text-xs">Specific Branch</div>
+                            <div class="text-[11px]">Specific Branch</div>
                         @elseif($pl->channel)
                             <div class="font-medium text-foreground">{{ strtoupper($pl->channel) }}</div>
-                            <div class="text-xs">Channel</div>
+                            <div class="text-[11px]">Channel</div>
                         @else
-                            <span class="text-xs italic text-muted-foreground">All Customers / Global</span>
+                            <span class="text-[11px] italic text-muted-foreground">All Customers / Global</span>
                         @endif
                     </td>
-                    <td class="px-6 py-4 text-sm font-semibold text-right text-foreground tabular-nums">{{ $pl->items_count }} items</td>
-                    <td class="px-6 py-4 text-xs text-muted-foreground">
+                    <td class="px-3 py-2 text-[12px] font-semibold text-right text-foreground tabular-nums">{{ $pl->items_count }} items</td>
+                    <td class="px-3 py-2 text-[11px] text-muted-foreground">
                         @if($pl->valid_from || $pl->valid_until)
                             {{ $pl->valid_from?->format('d/m/Y') ?? 'Start' }} to {{ $pl->valid_until?->format('d/m/Y') ?? 'Indefinite' }}
                         @else
-                            <span class="text-xs text-muted-foreground">Permanent</span>
+                            <span class="text-[11px] text-muted-foreground">Permanent</span>
                         @endif
                     </td>
-                    <td class="px-6 py-4">
-                        <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                    <td class="px-3 py-2">
+                        <span class="inline-flex items-center gap-1.5 text-[11px] text-foreground font-medium">
                             <span class="w-1.5 h-1.5 rounded-full {{ $pl->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
                             {{ $pl->is_active ? 'Active' : 'Inactive' }}
                         </span>
                     </td>
                     @if($canManage)
-                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <td class="px-3 py-2 text-right whitespace-nowrap">
                             <x-ui.table-actions>
                                 <x-ui.table-action-item icon="edit" href="{{ route('price-lists.edit', $pl->id) }}" wire:navigate aria-label="Edit Price List">
                                     Edit Price List

@@ -79,30 +79,30 @@
             :colspan="$canManage ? 6 : 5"
         >
             <x-slot:head>
-                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Code</th>
-                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Brand Name</th>
-                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
-                <th scope="col" class="px-6 py-3.5 text-right text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Products</th>
-                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Code</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Brand Name</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
+                <th scope="col" class="h-8 px-3 py-2 text-right text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Products</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
                 @if($canManage)
-                    <th scope="col" class="px-6 py-3.5 text-right text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-right text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
                 @endif
             </x-slot:head>
 
             @foreach($brands as $brand)
                 <tr class="hover:bg-muted/40 transition-colors">
-                    <td class="px-6 py-4 font-sans text-xs font-semibold text-foreground">{{ $brand->code }}</td>
-                    <td class="px-6 py-4 text-sm font-semibold text-foreground">{{ $brand->name }}</td>
-                    <td class="px-6 py-4 text-sm text-muted-foreground">{{ $brand->description ?? '—' }}</td>
-                    <td class="px-6 py-4 text-sm font-medium text-right text-foreground font-sans tabular-nums">{{ $brand->products_count }}</td>
-                    <td class="px-6 py-4">
-                        <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                    <td class="px-3 py-2 font-sans text-[11px] font-semibold text-foreground">{{ $brand->code }}</td>
+                    <td class="px-3 py-2 text-[12px] font-semibold text-foreground">{{ $brand->name }}</td>
+                    <td class="px-3 py-2 text-[12px] text-muted-foreground">{{ $brand->description ?? '—' }}</td>
+                    <td class="px-3 py-2 text-[12px] font-medium text-right text-foreground font-sans tabular-nums">{{ $brand->products_count }}</td>
+                    <td class="px-3 py-2">
+                        <span class="inline-flex items-center gap-1.5 text-[11px] text-foreground font-medium">
                             <span class="w-1.5 h-1.5 rounded-full {{ $brand->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
                             {{ $brand->is_active ? 'Active' : 'Inactive' }}
                         </span>
                     </td>
                     @if($canManage)
-                        <td class="px-6 py-4 text-right">
+                        <td class="px-3 py-2 text-right">
                             <x-ui.table-actions>
                                 <x-ui.table-action-item icon="edit" @click="openEdit({{ json_encode($brand) }})">
                                     Edit

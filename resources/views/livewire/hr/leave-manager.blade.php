@@ -93,32 +93,32 @@
                 <table class="w-full text-left text-sm text-foreground divide-y divide-border">
                     <thead class="bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         <tr>
-                            <th scope="col" class="px-6 py-3.5">Request & Employee</th>
-                            <th scope="col" class="px-6 py-3.5">Leave Type</th>
-                            <th scope="col" class="px-6 py-3.5">Date Range</th>
-                            <th scope="col" class="px-6 py-3.5">Duration</th>
-                            <th scope="col" class="px-6 py-3.5">Status</th>
-                            <th scope="col" class="px-6 py-3.5 text-right">Actions</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Request & Employee</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Leave Type</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Date Range</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Duration</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Status</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border">
                         @forelse ($requests as $req)
                             <tr class="hover:bg-muted/30 transition-colors">
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-2 text-[12px]">
                                     <div class="font-bold text-foreground tabular-nums text-xs">#{{ $req->id }}</div>
                                     <div class="text-sm font-semibold text-foreground">{{ $req->employee?->full_name ?? 'Employee' }}</div>
                                     <div class="text-[11px] text-muted-foreground tabular-nums">{{ $req->employee?->employee_number }}</div>
                                 </td>
-                                <td class="px-6 py-4 font-medium text-foreground">
+                                <td class="px-3 py-2 text-[12px] font-medium text-foreground">
                                     {{ $req->policy?->policy_name ?? 'General Leave' }}
                                 </td>
-                                <td class="px-6 py-4 text-xs text-muted-foreground tabular-nums">
+                                <td class="px-3 py-2 text-[12px] text-xs text-muted-foreground tabular-nums">
                                     {{ $req->start_date->format('d M Y') }} - {{ $req->end_date->format('d M Y') }}
                                 </td>
-                                <td class="px-6 py-4 font-semibold text-foreground tabular-nums">
+                                <td class="px-3 py-2 text-[12px] font-semibold text-foreground tabular-nums">
                                     {{ (float) $req->total_days }} Days
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-2 text-[12px]">
                                     @php
                                         $leaveDot = match($req->status) {
                                             \App\Modules\Workforce\Enums\LeaveRequestStatusEnum::APPROVED => 'bg-success',
@@ -132,7 +132,7 @@
                                         {{ $req->status->label() }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                                     @if ($req->status === \App\Modules\Workforce\Enums\LeaveRequestStatusEnum::PENDING)
                                         <x-ui.table-actions>
                                             <x-ui.table-action-item icon="check" wire:click="approve({{ $req->id }})" aria-label="Approve Leave Request">
@@ -169,33 +169,33 @@
                 <table class="w-full text-left text-sm text-foreground divide-y divide-border">
                     <thead class="bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         <tr>
-                            <th scope="col" class="px-6 py-3.5">Employee</th>
-                            <th scope="col" class="px-6 py-3.5">Leave Policy</th>
-                            <th scope="col" class="px-6 py-3.5">Year</th>
-                            <th scope="col" class="px-6 py-3.5">Allocated Days</th>
-                            <th scope="col" class="px-6 py-3.5">Used Days</th>
-                            <th scope="col" class="px-6 py-3.5">Remaining Balance</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Employee</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Leave Policy</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Year</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Allocated Days</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Used Days</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Remaining Balance</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border">
                         @forelse ($balances as $bal)
                             <tr class="hover:bg-muted/30 transition-colors">
-                                <td class="px-6 py-4 font-semibold text-foreground">
+                                <td class="px-3 py-2 text-[12px] font-semibold text-foreground">
                                     {{ $bal->employee?->full_name ?? 'Employee' }}
                                 </td>
-                                <td class="px-6 py-4 font-medium text-foreground">
+                                <td class="px-3 py-2 text-[12px] font-medium text-foreground">
                                     {{ $bal->policy?->policy_name ?? 'Leave' }}
                                 </td>
-                                <td class="px-6 py-4 text-xs text-muted-foreground tabular-nums">
+                                <td class="px-3 py-2 text-[12px] text-xs text-muted-foreground tabular-nums">
                                     {{ $bal->year }}
                                 </td>
-                                <td class="px-6 py-4 tabular-nums text-foreground">
+                                <td class="px-3 py-2 text-[12px] tabular-nums text-foreground">
                                     {{ (float) $bal->allocated_days }} Days
                                 </td>
-                                <td class="px-6 py-4 text-destructive font-semibold tabular-nums">
+                                <td class="px-3 py-2 text-[12px] text-destructive font-semibold tabular-nums">
                                     {{ (float) $bal->used_days }} Days
                                 </td>
-                                <td class="px-6 py-4 text-positive font-bold tabular-nums">
+                                <td class="px-3 py-2 text-[12px] text-positive font-bold tabular-nums">
                                     {{ (float) $bal->remaining_days }} Days
                                 </td>
                             </tr>

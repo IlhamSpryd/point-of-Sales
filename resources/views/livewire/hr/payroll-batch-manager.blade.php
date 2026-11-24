@@ -84,34 +84,34 @@
             <table class="w-full text-left text-sm text-foreground divide-y divide-border">
                 <thead class="bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     <tr>
-                        <th scope="col" class="px-6 py-3.5">Batch Number</th>
-                        <th scope="col" class="px-6 py-3.5">Payroll Period</th>
-                        <th scope="col" class="px-6 py-3.5">Total Staff</th>
-                        <th scope="col" class="px-6 py-3.5">Total Gross Earnings</th>
-                        <th scope="col" class="px-6 py-3.5">Total Net Pay</th>
-                        <th scope="col" class="px-6 py-3.5">Status</th>
-                        <th scope="col" class="px-6 py-3.5 text-right">Actions</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Batch Number</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Payroll Period</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Total Staff</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Total Gross Earnings</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Total Net Pay</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Status</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
                     @forelse ($batches as $batch)
                         <tr class="hover:bg-muted/30 transition-colors">
-                            <td class="px-6 py-4 font-semibold text-foreground text-xs tabular-nums">
+                            <td class="px-3 py-2 text-[12px] font-semibold text-foreground text-xs tabular-nums">
                                 {{ $batch->batch_number }}
                             </td>
-                            <td class="px-6 py-4 text-xs text-muted-foreground tabular-nums">
+                            <td class="px-3 py-2 text-[12px] text-xs text-muted-foreground tabular-nums">
                                 {{ $batch->period_start_date->format('d M') }} - {{ $batch->period_end_date->format('d M Y') }}
                             </td>
-                            <td class="px-6 py-4 font-semibold text-foreground tabular-nums">
+                            <td class="px-3 py-2 text-[12px] font-semibold text-foreground tabular-nums">
                                 {{ $batch->total_employees }} Staff
                             </td>
-                            <td class="px-6 py-4 text-xs tabular-nums text-foreground">
+                            <td class="px-3 py-2 text-[12px] text-xs tabular-nums text-foreground">
                                 Rp {{ number_format((float) $batch->total_gross_amount, 2, ',', '.') }}
                             </td>
-                            <td class="px-6 py-4 font-bold text-xs text-primary tabular-nums">
+                            <td class="px-3 py-2 text-[12px] font-bold text-xs text-primary tabular-nums">
                                 Rp {{ number_format((float) $batch->total_net_amount, 2, ',', '.') }}
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-2 text-[12px]">
                                 @php
                                     $batchDot = match($batch->status) {
                                         \App\Modules\Workforce\Enums\PayrollBatchStatusEnum::PAID => 'bg-success',
@@ -126,7 +126,7 @@
                                     {{ $batch->status->label() }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                                 <x-ui.table-actions>
                                     <x-ui.table-action-item icon="visibility" wire:click="viewDetails({{ $batch->id }})" aria-label="View Batch Details">
                                         View Details

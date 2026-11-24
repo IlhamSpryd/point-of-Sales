@@ -71,40 +71,40 @@
                 :colspan="6"
             >
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Employee ID</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Employee</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Contact</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Role & Status</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Joined Date</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Employee ID</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Employee</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Contact</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Role & Status</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Joined Date</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-right text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
                 </x-slot:head>
                 
                 @foreach($users as $user)
                     <tr class="hover:bg-muted/40 transition-colors duration-150">
-                        <td class="px-6 py-4 font-sans font-medium text-foreground text-sm">{{ $user->employee_id }}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                        <td class="px-3 py-2 font-sans font-medium text-foreground text-[11px]">{{ $user->employee_id }}</td>
+                        <td class="px-3 py-2">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[11px] shrink-0">
                                     {{ strtoupper(substr($user->name, 0, 1)) }}
                                 </div>
                                 <div class="flex flex-col">
-                                    <span class="text-sm font-semibold text-foreground">{{ $user->name }}</span>
-                                    <span class="text-xs text-muted-foreground">{{ $user->email }}</span>
+                                    <span class="text-[12px] font-semibold text-foreground">{{ $user->name }}</span>
+                                    <span class="text-[11px] text-muted-foreground">{{ $user->email }}</span>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-sm text-muted-foreground">{{ $user->phone_number ?: '—' }}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex flex-col items-start gap-1">
-                                <span class="text-xs font-medium text-foreground">{{ $user->role ? $user->role->name : 'Unassigned' }}</span>
-                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                        <td class="px-3 py-2 text-[12px] text-muted-foreground">{{ $user->phone_number ?: '—' }}</td>
+                        <td class="px-3 py-2">
+                            <div class="flex flex-col items-start gap-0.5">
+                                <span class="text-[11px] font-medium text-foreground">{{ $user->role ? $user->role->name : 'Unassigned' }}</span>
+                                <span class="inline-flex items-center gap-1.5 text-[11px] text-foreground font-medium">
                                     <span class="w-1.5 h-1.5 rounded-full {{ $user->is_active ? 'bg-success' : 'bg-destructive' }}"></span>
                                     {{ $user->is_active ? 'Active' : 'Inactive' }}
                                 </span>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-sm text-muted-foreground">{{ $user->join_date ? $user->join_date->format('M d, Y') : ($user->created_at?->format('M d, Y') ?? '—') }}</td>
-                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <td class="px-3 py-2 text-[12px] text-muted-foreground">{{ $user->join_date ? $user->join_date->format('M d, Y') : ($user->created_at?->format('M d, Y') ?? '—') }}</td>
+                        <td class="px-3 py-2 text-right whitespace-nowrap">
                             <x-ui.table-actions>
                                 <x-ui.table-action-item icon="edit" href="{{ route('users.edit', $user->id) }}" wire:navigate>
                                     Edit User
@@ -199,26 +199,26 @@
                     <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
                         <thead>
                             <tr class="border-b border-border bg-muted /50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                <th scope="col" class="px-6 py-4">Candidate Email</th>
-                                <th scope="col" class="px-6 py-4">Role</th>
-                                <th scope="col" class="px-6 py-4">Invited By</th>
-                                <th scope="col" class="px-6 py-4">Status & Expiration</th>
-                                <th scope="col" class="px-6 py-4 text-right">Actions</th>
+                                <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Candidate Email</th>
+                                <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Role</th>
+                                <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Invited By</th>
+                                <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Status & Expiration</th>
+                                <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-border">
                             @forelse($invitations as $invitation)
                                 <tr class="hover:bg-secondary/60 transition">
-                                    <td class="px-6 py-4 font-medium text-foreground">
+                                    <td class="px-3 py-2 text-[12px] font-medium text-foreground">
                                         {{ $invitation->email }}
                                     </td>
-                                    <td class="px-6 py-4 text-xs font-medium text-foreground">
+                                    <td class="px-3 py-2 text-[12px] text-xs font-medium text-foreground">
                                         {{ $invitation->role?->name ?? 'Custom' }}
                                     </td>
-                                    <td class="px-6 py-4 text-xs text-muted-foreground">
+                                    <td class="px-3 py-2 text-[12px] text-xs text-muted-foreground">
                                         {{ $invitation->invitedBy?->name ?? 'System' }}
                                     </td>
-                                    <td class="px-6 py-4 text-xs">
+                                    <td class="px-3 py-2 text-[12px] text-xs">
                                         @if($invitation->isExpired())
                                             <span class="text-destructive font-medium">Expired</span>
                                         @elseif($invitation->accepted_at)
@@ -227,7 +227,7 @@
                                             <span class="text-warning font-medium">Pending (exp. {{ $invitation->expires_at->diffForHumans() }})</span>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                                    <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                                         @if(!$invitation->accepted_at)
                                             <x-ui.table-actions>
                                                 <x-ui.table-action-item icon="forward_to_inbox" onclick="document.getElementById('resend-invite-modal-{{ $invitation->id }}').submit()" aria-label="Resend Invitation">

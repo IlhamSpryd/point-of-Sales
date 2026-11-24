@@ -60,22 +60,22 @@
             <table class="w-full text-left text-sm text-foreground divide-y divide-border">
                 <thead class="bg-muted/50 text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
                     <tr>
-                        <th scope="col" class="px-6 py-3.5">Code & Campaign Name</th>
-                        <th scope="col" class="px-6 py-3.5">Type & Schedule</th>
-                        <th scope="col" class="px-6 py-3.5">Priority</th>
-                        <th scope="col" class="px-6 py-3.5">Quota / Used</th>
-                        <th scope="col" class="px-6 py-3.5">Status</th>
-                        <th scope="col" class="px-6 py-3.5 text-right">Actions</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Code & Campaign Name</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Type & Schedule</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Priority</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Quota / Used</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Status</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
                     @forelse ($campaigns as $campaign)
                         <tr class="hover:bg-muted/30 transition-colors">
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-2 text-[12px]">
                                 <div class="font-bold text-foreground">{{ $campaign->name }}</div>
                                 <div class="text-xs font-sans text-primary mt-0.5">{{ $campaign->campaign_code }}</div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-2 text-[12px]">
                                 <span class="text-xs text-foreground font-medium">
                                     {{ str_replace('_', ' ', $campaign->type) }}
                                 </span>
@@ -89,16 +89,16 @@
                                     {{ \Carbon\Carbon::parse($campaign->start_datetime)->format('d M Y') }} - {{ \Carbon\Carbon::parse($campaign->end_datetime)->format('d M Y') }}
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-2 text-[12px]">
                                 <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-muted text-xs font-bold text-foreground">
                                     {{ $campaign->priority }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-xs font-medium text-muted-foreground">
+                            <td class="px-3 py-2 text-[12px] text-xs font-medium text-muted-foreground">
                                 <div>Used: <span class="font-bold text-foreground">{{ $campaign->current_usage_count }}</span></div>
                                 <div class="text-muted-foreground text-2xs">Limit: {{ $campaign->max_usage_limit ?: 'Unlimited' }}</div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-2 text-[12px]">
                                 @php
                                     $campDot = match(strtoupper($campaign->status)) {
                                         'ACTIVE' => 'bg-success',
@@ -112,7 +112,7 @@
                                     {{ $campaign->status }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                                 <x-ui.table-actions>
                                     <x-ui.table-action-item icon="show_chart" wire:click="triggerMarginSimulation({{ $campaign->id }})">
                                         Margin Simulation

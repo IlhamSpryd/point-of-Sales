@@ -96,18 +96,18 @@
             <table class="w-full text-left text-sm text-foreground divide-y divide-border">
                 <thead class="bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     <tr>
-                        <th scope="col" class="px-6 py-3.5">Employee</th>
-                        <th scope="col" class="px-6 py-3.5">Clock-in Time</th>
-                        <th scope="col" class="px-6 py-3.5">Clock-out Time</th>
-                        <th scope="col" class="px-6 py-3.5">Attendance Status</th>
-                        <th scope="col" class="px-6 py-3.5">Notes / Corrections</th>
-                        <th scope="col" class="px-6 py-3.5 text-right">Actions</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Employee</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Clock-in Time</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Clock-out Time</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Attendance Status</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Notes / Corrections</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
                     @forelse ($records as $rec)
                         <tr class="hover:bg-muted/30 transition-colors">
-                            <td class="px-6 py-4 font-semibold text-foreground flex items-center gap-3">
+                            <td class="px-3 py-2 text-[12px] font-semibold text-foreground flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-full bg-secondary text-secondary-foreground font-bold flex items-center justify-center text-xs shrink-0">
                                     {{ strtoupper(substr($rec->employee?->full_name ?? 'EM', 0, 2)) }}
                                 </div>
@@ -116,13 +116,13 @@
                                     <div class="text-xs text-muted-foreground tabular-nums">{{ $rec->employee?->employee_number }}</div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-xs text-foreground tabular-nums">
+                            <td class="px-3 py-2 text-[12px] text-xs text-foreground tabular-nums">
                                 {{ $rec->clock_in_at ? $rec->clock_in_at->format('d M Y, H:i') : '-' }}
                             </td>
-                            <td class="px-6 py-4 text-xs text-foreground tabular-nums">
+                            <td class="px-3 py-2 text-[12px] text-xs text-foreground tabular-nums">
                                 {{ $rec->clock_out_at ? $rec->clock_out_at->format('d M Y, H:i') : '-' }}
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-2 text-[12px]">
                                 @php
                                     $attDot = match($rec->status) {
                                         \App\Modules\Workforce\Enums\AttendanceStatusEnum::PRESENT => 'bg-success',
@@ -137,10 +137,10 @@
                                     {{ $rec->status ? $rec->status->label() : 'Pending' }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-xs text-muted-foreground max-w-xs truncate">
+                            <td class="px-3 py-2 text-[12px] text-xs text-muted-foreground max-w-xs truncate">
                                 {{ $rec->notes ?: '-' }}
                             </td>
-                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                                 <x-ui.table-actions>
                                     <x-ui.table-action-item icon="edit" wire:click="openCorrectionModal({{ $rec->id }})" aria-label="Attendance Time Correction">
                                         Correction

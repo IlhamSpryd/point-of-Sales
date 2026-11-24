@@ -70,27 +70,27 @@
                 <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
                     <thead>
                         <tr class="border-b border-border bg-secondary/30 /30 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            <th scope="col" class="px-6 py-3.5">Provider</th>
-                            <th scope="col" class="px-6 py-3.5">External SKU</th>
-                            <th scope="col" class="px-6 py-3.5">Internal Product</th>
-                            <th scope="col" class="px-6 py-3.5 text-right">Actions</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Provider</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">External SKU</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Internal Product</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border">
                         @forelse($mappings as $mapping)
                             <tr class="hover:bg-secondary/60 transition">
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-2 text-[12px]">
                                     <span class="text-xs text-foreground font-medium font-sans">
                                         {{ strtoupper($mapping->provider) }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 font-sans font-semibold text-foreground text-xs">
+                                <td class="px-3 py-2 text-[12px] font-sans font-semibold text-foreground text-xs">
                                     {{ $mapping->external_product_id }}
                                 </td>
-                                <td class="px-6 py-4 text-sm text-foreground">
+                                <td class="px-3 py-2 text-[12px] text-sm text-foreground">
                                     {{ $mapping->product->product_name ?? 'Product Deleted' }}
                                 </td>
-                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                                     <x-ui.table-actions>
                                         <x-ui.table-action-item icon="delete" variant="destructive"
                                             wire:click="deleteMapping({{ $mapping->id }})"

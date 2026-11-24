@@ -42,63 +42,63 @@
             :colspan="6"
         >
             <x-slot:head>
-                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Code</th>
-                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Store Info</th>
-                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Timezone</th>
-                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Statistics</th>
-                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
-                <th scope="col" class="px-6 py-3.5 text-right text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Code</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Store Info</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Timezone</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Statistics</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                <th scope="col" class="h-8 px-3 py-2 text-right text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
             </x-slot:head>
 
             @foreach($stores as $store)
                 <tr class="hover:bg-muted/40 transition-colors">
-                    <td class="px-6 py-4 font-sans font-medium text-foreground text-sm whitespace-nowrap">
+                    <td class="px-3 py-2 font-sans font-medium text-foreground text-[11px] whitespace-nowrap">
                         {{ $store->code }}
                     </td>
-                    <td class="px-6 py-4">
+                    <td class="px-3 py-2">
                         <div class="flex items-center gap-2">
-                            <span class="font-bold text-foreground text-sm">{{ $store->name }}</span>
+                            <span class="font-semibold text-foreground text-[12px]">{{ $store->name }}</span>
                             @if($store->is_initial)
-                                <span class="text-xs text-muted-foreground font-medium">(Primary Branch)</span>
+                                <span class="text-[11px] text-muted-foreground font-medium">(Primary Branch)</span>
                             @endif
                         </div>
-                        <div class="text-xs text-muted-foreground mt-1 flex flex-col gap-0.5">
+                        <div class="text-[11px] text-muted-foreground mt-0.5 flex flex-col gap-0.5">
                             @if($store->address)
                                 <span class="inline-flex items-center gap-1">
-                                    <span class="material-symbols-rounded text-[14px]">location_on</span> {{ $store->address }}
+                                    <span class="material-symbols-rounded text-[13px]">location_on</span> {{ $store->address }}
                                 </span>
                             @endif
                             @if($store->phone)
                                 <span class="inline-flex items-center gap-1 font-sans">
-                                    <span class="material-symbols-rounded text-[14px]">call</span> {{ $store->phone }}
+                                    <span class="material-symbols-rounded text-[13px]">call</span> {{ $store->phone }}
                                 </span>
                             @endif
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-sm text-foreground whitespace-nowrap">
-                        <span class="inline-flex items-center gap-1 font-medium text-xs text-muted-foreground">
-                            <span class="material-symbols-rounded text-[16px]">schedule</span>
+                    <td class="px-3 py-2 text-[12px] text-foreground whitespace-nowrap">
+                        <span class="inline-flex items-center gap-1 font-medium text-[11px] text-muted-foreground">
+                            <span class="material-symbols-rounded text-[14px]">schedule</span>
                             {{ $store->timezone }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 text-sm whitespace-nowrap">
-                        <div class="flex items-center gap-3 text-xs text-muted-foreground">
+                    <td class="px-3 py-2 text-[12px] whitespace-nowrap">
+                        <div class="flex items-center gap-2.5 text-[11px] text-muted-foreground">
                             <span class="inline-flex items-center gap-1" title="Table Count">
-                                <span class="material-symbols-rounded text-[16px]">table_restaurant</span> {{ $store->tables_count }} tables
+                                <span class="material-symbols-rounded text-[14px]">table_restaurant</span> {{ $store->tables_count }} tables
                             </span>
                             <span>&bull;</span>
                             <span class="inline-flex items-center gap-1" title="Device Count">
-                                <span class="material-symbols-rounded text-[16px]">devices</span> {{ $store->devices_count }} devices
+                                <span class="material-symbols-rounded text-[14px]">devices</span> {{ $store->devices_count }} devices
                             </span>
                         </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                    <td class="px-3 py-2 whitespace-nowrap">
+                        <span class="inline-flex items-center gap-1.5 text-[11px] text-foreground font-medium">
                             <span class="w-1.5 h-1.5 rounded-full {{ $store->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
                             {{ $store->is_active ? 'Active' : 'Inactive' }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                    <td class="px-3 py-2 text-right whitespace-nowrap">
                         <x-ui.table-actions>
                             <x-ui.table-action-item icon="edit" href="{{ route('stores.edit', $store) }}">
                                 Edit Store

@@ -64,12 +64,12 @@
             <table class="w-full text-left text-sm text-foreground">
                 <thead class="bg-muted/50 text-muted-foreground font-semibold text-2xs uppercase tracking-wider border-b border-border">
                     <tr>
-                        <th scope="col" class="px-6 py-3.5">ID & Dokumen</th>
-                        <th scope="col" class="px-6 py-3.5">Diajukan Oleh</th>
-                        <th scope="col" class="px-6 py-3.5">Level / Peran</th>
-                        <th scope="col" class="px-6 py-3.5">Waktu Pengajuan</th>
-                        <th scope="col" class="px-6 py-3.5">Status</th>
-                        <th scope="col" class="px-6 py-3.5 text-right">Tindakan</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">ID & Dokumen</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Diajukan Oleh</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Level / Peran</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Waktu Pengajuan</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Status</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Tindakan</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -90,7 +90,7 @@
                             $isOwnSubmission = (int) $req->submitted_by_user_id === (int) auth()->id();
                         @endphp
                         <tr class="hover:bg-muted/30 transition-colors">
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-2 text-[12px]">
                                 <div class="font-mono text-xs font-semibold text-foreground">
                                     #{{ $req->id }} &bull; {{ $shortType }} #{{ $req->approvable_id }}
                                 </div>
@@ -98,7 +98,7 @@
                                     Dokumen: {{ $req->approvable_type }}
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-2 text-[12px]">
                                 <div class="font-medium text-foreground text-xs">
                                     {{ $req->submittedByUser?->name ?? 'Pengguna #' . $req->submitted_by_user_id }}
                                 </div>
@@ -108,7 +108,7 @@
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-2 text-[12px]">
                                 <span class="text-xs font-medium text-foreground">
                                     Tingkat {{ $req->step_order }}
                                 </span>
@@ -118,16 +118,16 @@
                                     </div>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-xs text-muted-foreground">
+                            <td class="px-3 py-2 text-[12px] text-xs text-muted-foreground">
                                 {{ $req->created_at?->format('d M Y H:i') ?? '-' }}
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-2 text-[12px]">
                                 <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
                                     <span class="w-1.5 h-1.5 rounded-full {{ $statusDot }}"></span>
                                     {{ $statusText }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                                 <div class="inline-flex items-center gap-2">
                                     <button wire:click="openDetail({{ $req->id }})"
                                         class="px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-foreground bg-muted hover:bg-muted/80 rounded-lg transition-colors">

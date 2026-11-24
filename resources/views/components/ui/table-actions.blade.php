@@ -43,12 +43,12 @@
         type="button"
         x-ref="trigger"
         @click="toggleDropdown()"
-        class="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/80 focus:outline-hidden focus-visible:ring-1 focus-visible:ring-ring transition-colors cursor-pointer select-none"
+        class="inline-flex w-7 h-7 items-center justify-center rounded-[6px] text-muted-foreground hover:text-foreground hover:bg-muted/80 focus:outline-hidden focus-visible:ring-1 focus-visible:ring-ring transition-colors cursor-pointer select-none"
         aria-haspopup="true"
         :aria-expanded="dropdownOpen.toString()"
         aria-label="{{ $label }}"
     >
-        <span class="material-symbols-rounded text-[20px] leading-none shrink-0" aria-hidden="true">{{ $icon }}</span>
+        <span class="material-symbols-rounded text-[16px] leading-none shrink-0" aria-hidden="true">{{ $icon }}</span>
     </button>
 
     <template x-teleport="body">

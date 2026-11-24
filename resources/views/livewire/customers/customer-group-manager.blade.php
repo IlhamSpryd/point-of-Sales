@@ -44,17 +44,17 @@
             <table class="table-standard w-full min-w-full text-left text-sm text-muted-foreground">
                 <thead class="bg-secondary /50 text-xs font-semibold uppercase text-muted-foreground border-b border-border">
                     <tr>
-                        <th scope="col" class="px-6 py-4">Group Code & Name</th>
-                        <th scope="col" class="px-6 py-4 text-right">Default Discount</th>
-                        <th scope="col" class="px-6 py-4 text-right">Customer Count</th>
-                        <th scope="col" class="px-6 py-4 text-center">Status</th>
-                        <th scope="col" class="px-6 py-4 text-right">Action</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Group Code & Name</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Default Discount</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Customer Count</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-center">Status</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
                     @forelse($groups as $grp)
                     <tr class="hover:bg-secondary/50 transition">
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <div class="font-semibold text-foreground flex items-center gap-2">
                                 {{ $grp->name }}
                                 @if($grp->is_b2b_default)
@@ -66,19 +66,19 @@
                                 <p class="text-xs text-muted-foreground mt-1 line-clamp-1">{{ $grp->description }}</p>
                             @endif
                         </td>
-                        <td class="px-6 py-4 text-right">
+                        <td class="px-3 py-2 text-[12px] text-right">
                             <span class="font-sans font-semibold text-positive tabular-nums">{{ $grp->default_discount_rate }}%</span>
                         </td>
-                        <td class="px-6 py-4 text-right">
+                        <td class="px-3 py-2 text-[12px] text-right">
                             <span class="text-xs text-muted-foreground font-sans tabular-nums">{{ $grp->customers_count }} customers</span>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
                                 <span class="w-1.5 h-1.5 rounded-full {{ $grp->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
                                 {{ $grp->is_active ? 'Active' : 'Inactive' }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                             @can('manageGroups', \App\Modules\Customers\Models\Customer::class)
                             <x-ui.table-actions>
                                 <x-ui.table-action-item icon="edit" wire:click="edit({{ $grp->id }})">

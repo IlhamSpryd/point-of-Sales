@@ -56,21 +56,21 @@
             <table class="w-full text-left text-sm text-foreground">
                 <thead class="bg-muted/50 text-muted-foreground font-semibold text-2xs uppercase tracking-wider border-b border-border">
                     <tr>
-                        <th scope="col" class="px-6 py-3.5">Nomor Perintah Kerja</th>
-                        <th scope="col" class="px-6 py-3.5">Target Produk / Prep Item</th>
-                        <th scope="col" class="px-6 py-3.5">Target Jumlah</th>
-                        <th scope="col" class="px-6 py-3.5">Jumlah Selesai</th>
-                        <th scope="col" class="px-6 py-3.5">Status</th>
-                        <th scope="col" class="px-6 py-3.5 text-right">Tindakan</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Nomor Perintah Kerja</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Target Produk / Prep Item</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Target Jumlah</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Jumlah Selesai</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Status</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Tindakan</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
                     @forelse ($orders as $mo)
                         <tr class="hover:bg-muted/30 transition-colors">
-                            <td class="px-6 py-4 font-mono font-medium text-xs text-foreground">
+                            <td class="px-3 py-2 text-[12px] font-mono font-medium text-xs text-foreground">
                                 {{ $mo->order_number }}
                             </td>
-                            <td class="px-6 py-4 font-medium text-foreground">
+                            <td class="px-3 py-2 text-[12px] font-medium text-foreground">
                                 @if ($mo->destination_type === 'ingredient')
                                     <div class="flex items-center gap-1.5">
                                         <span class="material-symbols-rounded text-warning text-[18px]">blender</span>
@@ -84,13 +84,13 @@
                                     </div>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 font-semibold text-foreground">
+                            <td class="px-3 py-2 text-[12px] font-semibold text-foreground">
                                 {{ number_format((float) $mo->planned_quantity, 2) }}
                             </td>
-                            <td class="px-6 py-4 font-semibold text-foreground">
+                            <td class="px-3 py-2 text-[12px] font-semibold text-foreground">
                                 {{ number_format((float) $mo->produced_quantity, 2) }}
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-2 text-[12px]">
                                 @php
                                     $moDot = match($mo->status) {
                                         'COMPLETED' => 'bg-positive',
@@ -111,7 +111,7 @@
                                     {{ $moLabel }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                                 @if ($mo->status === 'PLANNED')
                                     <x-ui.table-actions>
                                         <x-ui.table-action-item icon="play_arrow" wire:click="startOrder({{ $mo->id }})" aria-label="Mulai Perintah Kerja">

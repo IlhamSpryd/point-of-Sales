@@ -176,37 +176,37 @@
         @endif
 
         <!-- Transaction Table -->
-        <div class="card-surface overflow-hidden rounded-2xl border border-border shadow-xs">
-            <div class="px-6 py-4 border-b border-border bg-surface-table-header flex items-center justify-between">
-                <h2 class="text-base font-bold text-foreground">Recent Transactions</h2>
-                <span class="text-xs text-muted-foreground">Displaying latest sales activity</span>
+        <div class="card-surface overflow-hidden rounded-xl border border-border shadow-2xs">
+            <div class="px-3.5 py-2.5 border-b border-border bg-surface-table-header flex items-center justify-between">
+                <h2 class="text-[13px] font-bold text-foreground">Recent Transactions</h2>
+                <span class="text-[11px] text-muted-foreground">Displaying latest sales activity</span>
             </div>
             <div class="overflow-x-auto">
-                <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
+                <table class="table-standard w-full min-w-full text-left border-collapse text-[12px]">
                     <thead>
-                        <tr class="border-b border-border bg-surface-table-header text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            <th scope="col" class="px-6 py-3.5">Order Code</th>
-                            <th scope="col" class="px-6 py-3.5">Date & Time</th>
-                            <th scope="col" class="px-6 py-3.5">Cashier</th>
-                            <th scope="col" class="px-6 py-3.5 text-right">Total Amount</th>
+                        <tr class="border-b border-border bg-surface-table-header text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">
+                            <th scope="col" class="h-8 px-3 py-2">Order Code</th>
+                            <th scope="col" class="h-8 px-3 py-2">Date & Time</th>
+                            <th scope="col" class="h-8 px-3 py-2">Cashier</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-right">Total Amount</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border">
                         @forelse ($recentOrders as $order)
                         <tr class="hover:bg-accent transition">
-                            <td class="px-6 py-4">
-                                <span class="text-xs font-semibold text-foreground tabular-nums">{{ $order->order_code }}</span>
+                            <td class="px-3 py-2">
+                                <span class="text-[11px] font-semibold text-foreground tabular-nums">{{ $order->order_code }}</span>
                             </td>
-                            <td class="px-6 py-4 text-xs text-muted-foreground">{{ \Carbon\Carbon::parse($order->created_at)->format('d-m-Y H:i') }}</td>
-                            <td class="px-6 py-4 text-sm text-foreground">{{ $order->user->name ?? 'Cashier' }}</td>
-                            <td class="px-6 py-4 text-right">
-                                <span class="text-sm font-bold tabular-nums text-foreground">Rp {{ number_format((float) $order->order_amount, 0, ',', '.') }}</span>
+                            <td class="px-3 py-2 text-[11px] text-muted-foreground">{{ \Carbon\Carbon::parse($order->created_at)->format('d-m-Y H:i') }}</td>
+                            <td class="px-3 py-2 text-[12px] text-foreground">{{ $order->user->name ?? 'Cashier' }}</td>
+                            <td class="px-3 py-2 text-right">
+                                <span class="text-[12px] font-bold tabular-nums text-foreground">Rp {{ number_format((float) $order->order_amount, 0, ',', '.') }}</span>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="4" class="px-6 py-12 text-center text-muted-foreground">
-                                <span class="material-symbols-rounded text-[32px] block mb-2">receipt_long</span>
+                            <td colspan="4" class="px-3 py-8 text-center text-muted-foreground">
+                                <span class="material-symbols-rounded text-[28px] block mb-1.5">receipt_long</span>
                                 No transactions recorded for this period.
                             </td>
                         </tr>
@@ -214,7 +214,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="p-4 border-t border-border">
+            <div class="p-3 border-t border-border">
                 {{ $recentOrders->links() }}
             </div>
         </div>

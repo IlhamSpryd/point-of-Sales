@@ -90,7 +90,7 @@
     >
         @foreach($customers as $c)
                     <tr wire:key="customer-row-{{ $c->id }}" class="hover:bg-muted/40 transition-colors">
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <div class="font-semibold text-foreground">{{ $c->name }}</div>
                             <div class="flex items-center gap-2 mt-0.5">
                                 <span class="text-xs font-sans text-muted-foreground">{{ $c->customer_code }}</span>
@@ -99,7 +99,7 @@
                                 @endif
                             </div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <div class="flex flex-col gap-1">
                                 <span class="text-xs text-foreground font-medium">{{ $c->isCompany() ? 'B2B (Company)' : 'B2C (Individual)' }}</span>
                                 @if($c->group)
@@ -107,7 +107,7 @@
                                 @endif
                             </div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <div class="text-xs space-y-0.5">
                                 @if($c->phone)
                                     <div class="flex items-center gap-1.5 text-foreground font-sans">
@@ -126,7 +126,7 @@
                                 @endif
                             </div>
                         </td>
-                        <td class="px-6 py-4 max-w-xs">
+                        <td class="px-3 py-2 text-[12px] max-w-xs">
                             @php
                                 $addr = $c->defaultShippingAddress ?? $c->defaultBillingAddress ?? $c->addresses->first();
                             @endphp
@@ -138,13 +138,13 @@
                                 <span class="text-xs text-muted-foreground italic">No address yet</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
                                 <span class="w-1.5 h-1.5 rounded-full {{ $c->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
                                 {{ $c->is_active ? 'Active' : 'Inactive' }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                             <x-ui.table-actions>
                                 <x-ui.table-action-item icon="receipt_long" wire:click="openStatement({{ $c->id }})">
                                     Statement &amp; History

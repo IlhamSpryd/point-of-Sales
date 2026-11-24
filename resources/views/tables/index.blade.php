@@ -75,29 +75,29 @@
             :colspan="5"
         >
             <x-slot:head>
-                <th scope="col" class="px-6 py-3.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-left">Table Code</th>
-                <th scope="col" class="px-6 py-3.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-left">Name & Area</th>
-                <th scope="col" class="px-6 py-3.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-left">Operational Status</th>
-                <th scope="col" class="px-6 py-3.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-left">Self-Order QR Code</th>
-                <th scope="col" class="px-6 py-3.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
+                <th scope="col" class="h-8 px-3 py-2 text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider text-left">Table Code</th>
+                <th scope="col" class="h-8 px-3 py-2 text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider text-left">Name & Area</th>
+                <th scope="col" class="h-8 px-3 py-2 text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider text-left">Operational Status</th>
+                <th scope="col" class="h-8 px-3 py-2 text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider text-left">Self-Order QR Code</th>
+                <th scope="col" class="h-8 px-3 py-2 text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
             </x-slot:head>
             @foreach($tables as $table)
                 @php
                     $routeToken = $table->qr_token ?? $table->secure_token;
                 @endphp
                 <tr class="hover:bg-secondary/70 transition-colors duration-150">
-                    <td class="px-6 py-4 font-sans font-bold text-foreground text-xs whitespace-nowrap">{{ $table->table_code }}</td>
-                    <td class="px-6 py-4">
-                        <div class="font-bold text-foreground text-sm">{{ $table->table_name }}</div>
-                        <div class="text-xs text-muted-foreground mt-1 flex items-center gap-2">
-                            <span class="inline-flex items-center gap-1"><span class="material-symbols-rounded text-[14px]">chair</span> {{ $table->capacity }} pax</span>
+                    <td class="px-3 py-2 font-sans font-bold text-foreground text-[11px] whitespace-nowrap">{{ $table->table_code }}</td>
+                    <td class="px-3 py-2">
+                        <div class="font-medium text-foreground text-[12px]">{{ $table->table_name }}</div>
+                        <div class="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-2">
+                            <span class="inline-flex items-center gap-1"><span class="material-symbols-rounded text-[13px]">chair</span> {{ $table->capacity }} pax</span>
                             <span class="text-foreground">&bull;</span>
-                            <span class="inline-flex items-center gap-1"><span class="material-symbols-rounded text-[14px]">map</span> {{ $table->area }}</span>
+                            <span class="inline-flex items-center gap-1"><span class="material-symbols-rounded text-[13px]">map</span> {{ $table->area }}</span>
                         </div>
                     </td>
-                    <td class="px-6 py-4">
-                        <div class="flex flex-col gap-1 items-start">
-                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                    <td class="px-3 py-2">
+                        <div class="flex flex-col gap-0.5 items-start">
+                            <span class="inline-flex items-center gap-1.5 text-[11px] text-foreground font-medium">
                                 <span class="w-1.5 h-1.5 rounded-full {{ $table->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
                                 {{ $table->is_active ? 'Active' : 'Inactive' }}
                             </span>
@@ -117,26 +117,26 @@
                                     default => 'bg-neutral',
                                 };
                             @endphp
-                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                            <span class="inline-flex items-center gap-1.5 text-[11px] text-foreground font-medium">
                                 <span class="w-1.5 h-1.5 rounded-full {{ $opDot }}"></span>
                                 {{ $opLabels[$table->operational_status] ?? $table->operational_status }}
                             </span>
                         </div>
                     </td>
-                    <td class="px-6 py-4">
-                        <div class="flex items-center gap-3">
-                            <div class="bg-card p-2 rounded-xl border border-border inline-block shadow-xs">
-                                {!! Cache::remember('pos:qr:table:'.$table->id, 86400, fn() => (string) QrCode::size(70)->generate(rtrim(config('app.url'), '/') . route('customer.menu.index', ['token' => $routeToken], false))) !!}
+                    <td class="px-3 py-2">
+                        <div class="flex items-center gap-2.5">
+                            <div class="bg-card p-1.5 rounded-[6px] border border-border inline-block shadow-2xs">
+                                {!! Cache::remember('pos:qr:table:'.$table->id, 86400, fn() => (string) QrCode::size(54)->generate(rtrim(config('app.url'), '/') . route('customer.menu.index', ['token' => $routeToken], false))) !!}
                             </div>
-                            <div class="text-xs text-muted-foreground">
+                            <div class="text-[11px] text-muted-foreground">
                                 <div class="font-bold text-foreground">Version #{{ $table->qr_token_version ?? 1 }}</div>
                                 @if($table->qr_rotated_at)
-                                    <div class="text-[11px] mt-0.5">Rotated: {{ $table->qr_rotated_at->format('M d, H:i') }}</div>
+                                    <div class="text-[10px] mt-0.5">Rotated: {{ $table->qr_rotated_at->format('M d, H:i') }}</div>
                                 @endif
                             </div>
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                    <td class="px-3 py-2 text-right whitespace-nowrap">
                         <x-ui.table-actions>
                             @if($table->operational_status === 'occupied')
                                 <x-ui.table-action-item icon="drive_file_move" @click="openMove({{ $table->id }}, '{{ addslashes($table->table_name) }}')" aria-label="Move Table">

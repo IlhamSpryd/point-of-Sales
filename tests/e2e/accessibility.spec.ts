@@ -377,5 +377,117 @@ test.describe('Apeiron Accessibility & Interaction Suite', () => {
             }
         }
     });
+
+    test('Wave 5.1C Layout Geometry, Breathing Room & Cloudflare-scale Density Guardrails', async ({ page }) => {
+        // Step 1: Sign in
+        await page.goto('/login');
+        await page.waitForLoadState('networkidle');
+        await page.fill('#email', 'admin@pos.test');
+        await page.fill('#password', '12345678');
+        await page.click('button[type="submit"]');
+        await page.waitForURL(/.*dashboard.*/i);
+        await page.waitForLoadState('networkidle');
+
+        // Step 2: Route /products
+        await page.goto('/products');
+        await page.waitForLoadState('networkidle');
+        await page.waitForTimeout(300);
+
+        // 1. Heading breathing room (x offset >= 18 and <= 48 relative to #main-content)
+        const main = await page.locator('#main-content').boundingBox();
+        expect(main).not.toBeNull();
+        const heading = await page.locator('#main-content h1, #main-content h2, #main-content h3, #main-content h4').first().boundingBox();
+        expect(heading).not.toBeNull();
+        if (main && heading) {
+            const xDelta = heading.x - main.x;
+            expect(xDelta).toBeGreaterThanOrEqual(18);
+            expect(xDelta).toBeLessThanOrEqual(48);
+        }
+
+        // 2. Sub-navigation first link alignment with heading
+        const subNavFirstLink = await page.locator('#main-content nav[aria-label*="Navigation"] a, #main-content nav a').first().boundingBox();
+        if (subNavFirstLink && heading) {
+            expect(Math.abs(subNavFirstLink.x - heading.x)).toBeLessThanOrEqual(8);
+        }
+
+        // 3. Toolbar button heights (28px - 34px)
+        const addBtn = page.locator('button:has-text("Add Product"), a:has-text("Add Product")').first();
+        if (await addBtn.isVisible()) {
+            const addBtnBox = await addBtn.boundingBox();
+            if (addBtnBox) {
+                expect(addBtnBox.height).toBeGreaterThanOrEqual(28);
+                expect(addBtnBox.height).toBeLessThanOrEqual(34);
+            }
+        }
+
+        // 4. Search input height (28px - 34px)
+        const searchBox = page.locator('input[placeholder*="Search"]').first();
+        if (await searchBox.isVisible()) {
+            const searchBoxBounds = await searchBox.boundingBox();
+            if (searchBoxBounds) {
+                expect(searchBoxBounds.height).toBeGreaterThanOrEqual(28);
+                expect(searchBoxBounds.height).toBeLessThanOrEqual(34);
+            }
+        }
+
+        // 5. Product thumbnail size <= 32 x 32
+        const thumb = page.locator('table tbody tr').first().locator('img, .material-symbols-rounded:has-text("image")').first();
+        if (await thumb.isVisible()) {
+            const thumbBox = await thumb.boundingBox();
+            if (thumbBox) {
+                expect(thumbBox.width).toBeLessThanOrEqual(32);
+                expect(thumbBox.height).toBeLessThanOrEqual(32);
+            }
+        }
+
+        // 6. Zero horizontal scroll on #main-content
+        const hasHScroll = await page.evaluate(() => {
+            const el = document.getElementById('main-content');
+            return el ? el.scrollWidth > el.clientWidth : false;
+        });
+        expect(hasHScroll).toBe(false);
+
+        // Step 3: Repeat breathing room checks on /inventory/ingredients and /customers
+        for (const route of ['/inventory/ingredients', '/customers']) {
+            await page.goto(route);
+            await page.waitForLoadState('networkidle');
+            await page.waitForTimeout(200);
+
+            const mBox = await page.locator('#main-content').boundingBox();
+            const hBox = await page.locator('#main-content h1, #main-content h2, #main-content h3, #main-content h4').first().boundingBox();
+            if (mBox && hBox) {
+                const delta = hBox.x - mBox.x;
+                expect(delta).toBeGreaterThanOrEqual(18);
+                expect(delta).toBeLessThanOrEqual(48);
+            }
+
+            const routeHScroll = await page.evaluate(() => {
+                const el = document.getElementById('main-content');
+                return el ? el.scrollWidth > el.clientWidth : false;
+            });
+            expect(routeHScroll).toBe(false);
+        }
+
+        // Step 4: Route /transaction - Touch target >= 44px
+        await page.goto('/transaction');
+        await page.waitForLoadState('networkidle');
+        await page.waitForTimeout(300);
+
+        const touchTargets = page.locator('button, a[role="button"], [role="button"]');
+        const count = await touchTargets.count();
+        let hasCompliantTarget = false;
+        for (let i = 0; i < Math.min(count, 15); i++) {
+            const btn = touchTargets.nth(i);
+            if (await btn.isVisible()) {
+                const box = await btn.boundingBox();
+                if (box && (box.height >= 40 || box.width >= 40)) {
+                    expect(Math.max(box.height, box.width)).toBeGreaterThanOrEqual(44);
+                    hasCompliantTarget = true;
+                    break;
+                }
+            }
+        }
+        expect(hasCompliantTarget).toBe(true);
+    });
 });
 

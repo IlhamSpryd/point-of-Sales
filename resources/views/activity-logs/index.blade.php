@@ -19,40 +19,40 @@
             :colspan="5"
         >
             <x-slot:head>
-                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Timestamp</th>
-                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">User</th>
-                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Action</th>
-                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
-                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">IP / Device</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Timestamp</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">User</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Action</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">IP / Device</th>
             </x-slot:head>
 
             @foreach ($logs as $log)
                 <tr class="hover:bg-muted/40 transition-colors">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="font-medium text-foreground text-xs">{{ $log->created_at->format('M d, Y') }}</div>
-                        <div class="text-[11px] text-muted-foreground font-sans">{{ $log->created_at->format('H:i:s') }}</div>
+                    <td class="px-3 py-2 whitespace-nowrap">
+                        <div class="font-medium text-foreground text-[11px]">{{ $log->created_at->format('M d, Y') }}</div>
+                        <div class="text-[10px] text-muted-foreground font-sans">{{ $log->created_at->format('H:i:s') }}</div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="font-bold flex items-center gap-2 text-foreground text-xs">
-                            <div class="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs uppercase">
+                    <td class="px-3 py-2 whitespace-nowrap">
+                        <div class="font-bold flex items-center gap-2 text-foreground text-[11px]">
+                            <div class="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px] uppercase">
                                 {{ substr($log->user->name ?? 'S', 0, 1) }}
                             </div>
                             {{ $log->user->name ?? 'System' }}
                         </div>
-                        <div class="text-[11px] text-muted-foreground ml-9">{{ $log->user->role->name ?? '-' }}</div>
+                        <div class="text-[10.5px] text-muted-foreground ml-8">{{ $log->user->role->name ?? '-' }}</div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="text-xs text-muted-foreground font-medium font-sans">
+                    <td class="px-3 py-2 whitespace-nowrap">
+                        <span class="text-[11px] text-muted-foreground font-medium font-sans">
                             {{ $log->action }}
                         </span>
                     </td>
-                    <td class="px-6 py-4">
-                        <p class="font-medium text-xs text-foreground">{{ $log->description }}</p>
+                    <td class="px-3 py-2">
+                        <p class="font-medium text-[11px] text-foreground">{{ $log->description }}</p>
                         @if($log->subject_type)
-                            <p class="text-[11px] text-muted-foreground mt-0.5">Target: {{ class_basename($log->subject_type) }} #{{ $log->subject_id }}</p>
+                            <p class="text-[10px] text-muted-foreground mt-0.5">Target: {{ class_basename($log->subject_type) }} #{{ $log->subject_id }}</p>
                         @endif
                     </td>
-                    <td class="px-6 py-4 text-xs text-muted-foreground">
+                    <td class="px-3 py-2 text-[11px] text-muted-foreground">
                         <div class="font-sans text-foreground">{{ $log->ip_address }}</div>
                         <div class="truncate max-w-[150px] text-[11px]" title="{{ $log->user_agent }}">{{ Str::limit($log->user_agent, 20) }}</div>
                     </td>

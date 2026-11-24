@@ -81,14 +81,14 @@
             :colspan="8"
         >
             <x-slot:head>
-                <th scope="col" class="px-6 py-3.5 text-2xs font-semibold text-muted-foreground uppercase tracking-wider text-left">Order Code</th>
-                <th scope="col" class="px-6 py-3.5 text-2xs font-semibold text-muted-foreground uppercase tracking-wider text-left">Cashier &amp; Type</th>
-                <th scope="col" class="px-6 py-3.5 text-2xs font-semibold text-muted-foreground uppercase tracking-wider text-left">Items Summary</th>
-                <th scope="col" class="px-6 py-3.5 text-2xs font-semibold text-muted-foreground uppercase tracking-wider text-left">Customer</th>
-                <th scope="col" class="px-6 py-3.5 text-2xs font-semibold text-muted-foreground uppercase tracking-wider text-left">Payment</th>
-                <th scope="col" class="px-6 py-3.5 text-2xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Total Amount</th>
-                <th scope="col" class="px-6 py-3.5 text-2xs font-semibold text-muted-foreground uppercase tracking-wider text-left">Status</th>
-                <th scope="col" class="px-6 py-3.5 text-2xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
+                <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-2xs font-semibold text-muted-foreground uppercase tracking-wider text-left">Order Code</th>
+                <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-2xs font-semibold text-muted-foreground uppercase tracking-wider text-left">Cashier &amp; Type</th>
+                <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-2xs font-semibold text-muted-foreground uppercase tracking-wider text-left">Items Summary</th>
+                <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-2xs font-semibold text-muted-foreground uppercase tracking-wider text-left">Customer</th>
+                <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-2xs font-semibold text-muted-foreground uppercase tracking-wider text-left">Payment</th>
+                <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-2xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Total Amount</th>
+                <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-2xs font-semibold text-muted-foreground uppercase tracking-wider text-left">Status</th>
+                <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-2xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
             </x-slot:head>
                 @foreach ($this->orders as $order)
                     @php
@@ -101,11 +101,11 @@
                         };
                     @endphp
                     <tr wire:key="order-{{ $order->id }}" class="hover:bg-secondary/70 transition-colors">
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <div class="font-sans font-bold text-foreground text-xs">{{ $order->order_code }}</div>
                             <div class="text-[11px] text-muted-foreground mt-0.5">{{ $order->created_at->format('d M Y, H:i') }}</div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <div class="text-xs font-bold text-foreground">{{ $order->user->name ?? 'Self-Order' }}</div>
                             <div class="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1">
                                 <span class="material-symbols-rounded text-[14px]">
@@ -132,7 +132,7 @@
                                 </span>
                             </div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <div class="text-xs text-foreground max-w-[200px] truncate font-medium">
                                 {{ $order->orderItems->pluck('product.product_name')->filter()->take(2)->implode(', ') }}
                                 @if ($order->order_items_count > 2)
@@ -141,10 +141,10 @@
                             </div>
                             <div class="text-[11px] text-muted-foreground mt-0.5">{{ $order->order_items_count }} item(s)</div>
                         </td>
-                        <td class="px-6 py-4 text-xs font-medium text-muted-foreground">
+                        <td class="px-3 py-2 text-[12px] text-xs font-medium text-muted-foreground">
                             {{ $order->customer->name ?? '—' }}
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <span class="text-xs text-foreground font-medium">
                                 {{ $order->payment_method?->label() ?? '-' }}
                             </span>
@@ -154,18 +154,18 @@
                                 </span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 text-right">
+                        <td class="px-3 py-2 text-[12px] text-right">
                             <span class="text-xs font-black text-foreground tabular-nums">
                                 Rp {{ number_format($order->order_amount, 0, ',', '.') }}
                             </span>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
                                 <span class="w-1.5 h-1.5 rounded-full {{ $dotColor }}"></span>
                                 {{ $order->order_status->label() }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                             <x-ui.table-actions>
                                 <x-ui.table-action-item icon="visibility" wire:click="viewDetail({{ $order->id }})" aria-label="View Order Details">
                                     View Details

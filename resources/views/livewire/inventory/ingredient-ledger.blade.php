@@ -51,22 +51,22 @@
         :colspan="5"
     >
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Timestamp</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Raw Material</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Quantity</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Reason / Notes</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Timestamp</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Raw Material</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Quantity</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Reason / Notes</th>
                 </x-slot:head>
                     @foreach ($movements as $movement)
                         <tr wire:key="movement-{{ $movement->id ?? $loop->index }}" class="hover:bg-secondary transition-colors duration-150">
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-3 py-2 text-[12px] whitespace-nowrap">
                                 <div class="text-sm text-foreground">{{ $movement->created_at->format('d M Y') }}</div>
                                 <div class="text-xs text-muted-foreground">{{ $movement->created_at->format('H:i') }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-3 py-2 text-[12px] whitespace-nowrap">
                                 <span class="text-sm font-semibold text-foreground">{{ $movement->ingredient->name ?? '-' }}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-3 py-2 text-[12px] whitespace-nowrap">
                                 @php
                                     $typeVal = $movement->type instanceof \App\Enums\IngredientStockMovementTypeEnum ? $movement->type->value : $movement->type;
                                     $typeStr = match($typeVal) {
@@ -82,14 +82,14 @@
                                     {{ $typeStr }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right tabular-nums">
+                            <td class="px-3 py-2 text-[12px] whitespace-nowrap text-right tabular-nums">
                                 @if($movement->quantity > 0)
                                     <span class="text-sm font-semibold text-positive">+{{ number_format($movement->quantity, 2) }} {{ $movement->ingredient->unit ?? '' }}</span>
                                 @else
                                     <span class="text-sm font-semibold text-destructive">{{ number_format($movement->quantity, 2) }} {{ $movement->ingredient->unit ?? '' }}</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-2 text-[12px]">
                                 <span class="text-sm text-muted-foreground truncate max-w-xs block" title="{{ $movement->reason }}">
                                     {{ $movement->reason ?: '-' }}
                                 </span>

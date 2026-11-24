@@ -61,35 +61,35 @@
             <table class="table-standard w-full min-w-full text-left text-sm text-muted-foreground">
                 <thead class="bg-secondary /50 text-xs font-semibold uppercase text-muted-foreground border-b border-border">
                     <tr>
-                        <th scope="col" class="px-6 py-4">Invoice Number</th>
-                        <th scope="col" class="px-6 py-4">Supplier</th>
-                        <th scope="col" class="px-6 py-4">Invoice Date / Due Date</th>
-                        <th scope="col" class="px-6 py-4 text-right">Total Invoiced</th>
-                        <th scope="col" class="px-6 py-4 text-center">3-Way Match Status</th>
-                        <th scope="col" class="px-6 py-4 text-center">Payment Status</th>
-                        <th scope="col" class="px-6 py-4 text-right">Actions</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Invoice Number</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Supplier</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Invoice Date / Due Date</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Total Invoiced</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-center">3-Way Match Status</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-center">Payment Status</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y border-border">
                     @forelse($invoices as $inv)
                     <tr class="hover:bg-secondary/50 transition-colors">
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <div class="font-bold text-foreground font-sans">{{ $inv->supplier_invoice_number }}</div>
                             <div class="text-xs text-muted-foreground font-sans">Internal: {{ $inv->internal_invoice_number }}</div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <div class="font-medium text-foreground">{{ $inv->supplier?->name ?? 'Vendor' }}</div>
                             <div class="text-xs text-muted-foreground font-sans">PO: {{ $inv->purchaseOrder?->po_number ?? '-' }}</div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <div class="font-medium text-foreground">{{ \Carbon\Carbon::parse($inv->invoice_date)->format('d M Y') }}</div>
                             <div class="text-xs text-muted-foreground">Due Date: {{ \Carbon\Carbon::parse($inv->due_date)->format('d M Y') }}</div>
                         </td>
-                        <td class="tabular-nums px-6 py-4 text-right">
+                        <td class="tabular-nums px-3 py-2 text-[12px] text-right">
                             <div class="font-bold text-foreground">Rp {{ number_format((float) $inv->total_amount, 2) }}</div>
                             <div class="text-[11px] text-muted-foreground">Tax: Rp {{ number_format((float) $inv->tax_amount, 2) }}</div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             @php
                                 $matchVal = $inv->matching_status?->value ?? (string) $inv->matching_status;
                             @endphp
@@ -97,7 +97,7 @@
                                 {{ $inv->matching_status?->label() ?? $matchVal }}
                             </span>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             @php
                                 $invStatusVal = $inv->status?->value ?? (string) $inv->status;
                                 $statusDot = match($invStatusVal) {
@@ -112,7 +112,7 @@
                                 {{ $inv->status?->label() ?? $invStatusVal }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                             <x-ui.table-actions>
                                 <x-ui.table-action-item icon="visibility" wire:click="viewInvoice({{ $inv->id }})" aria-label="View Invoice Details">
                                     View Invoice Details

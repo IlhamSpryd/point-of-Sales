@@ -50,13 +50,13 @@
             <table class="w-full text-left text-sm text-foreground divide-y divide-border">
                 <thead class="bg-muted/50 text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
                     <tr>
-                        <th scope="col" class="px-6 py-3.5">Code & Voucher Name</th>
-                        <th scope="col" class="px-6 py-3.5">Discount Value</th>
-                        <th scope="col" class="px-6 py-3.5">Min. Spend</th>
-                        <th scope="col" class="px-6 py-3.5">Quota Usage</th>
-                        <th scope="col" class="px-6 py-3.5">Validity Period</th>
-                        <th scope="col" class="px-6 py-3.5">Status</th>
-                        <th scope="col" class="px-6 py-3.5 text-right">Actions</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Code & Voucher Name</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Discount Value</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Min. Spend</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Quota Usage</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Validity Period</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Status</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -67,14 +67,14 @@
                             $percentUsed = $voucher->max_uses > 0 ? min(100, round(($voucher->used_count / $voucher->max_uses) * 100)) : 0;
                         @endphp
                         <tr class="hover:bg-muted/30 transition-colors">
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-2 text-[12px]">
                                 <div class="font-sans font-bold text-primary flex items-center gap-1.5">
                                     <span class="material-symbols-rounded text-base text-muted-foreground">confirmation_number</span>
                                     {{ $voucher->code }}
                                 </div>
                                 <div class="text-xs font-medium text-foreground mt-0.5">{{ $voucher->name }}</div>
                             </td>
-                            <td class="px-6 py-4 font-bold text-foreground">
+                            <td class="px-3 py-2 text-[12px] font-bold text-foreground">
                                 @if ($typeVal === 'PERCENTAGE')
                                     {{ (float) $voucher->discount_value }}%
                                     @if ($voucher->max_discount_amount)
@@ -84,10 +84,10 @@
                                     Rp {{ number_format((float) $voucher->discount_value, 0, ',', '.') }}
                                 @endif
                             </td>
-                            <td class="tabular-nums px-6 py-4 text-xs font-medium text-muted-foreground">
+                            <td class="tabular-nums px-3 py-2 text-[12px] text-xs font-medium text-muted-foreground">
                                 Rp {{ number_format((float) $voucher->min_order_amount, 0, ',', '.') }}
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-2 text-[12px]">
                                 <div class="flex items-center justify-between text-xs font-medium text-muted-foreground mb-1">
                                     <span>{{ $voucher->used_count }} / {{ $voucher->max_uses > 0 ? $voucher->max_uses : '∞' }}</span>
                                     @if ($voucher->max_uses > 0)
@@ -100,11 +100,11 @@
                                     </div>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-xs text-muted-foreground">
+                            <td class="px-3 py-2 text-[12px] text-xs text-muted-foreground">
                                 <div>{{ $voucher->starts_at ? \Carbon\Carbon::parse($voucher->starts_at)->format('d M Y') : 'Now' }}</div>
                                 <div class="text-2xs text-muted-foreground">to {{ $voucher->expires_at ? \Carbon\Carbon::parse($voucher->expires_at)->format('d M Y') : 'Unlimited' }}</div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-2 text-[12px]">
                                 @php
                                     $vDot = match(strtoupper($statusVal)) {
                                         'ACTIVE' => 'bg-success',
@@ -118,7 +118,7 @@
                                     {{ $statusVal }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                                 <x-ui.table-actions>
                                     <x-ui.table-action-item icon="edit" wire:click="openEditModal({{ $voucher->id }})">
                                         Edit Voucher

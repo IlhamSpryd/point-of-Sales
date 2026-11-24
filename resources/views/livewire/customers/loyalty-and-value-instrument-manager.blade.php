@@ -93,31 +93,31 @@
                 <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
                     <thead>
                         <tr class="border-b border-border bg-secondary/50 /50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            <th scope="col" class="px-6 py-3.5">Code & Name</th>
-                            <th scope="col" class="px-6 py-3.5">Discount Type</th>
-                            <th scope="col" class="px-6 py-3.5 text-right">Discount Value</th>
-                            <th scope="col" class="px-6 py-3.5 text-right">Min. Spend</th>
-                            <th scope="col" class="px-6 py-3.5">Usage</th>
-                            <th scope="col" class="px-6 py-3.5">Validity</th>
-                            <th scope="col" class="px-6 py-3.5 text-center">Status</th>
-                            <th scope="col" class="px-6 py-3.5 text-right">Actions</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Code & Name</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Discount Type</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Discount Value</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Min. Spend</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Usage</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Validity</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-center">Status</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border">
                         @forelse ($vouchers as $voucher)
                             <tr class="hover:bg-secondary/50 transition">
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-2 text-[12px]">
                                     <div class="font-bold text-foreground flex items-center gap-2 font-sans">
                                         <span class="text-xs font-mono font-bold text-foreground">{{ $voucher->voucher_code }}</span>
                                     </div>
                                     <div class="text-xs text-muted-foreground mt-1">{{ $voucher->name }}</div>
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-2 text-[12px]">
                                     <span class="text-xs text-muted-foreground font-medium">
                                         {{ $voucher->discount_type->value === 'PERCENTAGE' ? 'Percentage (%)' : 'Fixed Amount (Rp)' }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 font-semibold text-right text-foreground font-sans tabular-nums">
+                                <td class="px-3 py-2 text-[12px] font-semibold text-right text-foreground font-sans tabular-nums">
                                     @if ($voucher->discount_type->value === 'PERCENTAGE')
                                         {{ number_format((float) $voucher->discount_value, 0) }}%
                                         @if ($voucher->max_discount_amount)
@@ -127,28 +127,28 @@
                                         Rp {{ number_format((float) $voucher->discount_value, 2, ',', '.') }}
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 text-right text-foreground font-sans tabular-nums">
+                                <td class="px-3 py-2 text-[12px] text-right text-foreground font-sans tabular-nums">
                                     Rp {{ number_format((float) $voucher->min_order_amount, 2, ',', '.') }}
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-2 text-[12px]">
                                     <div class="text-xs font-medium text-foreground">
                                         {{ $voucher->times_used }} / {{ $voucher->max_uses_global ?? '∞' }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-xs text-muted-foreground">
+                                <td class="px-3 py-2 text-[12px] text-xs text-muted-foreground">
                                     @if ($voucher->valid_until)
                                         Until {{ \Carbon\Carbon::parse($voucher->valid_until)->format('d M Y') }}
                                     @else
                                         No Expiry
                                     @endif
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-2 text-[12px]">
                                     <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
                                         <span class="w-1.5 h-1.5 rounded-full {{ $voucher->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
                                         {{ $voucher->is_active ? 'Active' : 'Inactive' }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                                     <x-ui.table-actions>
                                         @if ($voucher->is_active)
                                             <x-ui.table-action-item icon="pause_circle" variant="destructive" wire:click="deactivateVoucher({{ $voucher->id }})" wire:confirm="Deactivate this voucher?">
@@ -186,22 +186,22 @@
                 <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
                     <thead>
                         <tr class="border-b border-border bg-secondary/50 /50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            <th scope="col" class="px-6 py-3.5">Card Number</th>
-                            <th scope="col" class="px-6 py-3.5">Customer</th>
-                            <th scope="col" class="px-6 py-3.5 text-right">Initial Balance</th>
-                            <th scope="col" class="px-6 py-3.5 text-right">Current Balance</th>
-                            <th scope="col" class="px-6 py-3.5">Expiry Date</th>
-                            <th scope="col" class="px-6 py-3.5 text-center">Status</th>
-                            <th scope="col" class="px-6 py-3.5 text-right">Actions</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Card Number</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Customer</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Initial Balance</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Current Balance</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Expiry Date</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-center">Status</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border">
                         @forelse ($giftCards as $card)
                             <tr class="hover:bg-secondary/50 transition">
-                                <td class="px-6 py-4 font-sans font-bold text-foreground">
+                                <td class="px-3 py-2 text-[12px] font-sans font-bold text-foreground">
                                     {{ $card->masked_card_number }}
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-2 text-[12px]">
                                     @if ($card->customer)
                                         <div class="font-medium text-foreground">{{ $card->customer->name }}</div>
                                         <div class="text-xs text-muted-foreground font-sans">{{ $card->customer->customer_code }}</div>
@@ -209,20 +209,20 @@
                                         <span class="text-xs text-muted-foreground italic">Anonymous / Bearer</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 text-right text-muted-foreground font-sans tabular-nums">
+                                <td class="px-3 py-2 text-[12px] text-right text-muted-foreground font-sans tabular-nums">
                                     Rp {{ number_format((float) $card->initial_amount, 2, ',', '.') }}
                                 </td>
-                                <td class="px-6 py-4 text-right font-semibold text-positive font-sans tabular-nums">
+                                <td class="px-3 py-2 text-[12px] text-right font-semibold text-positive font-sans tabular-nums">
                                     Rp {{ number_format((float) $card->current_balance, 2, ',', '.') }}
                                 </td>
-                                <td class="px-6 py-4 text-xs text-muted-foreground">
+                                <td class="px-3 py-2 text-[12px] text-xs text-muted-foreground">
                                     @if ($card->expires_at)
                                         {{ \Carbon\Carbon::parse($card->expires_at)->format('d M Y') }}
                                     @else
                                         No Expiry
                                     @endif
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-2 text-[12px]">
                                     @php
                                         $gcDot = match($card->status->value) {
                                             'ACTIVE' => 'bg-success',
@@ -235,7 +235,7 @@
                                         {{ $card->status->value }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                                     <x-ui.table-actions>
                                         @if ($card->status->value === 'ACTIVE')
                                             <x-ui.table-action-item icon="lock" variant="destructive" wire:click="freezeGiftCard({{ $card->id }})" wire:confirm="Freeze this gift card?">
@@ -273,33 +273,33 @@
                 <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
                     <thead>
                         <tr class="border-b border-border bg-secondary/50 /50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            <th scope="col" class="px-6 py-3.5">Customer</th>
-                            <th scope="col" class="px-6 py-3.5 text-center">Account Status</th>
-                            <th scope="col" class="px-6 py-3.5 text-right">Store Credit Balance</th>
-                            <th scope="col" class="px-6 py-3.5">Last Updated</th>
-                            <th scope="col" class="px-6 py-3.5 text-right">Actions</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Customer</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-center">Account Status</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Store Credit Balance</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Last Updated</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border">
                         @forelse ($storeCredits as $sc)
                             <tr class="hover:bg-secondary/50 transition">
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-2 text-[12px]">
                                     <div class="font-bold text-foreground">{{ $sc->customer->name ?? '-' }}</div>
                                     <div class="text-xs text-muted-foreground font-sans">{{ $sc->customer->customer_code ?? '' }}</div>
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-2 text-[12px]">
                                     <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
                                         <span class="w-1.5 h-1.5 rounded-full {{ $sc->status->value === 'ACTIVE' ? 'bg-success' : 'bg-destructive' }}"></span>
                                         {{ $sc->status->value }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-right font-bold text-positive font-sans tabular-nums text-base">
+                                <td class="px-3 py-2 text-[12px] text-right font-bold text-positive font-sans tabular-nums text-base">
                                     Rp {{ number_format((float) $sc->current_balance, 2, ',', '.') }}
                                 </td>
-                                <td class="px-6 py-4 text-xs text-muted-foreground">
+                                <td class="px-3 py-2 text-[12px] text-xs text-muted-foreground">
                                     {{ $sc->updated_at ? $sc->updated_at->diffForHumans() : '-' }}
                                 </td>
-                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                                     <x-ui.table-actions>
                                         <x-ui.table-action-item icon="add" wire:click="$set('store_credit_customer_id', {{ $sc->customer_id }}); $set('showStoreCreditModal', true)">
                                             Top Up Balance

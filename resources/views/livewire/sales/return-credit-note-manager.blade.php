@@ -71,39 +71,39 @@
                 <table class="table-standard min-w-full text-left border-collapse text-sm">
                     <thead class="border-b border-border bg-secondary/50 /50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         <tr>
-                            <th scope="col" class="px-6 py-3.5">Credit Note No.</th>
-                            <th scope="col" class="px-6 py-3.5">Customer</th>
-                            <th scope="col" class="px-6 py-3.5">Date</th>
-                            <th scope="col" class="px-6 py-3.5 text-right">Total Amount</th>
-                            <th scope="col" class="px-6 py-3.5 text-right">Applied</th>
-                            <th scope="col" class="px-6 py-3.5 text-right">Remaining Balance</th>
-                            <th scope="col" class="px-6 py-3.5">Status</th>
-                            <th scope="col" class="px-6 py-3.5 text-right">Action</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Credit Note No.</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Customer</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Date</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Total Amount</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Applied</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Remaining Balance</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Status</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border">
                         @forelse ($creditNotes as $cn)
                             <tr class="hover:bg-secondary/50 transition">
-                                <td class="px-6 py-4 font-sans font-medium text-foreground">
+                                <td class="px-3 py-2 text-[12px] font-sans font-medium text-foreground">
                                     {{ $cn->credit_note_number }}
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-2 text-[12px]">
                                     <div class="font-medium text-foreground">{{ $cn->customer?->name ?? 'Walk-in / N/A' }}</div>
                                     <div class="text-xs text-muted-foreground">{{ $cn->customer?->company_name }}</div>
                                 </td>
-                                <td class="px-6 py-4 text-xs text-muted-foreground">
+                                <td class="px-3 py-2 text-[12px] text-xs text-muted-foreground">
                                     {{ $cn->issue_date?->format('d/m/Y') }}
                                 </td>
-                                <td class="px-6 py-4 text-right font-medium text-foreground tabular-nums">
+                                <td class="px-3 py-2 text-[12px] text-right font-medium text-foreground tabular-nums">
                                     Rp {{ number_format((float) $cn->total_amount, 2, ',', '.') }}
                                 </td>
-                                <td class="px-6 py-4 text-right text-muted-foreground tabular-nums">
+                                <td class="px-3 py-2 text-[12px] text-right text-muted-foreground tabular-nums">
                                     Rp {{ number_format((float) $cn->applied_amount, 2, ',', '.') }}
                                 </td>
-                                <td class="px-6 py-4 text-right font-semibold text-positive tabular-nums">
+                                <td class="px-3 py-2 text-[12px] text-right font-semibold text-positive tabular-nums">
                                     Rp {{ number_format((float) $cn->remaining_amount, 2, ',', '.') }}
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-2 text-[12px]">
                                     @php
                                         $dotColor = match($cn->status->value) {
                                             'APPLIED' => 'bg-success',
@@ -118,7 +118,7 @@
                                         {{ $cn->status->label() }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                                     @if ((float) $cn->remaining_amount > 0 && in_array($cn->status->value, ['ISSUED', 'PARTIALLY_APPLIED']))
                                         <x-ui.table-actions>
                                             <x-ui.table-action-item icon="receipt_long" wire:click="openApplyModal({{ $cn->id }})" aria-label="Apply to Invoice">
@@ -158,44 +158,44 @@
                 <table class="table-standard min-w-full text-left border-collapse text-sm">
                     <thead class="border-b border-border bg-secondary/50 /50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         <tr>
-                            <th scope="col" class="px-6 py-3.5">Return No.</th>
-                            <th scope="col" class="px-6 py-3.5">Source Order</th>
-                            <th scope="col" class="px-6 py-3.5">Customer</th>
-                            <th scope="col" class="px-6 py-3.5">Type</th>
-                            <th scope="col" class="px-6 py-3.5 text-right">Goods Value</th>
-                            <th scope="col" class="px-6 py-3.5 text-right">Total Refund / CN</th>
-                            <th scope="col" class="px-6 py-3.5">Status</th>
-                            <th scope="col" class="px-6 py-3.5">Completed At</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Return No.</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Source Order</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Customer</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Type</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Goods Value</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Total Refund / CN</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Status</th>
+                            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Completed At</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border">
                         @forelse ($returns as $ret)
                             <tr class="hover:bg-secondary/50 transition">
-                                <td class="px-6 py-4 font-sans font-medium text-foreground">
+                                <td class="px-3 py-2 text-[12px] font-sans font-medium text-foreground">
                                     {{ $ret->return_number }}
                                 </td>
-                                <td class="px-6 py-4 font-sans text-xs text-muted-foreground">
+                                <td class="px-3 py-2 text-[12px] font-sans text-xs text-muted-foreground">
                                     {{ $ret->order?->order_code ?? '-' }}
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-2 text-[12px]">
                                     <div class="font-medium text-foreground">{{ $ret->customer?->name ?? 'Walk-in' }}</div>
                                 </td>
-                                <td class="px-6 py-4 text-xs capitalize text-muted-foreground">
+                                <td class="px-3 py-2 text-[12px] text-xs capitalize text-muted-foreground">
                                     {{ $ret->return_type }}
                                 </td>
-                                <td class="px-6 py-4 text-right text-foreground tabular-nums">
+                                <td class="px-3 py-2 text-[12px] text-right text-foreground tabular-nums">
                                     Rp {{ number_format((float) $ret->subtotal_returned, 2, ',', '.') }}
                                 </td>
-                                <td class="px-6 py-4 text-right font-medium text-foreground tabular-nums">
+                                <td class="px-3 py-2 text-[12px] text-right font-medium text-foreground tabular-nums">
                                     Rp {{ number_format((float) $ret->total_refundable_amount, 2, ',', '.') }}
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-3 py-2 text-[12px]">
                                     <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
                                         <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
                                         {{ $ret->status }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-xs text-muted-foreground">
+                                <td class="px-3 py-2 text-[12px] text-xs text-muted-foreground">
                                     {{ $ret->completed_at?->format('d/m/Y H:i') ?? '-' }}
                                 </td>
                             </tr>

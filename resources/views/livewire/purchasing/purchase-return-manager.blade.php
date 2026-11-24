@@ -60,34 +60,34 @@
             <table class="table-standard w-full min-w-full text-left text-sm text-muted-foreground">
                 <thead class="bg-secondary /50 text-xs font-semibold uppercase text-muted-foreground border-b border-border">
                     <tr>
-                        <th scope="col" class="px-6 py-4">Return Number & Date</th>
-                        <th scope="col" class="px-6 py-4">Supplier & Warehouse</th>
-                        <th scope="col" class="px-6 py-4">GRN Reference</th>
-                        <th scope="col" class="px-6 py-4">Return Reason</th>
-                        <th scope="col" class="px-6 py-4 text-center">Debit Note (DN)</th>
-                        <th scope="col" class="px-6 py-4 text-center">Return Status</th>
-                        <th scope="col" class="px-6 py-4 text-right">Actions</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Return Number & Date</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Supplier & Warehouse</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">GRN Reference</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Return Reason</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-center">Debit Note (DN)</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-center">Return Status</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y border-border">
                     @forelse($returns as $ret)
                     <tr class="hover:bg-secondary/50 transition-colors">
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <div class="font-bold text-foreground font-sans">{{ $ret->return_number }}</div>
                             <div class="text-xs text-muted-foreground">{{ \Carbon\Carbon::parse($ret->created_at)->format('d M Y') }}</div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <div class="font-medium text-foreground">{{ $ret->supplier?->name ?? 'Vendor' }}</div>
                             <div class="text-xs text-muted-foreground">{{ $ret->store?->name ?? 'All Branches' }}</div>
                         </td>
-                        <td class="px-6 py-4 font-sans text-xs">
+                        <td class="px-3 py-2 text-[12px] font-sans text-xs">
                             <div class="font-medium text-foreground">{{ $ret->goodsReceivedNote?->grn_number ?? 'GRN #' . $ret->goods_received_note_id }}</div>
                             <div class="text-muted-foreground">DO: {{ $ret->goodsReceivedNote?->delivery_order_number }}</div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <span class="text-xs font-medium text-foreground">{{ $ret->reason?->label() ?? $ret->reason ?? '-' }}</span>
                         </td>
-                        <td class="px-6 py-4 text-center">
+                        <td class="px-3 py-2 text-[12px] text-center">
                             @if($ret->debitNote)
                                 <div class="font-sans text-xs font-bold text-positive">{{ $ret->debitNote->debit_note_number }}</div>
                                 <div class="text-[11px] text-muted-foreground">Rp {{ number_format((float) $ret->debitNote->total_amount, 2) }}</div>
@@ -95,7 +95,7 @@
                                 <span class="text-xs text-muted-foreground italic">Not Issued</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             @php
                                 $retStatusVal = $ret->status?->value ?? (string) $ret->status;
                                 $statusDot = match($retStatusVal) {
@@ -110,7 +110,7 @@
                                 {{ $ret->status?->label() ?? $retStatusVal }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                             <x-ui.table-actions>
                                 <x-ui.table-action-item icon="visibility" wire:click="viewReturn({{ $ret->id }})" aria-label="View Return Details">
                                     View Return Details

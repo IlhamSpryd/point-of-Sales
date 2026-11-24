@@ -85,32 +85,32 @@
     >
         @foreach($purchaseOrders as $po)
                     <tr wire:key="po-row-{{ $po->id }}" class="hover:bg-muted/40 transition-colors">
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <div class="font-bold text-foreground font-sans">{{ $po->po_number }}</div>
                             <div class="text-xs text-muted-foreground">{{ \Carbon\Carbon::parse($po->order_date)->format('d M Y') }}</div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <div class="font-medium text-foreground">{{ $po->supplier?->name ?? 'Vendor #' . $po->supplier_id }}</div>
                             <div class="text-xs text-muted-foreground">{{ $po->supplier?->phone ?: $po->supplier?->email }}</div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <span class="text-foreground font-medium">{{ $po->store?->name ?? 'All Branches' }}</span>
                         </td>
-                        <td class="tabular-nums px-6 py-4 text-right">
+                        <td class="tabular-nums px-3 py-2 text-[12px] text-right">
                             <div class="font-bold text-foreground">Rp {{ number_format((float) $po->total_amount, 2) }}</div>
                             <div class="text-[11px] text-muted-foreground">Tax: Rp {{ number_format((float) $po->tax_amount, 2) }}</div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <span class="text-xs text-muted-foreground font-medium">
                                 {{ $po->receiving_status?->label() ?? $po->receiving_status ?? 'UNRECEIVED' }}
                             </span>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <span class="text-xs text-muted-foreground font-medium">
                                 {{ $po->invoicing_status?->label() ?? $po->invoicing_status ?? 'UNINVOICED' }}
                             </span>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             @php
                                 $poStatusVal = $po->status?->value ?? (string) $po->status;
                                 $statusDot = match($poStatusVal) {
@@ -127,7 +127,7 @@
                                 {{ $po->status?->label() ?? $poStatusVal }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                             <x-ui.table-actions>
                                 <x-ui.table-action-item icon="visibility" wire:click="viewPo({{ $po->id }})">
                                     View PO Details

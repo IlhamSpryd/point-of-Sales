@@ -55,28 +55,28 @@
         :colspan="6"
     >
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Opname #</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Snapshot Date</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Status</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Items</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Counter / Approver</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Opname #</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Snapshot Date</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Status</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Items</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Counter / Approver</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                 </x-slot:head>
 
                 @foreach ($opnames as $opname)
                     <tr wire:key="opname-{{ $opname->id ?? $loop->index }}" class="hover:bg-secondary transition-colors duration-150">
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap">
                             <span class="text-sm font-bold text-foreground">{{ $opname->opname_number }}</span>
                             <div class="text-xs text-muted-foreground">Created: {{ $opname->created_at->format('d M Y H:i') }}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap text-sm text-foreground">
                             @if ($opname->snapshot_taken_at)
                                 <span class="font-medium text-positive">{{ $opname->snapshot_taken_at->format('d M Y H:i') }}</span>
                             @else
                                 <span class="text-xs text-muted-foreground italic">Not started</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap">
                             @php
                                 $opnameDot = match($opname->status->badgeType()) {
                                     'success' => 'bg-success',
@@ -90,14 +90,14 @@
                                 {{ $opname->status->label() }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-foreground text-right">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap text-sm font-semibold text-foreground text-right">
                             {{ $opname->items_count }} items
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-xs text-foreground">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap text-xs text-foreground">
                             <div>Count: <span class="font-medium">{{ $opname->submitter->name ?? '-' }}</span></div>
                             <div>Approve: <span class="font-medium">{{ $opname->approver->name ?? '-' }}</span></div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap text-right">
                             <x-ui.table-actions>
                                 <x-ui.table-action-item icon="visibility" wire:click="viewDetail({{ $opname->id }})" aria-label="View Details">
                                     View Details

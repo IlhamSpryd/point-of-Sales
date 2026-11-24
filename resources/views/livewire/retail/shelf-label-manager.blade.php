@@ -49,30 +49,30 @@
             <table class="w-full text-left text-sm text-foreground">
                 <thead class="bg-muted/50 text-muted-foreground font-semibold text-2xs uppercase tracking-wider border-b border-border">
                     <tr>
-                        <th scope="col" class="px-6 py-3.5">Batch Number</th>
-                        <th scope="col" class="px-6 py-3.5">Product Name</th>
-                        <th scope="col" class="px-6 py-3.5">Barcode</th>
-                        <th scope="col" class="px-6 py-3.5">Price Snapshot</th>
-                        <th scope="col" class="px-6 py-3.5">Status</th>
-                        <th scope="col" class="px-6 py-3.5 text-right">Action</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Batch Number</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Product Name</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Barcode</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Price Snapshot</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Status</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
                     @forelse ($labels as $label)
                         <tr class="hover:bg-muted/30 transition-colors">
-                            <td class="px-6 py-4 font-mono font-medium text-xs text-foreground">
+                            <td class="px-3 py-2 text-[12px] font-mono font-medium text-xs text-foreground">
                                 {{ $label->batch_number }}
                             </td>
-                            <td class="px-6 py-4 font-medium text-foreground">
+                            <td class="px-3 py-2 text-[12px] font-medium text-foreground">
                                 {{ $label->product?->product_name ?? $label->product?->name ?? 'N/A' }}
                             </td>
-                            <td class="px-6 py-4 font-mono text-muted-foreground text-xs">
+                            <td class="px-3 py-2 text-[12px] font-mono text-muted-foreground text-xs">
                                 {{ $label->variant?->barcode ?? $label->product?->barcode ?? '-' }}
                             </td>
-                            <td class="tabular-nums px-6 py-4 font-semibold text-foreground">
+                            <td class="tabular-nums px-3 py-2 text-[12px] font-semibold text-foreground">
                                 Rp {{ number_format((float) $label->new_price, 0, ',', '.') }}
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-2 text-[12px]">
                                 @php
                                     $isPrinted = ($label->status === \App\Modules\Catalog\Models\ShelfLabel::STATUS_PRINTED || $label->status === 'printed');
                                 @endphp
@@ -81,7 +81,7 @@
                                     {{ $isPrinted ? 'Printed' : 'Pending' }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                                 <x-ui.table-actions>
                                     <x-ui.table-action-item icon="print" href="{{ route('retail.shelf-labels.print-batch', $label->batch_number) }}" target="_blank" rel="noopener noreferrer" aria-label="Print Sheet">
                                         Print Sheet

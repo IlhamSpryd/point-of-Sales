@@ -39,22 +39,22 @@
             <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
                 <thead>
                     <tr class="border-b border-border bg-secondary/50 /50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        <th scope="col" class="px-6 py-4">Name & Code</th>
-                        <th scope="col" class="px-6 py-4 text-right">Type & Value</th>
-                        <th scope="col" class="px-6 py-4 text-right">Min. Spend Requirement</th>
-                        <th scope="col" class="px-6 py-4 text-center">Quota & Stackable</th>
-                        <th scope="col" class="px-6 py-4 text-center">Status & Validity</th>
-                        <th scope="col" class="px-6 py-4 text-right">Actions</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Name & Code</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Type & Value</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Min. Spend Requirement</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-center">Quota & Stackable</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-center">Status & Validity</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
                     @forelse($discounts as $discount)
                         <tr class="hover:bg-secondary/60 transition">
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-2 text-[12px]">
                                 <div class="font-semibold text-foreground">{{ $discount->name }}</div>
                                 <div class="text-xs text-muted-foreground font-sans mt-0.5">{{ $discount->code ?? 'No Code' }}</div>
                             </td>
-                            <td class="px-6 py-4 text-right">
+                            <td class="px-3 py-2 text-[12px] text-right">
                                 <div class="font-semibold text-foreground font-sans tabular-nums">
                                     {{ $discount->type === 'percentage' ? $discount->value . '%' : 'Rp ' . number_format((float) $discount->value, 0, ',', '.') }}
                                 </div>
@@ -64,10 +64,10 @@
                                     </div>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-right text-xs text-muted-foreground font-sans tabular-nums">
+                            <td class="px-3 py-2 text-[12px] text-right text-xs text-muted-foreground font-sans tabular-nums">
                                 Rp {{ number_format((float) $discount->min_purchase_amount, 0, ',', '.') }}
                             </td>
-                            <td class="px-6 py-4 text-center">
+                            <td class="px-3 py-2 text-[12px] text-center">
                                 <div class="text-xs font-sans font-bold text-foreground">
                                     {{ $discount->redemptions_count }} / {{ $discount->usage_limit ?? '∞' }}
                                 </div>
@@ -77,7 +77,7 @@
                                     </span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-2 text-[12px]">
                                 <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
                                     <span class="w-1.5 h-1.5 rounded-full {{ $discount->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
                                     {{ $discount->is_active ? 'Active' : 'Inactive' }}
@@ -88,7 +88,7 @@
                                     </div>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                                 <x-ui.table-actions>
                                     <x-ui.table-action-item icon="edit" wire:click="edit({{ $discount->id }})">
                                         Edit Discount

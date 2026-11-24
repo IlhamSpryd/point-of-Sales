@@ -44,27 +44,27 @@
                 :colspan="6"
             >
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Candidate Name</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Email</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Role & Branches</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Expires At</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Candidate Name</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Email</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Role & Branches</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Expires At</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-right text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
                 </x-slot:head>
 
                 @foreach($invitations as $invitation)
                     <tr class="hover:bg-secondary/70 transition-colors duration-150">
-                        <td class="px-6 py-4 font-semibold text-foreground text-sm">{{ $invitation->name }}</td>
-                        <td class="px-6 py-4 text-sm text-muted-foreground">{{ $invitation->email }}</td>
-                        <td class="px-6 py-4 text-sm">
-                            <div class="flex flex-col gap-1 items-start">
-                                <span class="text-xs text-foreground font-medium">{{ $invitation->role->name ?? 'Staff' }}</span>
-                                <span class="text-xs text-muted-foreground">
+                        <td class="px-3 py-2 font-semibold text-foreground text-[12px]">{{ $invitation->name }}</td>
+                        <td class="px-3 py-2 text-[12px] text-muted-foreground">{{ $invitation->email }}</td>
+                        <td class="px-3 py-2 text-[12px]">
+                            <div class="flex flex-col gap-0.5 items-start">
+                                <span class="text-[11px] text-foreground font-medium">{{ $invitation->role->name ?? 'Staff' }}</span>
+                                <span class="text-[11px] text-muted-foreground">
                                     {{ $invitation->stores->pluck('name')->join(', ') ?: 'All Branches' }}
                                 </span>
                             </div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2">
                             @php
                                 $dotColor = match($invitation->status) {
                                     'pending' => 'bg-warning',
@@ -80,15 +80,15 @@
                                     default => ucfirst($invitation->status),
                                 };
                             @endphp
-                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                            <span class="inline-flex items-center gap-1.5 text-[11px] text-foreground font-medium">
                                 <span class="w-1.5 h-1.5 rounded-full {{ $dotColor }}"></span>
                                 {{ $statusLabel }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-sm text-muted-foreground">
+                        <td class="px-3 py-2 text-[12px] text-muted-foreground">
                             {{ $invitation->expires_at ? $invitation->expires_at->format('M d, Y H:i') : '—' }}
                         </td>
-                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <td class="px-3 py-2 text-right whitespace-nowrap">
                             @if($invitation->status === 'pending' && $invitation->expires_at->isFuture())
                                 <x-ui.table-actions>
                                     <x-ui.table-action-item icon="forward_to_inbox" onclick="document.getElementById('resend-invite-{{ $invitation->id }}').submit()" aria-label="Resend Invitation">

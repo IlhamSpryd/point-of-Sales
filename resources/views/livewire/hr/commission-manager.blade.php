@@ -88,12 +88,12 @@
             <table class="w-full text-left text-sm text-foreground divide-y divide-border">
                 <thead class="bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     <tr>
-                        <th scope="col" class="px-6 py-3.5">Employee</th>
-                        <th scope="col" class="px-6 py-3.5">Order Reference</th>
-                        <th scope="col" class="px-6 py-3.5">Calculation Basis</th>
-                        <th scope="col" class="px-6 py-3.5">Commission Amount</th>
-                        <th scope="col" class="px-6 py-3.5">Status</th>
-                        <th scope="col" class="px-6 py-3.5">Date</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Employee</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Order Reference</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Calculation Basis</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Commission Amount</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Status</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Date</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -106,7 +106,7 @@
                             $basisAmount = (float) ($record->calculation_basis_amount ?? $record->basis_amount ?? 0);
                         @endphp
                         <tr class="hover:bg-muted/30 transition-colors">
-                            <td class="px-6 py-4 font-semibold text-foreground flex items-center gap-3">
+                            <td class="px-3 py-2 text-[12px] font-semibold text-foreground flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-full bg-secondary text-secondary-foreground font-bold flex items-center justify-center text-xs shrink-0">
                                     {{ strtoupper(substr($record->employee?->full_name ?? 'EM', 0, 2)) }}
                                 </div>
@@ -115,16 +115,16 @@
                                     <div class="text-xs text-muted-foreground tabular-nums">{{ $record->employee?->employee_number }}</div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-xs text-muted-foreground tabular-nums">
+                            <td class="px-3 py-2 text-[12px] text-xs text-muted-foreground tabular-nums">
                                 #{{ $record->order_id }}
                             </td>
-                            <td class="px-6 py-4 text-xs tabular-nums text-foreground">
+                            <td class="px-3 py-2 text-[12px] text-xs tabular-nums text-foreground">
                                 Rp {{ number_format($basisAmount, 2, ',', '.') }}
                             </td>
-                            <td class="px-6 py-4 font-bold tabular-nums {{ $isReversal ? 'text-destructive' : 'text-positive' }}">
+                            <td class="px-3 py-2 text-[12px] font-bold tabular-nums {{ $isReversal ? 'text-destructive' : 'text-positive' }}">
                                 {{ $isReversal ? '-' : '+' }} Rp {{ number_format($amountAbs, 2, ',', '.') }}
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-2 text-[12px]">
                                 @php
                                     $commDot = match($record->status) {
                                         \App\Modules\Workforce\Enums\CommissionRecordStatusEnum::APPROVED, \App\Modules\Workforce\Enums\CommissionRecordStatusEnum::EARNED, \App\Modules\Workforce\Enums\CommissionRecordStatusEnum::PAID => 'bg-success',
@@ -139,7 +139,7 @@
                                     {{ $record->status->label() }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-xs text-muted-foreground tabular-nums">
+                            <td class="px-3 py-2 text-[12px] text-xs text-muted-foreground tabular-nums">
                                 {{ $record->created_at ? $record->created_at->format('d M Y, H:i') : '-' }}
                             </td>
                         </tr>

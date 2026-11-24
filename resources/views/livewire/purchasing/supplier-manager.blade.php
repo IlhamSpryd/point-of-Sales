@@ -53,25 +53,25 @@
             <table class="table-standard min-w-full text-left text-sm text-muted-foreground">
                 <thead class="bg-secondary /50 text-xs font-semibold uppercase text-muted-foreground border-b border-border">
                     <tr>
-                        <th scope="col" class="px-6 py-4">Code & Name</th>
-                        <th scope="col" class="px-6 py-4">Primary Contact</th>
-                        <th scope="col" class="px-6 py-4">Payment Terms</th>
-                        <th scope="col" class="px-6 py-4 text-center">Item Catalog</th>
-                        <th scope="col" class="px-6 py-4 text-center">Status</th>
-                        <th scope="col" class="px-6 py-4 text-right">Actions</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Code & Name</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Primary Contact</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Payment Terms</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-center">Item Catalog</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-center">Status</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y border-border">
                     @forelse($suppliers as $supplier)
                     <tr class="hover:bg-secondary/50 transition-colors">
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <div class="font-bold text-foreground">{{ $supplier->name }}</div>
                             <div class="text-xs text-muted-foreground font-sans">{{ $supplier->code }}</div>
                             @if($supplier->tax_id)
                                 <div class="text-[11px] text-muted-foreground mt-0.5">Tax ID: {{ $supplier->tax_id }}</div>
                             @endif
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             @if($supplier->primaryContact)
                                 <div class="font-medium text-foreground">{{ $supplier->primaryContact->name }}</div>
                                 <div class="text-xs text-muted-foreground">{{ $supplier->primaryContact->phone ?: $supplier->primaryContact->email }}</div>
@@ -81,17 +81,17 @@
                                 <span class="text-xs text-muted-foreground italic">No contact recorded</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <span class="font-medium text-foreground tabular-nums">{{ $supplier->payment_terms_days }} Days</span>
                             <span class="text-xs text-muted-foreground ml-1">({{ $supplier->currency_code }})</span>
                         </td>
-                        <td class="px-6 py-4 text-center">
+                        <td class="px-3 py-2 text-[12px] text-center">
                             <button wire:click="openCatalog({{ $supplier->id }})" class="inline-flex items-center gap-1.5 text-xs font-medium text-foreground hover:text-primary transition-colors cursor-pointer">
                                 <span class="material-symbols-rounded text-sm text-muted-foreground">inventory_2</span>
                                 <span><span class="tabular-nums font-semibold">{{ $supplier->supplier_products_count }}</span> Items</span>
                             </button>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             @php
                                 $statusDot = match($supplier->status->value) {
                                     'active' => 'bg-success',
@@ -106,7 +106,7 @@
                                 {{ $supplier->status->label() }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                             <x-ui.table-actions>
                                 <x-ui.table-action-item icon="contacts" wire:click="openContacts({{ $supplier->id }})" aria-label="Manage Contacts">
                                     Manage Contacts

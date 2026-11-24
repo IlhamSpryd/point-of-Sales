@@ -83,33 +83,33 @@
                 :colspan="$canManage ? 5 : 4"
             >
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Code</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category Name</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Parent Category</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Code</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Category Name</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Parent Category</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
                     @if($canManage)
-                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-right text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
                     @endif
                 </x-slot:head>
                 
                 @foreach($categories as $category)
                     <tr class="hover:bg-muted/40 transition-colors duration-200">
-                        <td class="px-6 py-4 font-sans font-semibold text-foreground text-xs">{{ $category->category_code }}</td>
-                        <td class="px-6 py-4">
-                            <div class="font-semibold text-foreground text-sm">{{ $category->category_name }}</div>
+                        <td class="px-3 py-2 font-sans font-semibold text-foreground text-[11px]">{{ $category->category_code }}</td>
+                        <td class="px-3 py-2">
+                            <div class="font-medium text-foreground text-[12px]">{{ $category->category_name }}</div>
                             @if($category->description)
-                                <div class="text-xs text-muted-foreground mt-0.5">{{ Str::limit($category->description, 50) }}</div>
+                                <div class="text-[11px] text-muted-foreground mt-0.5">{{ Str::limit($category->description, 50) }}</div>
                             @endif
                         </td>
-                        <td class="px-6 py-4 text-sm text-muted-foreground">{{ $category->parent?->category_name ?? '— (Primary Category)' }}</td>
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                        <td class="px-3 py-2 text-[12px] text-muted-foreground">{{ $category->parent?->category_name ?? '— (Primary Category)' }}</td>
+                        <td class="px-3 py-2">
+                            <span class="inline-flex items-center gap-1.5 text-[11px] text-foreground font-medium">
                                 <span class="w-1.5 h-1.5 rounded-full {{ ($category->is_active ?? true) ? 'bg-success' : 'bg-neutral' }}"></span>
                                 {{ ($category->is_active ?? true) ? 'Active' : 'Inactive' }}
                             </span>
                         </td>
                         @if($canManage)
-                            <td class="px-6 py-4 text-right">
+                            <td class="px-3 py-2 text-right">
                                 <x-ui.table-actions>
                                     <x-ui.table-action-item icon="edit" @click="openEdit({{ json_encode($category) }})">
                                         Edit

@@ -59,21 +59,21 @@
         :colspan="6"
     >
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Transfer #</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Route</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Status</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Items</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Timestamps</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Transfer #</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Route</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Status</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Items</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Timestamps</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                 </x-slot:head>
 
                 @foreach ($transfers as $transfer)
                     <tr wire:key="transfer-{{ $transfer->id ?? $loop->index }}" class="hover:bg-secondary transition-colors duration-150">
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap">
                             <span class="text-sm font-bold text-foreground">{{ $transfer->transfer_number }}</span>
                             <div class="text-xs text-muted-foreground">Created by: {{ $transfer->creator->name ?? 'System' }}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap text-sm text-foreground">
                             <div class="flex items-center gap-2">
                                 <span class="font-semibold {{ $transfer->from_store_id === $currentStoreId ? 'text-warning' : 'text-foreground' }}">
                                     {{ $transfer->fromStore->name }}
@@ -84,7 +84,7 @@
                                 </span>
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap">
                             @php
                                 $transferDot = match($transfer->status->badgeType()) {
                                     'success' => 'bg-success',
@@ -98,10 +98,10 @@
                                 {{ $transfer->status->label() }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-foreground text-right">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap text-sm font-semibold text-foreground text-right">
                             {{ $transfer->items_count }} items
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-xs text-foreground">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap text-xs text-foreground">
                             @if ($transfer->shipped_at)
                                 <div>Shipped: <span class="font-medium text-warning">{{ $transfer->shipped_at->format('d M H:i') }}</span></div>
                             @endif
@@ -109,7 +109,7 @@
                                 <div>Received: <span class="font-medium text-positive">{{ $transfer->received_at->format('d M H:i') }}</span></div>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap text-right">
                             <x-ui.table-actions>
                                 <x-ui.table-action-item icon="visibility" wire:click="viewDetail({{ $transfer->id }})" aria-label="View Details">
                                     View Details

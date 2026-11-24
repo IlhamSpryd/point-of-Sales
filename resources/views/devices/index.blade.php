@@ -73,26 +73,26 @@
             :colspan="6"
         >
             <x-slot:head>
-                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Code</th>
-                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Device &amp; Branch</th>
-                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
-                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Connection Status</th>
-                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Last Activity</th>
-                <th scope="col" class="px-6 py-3.5 text-right text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Code</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Device &amp; Branch</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Connection Status</th>
+                <th scope="col" class="h-8 px-3 py-2 text-left text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Last Activity</th>
+                <th scope="col" class="h-8 px-3 py-2 text-right text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
             </x-slot:head>
 
             @foreach($devices as $device)
                 <tr class="hover:bg-muted/40 transition-colors">
-                    <td class="px-6 py-4 font-sans font-medium text-foreground text-sm whitespace-nowrap">
+                    <td class="px-3 py-2 font-sans font-medium text-foreground text-[11px] whitespace-nowrap">
                         {{ $device->device_code }}
                     </td>
-                    <td class="px-6 py-4">
-                        <div class="font-semibold text-foreground text-sm">{{ $device->device_name }}</div>
-                        <div class="text-xs text-muted-foreground mt-0.5">
+                    <td class="px-3 py-2">
+                        <div class="font-medium text-foreground text-[12px]">{{ $device->device_name }}</div>
+                        <div class="text-[11px] text-muted-foreground mt-0.5">
                             {{ $device->store?->name ?? 'Unknown branch' }}
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-xs text-foreground whitespace-nowrap">
+                    <td class="px-3 py-2 text-[11px] text-foreground whitespace-nowrap">
                         @php
                             $typeLabel = match($device->device_type) {
                                 'pos_terminal' => 'POS Cashier Terminal',
@@ -105,7 +105,7 @@
                             {{ $typeLabel }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
+                    <td class="px-3 py-2 whitespace-nowrap">
                         @php
                             $statusDot = match($device->pairing_status) {
                                 'paired' => 'bg-success',
@@ -120,15 +120,15 @@
                                 default => $device->pairing_status,
                             };
                         @endphp
-                        <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                        <span class="inline-flex items-center gap-1.5 text-[11px] text-foreground font-medium">
                             <span class="w-1.5 h-1.5 rounded-full {{ $statusDot }}"></span>
                             {{ $statusLabel }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 text-xs text-muted-foreground whitespace-nowrap">
+                    <td class="px-3 py-2 text-[11px] text-muted-foreground whitespace-nowrap">
                         {{ $device->last_seen_at ? $device->last_seen_at->diffForHumans() : 'Never active' }}
                     </td>
-                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                    <td class="px-3 py-2 text-right whitespace-nowrap">
                         <x-ui.table-actions>
                             <x-ui.table-action-item icon="visibility" href="{{ route('devices.show', $device) }}" wire:navigate>
                                 View Details

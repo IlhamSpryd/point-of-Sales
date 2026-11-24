@@ -70,31 +70,31 @@
         :colspan="7"
     >
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Receipt No.</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Received At</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Supplier / PO</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Status</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Items</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Total Value</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Receipt No.</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Received At</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Supplier / PO</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Status</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Items</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Total Value</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                 </x-slot:head>
 
                 @foreach ($receipts as $receipt)
                     <tr wire:key="receipt-{{ $receipt->id ?? $loop->index }}" class="hover:bg-muted/40 transition-colors duration-150">
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap">
                             <span class="text-sm font-semibold text-foreground">{{ $receipt->receipt_number }}</span>
                             <div class="text-xs text-muted-foreground">Created by: {{ $receipt->creator->name ?? 'System' }}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap text-sm text-foreground">
                             {{ $receipt->received_at->format('d M Y H:i') }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap text-sm text-foreground">
                             <div>{{ $receipt->supplier_reference ?: '-' }}</div>
                             @if($receipt->purchase_order_reference)
                                 <div class="text-xs text-muted-foreground">PO: {{ $receipt->purchase_order_reference }}</div>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap">
                             @php
                                 $grDot = match($receipt->status->badgeType()) {
                                     'success' => 'bg-success',
@@ -108,13 +108,13 @@
                                 {{ $receipt->status->label() }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-foreground">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap text-right text-sm font-semibold text-foreground">
                             {{ $receipt->items->count() }} items
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-foreground font-sans tabular-nums">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap text-right text-sm font-bold text-foreground font-sans tabular-nums">
                             Rp {{ number_format((float) $receipt->calculateTotalValue(), 2, ',', '.') }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap text-right">
                             <x-ui.table-actions>
                                 <x-ui.table-action-item icon="visibility" wire:click="viewDetails({{ $receipt->id }})">
                                     View Details

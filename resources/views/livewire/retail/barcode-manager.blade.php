@@ -56,29 +56,29 @@
             <table class="w-full text-left text-sm text-foreground">
                 <thead class="bg-muted text-muted-foreground font-semibold text-xs uppercase tracking-wider border-b border-border">
                     <tr>
-                        <th scope="col" class="px-6 py-3">Product Name</th>
-                        <th scope="col" class="px-6 py-3">Variant Name</th>
-                        <th scope="col" class="px-6 py-3">SKU</th>
-                        <th scope="col" class="px-6 py-3">Current Barcode</th>
-                        <th scope="col" class="px-6 py-3 text-right">Action</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Product Name</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Variant Name</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">SKU</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider">Current Barcode</th>
+                        <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
                     @forelse ($variants as $variant)
                         <tr class="hover:bg-muted/50 transition-colors">
-                            <td class="px-6 py-4 font-medium text-foreground">
+                            <td class="px-3 py-2 text-[12px] font-medium text-foreground">
                                 {{ $variant->product?->name ?? 'N/A' }}
                             </td>
-                            <td class="px-6 py-4 text-foreground">
+                            <td class="px-3 py-2 text-[12px] text-foreground">
                                 {{ $variant->variant_name }}
                             </td>
-                            <td class="px-6 py-4 font-mono text-xs text-muted-foreground">
+                            <td class="px-3 py-2 text-[12px] font-mono text-xs text-muted-foreground">
                                 {{ $variant->sku }}
                             </td>
-                            <td class="px-6 py-4 font-mono text-xs font-semibold text-foreground">
+                            <td class="px-3 py-2 text-[12px] font-mono text-xs font-semibold text-foreground">
                                 {{ $variant->barcode ?? '-' }}
                             </td>
-                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                                 <x-ui.table-actions>
                                     <x-ui.table-action-item icon="autorenew" wire:click="generateInternalBarcodeForVariant({{ $variant->id }})" aria-label="Assign Internal Barcode">
                                         Assign Barcode

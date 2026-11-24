@@ -70,27 +70,27 @@
         :colspan="7"
     >
         <x-slot:head>
-            <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Return #</th>
-            <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Return Date</th>
-            <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Supplier</th>
-            <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Reference</th>
-            <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
-            <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Created / Posted By</th>
-            <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
+            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Return #</th>
+            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Return Date</th>
+            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Supplier</th>
+            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Reference</th>
+            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Created / Posted By</th>
+            <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
         </x-slot:head>
 
         @foreach ($returns as $ret)
                         <tr wire:key="ret-{{ $ret->id ?? $loop->index }}" class="hover:bg-secondary/40 transition-colors">
-                            <td class="px-6 py-4 font-bold text-foreground">
+                            <td class="px-3 py-2 text-[12px] font-bold text-foreground">
                                 {{ $ret->return_number }}
                             </td>
-                            <td class="px-6 py-4 text-muted-foreground text-xs">
+                            <td class="px-3 py-2 text-[12px] text-muted-foreground text-xs">
                                 {{ $ret->returned_at->format('d M Y H:i') }}
                             </td>
-                            <td class="px-6 py-4 font-medium text-foreground">
+                            <td class="px-3 py-2 text-[12px] font-medium text-foreground">
                                 {{ $ret->supplier_name ?? '-' }}
                             </td>
-                            <td class="px-6 py-4 text-xs text-muted-foreground">
+                            <td class="px-3 py-2 text-[12px] text-xs text-muted-foreground">
                                 @if($ret->goodsReceipt)
                                     <span class="inline-flex items-center gap-1 font-sans text-xs text-foreground font-medium">
                                         <span class="material-symbols-rounded text-[14px]">receipt_long</span>
@@ -102,7 +102,7 @@
                                     -
                                 @endif
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-2 text-[12px]">
                                 @php
                                     $retDot = match($ret->status->badgeType()) {
                                         'success' => 'bg-success',
@@ -116,13 +116,13 @@
                                     {{ $ret->status->label() }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-xs text-muted-foreground">
+                            <td class="px-3 py-2 text-[12px] text-xs text-muted-foreground">
                                 <div>Created: {{ $ret->creator?->name ?? 'System' }}</div>
                                 @if($ret->poster)
                                     <div class="text-[11px] text-positive">Posted: {{ $ret->poster->name }}</div>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                                 <x-ui.table-actions>
                                     <x-ui.table-action-item icon="visibility" wire:click="viewDetail({{ $ret->id }})" aria-label="View Details">
                                         View Details

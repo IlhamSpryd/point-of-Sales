@@ -60,28 +60,28 @@
         :colspan="7"
     >
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Adjustment #</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Adjustment Date</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Reason Code</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Status</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Items</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Total Value</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Adjustment #</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Adjustment Date</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Reason Code</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Status</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Items</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Total Value</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                 </x-slot:head>
 
                 @foreach ($adjustments as $adjustment)
                     <tr wire:key="adjustment-{{ $adjustment->id ?? $loop->index }}" class="hover:bg-secondary transition-colors duration-150">
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap">
                             <span class="text-sm font-bold text-foreground">{{ $adjustment->adjustment_number }}</span>
                             <div class="text-xs text-muted-foreground">Created by: {{ $adjustment->creator->name ?? 'System' }}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap text-sm text-foreground">
                             {{ $adjustment->adjusted_at->format('d M Y H:i') }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap text-sm text-foreground">
                             <span class="font-semibold">{{ $adjustment->reason_code->label() }}</span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap">
                             @php
                                 $adjDot = match($adjustment->status->badgeType()) {
                                     'success' => 'bg-success',
@@ -95,13 +95,13 @@
                                 {{ $adjustment->status->label() }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-foreground">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap text-right text-sm font-semibold text-foreground">
                             {{ $adjustment->items->count() }} items
                         </td>
-                        <td class="tabular-nums px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-foreground">
+                        <td class="tabular-nums px-3 py-2 text-[12px] whitespace-nowrap text-right text-sm font-bold text-foreground">
                             Rp {{ number_format((float) $adjustment->calculateTotalValue(), 2, ',', '.') }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right">
+                        <td class="px-3 py-2 text-[12px] whitespace-nowrap text-right">
                             <x-ui.table-actions>
                                 <x-ui.table-action-item icon="visibility" wire:click="viewDetails({{ $adjustment->id }})" aria-label="View Details">
                                     View Details

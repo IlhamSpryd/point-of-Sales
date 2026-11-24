@@ -74,26 +74,26 @@
     >
         @foreach($grns as $grn)
                     <tr wire:key="grn-{{ $grn->id ?? $loop->index }}" class="hover:bg-secondary/50 transition-colors">
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <div class="font-bold text-foreground font-sans">{{ $grn->grn_number }}</div>
                             <div class="text-xs text-muted-foreground">{{ \Carbon\Carbon::parse($grn->received_date)->format('d M Y') }}</div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <div class="font-medium text-foreground font-sans">{{ $grn->purchaseOrder?->po_number ?? 'PO #' . $grn->purchase_order_id }}</div>
                             <div class="text-xs text-muted-foreground font-sans">DO: {{ $grn->delivery_order_number }}</div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <div class="font-medium text-foreground">{{ $grn->purchaseOrder?->supplier?->name ?? 'Vendor' }}</div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <span class="text-foreground font-medium">{{ $grn->store?->name ?? 'All Branches' }}</span>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             <span class="text-xs text-muted-foreground font-medium">
                                 {{ $grn->matching_status?->label() ?? $grn->matching_status ?? 'UNMATCHED' }}
                             </span>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-2 text-[12px]">
                             @php
                                 $grnStatusVal = $grn->status?->value ?? (string) $grn->status;
                                 $dotColor = match($grnStatusVal) {
@@ -108,7 +108,7 @@
                                 {{ $grn->status?->label() ?? $grnStatusVal }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <td class="px-3 py-2 text-[12px] text-right whitespace-nowrap">
                             <x-ui.table-actions>
                                 <x-ui.table-action-item icon="visibility" wire:click="viewGrn({{ $grn->id }})" aria-label="View GRN Details">
                                     View GRN Details

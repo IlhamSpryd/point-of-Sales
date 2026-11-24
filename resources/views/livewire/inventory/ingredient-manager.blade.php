@@ -97,21 +97,21 @@
                 :colspan="5"
             >
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Raw Material</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Current Stock</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Cost/Unit</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Raw Material</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Current Stock</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Cost/Unit</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                    <th scope="col" class="h-8 px-3 py-2 text-[10.5px] uppercase tracking-wider text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                 </x-slot:head>
                     @foreach ($ingredients as $item)
                         <tr wire:key="item-{{ $item->id ?? $loop->index }}" class="hover:bg-muted/40 transition-colors duration-150">
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-3 py-2 text-[12px] whitespace-nowrap">
                                 <div class="flex flex-col">
                                     <span class="text-sm font-semibold text-foreground">{{ $item->name }}</span>
                                     <span class="text-xs text-muted-foreground">{{ $item->ingredient_code ?? '-' }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right font-sans tabular-nums numeric">
+                            <td class="px-3 py-2 text-[12px] whitespace-nowrap text-right font-sans tabular-nums numeric">
                                 @php
                                     $displayStock = (float) ($item->store_stock ?? $item->current_stock);
                                 @endphp
@@ -125,16 +125,16 @@
                                 </div>
                                 <div class="text-[10px] text-muted-foreground mt-0.5 tabular-nums">Min: {{ number_format($item->reorder_level, 2) }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right font-sans tabular-nums numeric">
+                            <td class="px-3 py-2 text-[12px] whitespace-nowrap text-right font-sans tabular-nums numeric">
                                 <span class="text-sm text-foreground tabular-nums">Rp {{ number_format($item->cost_per_unit, 0, ',', '.') }}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-3 py-2 text-[12px] whitespace-nowrap">
                                 <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
                                     <span class="w-1.5 h-1.5 rounded-full {{ $item->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
                                     {{ $item->is_active ? 'Active' : 'Inactive' }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                            <td class="px-3 py-2 text-[12px] whitespace-nowrap text-right">
                                 <x-ui.table-actions>
                                     <x-ui.table-action-item icon="inventory" wire:click="adjustStock({{ $item->id }})">
                                         Adjust Stock
