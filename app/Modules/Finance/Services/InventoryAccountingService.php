@@ -25,15 +25,15 @@ class InventoryAccountingService
      */
     protected function assertPeriodNotClosed(string $date, int $tenantId): void
     {
-        $period = \App\Modules\Finance\Models\AccountingPeriod::withoutTenantScope()
+        $period = DB::table('accounting_periods')
             ->where('tenant_id', $tenantId)
             ->where('start_date', '<=', $date)
             ->where('end_date', '>=', $date)
-            ->where('is_adjustment_period', false)
+            ->where('is_adjustment_period', 0)
             ->first();
 
-        if ($period && ! $period->isPostingAllowed()) {
-            throw \App\Modules\Finance\Exceptions\PeriodClosedException::forPeriod($period->period_code, $period->status->value);
+        if ($period && ! in_array($period->status, ['OPEN', 'SOFT_CLOSED'], true)) {
+            throw \App\Modules\Finance\Exceptions\PeriodClosedException::forPeriod($period->period_code, (string) $period->status);
         }
     }
 
