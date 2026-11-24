@@ -101,6 +101,7 @@ class Store extends Model
         'code',
         'timezone',
         'business_date_cutoff',
+        'store_vertical',
         'default_channel',
         'address',
         'phone',
@@ -122,6 +123,25 @@ class Store extends Model
     public function getStatusAttribute(): string
     {
         return $this->is_active ? 'active' : 'inactive';
+    }
+
+    public function effectiveVertical(): string
+    {
+        if (! empty($this->store_vertical) && in_array($this->store_vertical, ['fnb', 'retail', 'hybrid'], true)) {
+            return $this->store_vertical;
+        }
+
+        return $this->tenant?->effectiveVertical() ?? 'hybrid';
+    }
+
+    public function supportsFnb(): bool
+    {
+        return in_array($this->effectiveVertical(), ['fnb', 'hybrid'], true);
+    }
+
+    public function supportsRetail(): bool
+    {
+        return in_array($this->effectiveVertical(), ['retail', 'hybrid'], true);
     }
 
     /**

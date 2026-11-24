@@ -45,7 +45,7 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
     });
 
     // Dapur (KDS)
-    Route::middleware('role:Owner,Manager,Kasir,Barista,Waiter,Cook')->group(function () {
+    Route::middleware(['role:Owner,Manager,Kasir,Barista,Waiter,Cook', 'vertical:fnb'])->group(function () {
         Route::get('/kds', Board::class)->name('kds.index');
     });
 
@@ -76,7 +76,7 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
     });
 
     // Meja Resto & QR Token (POS / Dine-In Tables)
-    Route::middleware('role:Owner,Manager')->group(function () {
+    Route::middleware(['role:Owner,Manager', 'vertical:fnb'])->group(function () {
         Route::post('tables/{table}/rotate-qr', [TableController::class, 'rotateQr'])->name('tables.rotate-qr');
         Route::post('tables/{table}/release', [TableController::class, 'release'])->name('tables.release');
         Route::post('tables/{table}/regenerate-token', [TableController::class, 'regenerateToken'])->name('tables.regenerate-token');

@@ -70,6 +70,8 @@ class Tenant extends Model
         'subscription_status',
         'subscription_plan',
         'country_code',
+        'primary_industry',
+        'business_subtype',
         'subdomain',
         'provisioning_idempotency_key',
         'readiness_status',
@@ -94,6 +96,23 @@ class Tenant extends Model
     public function isOnboardingCompleted(): bool
     {
         return $this->onboarding_status === self::ONBOARDING_COMPLETED;
+    }
+
+    public function effectiveVertical(): string
+    {
+        $vertical = (string) ($this->primary_industry ?? 'hybrid');
+
+        return in_array($vertical, ['fnb', 'retail', 'hybrid'], true) ? $vertical : 'hybrid';
+    }
+
+    public function supportsFnb(): bool
+    {
+        return in_array($this->effectiveVertical(), ['fnb', 'hybrid'], true);
+    }
+
+    public function supportsRetail(): bool
+    {
+        return in_array($this->effectiveVertical(), ['retail', 'hybrid'], true);
     }
 
     public function isOperational(): bool

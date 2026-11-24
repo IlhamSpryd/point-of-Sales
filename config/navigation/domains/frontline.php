@@ -83,6 +83,7 @@ return [
                     'scope' => 'store',
                     'order' => 33,
                     'entitlement' => 'table_management',
+                    'verticals' => ['fnb'],
                     'aliases' => ['meja', 'denah', 'qr', 'dine in', 'table'],
                 ],
                 [
@@ -94,6 +95,7 @@ return [
                     'abilities' => ['kds.access'],
                     'scope' => 'store',
                     'order' => 34,
+                    'verticals' => ['fnb'],
                     'aliases' => ['dapur', 'kds', 'kitchen', 'antrian masak', 'monitor dapur'],
                 ],
                 [

@@ -69,6 +69,7 @@ final readonly class NavigationNode
         public bool $landing = false,
         public string $status = 'implemented',
         public ?string $description = null,
+        public array $verticals = [],
     ) {
         $this->guard();
     }

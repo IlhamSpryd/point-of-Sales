@@ -83,10 +83,13 @@ class AuthAndOnboardingLifecycleTest extends TestCase
     }
 
     /**
-     * SEC-01: Legacy POST /register route lockdown.
+     * SEC-01: Legacy POST /register route lockdown when allow_web_registration is disabled,
+     * and safe self-serve onboarding isolation when enabled.
      */
     public function test_legacy_register_routes_are_locked_down(): void
     {
+        config(['pos.allow_web_registration' => false]);
+
         $getResponse = $this->get('/register');
         $getResponse->assertRedirect('/login');
 
@@ -97,6 +100,12 @@ class AuthAndOnboardingLifecycleTest extends TestCase
             'password_confirmation' => 'Password123!',
         ]);
         $postResponse->assertStatus(405);
+
+        // When enabled, registration creates an isolated new tenant and never attaches to existing tenants
+        config(['pos.allow_web_registration' => true]);
+        $selfServeResponse = $this->get('/register');
+        $selfServeResponse->assertStatus(200);
+        $selfServeResponse->assertSee('Register your business');
     }
 
     /**

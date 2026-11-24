@@ -62,8 +62,32 @@ class TenantOnboardingService
                 $lockedTenant->country_code = strtoupper(trim($data['country_code']));
             }
 
+            $category = (string) ($data['business_category'] ?? 'fnb_cafe');
+            if (str_starts_with($category, 'fnb') || $category === 'fnb') {
+                $lockedTenant->primary_industry = 'fnb';
+                $sub = str_replace('fnb_', '', $category);
+                $lockedTenant->business_subtype = ($sub === 'fnb' || $sub === '') ? 'cafe' : $sub;
+            } elseif (str_starts_with($category, 'retail') || $category === 'retail') {
+                $lockedTenant->primary_industry = 'retail';
+                $sub = str_replace('retail_', '', $category);
+                $lockedTenant->business_subtype = ($sub === 'retail' || $sub === '') ? 'minimarket' : $sub;
+            } elseif (str_starts_with($category, 'hybrid') || $category === 'hybrid') {
+                $lockedTenant->primary_industry = 'hybrid';
+                $lockedTenant->business_subtype = 'hybrid_store';
+            }
+
             $lockedTenant->onboarding_status = Tenant::ONBOARDING_INITIAL_BRANCH;
             $lockedTenant->save();
+
+            // Sync initial store vertical & default channel early if already exists
+            DB::table('stores')
+                ->where('tenant_id', $tenant->id)
+                ->where('is_initial', true)
+                ->update([
+                    'store_vertical' => $lockedTenant->primary_industry,
+                    'default_channel' => $lockedTenant->primary_industry === 'retail' ? 'counter_retail' : 'dine_in',
+                    'updated_at' => now(),
+                ]);
 
             // Simpan konfigurasi ke tabel settings
             $settings = [
@@ -124,7 +148,10 @@ class TenantOnboardingService
             $store->code = strtoupper(trim($data['store_code'] ?? 'MAIN-01'));
             $store->timezone = $data['store_timezone'] ?? 'Asia/Jakarta';
             $store->business_date_cutoff = $data['business_date_cutoff'] ?? '00:00';
-            $store->default_channel = $data['default_channel'] ?? 'dine_in';
+            $storeVertical = $data['store_vertical'] ?? $lockedTenant->primary_industry ?? 'hybrid';
+            $store->store_vertical = $storeVertical;
+            $defaultChannel = $data['default_channel'] ?? ($storeVertical === 'retail' ? 'counter_retail' : 'dine_in');
+            $store->default_channel = $defaultChannel;
             $store->address = $data['store_address'] ?? null;
             $store->phone = $data['store_phone'] ?? null;
             $store->is_active = true;

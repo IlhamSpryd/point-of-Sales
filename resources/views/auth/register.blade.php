@@ -66,6 +66,99 @@
             />
         </div>
 
+        {{-- Interactive Vertical Selection --}}
+        <div>
+            <label class="block text-[13px] font-medium text-foreground mb-1.5">
+                {{ __('Select Business Vertical') }} <span class="text-destructive">*</span>
+            </label>
+            <input type="hidden" name="primary_industry" :value="vertical">
+            <input type="hidden" name="business_subtype" :value="subtype">
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                {{-- F&B Card --}}
+                <button
+                    type="button"
+                    @click="vertical = 'fnb'; subtype = 'cafe'"
+                    :class="vertical === 'fnb' ? 'border-primary ring-1 ring-primary bg-accent' : 'border-border bg-card hover:border-input'"
+                    class="p-3 rounded-md border text-left transition-all cursor-pointer flex flex-col justify-between"
+                >
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-semibold text-foreground">{{ __('Food & Beverage') }}</span>
+                            <span x-show="vertical === 'fnb'" class="w-2 h-2 rounded-full bg-primary" aria-hidden="true"></span>
+                        </div>
+                        <p class="text-[11px] text-muted-foreground leading-snug">
+                            {{ __('Cafes, restaurants, bakeries & cloud kitchens.') }}
+                        </p>
+                    </div>
+                    <div class="mt-2.5 pt-2 border-t border-border text-[10px] text-muted-foreground">
+                        <span class="font-medium text-foreground">{{ __('Preset:') }}</span> PB1 10% + Service Charge
+                    </div>
+                </button>
+
+                {{-- Retail Card --}}
+                <button
+                    type="button"
+                    @click="vertical = 'retail'; subtype = 'minimarket'"
+                    :class="vertical === 'retail' ? 'border-primary ring-1 ring-primary bg-accent' : 'border-border bg-card hover:border-input'"
+                    class="p-3 rounded-md border text-left transition-all cursor-pointer flex flex-col justify-between"
+                >
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-semibold text-foreground">{{ __('Retail & Mart') }}</span>
+                            <span x-show="vertical === 'retail'" class="w-2 h-2 rounded-full bg-primary" aria-hidden="true" style="display: none;"></span>
+                        </div>
+                        <p class="text-[11px] text-muted-foreground leading-snug">
+                            {{ __('Grocery, fashion, pharmacies & electronics.') }}
+                        </p>
+                    </div>
+                    <div class="mt-2.5 pt-2 border-t border-border text-[10px] text-muted-foreground">
+                        <span class="font-medium text-foreground">{{ __('Preset:') }}</span> PPN 11% + Barcode POS
+                    </div>
+                </button>
+
+                {{-- Hybrid Card --}}
+                <button
+                    type="button"
+                    @click="vertical = 'hybrid'; subtype = 'hybrid_store'"
+                    :class="vertical === 'hybrid' ? 'border-primary ring-1 ring-primary bg-accent' : 'border-border bg-card hover:border-input'"
+                    class="p-3 rounded-md border text-left transition-all cursor-pointer flex flex-col justify-between"
+                >
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-semibold text-foreground">{{ __('Hybrid F&B + Retail') }}</span>
+                            <span x-show="vertical === 'hybrid'" class="w-2 h-2 rounded-full bg-primary" aria-hidden="true" style="display: none;"></span>
+                        </div>
+                        <p class="text-[11px] text-muted-foreground leading-snug">
+                            {{ __('Bakery-boutique, cafe-merch & dual outlets.') }}
+                        </p>
+                    </div>
+                    <div class="mt-2.5 pt-2 border-t border-border text-[10px] text-muted-foreground">
+                        <span class="font-medium text-foreground">{{ __('Preset:') }}</span> Unified F&B + Retail Modules
+                    </div>
+                </button>
+            </div>
+
+            {{-- Dynamic Vertical Modules Feature Preview --}}
+            <div class="mt-2 p-2.5 rounded-md border border-border bg-secondary/50 text-[11px] text-muted-foreground leading-relaxed">
+                <div class="flex items-center gap-1.5 font-medium text-foreground mb-1">
+                    <svg class="w-3.5 h-3.5 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span x-text="vertical === 'fnb' ? '{{ __('Active F&B Modules') }}' : (vertical === 'retail' ? '{{ __('Active Retail Modules') }}' : '{{ __('All Unified Enterprise Modules') }}')"></span>
+                </div>
+                <div x-show="vertical === 'fnb'">
+                    {{ __('Dine-In Tables & Floor Plan, QR Self-Order, Kitchen Display System (KDS), Recipe BOM, GrabFood/GoFood OFD.') }}
+                </div>
+                <div x-show="vertical === 'retail'" style="display: none;">
+                    {{ __('Fast Counter Retail Barcode POS, Shelf Price Labels Printing, Barcode EAN-13, Item Exchanges & Multi-Warehouse.') }}
+                </div>
+                <div x-show="vertical === 'hybrid'" style="display: none;">
+                    {{ __('Both F&B Tables + KDS + QR Self-Order AND Retail Barcode Scanning + Shelf Labels + Item Exchanges enabled.') }}
+                </div>
+            </div>
+        </div>
+
         <div>
             <label for="name" class="block text-[13px] font-medium text-foreground mb-1.5">
                 {{ __('Owner Full Name') }}
@@ -190,6 +283,8 @@
         function registerForm() {
             return {
                 isLoading: false,
+                vertical: '{{ old('primary_industry', 'fnb') }}',
+                subtype: '{{ old('business_subtype', 'cafe') }}',
                 handleSubmit(formEl) {
                     if (this.isLoading) return;
                     this.isLoading = true;

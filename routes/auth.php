@@ -7,27 +7,17 @@ use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    // [SEC-003 - CRITICAL FIX - AUDIT KEAMANAN]
-    // Rute `register` (GET & POST) yang sebelumnya ada di sini adalah sisa
-    // scaffolding default Laravel Breeze, mengarah ke RegisteredUserController.
-    // Sistem POS ini adalah aplikasi INTERNAL untuk staf kafe (Owner, Manager,
-    // Kasir, Barista, Waiter, Inventory) -- TIDAK PERNAH dirancang untuk
-    // pendaftaran mandiri oleh publik. Rute lama membiarkan SIAPA PUN yang
-    // mengunjungi /register membuat akun baru tanpa role_id lalu langsung
-    // ter-autentikasi ke dalam sistem (lihat RegisteredUserController::store()).
-    //
-    // Controller App\Http\Controllers\Auth\RegisteredUserController.php SENGAJA
-    // dibiarkan tetap ada di disk (tidak dihapus dari filesystem agar tidak
-    // memutus autoload/tooling lain yang mungkin merujuknya), namun kini
-    // sepenuhnya tidak dapat dijangkau (unroutable) karena tidak lagi
-    // di-import maupun didaftarkan di bawah ini.
-    //
-    // Akun staf HANYA boleh dibuat lewat alur terkontrol:
-    // App\Http\Controllers\UserController (dijaga middleware role:Owner).
+    // Owner Self-Serve Registration (Wave 7 ADR-118)
+    Route::get('register', [RegisteredUserController::class, 'create'])
+        ->name('register');
+
+    Route::post('register', [RegisteredUserController::class, 'store'])
+        ->middleware('throttle:5,1');
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');

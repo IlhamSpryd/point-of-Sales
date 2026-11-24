@@ -70,6 +70,17 @@ class CreateOrder extends Component
         $this->idempotencyKey = (string) Str::uuid();
         $this->activeStoreId = app(TenantContext::class)->getStoreId();
 
+        $defaultChannel = 'dine_in';
+        if ($this->activeStoreId) {
+            $storeChannel = \Illuminate\Support\Facades\DB::table('stores')
+                ->where('id', $this->activeStoreId)
+                ->value('default_channel');
+            if (! empty($storeChannel) && in_array($storeChannel, ['dine_in', 'takeaway', 'counter_retail', 'delivery', 'grabfood', 'gofood'], true)) {
+                $defaultChannel = $storeChannel;
+            }
+        }
+        $this->orderType = $defaultChannel;
+
         $user = Auth::user();
         if ($user) {
             $activeShift = Shift::where(function ($q) use ($user) {
@@ -88,14 +99,15 @@ class CreateOrder extends Component
 
     public function updatedOrderType(): void
     {
-        if ($this->orderType === 'takeaway' || ! $this->isTablesEnabled()) {
+        if ($this->orderType !== 'dine_in' || ! $this->isTablesEnabled()) {
             $this->tableId = null;
         }
     }
 
     public function setOrderType(string $type): void
     {
-        $this->orderType = in_array($type, ['dine_in', 'takeaway'], true) ? $type : 'dine_in';
+        $allowed = ['dine_in', 'takeaway', 'counter_retail', 'delivery', 'grabfood', 'gofood'];
+        $this->orderType = in_array($type, $allowed, true) ? $type : 'dine_in';
         $this->updatedOrderType();
     }
 

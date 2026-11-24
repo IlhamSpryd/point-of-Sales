@@ -165,6 +165,7 @@ final class NavigationRegistry
                 'landing' => true,
                 'aliases' => $hubNode->aliases,
                 'icon' => null,
+                'verticals' => $hubNode->verticals,
             ]);
         }
 
@@ -217,6 +218,7 @@ final class NavigationRegistry
             'landing' => false,
             'status' => 'implemented',
             'description' => null,
+            'verticals' => [],
         ], $definition, $defaults);
 
         return new NavigationNode(
@@ -241,6 +243,7 @@ final class NavigationRegistry
             landing: (bool) $payload['landing'],
             status: (string) $payload['status'],
             description: $payload['description'] !== null ? (string) $payload['description'] : null,
+            verticals: array_values(array_map('strval', (array) ($payload['verticals'] ?? $payload['vertical'] ?? []))),
         );
     }
 

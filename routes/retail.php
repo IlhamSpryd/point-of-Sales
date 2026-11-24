@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensure.onboarding.completed'])->prefix('retail')->name('retail.')->group(function () {
+Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensure.onboarding.completed', 'vertical:retail'])->prefix('retail')->name('retail.')->group(function () {
     Route::middleware('role:Owner,Manager,Inventory,Kasir,Sales')->group(function () {
         Route::get('/shelf-labels', ShelfLabelManager::class)->name('shelf-labels.index');
         Route::get('/shelf-labels/print-batch/{batch}', [ShelfLabelPrintController::class, 'printBatch'])->name('shelf-labels.print-batch');

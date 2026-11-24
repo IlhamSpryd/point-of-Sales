@@ -7,7 +7,7 @@
             <span class="text-xs text-muted-foreground flex items-center gap-1.5 select-none">
                 <span class="font-medium text-muted-foreground">{{ count($this->cartLines) }} {{ Str::plural('item', count($this->cartLines)) }}</span>
                 <span class="text-muted-foreground">|</span>
-                <span class="capitalize text-muted-foreground">{{ $orderType === 'dine_in' ? ($tableId ? 'Table ' . ($this->activeTables->firstWhere('id', $tableId)?->table_name ?? $tableId) : 'dine in') : 'takeaway' }}</span>
+                <span class="capitalize text-muted-foreground">{{ $orderType === 'dine_in' ? ($tableId ? 'Table ' . ($this->activeTables->firstWhere('id', $tableId)?->table_name ?? $tableId) : 'dine in') : ($orderType === 'counter_retail' ? 'counter' : 'takeaway') }}</span>
             </span>
             <button class="text-muted-foreground hover:text-destructive transition-colors p-1 rounded hover:bg-secondary disabled:opacity-30 disabled:pointer-events-none"
                 title="Clear Cart" type="button"

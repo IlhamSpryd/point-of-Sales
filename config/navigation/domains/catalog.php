@@ -94,6 +94,7 @@ return [
                     'abilities' => ['products.view'],
                     'scope' => 'tenant',
                     'order' => 45,
+                    'verticals' => ['fnb'],
                     'aliases' => ['varian', 'modifier', 'topping', 'ukuran', 'variant'],
                 ],
                 [
@@ -127,6 +128,7 @@ return [
                     'abilities' => ['products.view'],
                     'scope' => 'store',
                     'order' => 48,
+                    'verticals' => ['retail'],
                     'aliases' => ['label harga', 'shelf label', 'price tag', 'cetak label'],
                 ],
                 [
@@ -138,6 +140,7 @@ return [
                     'abilities' => ['products.view'],
                     'scope' => 'tenant',
                     'order' => 49,
+                    'verticals' => ['retail'],
                     'aliases' => ['barcode', 'ean13', 'sku', 'tanda barang'],
                 ],
                 [
@@ -149,6 +152,7 @@ return [
                     'abilities' => ['orders.create'],
                     'scope' => 'store',
                     'order' => 50,
+                    'verticals' => ['retail'],
                     'aliases' => ['tukar barang', 'exchange', 'retur tunai', 'swap'],
                 ],
             ],

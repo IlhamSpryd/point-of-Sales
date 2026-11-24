@@ -200,6 +200,7 @@ return [
             'scope' => 'store',
             'icon' => 'precision_manufacturing',
             'order' => 90,
+            'verticals' => ['fnb'],
             'landing' => true,
             'aliases' => ['produksi', 'manufaktur', 'manufacturing', 'dapur pusat', 'bom'],
             'pages' => [

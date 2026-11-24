@@ -5,6 +5,7 @@ use App\Http\Middleware\EnforceEmailVerification;
 use App\Http\Middleware\EnforceEntitlement;
 use App\Http\Middleware\EnsureOnboardingCompleted;
 use App\Http\Middleware\EnsureTableSession;
+use App\Http\Middleware\EnsureVerticalCapability;
 use App\Http\Middleware\RequireTwoFactorChallenge;
 use App\Http\Middleware\ResolveTableFromToken;
 use App\Http\Middleware\RoleMiddleware;
@@ -72,6 +73,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'verify.provisioning' => VerifyProvisioningSignature::class,
             'enforce.entitlement' => EnforceEntitlement::class,
             'require.two_factor' => RequireTwoFactorChallenge::class,
+            'vertical' => EnsureVerticalCapability::class,
         ]);
 
         $middleware->priority([

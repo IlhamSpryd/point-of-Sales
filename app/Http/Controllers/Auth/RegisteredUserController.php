@@ -6,14 +6,19 @@ use App\Core\Context\TenantContext;
 use App\Http\Controllers\Controller;
 use App\Modules\Organization\Models\EmailOutbox;
 use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use App\Modules\Organization\Services\EmailVerificationOtpService;
+use App\Modules\Subscription\Models\Plan;
+use App\Modules\Subscription\Services\SubscriptionLifecycleService;
 use App\Platform\Database\DatabaseErrorClassifier;
 use App\Support\EmailNormalizer;
+use Database\Seeders\ChartOfAccountsSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -52,6 +57,8 @@ class RegisteredUserController extends Controller
             'email' => ['required', 'string', 'email:rfc', 'max:255'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'business_name' => ['nullable', 'string', 'max:255'],
+            'primary_industry' => ['nullable', 'string', 'in:fnb,retail,hybrid'],
+            'business_subtype' => ['nullable', 'string', 'max:50'],
         ]);
 
         $normalizedEmail = EmailNormalizer::normalize($request->string('email'));
@@ -96,6 +103,20 @@ class RegisteredUserController extends Controller
                     $businessName = $request->string('name')."'s Business";
                 }
 
+                $primaryIndustry = (string) $request->input('primary_industry', 'fnb');
+                if (! in_array($primaryIndustry, ['fnb', 'retail', 'hybrid'], true)) {
+                    $primaryIndustry = 'fnb';
+                }
+
+                $businessSubtype = (string) $request->input('business_subtype', '');
+                if ($businessSubtype === '') {
+                    $businessSubtype = match ($primaryIndustry) {
+                        'retail' => 'minimarket',
+                        'hybrid' => 'hybrid_store',
+                        default => 'cafe',
+                    };
+                }
+
                 $tenant = Tenant::create([
                     'name' => $businessName,
                     'slug' => Str::slug($businessName).'-'.Str::lower(Str::random(6)),
@@ -105,6 +126,8 @@ class RegisteredUserController extends Controller
                     'subscription_status' => Tenant::SUBSCRIPTION_TRIAL,
                     'subscription_plan' => 'standard_trial',
                     'country_code' => 'ID',
+                    'primary_industry' => $primaryIndustry,
+                    'business_subtype' => $businessSubtype,
                 ]);
 
                 app(TenantContext::class)->setTenantId($tenant->id);
@@ -130,6 +153,71 @@ class RegisteredUserController extends Controller
                 $user->email_verified_at = null;
                 $user->failed_login_attempts = 0;
                 $user->save();
+
+                // Inisialisasi Cabang Pertama (Store Initial)
+                $defaultChannel = $primaryIndustry === 'retail' ? 'counter_retail' : 'dine_in';
+                $store = Store::create([
+                    'tenant_id' => $tenant->id,
+                    'name' => $businessName.' - Main Branch',
+                    'code' => 'MAIN-01',
+                    'timezone' => 'Asia/Jakarta',
+                    'business_date_cutoff' => '00:00',
+                    'store_vertical' => $primaryIndustry,
+                    'default_channel' => $defaultChannel,
+                    'is_active' => true,
+                    'is_initial' => true,
+                ]);
+
+                DB::table('user_stores')->insertOrIgnore([
+                    'tenant_id' => $tenant->id,
+                    'user_id' => $user->id,
+                    'store_id' => $store->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                // Mulai Langganan Trial jika Plan tersedia
+                $plan = Plan::query()
+                    ->where('code', 'standard_trial')
+                    ->orWhere('code', 'trial')
+                    ->orWhere('is_active', true)
+                    ->first();
+                if ($plan !== null) {
+                    try {
+                        app(SubscriptionLifecycleService::class)->startTrial($tenant, $plan, 14);
+                    } catch (\Throwable $e) {
+                        // Resilient fallback
+                    }
+                }
+
+                // Seed COA & Aturan Posting
+                try {
+                    (new ChartOfAccountsSeeder)->seedForTenant($tenant->id);
+                    Artisan::call('finance:sync-posting-rules', ['--tenant' => (string) $tenant->id]);
+                } catch (\Throwable $e) {
+                    // Resilient fallback
+                }
+
+                // Preset Pajak Sesuai Vertikal via DB builder (menjaga batasan ratchet scope)
+                // F&B: PB1 10% + Service Charge 5%; Retail: PPN 11% + SC 0%; Hybrid: PPN 11% + SC 0%
+                $taxRate = $primaryIndustry === 'fnb' ? '0.10' : '0.11';
+                $scRate = $primaryIndustry === 'fnb' ? '0.05' : '0';
+                $categoryKey = $primaryIndustry === 'fnb'
+                    ? 'fnb_'.$businessSubtype
+                    : ($primaryIndustry === 'retail' ? 'retail_'.$businessSubtype : 'hybrid_store');
+
+                DB::table('settings')->updateOrInsert(
+                    ['tenant_id' => $tenant->id, 'key' => 'tax_rate'],
+                    ['value' => $taxRate, 'type' => 'string', 'updated_at' => now(), 'created_at' => now()]
+                );
+                DB::table('settings')->updateOrInsert(
+                    ['tenant_id' => $tenant->id, 'key' => 'service_charge_rate'],
+                    ['value' => $scRate, 'type' => 'string', 'updated_at' => now(), 'created_at' => now()]
+                );
+                DB::table('settings')->updateOrInsert(
+                    ['tenant_id' => $tenant->id, 'key' => 'business_category'],
+                    ['value' => $categoryKey, 'type' => 'string', 'updated_at' => now(), 'created_at' => now()]
+                );
 
                 // Terbitkan tantangan OTP 6-digit pertama kali
                 app(EmailVerificationOtpService::class)->issueOtp(

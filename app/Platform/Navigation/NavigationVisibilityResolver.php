@@ -7,6 +7,7 @@ namespace App\Platform\Navigation;
 use App\Core\Context\TenantContext;
 use App\Modules\Organization\Models\User;
 use App\Modules\Subscription\Contracts\EntitlementGateInterface;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 
@@ -59,7 +60,65 @@ final class NavigationVisibilityResolver
             return false;
         }
 
+        if (! $this->passesVertical($node)) {
+            return false;
+        }
+
         return $this->passesAuthorization($node, $user);
+    }
+
+    private function passesVertical(NavigationNode $node): bool
+    {
+        if ($node->verticals === []) {
+            return true;
+        }
+
+        $activeVertical = $this->resolveActiveVertical();
+
+        if ($activeVertical === 'hybrid') {
+            return true;
+        }
+
+        return in_array($activeVertical, $node->verticals, true);
+    }
+
+    private function resolveActiveVertical(): string
+    {
+        $storeId = $this->tenantContext->getStoreId();
+        if ($storeId !== null) {
+            $storeRow = DB::table('stores')
+                ->where('id', $storeId)
+                ->first(['store_vertical', 'tenant_id']);
+
+            if ($storeRow !== null && ! empty($storeRow->store_vertical)) {
+                return in_array($storeRow->store_vertical, ['fnb', 'retail', 'hybrid'], true)
+                    ? $storeRow->store_vertical
+                    : 'hybrid';
+            }
+
+            if ($storeRow !== null && $storeRow->tenant_id) {
+                $tenantIndustry = DB::table('tenants')
+                    ->where('id', $storeRow->tenant_id)
+                    ->value('primary_industry');
+
+                return in_array($tenantIndustry, ['fnb', 'retail', 'hybrid'], true)
+                    ? $tenantIndustry
+                    : 'hybrid';
+            }
+        }
+
+        $tenantId = $this->tenantContext->getTenantId();
+        if ($tenantId !== null) {
+            $tenantIndustry = DB::table('tenants')
+                ->where('id', $tenantId)
+                ->value('primary_industry');
+
+            return in_array($tenantIndustry, ['fnb', 'retail', 'hybrid'], true)
+                ? $tenantIndustry
+                : 'hybrid';
+        }
+
+        return 'hybrid';
     }
 
     private function passesAuthorization(NavigationNode $node, ?User $user): bool

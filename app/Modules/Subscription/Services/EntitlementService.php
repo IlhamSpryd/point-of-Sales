@@ -17,6 +17,7 @@ use App\Modules\Subscription\Models\TenantEntitlementOverride;
 use App\Modules\Subscription\Models\TenantSubscription;
 use DomainException;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class EntitlementService implements EntitlementGateInterface
 {
@@ -84,6 +85,10 @@ class EntitlementService implements EntitlementGateInterface
             // 2. Ambil Plan aktif
             $plan = $this->resolveActivePlanForTenant($tenantId);
             if (! $plan) {
+                if ($featureCode === self::FEATURE_TABLE_MANAGEMENT) {
+                    return $this->isTablesEnabled($tenantId);
+                }
+
                 return false;
             }
 
@@ -93,6 +98,10 @@ class EntitlementService implements EntitlementGateInterface
                 ->first();
 
             if (! $entitlement) {
+                if ($featureCode === self::FEATURE_TABLE_MANAGEMENT) {
+                    return $this->isTablesEnabled($tenantId);
+                }
+
                 return false;
             }
 
@@ -321,12 +330,24 @@ class EntitlementService implements EntitlementGateInterface
             return filter_var($posSetting->value, FILTER_VALIDATE_BOOLEAN);
         }
 
-        // 3. Fallback berdasarkan kategori bisnis
+        // 3. Fallback berdasarkan vertikal & kategori bisnis (Fail-closed untuk Retail)
+        if ($storeId !== null) {
+            $storeVertical = DB::table('stores')->where('id', $storeId)->value('store_vertical');
+            if ($storeVertical === 'retail') {
+                return false;
+            }
+        }
+
+        $tenantVertical = DB::table('tenants')->where('id', $tenantId)->value('primary_industry');
+        if ($tenantVertical === 'retail') {
+            return false;
+        }
+
         $bizCat = Setting::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('key', 'business_category')
             ->value('value');
-        if ($bizCat === 'retail_other' || $bizCat === 'fnb_cloud_kitchen') {
+        if ($bizCat === 'retail_other' || $bizCat === 'fnb_cloud_kitchen' || (is_string($bizCat) && str_starts_with($bizCat, 'retail'))) {
             return false;
         }
 
