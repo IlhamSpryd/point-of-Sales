@@ -623,9 +623,6 @@ class CheckoutOrderHandler
         }
     }
 
-    /**
-     * @param  array<int|string, mixed>  $rawPaymentLegs
-     */
     public function payPendingOrder(Order $order, array $rawPaymentLegs, ?int $userId = null, ?int $shiftId = null, ?int $deviceId = null): Order
     {
         return $this->paymentTenderService->payPendingOrder($order, $rawPaymentLegs, $userId, $shiftId, $deviceId);
@@ -640,9 +637,6 @@ class CheckoutOrderHandler
         return $this->paymentTenderService->parsePaymentLegs($rawLegs);
     }
 
-    /**
-     * @param  array<int, array<string, mixed>>  $legs
-     */
     public function processPaymentLegTenders(Order $order, array $legs, ?int $userId): void
     {
         $this->paymentTenderService->processPaymentLegTenders($order, $legs, $userId);

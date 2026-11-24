@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Integration\Drivers;
 
 use App\DataTransferObjects\NormalizedChannelOrder;
-use App\Modules\Catalog\Models\Product;
 use App\Modules\Integration\Contracts\OnlineFoodDeliveryDriverInterface;
 use App\Modules\Integration\Models\OfdChannelConfig;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Sales\Services\Omnichannel\GrabFoodOrderNormalizer;
 use Illuminate\Support\Facades\Log;
 
 class GrabFoodDriver implements OnlineFoodDeliveryDriverInterface
@@ -33,12 +30,12 @@ class GrabFoodDriver implements OnlineFoodDeliveryDriverInterface
 
     public function normalizeWebhookOrder(array $payload, ?OfdChannelConfig $config = null): NormalizedChannelOrder
     {
-        $normalizer = new GrabFoodOrderNormalizer;
+        $normalizer = new \App\Modules\Sales\Services\Omnichannel\GrabFoodOrderNormalizer;
 
         return $normalizer->normalize($payload);
     }
 
-    public function syncItemAvailability(Store $store, Product $product, bool $available): bool
+    public function syncItemAvailability(\App\Modules\Organization\Models\Store $store, \App\Modules\Catalog\Models\Product $product, bool $available): bool
     {
         Log::info('[OFD-86] Synced item availability with GrabFood', [
             'store_id' => $store->id,

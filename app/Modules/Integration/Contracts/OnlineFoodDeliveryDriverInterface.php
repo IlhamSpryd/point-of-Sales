@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Integration\Contracts;
 
 use App\DataTransferObjects\NormalizedChannelOrder;
-use App\Modules\Catalog\Models\Product;
 use App\Modules\Integration\Models\OfdChannelConfig;
-use App\Modules\Organization\Models\Store;
 
 interface OnlineFoodDeliveryDriverInterface
 {
@@ -17,5 +15,5 @@ interface OnlineFoodDeliveryDriverInterface
 
     public function normalizeWebhookOrder(array $payload, ?OfdChannelConfig $config = null): NormalizedChannelOrder;
 
-    public function syncItemAvailability(Store $store, Product $product, bool $available): bool;
+    public function syncItemAvailability(\App\Modules\Organization\Models\Store $store, \App\Modules\Catalog\Models\Product $product, bool $available): bool;
 }
