@@ -10,10 +10,17 @@ class VerifyWebhookSignature
 {
     public function handle(Request $request, Closure $next)
     {
-        $provider = $request->route('provider');
+        $provider = (string) $request->route('provider');
         $secret = config("services.webhooks.{$provider}_secret");
 
         if (! $secret) {
+            $ofdManager = app(\App\Modules\Integration\Services\OnlineFoodDeliveryManager::class);
+            if ($ofdManager->hasDriver($provider)) {
+                // OFD providers (GrabFood, GoFood) use tenant-specific signing secrets stored in ofd_channel_configs
+                // and are verified per-tenant in WebhookController.
+                return $next($request);
+            }
+
             Log::warning("Webhook secret not found for provider: {$provider}");
 
             return response()->json(['message' => 'Provider not supported'], 400);

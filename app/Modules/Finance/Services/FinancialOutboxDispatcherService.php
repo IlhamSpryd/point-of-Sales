@@ -466,4 +466,90 @@ class FinancialOutboxDispatcherService
             occurredAt: $shift->getClosedAt() ? Carbon::parse($shift->getClosedAt()) : now()
         );
     }
+
+    /**
+     * Emisi event outbox saat Pesanan OFD (GrabFood/GoFood) selesai (ofd.order.completed).
+     * Jurnal seimbang Rp 0,00:
+     * Dr 1125 Piutang Kliring OFD = Gross + Tax - MerchantPromoSubsidy
+     * Dr 4195 Subsidi Promo Merchant OFD = MerchantPromoSubsidy
+     * Cr 4100 Pendapatan Penjualan = Gross
+     * Cr 2200 Utang Pajak PB1/PPN = Tax
+     * Dr 5200 Beban Komisi Platform OFD = Commission
+     * Cr 1125 Piutang Kliring OFD = Commission
+     */
+    public function dispatchOfdOrderCompleted(
+        PosOrderReaderInterface $order,
+        float|string $commissionAmount = '0.00',
+        float|string $merchantPromoSubsidy = '0.00'
+    ): FinancialEventOutbox {
+        $gross = bcadd((string) $order->getSubtotal(), '0', 2);
+        $tax = bcadd((string) $order->getTaxAmount(), '0', 2);
+        $promoSubsidy = bcadd((string) $merchantPromoSubsidy, '0', 2);
+        $commission = bcadd((string) $commissionAmount, '0', 2);
+
+        // Net piutang kliring sebelum komisi = Gross + Tax - PromoSubsidy
+        $netReceivable = bcsub(bcadd($gross, $tax, 2), $promoSubsidy, 2);
+        // Net payout yang akan dicairkan ke bank = NetReceivable - Commission
+        $netPayout = bcsub($netReceivable, $commission, 2);
+
+        $payload = [
+            'order_id' => $order->getId(),
+            'order_code' => $order->getOrderNumber(),
+            'subtotal' => $gross,
+            'tax_amount' => $tax,
+            'merchant_promo_subsidy' => $promoSubsidy,
+            'net_receivable_amount' => $netReceivable,
+            'commission_amount' => $commission,
+            'net_payout_amount' => $netPayout,
+            'accounting_date' => Carbon::parse($order->getCreatedAt() ?? now())->toDateString(),
+        ];
+
+        return $this->recordOutboxEvent(
+            tenantId: $order->getTenantId(),
+            storeId: $order->getStoreId(),
+            eventType: 'ofd.order.completed',
+            sourceModule: 'OFD',
+            sourceType: 'ORDER',
+            sourceId: $order->getId(),
+            sourceNumber: $order->getOrderNumber(),
+            idempotencyKey: "ofd:order:completed:{$order->getId()}",
+            payload: $payload,
+            occurredAt: $order->getCreatedAt() ? Carbon::parse($order->getCreatedAt()) : now()
+        );
+    }
+
+    /**
+     * Emisi event outbox saat dana settlement OFD dicairkan ke rekening bank (ofd.payout.settled).
+     * Jurnal:
+     * Dr 1110 Bank Utama = settled_amount
+     * Cr 1125 Piutang Kliring OFD = settled_amount
+     * (Menolkan saldo akun 1125 tepat Rp 0,00!)
+     */
+    public function dispatchOfdPayoutSettled(
+        int $tenantId,
+        int $storeId,
+        string $payoutReference,
+        float|string $settledAmount
+    ): FinancialEventOutbox {
+        $amount = bcadd((string) $settledAmount, '0', 2);
+
+        $payload = [
+            'settled_amount' => $amount,
+            'payout_reference' => $payoutReference,
+            'accounting_date' => now()->toDateString(),
+        ];
+
+        return $this->recordOutboxEvent(
+            tenantId: $tenantId,
+            storeId: $storeId,
+            eventType: 'ofd.payout.settled',
+            sourceModule: 'OFD',
+            sourceType: 'PAYOUT',
+            sourceId: (int) crc32($payoutReference),
+            sourceNumber: $payoutReference,
+            idempotencyKey: "ofd:payout:settled:{$tenantId}:{$payoutReference}",
+            payload: $payload,
+            occurredAt: now()
+        );
+    }
 }

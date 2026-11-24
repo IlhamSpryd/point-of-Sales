@@ -156,6 +156,16 @@ class ProcessWebhookOrderJob implements ShouldQueue
 
         $products = Product::whereIn('id', $mappings->values())->where('is_active', true)->get()->keyBy('id');
 
+        $config = \Illuminate\Support\Facades\DB::table('ofd_channel_configs')
+            ->where('tenant_id', $this->log->tenant_id)
+            ->where('provider', $this->log->provider)
+            ->when($this->log->store_id, fn ($q) => $q->where('store_id', $this->log->store_id))
+            ->where('is_active', true)
+            ->first();
+
+        $commissionRate = $config ? (float) $config->commission_rate_pct : 20.00;
+        $priceMarkupPct = $config ? (float) $config->price_markup_pct : 0.00;
+
         $items = [];
         $subtotal = 0;
         foreach ($normalized->items as $normalizedItem) {
@@ -168,8 +178,13 @@ class ProcessWebhookOrderJob implements ShouldQueue
                 );
             }
 
+            $unitPrice = (int) $product->product_price;
+            if ($priceMarkupPct > 0) {
+                $unitPrice = (int) round($unitPrice * (1 + ($priceMarkupPct / 100)));
+            }
+
             $qty = max(1, $normalizedItem->quantity);
-            $subtotal += $product->product_price * $qty;
+            $subtotal += $unitPrice * $qty;
 
             $items[] = ['product_id' => $productId, 'quantity' => $qty, 'extra_price' => 0, 'options' => null];
         }
@@ -182,7 +197,13 @@ class ProcessWebhookOrderJob implements ShouldQueue
             );
         }
 
-        ['total_amount' => $totalAmount] = $transactionService->calculateOrderTotals($subtotal);
+        $totals = $transactionService->calculateOrderTotals($subtotal);
+        $totalAmount = $totals['total_amount'];
+        $taxAmount = $totals['tax_amount'];
+
+        $merchantPromoSubsidy = (float) ($this->log->payload['merchant_promo_subsidy'] ?? $this->log->payload['promo_subsidy'] ?? 0);
+        $commissionAmount = round($subtotal * ($commissionRate / 100), 2);
+        $netPayout = round($subtotal + $taxAmount - $merchantPromoSubsidy - $commissionAmount, 2);
 
         // Auto customer matching for omnichannel order (Modul 6)
         $customerId = null;
@@ -212,7 +233,7 @@ class ProcessWebhookOrderJob implements ShouldQueue
             $customerId = $matchedCustomer?->id;
         }
 
-        return $transactionService->createTransaction([
+        $order = $transactionService->createTransaction([
             'items' => $items,
             'payments' => [[
                 'method' => PaymentMethod::Ewallet->value,
@@ -222,8 +243,27 @@ class ProcessWebhookOrderJob implements ShouldQueue
             'customer_id' => $customerId,
             'table_id' => null,
             'order_type' => OrderType::Takeaway->value,
+            'order_channel' => $this->log->provider,
+            'origin_channel' => in_array($this->log->provider, ['gofood', 'grabfood'], true) ? $this->log->provider : 'other_external',
+            'external_order_id' => $normalized->externalOrderId,
+            'external_short_code' => $this->log->payload['short_code'] ?? strtoupper(substr($this->log->provider, 0, 2)).'-'.substr($normalized->externalOrderId, -4),
+            'driver_name' => $this->log->payload['driver_name'] ?? $this->log->payload['driver']['name'] ?? null,
+            'driver_phone' => $this->log->payload['driver_phone'] ?? $this->log->payload['driver']['phone'] ?? null,
+            'platform_commission_rate' => $commissionRate,
+            'platform_commission_amount' => $commissionAmount,
+            'merchant_promo_subsidy' => $merchantPromoSubsidy,
+            'net_payout_amount' => $netPayout,
             'idempotency_key' => $idempotencyKey,
         ], (int) $systemUserId);
+
+        // Dispatch balanced PSAK GL outbox event
+        app(\App\Modules\Finance\Services\FinancialOutboxDispatcherService::class)->dispatchOfdOrderCompleted(
+            $order,
+            $commissionAmount,
+            $merchantPromoSubsidy
+        );
+
+        return $order;
     }
 
     private function deterministicIdempotencyKey(): string

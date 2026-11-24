@@ -1865,5 +1865,145 @@ class DefaultPostingRulesSeeder extends Seeder
                 $line
             );
         }
+
+        // 25. ofd.order.completed (GrabFood / GoFood balanced PSAK journal)
+        $ofdOrderRule = PostingRule::firstOrCreate(
+            ['tenant_id' => $tenantId, 'event_code' => 'ofd.order.completed'],
+            [
+                'rule_name' => 'Pesanan Selesai Online Food Delivery (OFD)',
+                'source_domain' => 'OFD',
+                'description' => 'Posting jurnal pesanan GrabFood/GoFood dengan komisi platform dan subsidi promo merchant seimbang',
+                'is_active' => true,
+                'approval_status' => 'APPROVED',
+            ]
+        );
+
+        $ofdOrderVersion = PostingRuleVersion::firstOrCreate(
+            ['tenant_id' => $tenantId, 'posting_rule_id' => $ofdOrderRule->id, 'version_number' => 1],
+            [
+                'effective_from' => '2026-01-01',
+                'status' => 'ACTIVE',
+            ]
+        );
+
+        $ofdOrderLines = [
+            [
+                'line_sequence' => 1,
+                'side' => 'DEBIT',
+                'amount_source_key' => 'net_receivable_amount',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'OFD_CLEARING',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Piutang Kliring Platform OFD',
+            ],
+            [
+                'line_sequence' => 2,
+                'side' => 'DEBIT',
+                'amount_source_key' => 'merchant_promo_subsidy',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'OFD_PROMO_SUBSIDY',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Subsidi Promo Merchant OFD',
+            ],
+            [
+                'line_sequence' => 3,
+                'side' => 'CREDIT',
+                'amount_source_key' => 'subtotal',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'SALES_RETAIL',
+                'zero_amount_behavior' => 'ERROR',
+                'description_template' => 'Pendapatan Penjualan OFD',
+            ],
+            [
+                'line_sequence' => 4,
+                'side' => 'CREDIT',
+                'amount_source_key' => 'tax_amount',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'TAX_OUTPUT_PPN',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Utang Pajak PB1/PPN OFD',
+            ],
+            [
+                'line_sequence' => 5,
+                'side' => 'DEBIT',
+                'amount_source_key' => 'commission_amount',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'OFD_COMMISSION_EXPENSE',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Beban Komisi Platform OFD',
+            ],
+            [
+                'line_sequence' => 6,
+                'side' => 'CREDIT',
+                'amount_source_key' => 'commission_amount',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'OFD_CLEARING',
+                'zero_amount_behavior' => 'SKIP_LINE',
+                'description_template' => 'Potongan Komisi Platform OFD',
+            ],
+        ];
+
+        foreach ($ofdOrderLines as $line) {
+            PostingRuleLine::firstOrCreate(
+                [
+                    'tenant_id' => $tenantId,
+                    'posting_rule_version_id' => $ofdOrderVersion->id,
+                    'line_sequence' => $line['line_sequence'],
+                ],
+                $line
+            );
+        }
+
+        // 26. ofd.payout.settled (Penyelesaian saldo kliring OFD ke Bank)
+        $ofdPayoutRule = PostingRule::firstOrCreate(
+            ['tenant_id' => $tenantId, 'event_code' => 'ofd.payout.settled'],
+            [
+                'rule_name' => 'Pencairan Dana Settlement Payout OFD',
+                'source_domain' => 'OFD',
+                'description' => 'Posting jurnal penerimaan dana payout dari platform OFD ke rekening bank operasional',
+                'is_active' => true,
+                'approval_status' => 'APPROVED',
+            ]
+        );
+
+        $ofdPayoutVersion = PostingRuleVersion::firstOrCreate(
+            ['tenant_id' => $tenantId, 'posting_rule_id' => $ofdPayoutRule->id, 'version_number' => 1],
+            [
+                'effective_from' => '2026-01-01',
+                'status' => 'ACTIVE',
+            ]
+        );
+
+        $ofdPayoutLines = [
+            [
+                'line_sequence' => 1,
+                'side' => 'DEBIT',
+                'amount_source_key' => 'settled_amount',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'BANK_MAIN',
+                'zero_amount_behavior' => 'ERROR',
+                'description_template' => 'Penerimaan Dana Settlement OFD ke Bank',
+            ],
+            [
+                'line_sequence' => 2,
+                'side' => 'CREDIT',
+                'amount_source_key' => 'settled_amount',
+                'account_resolution_strategy' => 'SYSTEM_KEY',
+                'system_account_key' => 'OFD_CLEARING',
+                'zero_amount_behavior' => 'ERROR',
+                'description_template' => 'Penyelesaian Saldo Piutang Kliring OFD',
+            ],
+        ];
+
+        foreach ($ofdPayoutLines as $line) {
+            PostingRuleLine::firstOrCreate(
+                [
+                    'tenant_id' => $tenantId,
+                    'posting_rule_version_id' => $ofdPayoutVersion->id,
+                    'line_sequence' => $line['line_sequence'],
+                ],
+                $line
+            );
+        }
     }
 }

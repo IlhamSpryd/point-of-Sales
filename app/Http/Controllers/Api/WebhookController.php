@@ -95,6 +95,39 @@ class WebhookController extends Controller
             return response()->json(['message' => 'Missing order_id'], 422);
         }
 
+        // HMAC Signature Verification untuk OFD (GrabFood / GoFood)
+        $ofdManager = app(\App\Modules\Integration\Services\OnlineFoodDeliveryManager::class);
+        if ($ofdManager->hasDriver($provider)) {
+            $ofdConfig = \Illuminate\Support\Facades\DB::table('ofd_channel_configs')
+                ->where('tenant_id', $tenantId)
+                ->when($storeId, fn ($q) => $q->where('store_id', $storeId))
+                ->where('provider', strtolower($provider))
+                ->where('is_active', true)
+                ->first();
+
+            if ($ofdConfig && ! empty($ofdConfig->signing_secret)) {
+                try {
+                    $secret = \Illuminate\Support\Facades\Crypt::decryptString($ofdConfig->signing_secret);
+                } catch (\Throwable) {
+                    $secret = $ofdConfig->signing_secret;
+                }
+
+                $driver = $ofdManager->driver($provider);
+                $signature = match (strtolower($provider)) {
+                    'grabfood' => $request->header('X-Grab-Signature') ?? $request->header('x-grab-signature') ?? $request->header('X-Signature'),
+                    'gofood' => $request->header('X-Gojek-Signature') ?? $request->header('x-gojek-signature') ?? $request->header('X-Signature'),
+                    default => $request->header('X-Signature') ?? $request->header('x-signature'),
+                };
+
+                $rawContent = $request->getContent();
+                if (! $driver->verifyWebhookSignature($rawContent, $signature, (string) $secret)) {
+                    Log::warning("Webhook rejected: invalid HMAC signature for {$provider} on tenant #{$tenantId}.");
+
+                    return response()->json(['message' => 'Invalid webhook signature'], 401);
+                }
+            }
+        }
+
         return app(TenantContext::class)->runAs($tenantId, $storeId ? (int) $storeId : null, function () use ($request, $provider, $tenantId, $storeId, $externalOrderId) {
             try {
                 try {

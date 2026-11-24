@@ -317,12 +317,18 @@ trait ManagesPosPaymentAndSplitBill
                     && count($normalizedLegs) === 1
                     && in_array($normalizedLegs[0]['method'], ['qris', 'ewallet'], true);
 
+                $isOfd = in_array($this->orderType, ['grabfood', 'gofood'], true);
+                $originChannel = $isOfd ? $this->orderType : 'pos_cashier';
+
                 $txPayload = [
                     'items' => $items,
                     'customer_id' => $this->customerId,
                     'table_id' => $this->tableId,
-                    'order_type' => $this->orderType,
-                    'origin_channel' => 'pos_cashier',
+                    'order_type' => $isOfd ? 'takeaway' : $this->orderType,
+                    'order_channel' => $isOfd ? $this->orderType : 'pos_cashier',
+                    'origin_channel' => $originChannel,
+                    'external_short_code' => $isOfd ? ($this->externalShortCode ?? null) : null,
+                    'driver_name' => $isOfd ? ($this->driverName ?? null) : null,
                     'device_id' => $this->deviceId,
                     'shift_id' => $shiftId,
                     'discount_id' => $this->selectedDiscountId,

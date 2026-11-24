@@ -37,6 +37,10 @@ class CreateOrder extends Component
 
     public ?string $orderType = null;
 
+    public ?string $externalShortCode = null;
+
+    public ?string $driverName = null;
+
     public string $search = '';
 
     #[Locked]

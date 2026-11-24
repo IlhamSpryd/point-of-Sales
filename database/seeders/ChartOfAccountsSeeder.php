@@ -89,6 +89,18 @@ class ChartOfAccountsSeeder extends Seeder
                 'is_reconcilable' => true,
             ],
             [
+                'account_code' => '1125',
+                'account_name' => 'Piutang Kliring Platform Online Food Delivery (OFD)',
+                'account_type' => AccountTypeEnum::ASSET,
+                'account_subtype' => AccountSubtypeEnum::RECEIVABLE,
+                'normal_balance' => NormalBalanceEnum::DEBIT,
+                'system_account_key' => 'OFD_CLEARING',
+                'is_postable' => true,
+                'is_control_account' => true,
+                'allow_manual_journal' => false,
+                'is_reconcilable' => true,
+            ],
+            [
                 'account_code' => '1130',
                 'account_name' => 'Piutang Usaha (AR Control)',
                 'account_type' => AccountTypeEnum::ASSET,
@@ -455,6 +467,18 @@ class ChartOfAccountsSeeder extends Seeder
                 'is_reconcilable' => false,
             ],
             [
+                'account_code' => '4195',
+                'account_name' => 'Subsidi Promo Merchant OFD (Contra Revenue)',
+                'account_type' => AccountTypeEnum::REVENUE,
+                'account_subtype' => AccountSubtypeEnum::DISCOUNT_CONTRA,
+                'normal_balance' => NormalBalanceEnum::DEBIT,
+                'system_account_key' => 'OFD_PROMO_SUBSIDY',
+                'is_postable' => true,
+                'is_control_account' => false,
+                'allow_manual_journal' => true,
+                'is_reconcilable' => false,
+            ],
+            [
                 'account_code' => '4202',
                 'account_name' => 'Retur & Pengembalian Penjualan (Contra Revenue)',
                 'account_type' => AccountTypeEnum::REVENUE,
@@ -554,6 +578,18 @@ class ChartOfAccountsSeeder extends Seeder
             ],
 
             // 5. DIRECT EXPENSES / PAYROLL (5300 - 5399)
+            [
+                'account_code' => '5200',
+                'account_name' => 'Beban Komisi Platform Online Food Delivery (OFD)',
+                'account_type' => AccountTypeEnum::EXPENSE,
+                'account_subtype' => AccountSubtypeEnum::OPERATING_EXPENSE,
+                'normal_balance' => NormalBalanceEnum::DEBIT,
+                'system_account_key' => 'OFD_COMMISSION_EXPENSE',
+                'is_postable' => true,
+                'is_control_account' => false,
+                'allow_manual_journal' => true,
+                'is_reconcilable' => false,
+            ],
             [
                 'account_code' => '5301',
                 'account_name' => 'Beban Gaji Staf Operasional',
