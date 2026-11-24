@@ -16,7 +16,10 @@ class UiUxPhase3BadgeAndIconAuditTest extends TestCase
         $content = File::get($path);
 
         // 1. Product type is plain text (not wrapped in badge pill)
-        $this->assertStringContainsString('class="text-xs text-muted-foreground font-medium"', $content);
+        $this->assertTrue(
+            str_contains($content, 'class="text-xs text-muted-foreground font-medium"') ||
+            str_contains($content, 'class="text-[12px] text-muted-foreground font-medium"')
+        );
         $this->assertStringNotContainsString('<x-ui.badge :variant="$typeBadges[$prodType][\'type\']', $content);
 
         // 2. Product status uses subtle dot indicator

@@ -21,13 +21,30 @@ class InventoryAccountingService
     }
 
     /**
+     * Memastikan periode transaksi tidak berstatus tertutup (CLOSED / LOCKED) sesuai PSAK (FIN-05).
+     */
+    protected function assertPeriodNotClosed(string $date, int $tenantId): void
+    {
+        $period = \App\Modules\Finance\Models\AccountingPeriod::withoutTenantScope()
+            ->where('tenant_id', $tenantId)
+            ->where('start_date', '<=', $date)
+            ->where('end_date', '>=', $date)
+            ->where('is_adjustment_period', false)
+            ->first();
+
+        if ($period && ! $period->isPostingAllowed()) {
+            throw \App\Modules\Finance\Exceptions\PeriodClosedException::forPeriod($period->period_code, $period->status->value);
+        }
+    }
+
+    /**
      * Emisi outbox saat Goods Received Note (GRN) diposting (purchasing.grn.posted).
      * Akuntansi PR-PUR-01: Debit Persediaan (Retail/Bahan Baku), Credit GR/IR Clearing.
      */
     public function recordGrnPosted(GoodsReceivedNote $grn): FinancialEventOutbox
     {
         $accountingDate = Carbon::parse($grn->received_at ?? $grn->received_date ?? now())->toDateString();
-        $this->periodService->resolveOpenPeriodForDate($accountingDate, (int) $grn->tenant_id);
+        $this->assertPeriodNotClosed($accountingDate, (int) $grn->tenant_id);
 
         $lines = $grn->lines()->get();
         $totalValuation = '0.00';
@@ -133,7 +150,7 @@ class InventoryAccountingService
     public function recordStockAdjustmentPosted(StockAdjustment $adjustment): FinancialEventOutbox
     {
         $accountingDate = Carbon::parse($adjustment->adjusted_at ?? $adjustment->adjustment_date ?? now())->toDateString();
-        $this->periodService->resolveOpenPeriodForDate($accountingDate, (int) $adjustment->tenant_id);
+        $this->assertPeriodNotClosed($accountingDate, (int) $adjustment->tenant_id);
 
         $items = $adjustment->items()->get();
         $totalPositiveAmount = '0.00';
@@ -205,7 +222,7 @@ class InventoryAccountingService
     public function recordStockOpnameApproved(StockOpname $opname): FinancialEventOutbox
     {
         $accountingDate = Carbon::parse($opname->approved_at ?? now())->toDateString();
-        $this->periodService->resolveOpenPeriodForDate($accountingDate, (int) $opname->tenant_id);
+        $this->assertPeriodNotClosed($accountingDate, (int) $opname->tenant_id);
 
         $items = $opname->items()->with(['product', 'ingredient'])->get();
         $totalPositiveAmount = '0.00';
@@ -279,7 +296,7 @@ class InventoryAccountingService
     public function recordStockTransferShipped(StockTransfer $transfer): FinancialEventOutbox
     {
         $accountingDate = Carbon::parse($transfer->shipped_at ?? now())->toDateString();
-        $this->periodService->resolveOpenPeriodForDate($accountingDate, (int) $transfer->tenant_id);
+        $this->assertPeriodNotClosed($accountingDate, (int) $transfer->tenant_id);
 
         $items = $transfer->items()->get();
         $totalTransferValue = '0.00';
@@ -332,7 +349,7 @@ class InventoryAccountingService
     public function recordStockTransferReceived(StockTransfer $transfer): FinancialEventOutbox
     {
         $accountingDate = Carbon::parse($transfer->received_at ?? now())->toDateString();
-        $this->periodService->resolveOpenPeriodForDate($accountingDate, (int) $transfer->tenant_id);
+        $this->assertPeriodNotClosed($accountingDate, (int) $transfer->tenant_id);
 
         $items = $transfer->items()->get();
         $totalReceivedValue = '0.00';
