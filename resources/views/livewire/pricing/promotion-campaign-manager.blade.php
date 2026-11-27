@@ -250,5 +250,7 @@
     @endif
 
     {{-- Margin Simulation Modal --}}
-    <livewire:pricing.margin-simulation-modal />
+    @can('viewAny', \App\Modules\Pricing\Models\PromotionCampaign::class)
+        <livewire:pricing.margin-simulation-modal />
+    @endcan
 </div>

@@ -21,7 +21,7 @@ class IngredientLedger extends Component
     public function boot(): void
     {
         $this->bootRequiresTenantContext();
-        $this->authorize('inventory.view');
+        $this->authorize('viewAny', IngredientStockMovement::class);
     }
 
     #[Url(history: true)]

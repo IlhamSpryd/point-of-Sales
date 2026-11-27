@@ -19,11 +19,14 @@ use App\Modules\Finance\Services\CurrencyExchangeService;
 use App\Modules\Finance\Services\JournalEntryService;
 use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class MultiCurrencyPostingTest extends TestCase
 {
+    use DatabaseTransactions;
+
     protected bool $optOutFromDefaultTenant = true;
 
     protected Tenant $tenantA;

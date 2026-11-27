@@ -69,7 +69,7 @@ class DashboardController extends Controller
             || $user->canViewConsolidatedStores();
 
         $allowedViews = [];
-        if ($isOwnerOrAdmin || $evaluator->can($user, 'dashboard.scope.all_stores') || $evaluator->can($user, 'dashboard.view')) {
+        if ($isOwnerOrAdmin || $evaluator->can($user, 'dashboard.scope.all_stores')) {
             $allowedViews[] = 'executive';
         }
         if ($isOwnerOrAdmin || $evaluator->can($user, 'dashboard.perspective.branch_ops') || in_array($user->role?->name, ['Manager'], true)) {

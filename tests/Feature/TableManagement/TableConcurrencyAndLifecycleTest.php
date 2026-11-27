@@ -290,9 +290,7 @@ class TableConcurrencyAndLifecycleTest extends TestCase
             ->test(CreateOrder::class)
             ->set('orderType', 'dine_in')
             ->set('tableId', $table1->id)
-            ->set('cart', [
-                ['product_id' => $product1->id, 'qty' => 1, 'modifier_ids' => [], 'notes' => null],
-            ]);
+            ->call('addToCartDirectly', $product1->id);
 
         // Simulate background store switch in session/TenantContext to Store 2
         app(TenantContext::class)->setStoreId($store2->id);
