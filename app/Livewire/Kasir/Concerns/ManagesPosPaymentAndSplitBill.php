@@ -6,12 +6,12 @@ namespace App\Livewire\Kasir\Concerns;
 
 use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
-use App\Modules\Catalog\Models\Product;
 use App\Modules\Customers\Models\Customer;
 use App\Modules\Organization\Models\Setting;
 use App\Modules\Pricing\DataTransferObjects\CheckoutCalculationBreakdownDto;
 use App\Modules\Pricing\Models\Discount;
 use App\Modules\Pricing\Services\UnifiedPricingCalculationPipelineService;
+use App\Modules\Sales\Application\Services\PosCartCoordinatorService;
 use App\Modules\Sales\Application\Services\PosTableAndCustomerSyncService;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\Table;
@@ -297,56 +297,14 @@ trait ManagesPosPaymentAndSplitBill
                 $transactionService->payPendingOrder($order, $normalizedLegs, (int) Auth::id(), $shiftId, $this->deviceId);
                 $isMidtransGatewayOrder = false;
             } else {
-                $productIds = collect($this->cart)->pluck('product_id')->unique()->values();
-                $products = Product::with('modifierGroups')->whereIn('id', $productIds)->get()->keyBy('id');
-
-                $items = [];
-                foreach ($this->cart as $raw) {
-                    $product = $products->get($raw['product_id']) ?? Product::findOrFail($raw['product_id']);
-                    $line = $transactionService->resolveOrderItemLine(
-                        $product,
-                        $raw['modifier_ids'] ?? [],
-                        max(1, (int) ($raw['qty'] ?? 1)),
-                        $raw['notes'] ?? null,
-                        $raw['product_variant_id'] ?? null,
-                        $this->customerId,
-                        'pos_cashier',
-                        isset($raw['custom_price']) ? (float) $raw['custom_price'] : null,
-                        isset($raw['uom_id']) ? (int) $raw['uom_id'] : null
-                    );
-
-                    $items[] = [
-                        'product_id' => $line['product_id'],
-                        'product_variant_id' => $raw['product_variant_id'] ?? null,
-                        'uom_id' => isset($raw['uom_id']) ? (int) $raw['uom_id'] : null,
-                        'custom_price' => isset($raw['custom_price']) ? (float) $raw['custom_price'] : null,
-                        'scale_barcode' => $raw['scale_barcode'] ?? null,
-                        'quantity' => $line['qty'],
-                        'extra_price' => $line['order_price'] - $product->product_price,
-                        'options' => $line['options'],
-                        'notes' => $line['notes'] ?? null,
-                        'item_discount_amount' => (int) ($raw['item_discount_amount'] ?? 0),
-                        'item_approval_id' => $raw['item_approval_id'] ?? null,
-                    ];
-                }
-
-                $canUseMidtransSingleLeg = $isMidtransGatewayOrder
-                    && count($normalizedLegs) === 1
-                    && in_array($normalizedLegs[0]['method'], ['qris', 'ewallet'], true);
-
                 $isOfd = in_array($this->orderType, ['grabfood', 'gofood'], true);
-                $originChannel = $isOfd ? $this->orderType : 'pos_cashier';
-
-                $txPayload = [
-                    'items' => $items,
+                $built = app(PosCartCoordinatorService::class)->buildPosOrderPayload($this->cart, $normalizedLegs, [
                     'customer_id' => $this->customerId,
                     'table_id' => $this->tableId,
-                    'order_type' => $isOfd ? 'takeaway' : $this->orderType,
-                    'order_channel' => $isOfd ? $this->orderType : 'pos_cashier',
-                    'origin_channel' => $originChannel,
-                    'external_short_code' => $isOfd ? ($this->externalShortCode ?? null) : null,
-                    'driver_name' => $isOfd ? ($this->driverName ?? null) : null,
-                    'driver_phone' => $isOfd ? ($this->driverPhone ?? null) : null,
+                    'order_type' => $this->orderType,
+                    'external_short_code' => $this->externalShortCode ?? null,
+                    'driver_name' => $this->driverName ?? null,
+                    'driver_phone' => $this->driverPhone ?? null,
                     'platform_commission_rate' => $isOfd ? $this->ofdCommissionRate() : 0.00,
                     'platform_commission_amount' => $isOfd ? $this->estimatedOfdCommission() : 0.00,
                     'merchant_promo_subsidy' => $isOfd ? $this->merchantPromoSubsidy : 0.00,
@@ -358,17 +316,10 @@ trait ManagesPosPaymentAndSplitBill
                     'approval_id' => $this->manualDiscountApprovalId,
                     'cart_uuid' => $this->voucherCode ? $this->idempotencyKey : null,
                     'idempotency_key' => $idempotencyKey,
-                ];
-
-                if ($canUseMidtransSingleLeg) {
-                    $txPayload['payment_method'] = $normalizedLegs[0]['method'];
-                    $txPayload['use_midtrans_gateway'] = true;
-                } else {
-                    $txPayload['payments'] = $normalizedLegs;
-                    $isMidtransGatewayOrder = false;
-                }
-
-                $order = $transactionService->createTransaction($txPayload, (int) Auth::id());
+                    'use_midtrans_gateway' => $isMidtransGatewayOrder,
+                ]);
+                $isMidtransGatewayOrder = $built['uses_midtrans_gateway'];
+                $order = $transactionService->createTransaction($built['payload'], (int) Auth::id());
             }
 
             DB::commit();
@@ -394,24 +345,7 @@ trait ManagesPosPaymentAndSplitBill
                 );
             }
 
-            $this->cart = [];
-            $this->dispatch('pos-cart-state-changed', dirty: false);
-            $this->orderType = null;
-            $this->tableId = null;
-            $this->customerId = null;
-            $this->customerName = null;
-            $this->selectedDiscountId = null;
-            $this->appliedManualDiscount = 0;
-            $this->appliedManualDiscountReason = '';
-            $this->manualDiscountApprovalId = null;
-            $this->voucherCode = null;
-            $this->voucherInput = '';
-            $this->voucherError = null;
-            $this->resumeWarnings = [];
-            $this->pendingOrderId = null;
-            $this->pendingOrderCode = null;
-            $this->cashReceived = 0;
-            $this->idempotencyKey = (string) Str::uuid();
+            $this->resetCheckoutCartState();
 
             return;
 
@@ -436,12 +370,16 @@ trait ManagesPosPaymentAndSplitBill
 
     /**
      * Membersihkan state keranjang setelah transaksi TUNAI diantrekan secara luring (P0-03).
-     * Tidak membuat order di server; server akan menerimanya via /api/v1/pos/sync-offline-orders.
+     * Tidak membuat order di server; server akan menerimanya via /pos/offline/sync.
      */
     public function clearCartAfterOfflineQueue(): void
     {
         $this->authorize('create', Order::class);
+        $this->resetCheckoutCartState();
+    }
 
+    private function resetCheckoutCartState(): void
+    {
         $this->cart = [];
         $this->dispatch('pos-cart-state-changed', dirty: false);
         $this->orderType = null;
@@ -455,6 +393,7 @@ trait ManagesPosPaymentAndSplitBill
         $this->voucherCode = null;
         $this->voucherInput = '';
         $this->voucherError = null;
+        $this->resumeWarnings = [];
         $this->pendingOrderId = null;
         $this->pendingOrderCode = null;
         $this->cashReceived = 0;

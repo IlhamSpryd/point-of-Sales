@@ -13,6 +13,7 @@ use App\Modules\Pricing\Models\Discount;
 use App\Modules\Pricing\Services\CatalogPriceResolverService;
 use App\Modules\Sales\Application\Handlers\VoidAndRestoreOrderHandler;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -93,6 +94,8 @@ class OrderLinePreparationService
             }
         }
 
+        $isOfflineSync = ! empty($data['is_offline_sync']);
+
         foreach ($mergedItems as $item) {
             $product = $products->firstWhere('id', (int) $item['product_id']);
 
@@ -103,8 +106,14 @@ class OrderLinePreparationService
             }
 
             if (! $product->is_active || $product->status !== 'active') {
-                throw ValidationException::withMessages([
-                    'items' => 'Product "'.$product->product_name.'" is not active and cannot be sold.',
+                if (! $isOfflineSync) {
+                    throw ValidationException::withMessages([
+                        'items' => 'Product "'.$product->product_name.'" is not active and cannot be sold.',
+                    ]);
+                }
+                Log::warning('[OFFLINE SYNC] Settling offline cash order containing deactivated product.', [
+                    'tenant_id' => $product->tenant_id,
+                    'product_id' => $product->id,
                 ]);
             }
 
@@ -121,11 +130,18 @@ class OrderLinePreparationService
                 $bundleExpander = app(BundleComponentExpanderService::class);
                 $avail = $bundleExpander->checkAvailability($product, (int) $activeStoreId, (int) $item['quantity']);
                 if (! $avail['available']) {
-                    $missingStr = collect($avail['missing_components'])
-                        ->map(fn ($m) => "{$m['name']} (Req: {$m['required']}, Avail: {$m['available']})")
-                        ->join(', ');
-                    throw ValidationException::withMessages([
-                        'items' => "Insufficient stock for bundle '{$product->product_name}'. Missing: {$missingStr}",
+                    if (! $isOfflineSync) {
+                        $missingStr = collect($avail['missing_components'])
+                            ->map(fn ($m) => "{$m['name']} (Req: {$m['required']}, Avail: {$m['available']})")
+                            ->join(', ');
+                        throw ValidationException::withMessages([
+                            'items' => "Insufficient stock for bundle '{$product->product_name}'. Missing: {$missingStr}",
+                        ]);
+                    }
+                    Log::warning('[OFFLINE SYNC] Tolerating bundle component stock variance on offline cash sale.', [
+                        'tenant_id' => $product->tenant_id,
+                        'store_id' => $activeStoreId,
+                        'product_id' => $product->id,
                     ]);
                 }
             }
@@ -135,8 +151,17 @@ class OrderLinePreparationService
                 $available = $balance ? $balance->quantity : $product->stock;
 
                 if ($this->totalsCalculator->compareScaled((string) $available, (string) $item['quantity']) < 0) {
-                    throw ValidationException::withMessages([
-                        'items' => 'Insufficient stock for product "'.$product->product_name.'". (Available: '.$available.')',
+                    if (! $isOfflineSync) {
+                        throw ValidationException::withMessages([
+                            'items' => 'Insufficient stock for product "'.$product->product_name.'". (Available: '.$available.')',
+                        ]);
+                    }
+                    Log::warning('[OFFLINE SYNC] Tolerating product stock variance on offline cash sale.', [
+                        'tenant_id' => $product->tenant_id,
+                        'store_id' => $activeStoreId,
+                        'product_id' => $product->id,
+                        'available' => $available,
+                        'requested' => $item['quantity'],
                     ]);
                 }
             }
@@ -342,8 +367,14 @@ class OrderLinePreparationService
                 }
 
                 if (! $ingredient->is_active) {
-                    throw ValidationException::withMessages([
-                        'items' => 'Ingredient "'.$ingredient->name.'" is disabled and cannot be used.',
+                    if (! $isOfflineSync) {
+                        throw ValidationException::withMessages([
+                            'items' => 'Ingredient "'.$ingredient->name.'" is disabled and cannot be used.',
+                        ]);
+                    }
+                    Log::warning('[OFFLINE SYNC] Settling offline cash order using deactivated ingredient.', [
+                        'tenant_id' => $ingredient->tenant_id,
+                        'ingredient_id' => $ingredient->id,
                     ]);
                 }
 
@@ -351,9 +382,18 @@ class OrderLinePreparationService
                 $available = $balance ? $balance->quantity : $ingredient->current_stock;
 
                 if ($this->totalsCalculator->compareScaled((string) $available, $needed) < 0) {
-                    throw ValidationException::withMessages([
-                        'items' => 'Insufficient stock for ingredient "'.$ingredient->name.'". '
-                            .'(Required: '.$needed.' '.$ingredient->unit.', Available: '.$available.' '.$ingredient->unit.')',
+                    if (! $isOfflineSync) {
+                        throw ValidationException::withMessages([
+                            'items' => 'Insufficient stock for ingredient "'.$ingredient->name.'". '
+                                .'(Required: '.$needed.' '.$ingredient->unit.', Available: '.$available.' '.$ingredient->unit.')',
+                        ]);
+                    }
+                    Log::warning('[OFFLINE SYNC] Tolerating BOM ingredient stock variance on offline cash sale.', [
+                        'tenant_id' => $ingredient->tenant_id,
+                        'store_id' => $storeIdForStock,
+                        'ingredient_id' => $ingredient->id,
+                        'available' => $available,
+                        'needed' => $needed,
                     ]);
                 }
             }

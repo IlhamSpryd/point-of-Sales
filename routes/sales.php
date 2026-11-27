@@ -39,6 +39,7 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
         Route::get('/api/orders/{order_number}/print-payload', [TransactionController::class, 'printPayload'])->name('api.order.print-payload');
         Route::get('/api/orders/{order_number}/print-kitchen-payload', [TransactionController::class, 'printKitchenPayload'])->name('api.order.print-kitchen-payload');
         Route::post('/api/v1/pos/sync-offline-orders', [OfflineOrderSyncController::class, 'sync'])->name('api.v1.pos.sync-offline-orders');
+        Route::post('/pos/offline/sync', [OfflineOrderSyncController::class, 'sync'])->name('pos.offline.sync');
 
         Route::get('/qz/certificate', [QzTraySigningController::class, 'certificate'])->name('qz.certificate');
         Route::post('/qz/sign', [QzTraySigningController::class, 'sign'])->name('qz.sign');

@@ -66,11 +66,17 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // HTML Navigation requests: Network-first with fallback to /offline.html
+    // HTML Navigation requests: Network-first with POS shell caching & fallback to /offline.html
     const acceptHeader = event.request.headers.get('accept') || '';
     if (event.request.mode === 'navigate' || acceptHeader.includes('text/html')) {
         event.respondWith(
-            fetch(event.request).catch(() => {
+            fetch(event.request).then((networkResponse) => {
+                if (networkResponse && networkResponse.status === 200 && !networkResponse.redirected && url.pathname.startsWith('/transaction')) {
+                    const responseClone = networkResponse.clone();
+                    caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+                }
+                return networkResponse;
+            }).catch(() => {
                 return caches.match(event.request).then((cached) => {
                     return cached || caches.match('/offline.html');
                 });

@@ -1,6 +1,6 @@
 {{-- SPLIT PAYMENT & CHECKOUT MODAL --}}
 <x-ui.modal name="checkout-payment" maxWidth="2xl" :closeButton="false" :instant="true" class="p-0 overflow-hidden">
-    <div x-data="checkoutPayment()" x-init="init()" class="bg-card text-card-foreground w-full flex flex-col overflow-hidden max-h-[92vh]">
+    <div x-data="checkoutPayment()" x-init="init()" @pos-cart-state-changed.window="idempotencyKey = null" class="bg-card text-card-foreground w-full flex flex-col overflow-hidden max-h-[92vh]">
         <!-- Header Modal Checkout -->
         <div class="p-4 border-b border-border flex items-center justify-between bg-muted shrink-0">
             <div>
@@ -524,9 +524,11 @@
                     this.awaitingMidtransOrderCode = null;
                     this.awaitingSnapToken = null;
                     this.verifyingMidtrans = false;
-                    this.idempotencyKey = (window.crypto && window.crypto.randomUUID) ?
-                        window.crypto.randomUUID() :
-                        (Date.now().toString(36) + Math.random().toString(36).slice(2));
+                    if (!this.idempotencyKey) {
+                        this.idempotencyKey = (window.crypto && window.crypto.randomUUID) ?
+                            window.crypto.randomUUID() :
+                            (Date.now().toString(36) + Math.random().toString(36).slice(2));
+                    }
                 };
                 window.addEventListener('open-checkout-modal', this._openModalHandler);
 
@@ -757,12 +759,18 @@
                     return;
                 }
 
-                const livewireTotal = await wire.get('totalAmount');
-                if (livewireTotal !== undefined && livewireTotal !== null && livewireTotal !== this.total) {
-                    this.total = livewireTotal;
-                    if (this.method === 'split' && this.remaining > 0) {
-                        this.errorMsg = 'Order total changed (Rp ' + this.formatRupiah(livewireTotal) + '). Please re-adjust split allocations.';
-                        return;
+                if (navigator.onLine) {
+                    try {
+                        const livewireTotal = await wire.get('totalAmount');
+                        if (livewireTotal !== undefined && livewireTotal !== null && livewireTotal !== this.total) {
+                            this.total = livewireTotal;
+                            if (this.method === 'split' && this.remaining > 0) {
+                                this.errorMsg = 'Order total changed (Rp ' + this.formatRupiah(livewireTotal) + '). Please re-adjust split allocations.';
+                                return;
+                            }
+                        }
+                    } catch (syncErr) {
+                        // Offline fallback handles network transport failure cleanly below.
                     }
                 }
 
@@ -832,10 +840,21 @@
 
                 this.submitting = true;
                 try {
+                    const isCashOnly = this.method === 'cash' && !useMidtransGateway;
+                    if (!navigator.onLine && isCashOnly) {
+                        const queued = await this.queueOfflineOrder(payload, true);
+                        if (queued) {
+                            return;
+                        }
+                    }
+
                     await wire.call('submitOrder', payload, this.idempotencyKey, useMidtransGateway);
+                    if (isCashOnly) {
+                        this.idempotencyKey = null;
+                    }
                 } catch (err) {
                     const isCashOnly = this.method === 'cash' && !useMidtransGateway;
-                    const offlineQueued = isCashOnly ? await this.queueOfflineOrder(payload) : false;
+                    const offlineQueued = isCashOnly ? await this.queueOfflineOrder(payload, this.isNetworkFailure(err)) : false;
 
                     if (!offlineQueued) {
                         this.errorMsg = err?.message || 'Unable to complete cashier payment. Please try again.';
@@ -845,22 +864,36 @@
                 }
             },
 
+            isNetworkFailure(err) {
+                if (!navigator.onLine) {
+                    return true;
+                }
+                const message = String(err?.message || err || '');
+                return err?.name === 'TypeError'
+                    || message.includes('Failed to fetch')
+                    || message.includes('NetworkError')
+                    || message.includes('ERR_INTERNET_DISCONNECTED')
+                    || message.includes('network');
+            },
+
             /**
              * Offline POS fallback (P0-03 / DEC-006): menyimpan transaksi TUNAI ke antrean IndexedDB
              * lokal ketika perangkat luring atau permintaan jaringan gagal. UUID idempotensi draft
              * dipakai ulang sehingga replay ke server tidak membuat order ganda.
              */
-            async queueOfflineOrder(payload) {
+            async queueOfflineOrder(payload, forceOffline = false) {
                 if (!window.ApeironOfflinePos || typeof window.ApeironOfflinePos.enqueueOrder !== 'function') {
                     return false;
                 }
-                if (navigator.onLine && this._onlineConfirmed !== false) {
+                if (!forceOffline && navigator.onLine && this._onlineConfirmed !== false) {
                     return false;
                 }
 
                 try {
-                    const cart = await this.getWire().get('cart');
-                    const items = (cart || []).map((row) => ({
+                    const wire = this.getWire();
+                    const rawCart = wire?.cart ?? [];
+                    const cart = Array.isArray(rawCart) ? rawCart : [];
+                    const items = cart.map((row) => ({
                         product_id: row.product_id,
                         product_variant_id: row.product_variant_id ?? null,
                         quantity: row.qty ?? 1,
@@ -874,11 +907,16 @@
                         return false;
                     }
 
+                    const draftUuid = this.idempotencyKey || window.ApeironOfflinePos.generateUuid();
+                    const orderType = wire?.orderType || 'takeaway';
+
                     const record = await window.ApeironOfflinePos.enqueueOrder({
-                        offline_client_uuid: this.idempotencyKey,
-                        idempotency_key: this.idempotencyKey,
+                        offline_client_uuid: draftUuid,
+                        idempotency_key: draftUuid,
                         payment_method: 'cash',
-                        order_type: (await this.getWire().get('orderType')) || 'takeaway',
+                        order_type: orderType,
+                        order_amount: this.total,
+                        subtotal_amount: this.total,
                         items: items,
                         payments: payload,
                         cash_received: payload[0]?.amount_tendered ?? this.amountRaw,
@@ -886,14 +924,27 @@
 
                     this.errorMsg = '';
                     this.receiptReady = false;
+                    this.idempotencyKey = null;
+                    window.apeironPosCartDirty = false;
+                    window.__apeironQueuedOfflineDraft = true;
+
                     window.dispatchEvent(new CustomEvent('pos-offline-order-queued', {
                         detail: { uuid: record.offline_client_uuid },
                     }));
+                    window.dispatchEvent(new CustomEvent('toast', {
+                        detail: {
+                            message: `Offline Mode: order ${record.offline_client_uuid.slice(0, 14)} disimpan di antrean lokal.`,
+                            type: 'warning',
+                        },
+                    }));
 
-                    // Umpan balik visual: kosongkan keranjang & tutup modal seperti transaksi normal.
-                    const wireClient = this.getWire();
-                    if (wireClient) {
-                        await wireClient.call('clearCartAfterOfflineQueue');
+                    if (navigator.onLine && wire) {
+                        try {
+                            await wire.call('clearCartAfterOfflineQueue');
+                            window.__apeironQueuedOfflineDraft = false;
+                        } catch (wireErr) {
+                            // Server still unreachable; cart will be cleared upon reconnect sync.
+                        }
                     }
                     window.dispatchEvent(new CustomEvent('close-modal', { detail: 'checkout-payment' }));
 

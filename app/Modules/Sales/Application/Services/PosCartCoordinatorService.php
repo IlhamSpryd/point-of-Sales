@@ -555,4 +555,87 @@ class PosCartCoordinatorService
 
         return $normalized;
     }
+
+    /**
+     * Builds the domain transaction payload from Livewire POS cashier cart state (ADR-108).
+     *
+     * @param  array<int, array<string, mixed>>  $cart
+     * @param  array<int, array<string, mixed>>  $normalizedLegs
+     * @param  array<string, mixed>  $meta
+     * @return array{payload: array<string, mixed>, uses_midtrans_gateway: bool}
+     */
+    public function buildPosOrderPayload(array $cart, array $normalizedLegs, array $meta): array
+    {
+        $productIds = collect($cart)->pluck('product_id')->unique()->values();
+        $products = Product::with('modifierGroups')->whereIn('id', $productIds)->get()->keyBy('id');
+
+        $items = [];
+        foreach ($cart as $raw) {
+            $product = $products->get($raw['product_id']) ?? Product::findOrFail($raw['product_id']);
+            $line = $this->transactionService->resolveOrderItemLine(
+                $product,
+                $raw['modifier_ids'] ?? [],
+                max(1, (int) ($raw['qty'] ?? 1)),
+                $raw['notes'] ?? null,
+                $raw['product_variant_id'] ?? null,
+                $meta['customer_id'] ?? null,
+                'pos_cashier',
+                isset($raw['custom_price']) ? (float) $raw['custom_price'] : null,
+                isset($raw['uom_id']) ? (int) $raw['uom_id'] : null
+            );
+
+            $items[] = [
+                'product_id' => $line['product_id'],
+                'product_variant_id' => $raw['product_variant_id'] ?? null,
+                'uom_id' => isset($raw['uom_id']) ? (int) $raw['uom_id'] : null,
+                'custom_price' => isset($raw['custom_price']) ? (float) $raw['custom_price'] : null,
+                'scale_barcode' => $raw['scale_barcode'] ?? null,
+                'quantity' => $line['qty'],
+                'extra_price' => $line['order_price'] - $product->product_price,
+                'options' => $line['options'],
+                'notes' => $line['notes'] ?? null,
+                'item_discount_amount' => (int) ($raw['item_discount_amount'] ?? 0),
+                'item_approval_id' => $raw['item_approval_id'] ?? null,
+            ];
+        }
+
+        $isMidtrans = ! empty($meta['use_midtrans_gateway'])
+            && count($normalizedLegs) === 1
+            && in_array($normalizedLegs[0]['method'], ['qris', 'ewallet'], true);
+
+        $orderType = $meta['order_type'] ?? 'takeaway';
+        $isOfd = in_array($orderType, ['grabfood', 'gofood'], true);
+
+        $payload = [
+            'items' => $items,
+            'customer_id' => $meta['customer_id'] ?? null,
+            'table_id' => $meta['table_id'] ?? null,
+            'order_type' => $isOfd ? 'takeaway' : $orderType,
+            'order_channel' => $isOfd ? $orderType : 'pos_cashier',
+            'origin_channel' => $isOfd ? $orderType : 'pos_cashier',
+            'external_short_code' => $isOfd ? ($meta['external_short_code'] ?? null) : null,
+            'driver_name' => $isOfd ? ($meta['driver_name'] ?? null) : null,
+            'driver_phone' => $isOfd ? ($meta['driver_phone'] ?? null) : null,
+            'platform_commission_rate' => $meta['platform_commission_rate'] ?? 0.00,
+            'platform_commission_amount' => $meta['platform_commission_amount'] ?? 0.00,
+            'merchant_promo_subsidy' => $meta['merchant_promo_subsidy'] ?? 0.00,
+            'net_payout_amount' => $meta['net_payout_amount'] ?? 0.00,
+            'device_id' => $meta['device_id'] ?? null,
+            'shift_id' => $meta['shift_id'] ?? null,
+            'discount_id' => $meta['discount_id'] ?? null,
+            'manual_discount_amount' => (int) ($meta['manual_discount_amount'] ?? 0),
+            'approval_id' => $meta['approval_id'] ?? null,
+            'cart_uuid' => $meta['cart_uuid'] ?? null,
+            'idempotency_key' => $meta['idempotency_key'] ?? null,
+        ];
+
+        if ($isMidtrans) {
+            $payload['payment_method'] = $normalizedLegs[0]['method'];
+            $payload['use_midtrans_gateway'] = true;
+        } else {
+            $payload['payments'] = $normalizedLegs;
+        }
+
+        return ['payload' => $payload, 'uses_midtrans_gateway' => $isMidtrans];
+    }
 }

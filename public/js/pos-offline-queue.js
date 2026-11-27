@@ -12,6 +12,8 @@
     let currentDb = null;
     let currentTenantId = null;
     let currentUserId = null;
+    let cachedPendingCount = 0;
+    let syncPromise = null;
 
     function getActiveTenantId() {
         const metaTenant = document.querySelector('meta[name="tenant-id"]')?.getAttribute('content');
@@ -22,6 +24,44 @@
         const metaUser = document.querySelector('meta[name="user-id"]')?.getAttribute('content');
         return metaUser || window.__APEIRON_BOOT__?.userId || window.ApeironUserId || '0';
     }
+
+    function getTenantCountKey(tenantId) {
+        return `apeiron_pos_pending_count_${tenantId}`;
+    }
+
+    function getScopedCountKey(tenantId, userId) {
+        return `apeiron_pos_pending_count_${tenantId}_${userId || '0'}`;
+    }
+
+    function readStoredPendingCount() {
+        const tenantId = getActiveTenantId();
+        if (!tenantId) {
+            return 0;
+        }
+        const scopedRaw = localStorage.getItem(getScopedCountKey(tenantId, getActiveUserId()));
+        if (scopedRaw !== null) {
+            return Math.max(0, parseInt(scopedRaw, 10) || 0);
+        }
+        return Math.max(0, parseInt(localStorage.getItem(getTenantCountKey(tenantId)) || '0', 10) || 0);
+    }
+
+    function syncCountState(count, tenantId = null, userId = null) {
+        const resolvedTenant = tenantId || getActiveTenantId();
+        const resolvedUser = userId || getActiveUserId();
+        const normalized = Math.max(0, parseInt(String(count ?? 0), 10) || 0);
+        cachedPendingCount = normalized;
+        if (resolvedTenant) {
+            try {
+                localStorage.setItem(getTenantCountKey(resolvedTenant), String(normalized));
+                localStorage.setItem(getScopedCountKey(resolvedTenant, resolvedUser), String(normalized));
+            } catch (e) {
+                console.warn('[OFFLINE POS] Gagal menyimpan cached pending count:', e);
+            }
+        }
+        window.dispatchEvent(new CustomEvent('offline-queue-updated', { detail: { count: normalized } }));
+    }
+
+    cachedPendingCount = readStoredPendingCount();
 
     function getDbName(tenantId, userId) {
         if (!tenantId) {
@@ -115,6 +155,10 @@
             });
         },
 
+        getCachedPendingCount() {
+            return Math.max(cachedPendingCount, readStoredPendingCount());
+        },
+
         async enqueueOrder(orderPayload) {
             const tenantId = getActiveTenantId();
             if (!tenantId) {
@@ -158,6 +202,7 @@
                 const req = store.put(record);
 
                 req.onsuccess = () => {
+                    syncCountState(this.getCachedPendingCount() + 1, tenantId, userId);
                     console.log(`[OFFLINE POS] Order berhasil disimpan di antrean lokal tenant [${tenantId}] - [${uuid}]`);
                     this.notifyQueueChanged();
                     resolve(record);
@@ -203,6 +248,7 @@
                 const req = store.delete(uuid);
 
                 req.onsuccess = () => {
+                    syncCountState(Math.max(0, this.getCachedPendingCount() - 1));
                     this.notifyQueueChanged();
                     resolve();
                 };
@@ -212,84 +258,99 @@
         },
 
         async syncPendingOrders() {
-            const tenantId = getActiveTenantId();
-            if (!tenantId) {
-                console.warn('[OFFLINE POS] Sinkronisasi ditolak: konteks tenant aktif tidak tersedia.');
-                return { synced: 0, pending: 0, error: 'missing_tenant_context' };
+            if (syncPromise) {
+                return syncPromise;
             }
 
-            if (!navigator.onLine) {
-                console.warn('[OFFLINE POS] Sinkronisasi ditunda: perangkat masih dalam kondisi offline.');
-                return { synced: 0, pending: await this.getPendingCount() };
-            }
-
-            const pending = await this.getPendingOrders();
-            if (pending.length === 0) {
-                return { synced: 0, pending: 0 };
-            }
-
-            // Validasi fail-closed: pastikan semua payload terverifikasi milik tenant aktif (DEC-001)
-            const validBatch = pending
-                .filter(p => p.tenant_id && String(p.tenant_id) === String(tenantId))
-                .map(p => p.payload);
-
-            if (validBatch.length === 0) {
-                return { synced: 0, pending: 0 };
-            }
-
-            console.log(`[OFFLINE POS] Memulai sinkronisasi ${validBatch.length} transaksi offline tenant [${tenantId}] ke server...`);
-
-            try {
-                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-                const response = await fetch('/api/v1/pos/sync-offline-orders', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken || ''
-                    },
-                    body: JSON.stringify({ orders: validBatch, tenant_id: tenantId })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+            const run = (async () => {
+                const tenantId = getActiveTenantId();
+                if (!tenantId) {
+                    console.warn('[OFFLINE POS] Sinkronisasi ditolak: konteks tenant aktif tidak tersedia.');
+                    return { synced: 0, pending: 0, error: 'missing_tenant_context' };
                 }
 
-                const data = await response.json();
-                const results = data.data?.results || [];
+                if (!navigator.onLine) {
+                    console.warn('[OFFLINE POS] Sinkronisasi ditunda: perangkat masih dalam kondisi offline.');
+                    return { synced: 0, pending: await this.getPendingCount() };
+                }
 
-                for (const res of results) {
-                    if (res.status === 'synced' || res.status === 'already_synced' || res.status === 'duplicate_skipped' || res.sync_status === 'duplicate_skipped') {
-                        await this.removeOrder(res.offline_client_uuid);
+                const pending = await this.getPendingOrders();
+                if (pending.length === 0) {
+                    syncCountState(0, tenantId);
+                    return { synced: 0, pending: 0 };
+                }
+
+                // Validasi fail-closed: pastikan semua payload terverifikasi milik tenant aktif (DEC-001)
+                const validBatch = pending
+                    .filter(p => p.tenant_id && String(p.tenant_id) === String(tenantId))
+                    .map(p => p.payload);
+
+                if (validBatch.length === 0) {
+                    return { synced: 0, pending: 0 };
+                }
+
+                console.log(`[OFFLINE POS] Memulai sinkronisasi ${validBatch.length} transaksi offline tenant [${tenantId}] ke server...`);
+
+                try {
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                    const response = await fetch('/pos/offline/sync', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken || ''
+                        },
+                        body: JSON.stringify({ orders: validBatch, tenant_id: tenantId })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
                     }
+
+                    const data = await response.json();
+                    const results = data.data?.results || [];
+
+                    for (const res of results) {
+                        if (res.status === 'synced' || res.status === 'already_synced' || res.status === 'duplicate_skipped' || res.sync_status === 'duplicate_skipped') {
+                            await this.removeOrder(res.offline_client_uuid);
+                        }
+                    }
+
+                    const remainingCount = await this.getPendingCount();
+                    syncCountState(remainingCount, tenantId);
+
+                    console.log(`[OFFLINE POS] Sinkronisasi selesai: ${data.data?.synced_count || 0} berhasil disinkronkan.`);
+                    window.dispatchEvent(new CustomEvent('offline-orders-synced', { detail: { count: data.data?.synced_count || 0 } }));
+
+                    if (window.Livewire) {
+                        window.Livewire.dispatch('offline-orders-synced', { count: data.data?.synced_count || 0 });
+                    }
+
+                    return data;
+                } catch (err) {
+                    console.error('[OFFLINE POS] Gagal melakukan sinkronisasi batch:', err);
+                    throw err;
                 }
+            })();
 
-                console.log(`[OFFLINE POS] Sinkronisasi selesai: ${data.data?.synced_count || 0} berhasil disinkronkan.`);
-                this.notifyQueueChanged();
-
-                if (window.Livewire) {
-                    window.Livewire.dispatch('offline-orders-synced', { count: data.data?.synced_count || 0 });
-                }
-
-                return data;
-            } catch (err) {
-                console.error('[OFFLINE POS] Gagal melakukan sinkronisasi batch:', err);
-                throw err;
+            syncPromise = run;
+            try {
+                return await run;
+            } finally {
+                syncPromise = null;
             }
         },
 
         notifyQueueChanged() {
-            this.getPendingCount().then(count => {
-                const tenantId = getActiveTenantId();
-                if (tenantId) {
-                    localStorage.setItem(`apeiron_pos_pending_count_${tenantId}`, count);
-                }
-                window.dispatchEvent(new CustomEvent('offline-queue-updated', { detail: { count } }));
-            }).catch(() => {});
+            return this.getPendingCount().then(count => {
+                syncCountState(count);
+                return count;
+            }).catch(() => cachedPendingCount);
         }
     };
 
-    // Deteksi logout: peringatan antrean luring & tutup handle database seketika
+    // Deteksi logout: peringatan antrean luring sinkron & tutup handle database seketika
     document.addEventListener('submit', (e) => {
         const form = e.target;
         if (form && typeof form.getAttribute === 'function') {
@@ -297,7 +358,8 @@
             if (action.includes('logout')) {
                 const tenantId = getActiveTenantId();
                 if (tenantId) {
-                    const count = parseInt(localStorage.getItem(`apeiron_pos_pending_count_${tenantId}`) || '0', 10);
+                    const storedCount = parseInt(localStorage.getItem(`apeiron_pos_pending_count_${tenantId}`) || '0', 10) || 0;
+                    const count = Math.max(cachedPendingCount, storedCount);
                     if (count > 0) {
                         const ok = window.confirm(`Peringatan: Ada ${count} transaksi offline yang belum tersinkronisasi. Pastikan sinkronisasi selesai sebelum berganti kasir. Tetap logout?`);
                         if (!ok) {
@@ -310,7 +372,17 @@
                 ApeironOfflinePos.closeDatabase();
             }
         }
-    });
+    }, true);
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            if (getActiveTenantId()) {
+                ApeironOfflinePos.notifyQueueChanged();
+            }
+        });
+    } else if (getActiveTenantId()) {
+        ApeironOfflinePos.notifyQueueChanged();
+    }
 
     window.addEventListener('apeiron-logout', () => {
         ApeironOfflinePos.closeDatabase();

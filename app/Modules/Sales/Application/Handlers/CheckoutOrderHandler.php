@@ -311,62 +311,21 @@ class CheckoutOrderHandler
                 $serviceChargeAmount = (float) $calculatedTotals['service_charge_amount'];
                 $roundingAdjustment = (float) $calculatedTotals['rounding_adjustment'];
 
-                $dominantPaymentMethod = 'cash';
-                $cashReceivedForReceipt = null;
-                $orderChangeForReceipt = 0;
-                $finalPaymentLegs = [];
+                $resolvedPayments = $this->paymentTenderService->resolveCheckoutPayments(
+                    parsedPaymentLegs: $parsedPaymentLegs,
+                    data: $data,
+                    totalAmount: (int) $totalAmount,
+                    tenantId: $tenantId,
+                    activeStoreId: $activeStoreId
+                );
 
-                if ($parsedPaymentLegs !== null) {
-                    $sumApplied = array_sum(array_column($parsedPaymentLegs, 'amount'));
-
-                    if ($sumApplied !== $totalAmount) {
-                        throw ValidationException::withMessages([
-                            'payments' => 'Total payment across methods (Rp'.number_format($sumApplied, 0, ',', '.')
-                                .') does not match order total (Rp'.number_format($totalAmount, 0, ',', '.').').',
-                        ]);
-                    }
-
-                    $finalPaymentLegs = $parsedPaymentLegs;
-
-                    $legsByAmountDesc = collect($finalPaymentLegs)->sortByDesc('amount');
-                    /** @var array{method: PaymentMethod, amount: int, reference_number: string|null, idempotency_key: string|null} $firstLeg */
-                    $firstLeg = $legsByAmountDesc->first();
-                    $dominantPaymentMethod = $firstLeg['method']->value;
-
-                    $rawCashLegs = collect($data['payments'])->filter(
-                        fn ($raw) => is_array($raw) && (($raw['payment_method'] ?? $raw['method'] ?? null) === 'cash' || ($raw['payment_method'] ?? $raw['method'] ?? null) === PaymentMethod::Cash)
-                    );
-                    $cashLegTotal = (int) collect($finalPaymentLegs)->where('method', PaymentMethod::Cash)->sum('amount');
-                    $cashTenderedTotal = (int) $rawCashLegs->sum(fn (array $raw) => (int) ($raw['amount_tendered'] ?? $raw['amount'] ?? 0));
-                    $cashChangeTotal = (int) $rawCashLegs->sum(fn (array $raw) => (int) ($raw['change_amount'] ?? max(0, (int) ($raw['amount_tendered'] ?? $raw['amount'] ?? 0) - (int) ($raw['amount'] ?? 0))));
-                    $cashReceivedForReceipt = $cashTenderedTotal > 0 ? $cashTenderedTotal : ($cashLegTotal > 0 ? $cashLegTotal : null);
-                    $orderChangeForReceipt = $cashChangeTotal > 0 ? $cashChangeTotal : max(0, (int) ($cashReceivedForReceipt ?? 0) - $cashLegTotal);
-
-                    $isDeferredCash = false;
-                    $initialStatus = OrderStatus::Paid;
-                } else {
-                    $dominantPaymentMethod = $data['payment_method'] ?? 'cash';
-                    $cashReceived = $data['cash_received'] ?? null;
-                    $isDeferredCash = $dominantPaymentMethod === 'cash' && ! empty($data['is_self_order_cash']);
-                    $isImmediateCash = $dominantPaymentMethod === 'cash' && ! $isDeferredCash;
-
-                    if ($isImmediateCash && ! empty($data['is_offline_sync'])) {
-                        $cashReceived = max((int) ($cashReceived ?? $totalAmount), $totalAmount);
-                    }
-
-                    if ($isImmediateCash && (int) $cashReceived < $totalAmount) {
-                        throw ValidationException::withMessages([
-                            'cash_received' => 'Cash received is less than total amount due.',
-                        ]);
-                    }
-
-                    $cashReceivedForReceipt = $isImmediateCash ? ($cashReceived ?? $totalAmount) : null;
-                    $orderChangeForReceipt = ($isImmediateCash && $cashReceived)
-                        ? max(0, (int) $cashReceived - $totalAmount)
-                        : 0;
-
-                    $initialStatus = $isImmediateCash ? OrderStatus::Paid : OrderStatus::Pending;
-                }
+                $dominantPaymentMethod = $resolvedPayments['dominant_payment_method'];
+                $cashReceivedForReceipt = $resolvedPayments['cash_received'];
+                $orderChangeForReceipt = $resolvedPayments['order_change'];
+                $finalPaymentLegs = $resolvedPayments['final_payment_legs'];
+                $isDeferredCash = $resolvedPayments['is_deferred_cash'];
+                $initialStatus = $resolvedPayments['initial_status'];
+                $data['source_reference'] = $resolvedPayments['source_reference'];
 
                 $orderCode = app(DocumentSequenceService::class)->nextOrderCode(
                     (int) $tenantId,

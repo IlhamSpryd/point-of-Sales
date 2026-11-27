@@ -18,6 +18,7 @@ use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\Payment;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -238,5 +239,125 @@ class OrderPaymentTenderService
 
             return $order;
         }, attempts: 3);
+    }
+
+    /**
+     * Resolves multi-leg or single-method checkout payment state and tolerates bounded offline cash catalog variance.
+     *
+     * @param  array<int, array{method: PaymentMethod, amount: int, reference_number: ?string, idempotency_key: ?string, amount_tendered?: int, change_amount?: int}>|null  $parsedPaymentLegs
+     * @param  array<string, mixed>  $data
+     * @return array{
+     *     dominant_payment_method: string,
+     *     cash_received: int|float|null,
+     *     order_change: int,
+     *     final_payment_legs: array<int, array<string, mixed>>,
+     *     is_deferred_cash: bool,
+     *     initial_status: OrderStatus,
+     *     source_reference: ?string
+     * }
+     */
+    public function resolveCheckoutPayments(
+        ?array $parsedPaymentLegs,
+        array $data,
+        int $totalAmount,
+        ?int $tenantId,
+        ?int $activeStoreId
+    ): array {
+        $sourceReference = isset($data['source_reference']) ? (string) $data['source_reference'] : null;
+
+        if ($parsedPaymentLegs !== null) {
+            $sumApplied = array_sum(array_column($parsedPaymentLegs, 'amount'));
+            $allCashLegs = collect($parsedPaymentLegs)->every(
+                fn (array $leg): bool => $leg['method'] === PaymentMethod::Cash
+            );
+
+            if ($sumApplied !== $totalAmount) {
+                $variance = abs($sumApplied - $totalAmount);
+                $maxOfflineVariance = max(10000, (int) round($totalAmount * 0.25));
+
+                if (! empty($data['is_offline_sync']) && $allCashLegs && $variance <= $maxOfflineVariance) {
+                    Log::warning('[OFFLINE SYNC] Minor catalog price variance tolerated for offline cash order.', [
+                        'tenant_id' => $tenantId,
+                        'store_id' => $activeStoreId,
+                        'offline_paid' => $sumApplied,
+                        'catalog_total' => $totalAmount,
+                    ]);
+                    $sourceReference = trim((string) ($sourceReference ?? '')." [OFFLINE CATALOG VARIANCE: paid={$sumApplied} catalog={$totalAmount}]");
+                    $firstCashLeg = $parsedPaymentLegs[0];
+                    $tendered = max((int) ($firstCashLeg['amount_tendered'] ?? $sumApplied), $sumApplied);
+                    $parsedPaymentLegs = [[
+                        'method' => PaymentMethod::Cash,
+                        'amount' => $totalAmount,
+                        'amount_tendered' => $tendered,
+                        'change_amount' => max(0, $tendered - $sumApplied),
+                        'reference_number' => $firstCashLeg['reference_number'] ?? null,
+                        'idempotency_key' => $firstCashLeg['idempotency_key'] ?? null,
+                    ]];
+                } else {
+                    throw ValidationException::withMessages([
+                        'payments' => 'Total payment across methods (Rp'.number_format($sumApplied, 0, ',', '.')
+                            .') does not match order total (Rp'.number_format($totalAmount, 0, ',', '.').').',
+                    ]);
+                }
+            }
+
+            $legsByAmountDesc = collect($parsedPaymentLegs)->sortByDesc('amount');
+            /** @var array{method: PaymentMethod, amount: int, reference_number: string|null, idempotency_key: string|null} $firstLeg */
+            $firstLeg = $legsByAmountDesc->first();
+            $rawCashLegs = collect($data['payments'] ?? [])->filter(
+                fn ($raw) => is_array($raw) && (($raw['payment_method'] ?? $raw['method'] ?? null) === 'cash' || ($raw['payment_method'] ?? $raw['method'] ?? null) === PaymentMethod::Cash)
+            );
+            $cashLegTotal = (int) collect($parsedPaymentLegs)->where('method', PaymentMethod::Cash)->sum('amount');
+            $cashTenderedTotal = (int) $rawCashLegs->sum(fn (array $raw) => (int) ($raw['amount_tendered'] ?? $raw['amount'] ?? 0));
+            $cashChangeTotal = (int) $rawCashLegs->sum(fn (array $raw) => (int) ($raw['change_amount'] ?? max(0, (int) ($raw['amount_tendered'] ?? $raw['amount'] ?? 0) - (int) ($raw['amount'] ?? 0))));
+            $cashReceivedForReceipt = $cashTenderedTotal > 0 ? $cashTenderedTotal : ($cashLegTotal > 0 ? $cashLegTotal : null);
+            $orderChangeForReceipt = $cashChangeTotal > 0 ? $cashChangeTotal : max(0, (int) ($cashReceivedForReceipt ?? 0) - $cashLegTotal);
+
+            return [
+                'dominant_payment_method' => $firstLeg['method']->value,
+                'cash_received' => $cashReceivedForReceipt,
+                'order_change' => $orderChangeForReceipt,
+                'final_payment_legs' => $parsedPaymentLegs,
+                'is_deferred_cash' => false,
+                'initial_status' => OrderStatus::Paid,
+                'source_reference' => $sourceReference,
+            ];
+        }
+
+        $dominantPaymentMethod = (string) ($data['payment_method'] ?? 'cash');
+        $cashReceived = $data['cash_received'] ?? null;
+        $isDeferredCash = $dominantPaymentMethod === 'cash' && ! empty($data['is_self_order_cash']);
+        $isImmediateCash = $dominantPaymentMethod === 'cash' && ! $isDeferredCash;
+
+        if ($isImmediateCash && ! empty($data['is_offline_sync'])) {
+            $submittedExpected = isset($data['order_amount']) ? (int) $data['order_amount'] : $totalAmount;
+            $variance = abs($submittedExpected - $totalAmount);
+            $maxOfflineVariance = max(10000, (int) round($totalAmount * 0.25));
+            if ($variance <= $maxOfflineVariance && ($cashReceived === null || (int) $cashReceived >= $submittedExpected)) {
+                if ($submittedExpected !== $totalAmount) {
+                    $sourceReference = trim((string) ($sourceReference ?? '')." [OFFLINE CATALOG VARIANCE: paid={$submittedExpected} catalog={$totalAmount}]");
+                }
+                $cashReceived = max((int) ($cashReceived ?? $totalAmount), $totalAmount);
+            }
+        }
+
+        if ($isImmediateCash && (int) $cashReceived < $totalAmount) {
+            throw ValidationException::withMessages([
+                'cash_received' => 'Cash received is less than total amount due.',
+            ]);
+        }
+
+        $cashReceivedForReceipt = $isImmediateCash ? ($cashReceived ?? $totalAmount) : null;
+        $orderChangeForReceipt = ($isImmediateCash && $cashReceived) ? max(0, (int) $cashReceived - $totalAmount) : 0;
+
+        return [
+            'dominant_payment_method' => $dominantPaymentMethod,
+            'cash_received' => $cashReceivedForReceipt,
+            'order_change' => $orderChangeForReceipt,
+            'final_payment_legs' => [],
+            'is_deferred_cash' => $isDeferredCash,
+            'initial_status' => $isImmediateCash ? OrderStatus::Paid : OrderStatus::Pending,
+            'source_reference' => $sourceReference,
+        ];
     }
 }

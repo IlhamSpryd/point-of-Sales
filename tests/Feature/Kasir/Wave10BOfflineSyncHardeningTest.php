@@ -173,7 +173,8 @@ class Wave10BOfflineSyncHardeningTest extends TestCase
             'userId dideklarasikan sekali di openDatabase() dan sekali di enqueueOrder() (P0-03).'
         );
 
-        // Logout guard harus SINKRON: membaca cached count dari localStorage, bukan .then() async.
+        // Logout guard harus SINKRON: membaca cached pending count & memicu e.preventDefault() sinkron.
+        $this->assertStringContainsString('cachedPendingCount', $js);
         $this->assertStringContainsString('apeiron_pos_pending_count_${tenantId}', $js);
         $this->assertStringContainsString(
             'localStorage.getItem(`apeiron_pos_pending_count_${tenantId}`)',
@@ -185,11 +186,14 @@ class Wave10BOfflineSyncHardeningTest extends TestCase
             $js,
             'e.preventDefault() harus dipanggil di dalam blok sinkron saat count > 0.'
         );
+        $this->assertStringContainsString("'/pos/offline/sync'", $js);
     }
 
     public function test_offline_capture_wiring_and_service_worker_shell_precache(): void
     {
         $blade = File::get(resource_path('views/livewire/pos/partials/checkout-modal.blade.php'));
+        $header = File::get(resource_path('views/livewire/pos/partials/header.blade.php'));
+        $createOrderBlade = File::get(resource_path('views/livewire/kasir/create-order.blade.php'));
         $sw = File::get(public_path('sw.js'));
 
         $this->assertStringContainsString(
@@ -198,8 +202,109 @@ class Wave10BOfflineSyncHardeningTest extends TestCase
             'Checkout POS wajib fallback ke ApeironOfflinePos.enqueueOrder() saat offline (P0-03).'
         );
         $this->assertStringContainsString('pos-offline-order-queued', $blade);
+        $this->assertStringContainsString('data-testid="offline-queue-badge"', $header);
+        $this->assertStringContainsString('window.ApeironUserId', $createOrderBlade);
+        $this->assertStringContainsString('window.ApeironShiftId', $createOrderBlade);
 
         $this->assertStringContainsString("'/js/pos-offline-queue.js'", $sw, 'Service Worker harus mem-precache entry offline queue POS.');
+        $this->assertStringContainsString("startsWith('/transaction')", $sw, 'Service Worker harus menyimpan cache shell POS /transaction.');
+    }
+
+    public function test_offline_sync_handles_minor_stock_and_catalog_variance_but_rejects_extreme_underpayment(): void
+    {
+        // Kosongkan stok server sebelum kasir luring kembali online + naikkan harga minor 10%.
+        DB::table('product_stock_balances')
+            ->where('tenant_id', $this->tenantA->id)
+            ->where('store_id', $this->storeA->id)
+            ->where('product_id', $this->productA->id)
+            ->update(['quantity' => 0]);
+
+        $this->productA->update(['product_price' => 27000]);
+
+        $validVarianceUuid = 'OFFLINE-VAR-'.(string) Str::uuid();
+        $resOk = $this->actingAs($this->cashierA)
+            ->withSession(['active_store_id' => $this->storeA->id])
+            ->postJson(route('pos.offline.sync'), [
+                'orders' => [[
+                    'offline_client_uuid' => $validVarianceUuid,
+                    'payment_method' => 'cash',
+                    'order_amount' => 25000,
+                    'subtotal_amount' => 25000,
+                    'cash_received' => 30000,
+                    'payments' => [[
+                        'method' => 'cash',
+                        'amount' => 25000,
+                        'amount_tendered' => 30000,
+                        'change_amount' => 5000,
+                    ]],
+                    'items' => [
+                        ['product_id' => $this->productA->id, 'quantity' => 1, 'unit_price' => 25000],
+                    ],
+                ]],
+                'device_id' => $this->deviceA->id,
+            ]);
+
+        $resOk->assertStatus(200)
+            ->assertJsonPath('status', 'success')
+            ->assertJsonPath('data.synced_count', 1);
+
+        $synced = Order::withoutGlobalScopes()->where('offline_client_uuid', $validVarianceUuid)->first();
+        $this->assertNotNull($synced);
+        $this->assertStringContainsString('OFFLINE CATALOG VARIANCE', (string) $synced->source_reference);
+
+        $balanceAfter = (float) ProductStockBalance::withoutGlobalScopes()
+            ->where('tenant_id', $this->tenantA->id)
+            ->where('store_id', $this->storeA->id)
+            ->where('product_id', $this->productA->id)
+            ->value('quantity');
+        $this->assertSame(0.0, $balanceAfter);
+
+        $movement = DB::table('stock_movements')
+            ->where('tenant_id', $this->tenantA->id)
+            ->where('order_id', $synced->id)
+            ->first();
+        $this->assertNotNull($movement);
+        $this->assertSame(-1, (int) $movement->quantity);
+        $this->assertSame(-1.0, (float) $movement->balance_after);
+
+        // Underpayment ekstrem (Rp 1 untuk produk Rp 100.000) tetap wajib ditolak!
+        $highProd = Product::create([
+            'tenant_id' => $this->tenantA->id,
+            'category_id' => $this->productA->category_id,
+            'product_code' => 'HIGH-'.uniqid(),
+            'product_name' => 'Bean Bag 100K',
+            'product_price' => 100000,
+            'stock' => 10,
+            'track_inventory' => true,
+            'is_active' => true,
+            'status' => 'active',
+        ]);
+
+        $tamperedUuid = 'OFFLINE-TAMPER-'.(string) Str::uuid();
+        $resReject = $this->actingAs($this->cashierA)
+            ->withSession(['active_store_id' => $this->storeA->id])
+            ->postJson(route('pos.offline.sync'), [
+                'orders' => [[
+                    'offline_client_uuid' => $tamperedUuid,
+                    'payment_method' => 'cash',
+                    'order_amount' => 1,
+                    'subtotal_amount' => 1,
+                    'cash_received' => 1,
+                    'payments' => [[
+                        'method' => 'cash',
+                        'amount' => 1,
+                        'amount_tendered' => 1,
+                        'change_amount' => 0,
+                    ]],
+                    'items' => [
+                        ['product_id' => $highProd->id, 'quantity' => 1],
+                    ],
+                ]],
+            ]);
+
+        $resReject->assertStatus(200)
+            ->assertJsonPath('data.failed_count', 1);
+        $this->assertNull(Order::withoutGlobalScopes()->where('offline_client_uuid', $tamperedUuid)->first());
     }
 
     public function test_offline_sync_rejects_cross_store_shift_attribution(): void

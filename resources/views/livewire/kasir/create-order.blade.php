@@ -123,6 +123,13 @@
     @keydown.window.f5.prevent="$wire.fastCashPay(0)"
     @keydown.window.f8.prevent="$wire.set('isParkModalOpen', true)"
     @keydown.window.f9.prevent="$wire.set('isParkedListOpen', true)"
+    @offline-orders-synced.window="
+        window.apeironPosCartDirty = false;
+        if (window.__apeironQueuedOfflineDraft && ($wire.cart || []).length > 0) {
+            window.__apeironQueuedOfflineDraft = false;
+            $wire.clearCartAfterOfflineQueue();
+        }
+    "
     class="flex flex-col h-full w-full overflow-hidden min-h-0 bg-background">
 
     {{-- Operational Context Banner (Shift Warning) --}}
@@ -211,6 +218,8 @@
 @endif
 <script>
     window.ApeironTenantId = @js(auth()->user()?->tenant_id);
+    window.ApeironUserId = @js(auth()->id());
+    window.ApeironShiftId = @js($this->activeShift?->id);
 </script>
 <script src="{{ asset('js/pos-offline-queue.js') }}"></script>
 @endassets

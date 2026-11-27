@@ -60,7 +60,8 @@ class InventoryLedgerService
         int|string|null $userId = null,
         ?int $storageLocationId = null, // Forward-compatible parameter (OD-01)
         ?int $variantId = null,
-        ?int $warehouseId = null
+        ?int $warehouseId = null,
+        bool $allowNegative = false
     ): array {
         $movementItem = [
             'store_id' => $storeId,
@@ -77,6 +78,7 @@ class InventoryLedgerService
             'user_id' => $userId !== null ? (int) $userId : null,
             'storage_location_id' => $storageLocationId,
             'variant_id' => $variantId,
+            'allow_negative' => $allowNegative,
         ];
 
         $results = $this->recordBatchMovements($tenantId, [$movementItem]);
@@ -103,7 +105,8 @@ class InventoryLedgerService
      *     reference_type?: ?string,
      *     reference_id?: ?int,
      *     warehouse_id?: ?int,
-     *     storage_location_id?: ?int
+     *     storage_location_id?: ?int,
+     *     allow_negative?: bool
      * }>  $movements
      * @return array<int, array{movement: object{id: int}, balance: object|null, previous_quantity: string, new_quantity: string}>
      *
@@ -169,7 +172,11 @@ class InventoryLedgerService
                         'item_type' => $m['item_type'],
                         'item_id' => (int) $m['item_id'],
                         'net_delta' => '0',
+                        'allow_negative' => ! empty($m['allow_negative']),
                     ];
+                }
+                if (! empty($m['allow_negative'])) {
+                    $uniqueTargets[$key]['allow_negative'] = true;
                 }
                 $uniqueTargets[$key]['net_delta'] = bcadd(
                     $uniqueTargets[$key]['net_delta'],
@@ -210,7 +217,7 @@ class InventoryLedgerService
 
                 // 5. Evaluasi Invariant Non-Negatif (INV-M4-05)
                 $projectedQty = bcadd(bc_num($balanceRow->quantity), bc_num($target['net_delta']), 6);
-                if (bccomp($projectedQty, '0', 4) < 0) {
+                if (! $target['allow_negative'] && bccomp($projectedQty, '0', 4) < 0) {
                     $itemName = $this->resolveItemName($tenantId, $target['item_type'], $target['item_id']);
                     throw new InsufficientStockException(
                         message: "Stok {$target['item_type']} \"{$itemName}\" di cabang ini tidak mencukupi untuk mutasi keluar. (Tersedia: {$balanceRow->quantity}, Dibutuhkan: ".abs((float) $target['net_delta']).')',
@@ -595,12 +602,17 @@ class InventoryLedgerService
         $table = $itemType === 'product' ? 'product_stock_balances' : 'ingredient_stock_balances';
         $column = $itemType === 'product' ? 'product_id' : 'ingredient_id';
 
+        // Invariant DB `psb_quantity_check` / `isb_quantity_check` melarang balance negatif (`quantity >= 0`).
+        // Ketika `allowNegative` diaktifkan (mis. settlement tunai offline), saldo diproyeksikan 0
+        // sementara defisit historis tercatat akurat pada `stock_movements`.
+        $persistedQuantity = bccomp(bc_num($newQuantity), '0', 4) > 0 ? $newQuantity : '0.0000';
+
         DB::table($table)
             ->where('tenant_id', $tenantId)
             ->where('store_id', $storeId)
             ->where($column, $itemId)
             ->update([
-                'quantity' => $newQuantity,
+                'quantity' => $persistedQuantity,
                 'average_unit_cost' => $newAvgCost,
                 'last_unit_cost' => $newLastCost,
                 'last_movement_id' => $lastMovementId,

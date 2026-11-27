@@ -15,6 +15,56 @@
                 {{ $pendingOrderCode ? '#' . $pendingOrderCode : ($this->activeShift ? '#SHIFT-' . str_pad((string)$this->activeShift->id, 3, '0', STR_PAD_LEFT) : '#POS-ONLINE') }}
             </span>
         </div>
+
+        <!-- Offline Connectivity & Pending Queue Badge (P0-03) -->
+        <div
+            x-data="{
+                online: navigator.onLine,
+                pendingCount: window.ApeironOfflinePos?.getCachedPendingCount?.() ?? 0,
+                syncing: false,
+                syncNow() {
+                    if (!this.online || this.syncing || !window.ApeironOfflinePos) return;
+                    this.syncing = true;
+                    window.ApeironOfflinePos.syncPendingOrders()
+                        .catch(() => {})
+                        .finally(() => { this.syncing = false; });
+                }
+            }"
+            x-init="
+                this.pendingCount = window.ApeironOfflinePos?.getCachedPendingCount?.() ?? 0;
+                window.ApeironOfflinePos?.notifyQueueChanged?.();
+            "
+            @pos-connectivity-changed.window="online = Boolean($event.detail?.online)"
+            @online.window="online = true"
+            @offline.window="online = false"
+            @offline-queue-updated.window="pendingCount = Number($event.detail?.count ?? 0)"
+            class="flex items-center gap-1.5"
+        >
+            <span
+                x-show="!online"
+                x-cloak
+                data-testid="offline-status-badge"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-warning-border bg-warning-muted text-warning-foreground text-xs font-semibold whitespace-nowrap"
+            >
+                <span class="w-1.5 h-1.5 rounded-full bg-warning" aria-hidden="true"></span>
+                <span>Offline Mode</span>
+            </span>
+
+            <button
+                type="button"
+                x-show="pendingCount > 0"
+                x-cloak
+                data-testid="offline-queue-badge"
+                @click="syncNow()"
+                :disabled="!online || syncing"
+                title="Offline cash orders waiting to sync"
+                class="inline-flex items-center gap-1.5 px-2.5 min-h-[36px] rounded-lg border border-border bg-card text-foreground hover:bg-muted text-xs font-semibold tabular-nums whitespace-nowrap transition-colors disabled:opacity-60 cursor-pointer"
+            >
+                <span class="material-symbols-rounded text-[14px]" aria-hidden="true">cloud_upload</span>
+                <span>Pending Sync:</span>
+                <span data-testid="offline-queue-count" x-text="pendingCount"></span>
+            </button>
+        </div>
     </div>
 
     <div class="flex items-center gap-2 shrink-0">

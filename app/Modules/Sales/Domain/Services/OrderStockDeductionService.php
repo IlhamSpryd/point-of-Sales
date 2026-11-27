@@ -75,7 +75,8 @@ class OrderStockDeductionService
                     orderId: (int) $order->id,
                     orderItemId: (int) $orderItem->id,
                     userId: $userId,
-                    variantId: $line['product_variant_id'] ? (int) $line['product_variant_id'] : null
+                    variantId: $line['product_variant_id'] ? (int) $line['product_variant_id'] : null,
+                    allowNegative: (bool) $order->is_offline_sync
                 );
             } elseif ($product && $product->isBundle()) {
                 $bundleExpander = app(BundleComponentExpanderService::class);
@@ -103,7 +104,8 @@ class OrderStockDeductionService
                                 idempotencyKey: "sale:{$order->id}:{$orderItem->id}:bundle_ing:{$ingredient->id}",
                                 orderId: (int) $order->id,
                                 orderItemId: (int) $orderItem->id,
-                                userId: $userId
+                                userId: $userId,
+                                allowNegative: (bool) $order->is_offline_sync
                             );
                         }
                     } elseif ($compProd->track_inventory && ! $compProd->isService() && ! $compProd->isNonInventory()) {
@@ -119,7 +121,8 @@ class OrderStockDeductionService
                             idempotencyKey: "sale:{$order->id}:{$orderItem->id}:bundle_comp:{$compProd->id}",
                             orderId: (int) $order->id,
                             orderItemId: (int) $orderItem->id,
-                            userId: $userId
+                            userId: $userId,
+                            allowNegative: (bool) $order->is_offline_sync
                         );
                     }
                 }
@@ -165,7 +168,8 @@ class OrderStockDeductionService
                     idempotencyKey: $idempotencyKey,
                     orderId: (int) $order->id,
                     orderItemId: (int) $orderItemId,
-                    userId: $userId
+                    userId: $userId,
+                    allowNegative: (bool) $order->is_offline_sync
                 );
             }
         }
