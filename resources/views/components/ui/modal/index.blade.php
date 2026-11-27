@@ -12,6 +12,7 @@
     'onClose' => null,
     'role' => 'dialog',
     'instant' => false,
+    'teleport' => true,
 ])
 
 @php
@@ -47,7 +48,9 @@
         ? 'rounded-t-[1.75rem] sm:rounded-2xl pb-safe'
         : 'rounded-2xl';
 
-    $modalId = $attributes->get('id') ?? $name ?? ($wireModel ? 'dd-modal-'.$wireModel : uniqid('dd-modal-'));
+    $modalId = $attributes->get('id')
+        ?? $name
+        ?? ($wireModel ? 'dd-modal-'.$wireModel : 'dd-modal-'.substr(md5((string) ($attributes->get('x-model') ?? $attributes->get(':open') ?? $onClose ?? $role)), 0, 10));
     $titleId = $modalId.'-title';
     $descId = $modalId.'-desc';
 @endphp
@@ -64,6 +67,7 @@
         }
     }"
     x-modelable="modalOpen"
+    {{ $attributes->whereStartsWith('x-model') }}
     x-init="
         $watch('modalOpen', function (value) {
             if (value) {
@@ -79,7 +83,7 @@
         }
     "
     class="relative h-auto w-auto"
-    @keydown.escape.window="if (modalOpen) { closeModal() }"
+    @keydown.escape.window="if (typeof modalOpen !== 'undefined' && modalOpen) { closeModal() }"
     @open-modal.window="if ($event.detail === modalId || ($event.detail && $event.detail.id === modalId)) modalOpen = true"
     @close-modal.window="if ($event.detail === modalId || ($event.detail && $event.detail.id === modalId)) { closeModal() }"
     @close="closeModal()"
@@ -90,25 +94,19 @@
         @endif
     @endunless
 
+    @if ($teleport)
     <template x-teleport="body">
+    @endif
         <div
             id="{{ $modalId }}"
-            x-show="modalOpen"
+            x-show="typeof modalOpen !== 'undefined' && modalOpen"
             x-cloak
             class="fixed inset-0 flex h-dvh w-screen items-center justify-center"
             style="z-index: {{ $zIndex }}"
         >
             <div
-                x-show="modalOpen"
-                @if ($instant)
-                    {{-- R-007 / WCAG AAA: mode kasir — tanpa animasi agar tidak menghambat alur transaksi. --}}
-                    x-transition:enter=""
-                    x-transition:enter-start="opacity-100"
-                    x-transition:enter-end="opacity-100"
-                    x-transition:leave=""
-                    x-transition:leave-start="opacity-100"
-                    x-transition:leave-end="opacity-100"
-                @else
+                x-show="typeof modalOpen !== 'undefined' && modalOpen"
+                @if (! $instant)
                     x-transition:enter="ease-out duration-200"
                     x-transition:enter-start="opacity-0"
                     x-transition:enter-end="opacity-100"
@@ -122,17 +120,10 @@
             ></div>
 
             <div
-                x-show="modalOpen"
-                x-trap.inert.noscroll="modalOpen"
-                x-gsap-modal="modalOpen"
-                @if ($instant)
-                    x-transition:enter=""
-                    x-transition:enter-start="opacity-100"
-                    x-transition:enter-end="opacity-100"
-                    x-transition:leave=""
-                    x-transition:leave-start="opacity-100"
-                    x-transition:leave-end="opacity-100"
-                @else
+                x-show="typeof modalOpen !== 'undefined' && modalOpen"
+                x-trap.inert.noscroll="typeof modalOpen !== 'undefined' && modalOpen"
+                @if (! $instant)
+                    x-gsap-modal="typeof modalOpen !== 'undefined' && modalOpen"
                     x-transition:enter="ease-out duration-200"
                     x-transition:enter-start="opacity-0 translate-y-2 sm:scale-95"
                     x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
@@ -147,7 +138,7 @@
                     aria-modal="true"
                     @if(isset($header) || $title) aria-labelledby="{{ $titleId }}" @endif
                     @if($description) aria-describedby="{{ $descId }}" @endif
-                    {{ $attributes->withoutTwMergeClasses()->except('id')->twMerge("relative w-full {$maxWidthClass} {$panelRadiusClasses} bg-popover text-popover-foreground px-6 py-5 sm:px-7 sm:py-6 border border-border-strong shadow-dialog max-h-[92dvh] overflow-y-auto custom-scrollbar") }}
+                    {{ $attributes->whereDoesntStartWith('x-model')->withoutTwMergeClasses()->except('id')->twMerge("relative w-full {$maxWidthClass} {$panelRadiusClasses} bg-popover text-popover-foreground px-6 py-5 sm:px-7 sm:py-6 border border-border-strong shadow-dialog max-h-[92dvh] overflow-y-auto custom-scrollbar") }}
                 >
                     @if (isset($header) || $title)
                         <div class="pr-8 mb-4">
@@ -188,5 +179,7 @@
                 </div>
             </div>
         </div>
+    @if ($teleport)
     </template>
+    @endif
 </div>

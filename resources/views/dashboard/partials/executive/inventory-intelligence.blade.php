@@ -88,7 +88,7 @@
                             </span>
                         </td>
                         <td class="py-2 pl-3 text-right">
-                            <a href="{{ route('purchasing.purchase-orders.create') }}" wire:navigate
+                            <a href="{{ route('purchasing.orders.index') }}" wire:navigate
                                class="text-[11px] font-semibold text-foreground hover:underline inline-flex items-center gap-1">
                                 <span>{{ $item['action'] }}</span>
                                 <span class="material-symbols-rounded text-sm">arrow_forward</span>

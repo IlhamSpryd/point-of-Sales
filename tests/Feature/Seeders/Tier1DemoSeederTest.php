@@ -30,4 +30,3 @@ class Tier1DemoSeederTest extends TestCase
         $this->assertStringNotContainsString('$lastHash = null;', $source);
     }
 }
-

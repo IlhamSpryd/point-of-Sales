@@ -112,11 +112,12 @@
                             $isLowStock = $isFulfillable && isset($product->available_portions) && $product->available_portions > 0 && $product->available_portions <= 10;
                             $tracksStock = true;
                         } else {
+                            $resolvedStock = $product->available_portions ?? $product->stock;
                             $tracksStock = (bool) ($product->track_inventory ?? true)
                                 && ! ($product->isService() || $product->isNonInventory() || $product->isBundle());
-                            $isFulfillable = $product->is_fulfillable ?? (! $tracksStock || ($product->stock > 0));
+                            $isFulfillable = $product->is_fulfillable ?? (! $tracksStock || ($resolvedStock > 0));
                             $isOutOfStock = ! $isFulfillable;
-                            $isLowStock = $tracksStock && !is_null($product->stock) && $product->stock > 0 && $product->stock <= 10;
+                            $isLowStock = $tracksStock && !is_null($resolvedStock) && $resolvedStock > 0 && $resolvedStock <= 10;
                         }
                         $hasActiveVariants = !empty($product->variants) && $product->variants->filter(function ($v) {
                             return !($v instanceof \__PHP_Incomplete_Class) && !empty($v->is_active);
@@ -155,7 +156,7 @@
                                     </span>
                                 @elseif ($isLowStock)
                                     <span class="absolute top-2 left-2 z-20 px-2 py-0.5 rounded bg-destructive-muted border border-destructive-border text-destructive text-xs font-medium tabular-nums">
-                                        Left: {{ $hasBom ? $product->available_portions : $product->stock }}
+                                        Left: {{ $hasBom ? $product->available_portions : $resolvedStock }}
                                     </span>
                                 @endif
 
@@ -176,15 +177,15 @@
                                     <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-card/95 backdrop-blur-sm border border-border text-muted-foreground text-xs tabular-nums shadow-2xs">
                                         Portions: {{ $product->available_portions }}
                                     </span>
-                                @elseif (!$hasBom && $tracksStock && !is_null($product->stock) && $product->stock > 0)
+                                @elseif (!$hasBom && $tracksStock && !is_null($resolvedStock) && $resolvedStock > 0)
                                     <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-card/95 backdrop-blur-sm border border-border text-muted-foreground text-xs tabular-nums shadow-2xs">
-                                        Stock: {{ $product->stock }}
+                                        Stock: {{ $resolvedStock }}
                                     </span>
                                 @elseif ($product->isBundle())
                                     <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-card/95 backdrop-blur-sm border border-border text-muted-foreground text-xs shadow-2xs">
                                         Bundle
                                     </span>
-                                @elseif ($product->isService() || $product->isNonInventory() || is_null($product->stock))
+                                @elseif ($product->isService() || $product->isNonInventory() || is_null($resolvedStock))
                                     <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-card/95 backdrop-blur-sm border border-border text-muted-foreground text-xs shadow-2xs">
                                         In Stock
                                     </span>

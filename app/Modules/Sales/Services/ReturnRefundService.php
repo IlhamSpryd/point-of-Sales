@@ -447,9 +447,9 @@ class ReturnRefundService
                                     ->increment('quantity', $qty);
                             }
 
-                            // Perbarui stok produk dan balance otoritatif
+                            // Hindari double-increment hook Product::saved saat product_stock_balances sudah diperbarui langsung
                             $product->stock = (int) round((float) $product->stock + (float) $qty);
-                            $product->save();
+                            $balancesAuthoritative ? $product->saveQuietly() : $product->save();
                         }
                     }
 
@@ -1032,7 +1032,7 @@ class ReturnRefundService
                             }
 
                             $product->stock = (int) round((float) $product->stock + (float) $qty);
-                            $product->save();
+                            $balancesAuthoritative ? $product->saveQuietly() : $product->save();
                         }
                     }
 

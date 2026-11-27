@@ -22,7 +22,11 @@ class ShiftController extends Controller
      */
     public function index(): View
     {
-        Gate::authorize('viewAny', Shift::class);
+        abort_unless(
+            Gate::any(['viewAny', 'open'], Shift::class),
+            403,
+            'This action is unauthorized.'
+        );
 
         return view('shifts.index');
     }

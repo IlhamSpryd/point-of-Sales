@@ -46,6 +46,7 @@
 
     <x-ui.modal
         :open="true"
+        :teleport="false"
         id="product-configurator-picker"
         maxWidth="lg"
         :closeButton="false"
@@ -53,12 +54,13 @@
         onClose="$wire.closeModifierPicker()"
     >
         <div
+            wire:key="configurator-body-{{ $selectingProductId }}"
             x-data="{
-                localMods: @entangle('pendingModifierIds').live,
-                localQty: @entangle('pendingQty').live,
-                selectedVariantId: @entangle('pendingVariantId').live,
-                selectedUomId: @entangle('pendingUomId').live,
-                localNotes: @entangle('pendingNotes').live,
+                localMods: @js(array_values(array_map('intval', $pendingModifierIds ?? []))),
+                localQty: @js((int) ($pendingQty ?? 1)),
+                selectedVariantId: @js($pendingVariantId !== null ? (int) $pendingVariantId : null),
+                selectedUomId: @js($pendingUomId !== null ? (int) $pendingUomId : null),
+                localNotes: @js($pendingNotes ?? ''),
                 baseProductPrice: {{ (float) $selectingProduct->product_price }},
                 variants: {{ Js::from($activeVariantsList->map(fn($v) => [
                     'id' => $v->id,
@@ -491,7 +493,8 @@
                 <div class="flex-1 max-w-sm">
                     <button type="button"
                         x-on:click="submitConfigurator()"
-                        wire:click="confirmAddToCart"
+                        wire:loading.attr="disabled"
+                        wire:target="confirmAddToCart"
                         :disabled="!canAddToCart()"
                         :class="!canAddToCart() ? 'opacity-60 cursor-not-allowed bg-muted text-muted-foreground border border-border' : 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm active:scale-98 cursor-pointer'"
                         class="w-full h-11 px-5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all">

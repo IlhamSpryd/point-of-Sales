@@ -10,7 +10,7 @@
                     @if($tableId) &bull; Table {{ $this->activeTables->firstWhere('id', $tableId)?->table_name ?? $tableId }} @endif
                 </span>
             </div>
-            <button type="button" x-on:click="$dispatch('close')" aria-label="Close payment (Esc)"
+            <button type="button" x-on:click="closeModal()" aria-label="Close payment (Esc)"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
                 <span class="material-symbols-rounded text-[20px]">close</span>
             </button>
@@ -640,7 +640,7 @@
                 this.receiptReady = false;
                 this.receiptOrderCode = null;
                 this.stopPolling();
-                this.$dispatch('close');
+                window.dispatchEvent(new CustomEvent('close-modal', { detail: 'checkout-payment' }));
             },
 
             destroy() {
@@ -897,7 +897,7 @@
                         product_id: row.product_id,
                         product_variant_id: row.product_variant_id ?? null,
                         quantity: row.qty ?? 1,
-                        modifier_ids: row.modifier_ids ?? [],
+                        modifier_ids: Array.isArray(row.modifier_ids) ? [...row.modifier_ids] : [],
                         custom_price: row.custom_price ?? null,
                         item_discount_amount: row.item_discount_amount ?? 0,
                         notes: row.notes ?? null,

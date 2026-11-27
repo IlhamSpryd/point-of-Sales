@@ -1,4 +1,4 @@
-<div x-data @keydown.escape.window="$wire.closeDetail()">
+<div x-data @keydown.escape.window="if (!$wire.voidingOrderId && !$wire.showReturnModal && !$wire.showReprintModal) $wire.closeDetail()">
 
     {{-- ==================== SUMMARY ==================== --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -229,15 +229,31 @@
     </div>
 
     {{-- ==================== ORDER DETAIL MODAL ==================== --}}
-    @if ($this->selectedOrder)
-        @php $detail = $this->selectedOrder; @endphp
-        <x-ui.modal :open="true" maxWidth="2xl" role="dialog" onClose="$wire.closeDetail()">
+    <div wire:key="order-detail-modal-shell"
+        x-data="{ openDetailModal: false }"
+        x-init="
+            openDetailModal = Boolean($wire.selectedOrderId && !$wire.voidingOrderId);
+            $watch('$wire.selectedOrderId', () => { openDetailModal = Boolean($wire.selectedOrderId && !$wire.voidingOrderId); });
+            $watch('$wire.voidingOrderId', () => { openDetailModal = Boolean($wire.selectedOrderId && !$wire.voidingOrderId); });
+        "
+    >
+        <x-ui.modal name="order-detail-modal" x-model="openDetailModal" maxWidth="2xl" role="dialog" onClose="$wire.closeDetail()">
             <x-slot:header>
-                <div>
-                    <h3 id="order-detail-title" class="font-black text-lg text-foreground font-sans">{{ $detail->order_code }}</h3>
-                    <p class="text-xs text-muted-foreground mt-0.5">{{ $detail->created_at->format('d F Y, H:i') }} WIB</p>
-                </div>
+                @if ($this->selectedOrder)
+                    @php $detail = $this->selectedOrder; @endphp
+                    <div>
+                        <h3 id="order-detail-title" class="font-black text-lg text-foreground font-sans">{{ $detail->order_code }}</h3>
+                        <p class="text-xs text-muted-foreground mt-0.5">{{ $detail->created_at->format('d F Y, H:i') }} WIB</p>
+                    </div>
+                @else
+                    <div>
+                        <h3 class="font-bold text-base text-foreground">Order Details</h3>
+                    </div>
+                @endif
             </x-slot:header>
+
+            @if ($this->selectedOrder)
+                @php $detail = $this->selectedOrder; @endphp
 
             <div class="space-y-5">
                 <div class="grid grid-cols-2 gap-4 text-xs">
@@ -303,7 +319,7 @@
                     <ul class="divide-y divide-border border border-border rounded-xl overflow-hidden text-xs">
                         @foreach ($detail->orderItems as $item)
                             @php
-                                $returnedQty = $detail->orderReturns->flatMap->items->where('order_item_id', $item->id)->sum('quantity_returned');
+                                $returnedQty = $detail->orderReturns->flatMap->returnItems->where('order_item_id', $item->id)->sum('quantity_returned');
                             @endphp
                             <li wire:key="detail-item-{{ $item->id }}" class="p-3 flex justify-between items-start gap-3 bg-card">
                                 <div class="min-w-0">
@@ -346,51 +362,62 @@
                 </div>
             </div>
 
+            @endif
+
             <x-slot:footer>
-                <div class="flex flex-wrap gap-2 justify-end w-full">
-                    <button type="button" wire:click="closeDetail"
-                        class="min-h-[44px] min-w-[44px] px-4 rounded-xl border border-border bg-card text-xs font-semibold text-muted-foreground hover:bg-muted transition-all active:scale-95">
-                        Close
-                    </button>
-                    @if ($detail->order_status->value === 'pending' && $detail->payment_method?->value !== 'cash')
-                        <button type="button" wire:click="syncMidtransStatus({{ $detail->id }})"
-                            wire:loading.attr="disabled" wire:target="syncMidtransStatus"
-                            class="min-h-[44px] min-w-[44px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-all active:scale-95 shadow-xs disabled:opacity-50">
-                            <span wire:loading wire:target="syncMidtransStatus" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current/30 border-t-current"></span>
-                            <span wire:loading.remove wire:target="syncMidtransStatus" class="material-symbols-rounded text-[16px]">sync</span>
-                            <span>Sync Midtrans Status</span>
+                @if ($this->selectedOrder)
+                    @php $detail = $this->selectedOrder; @endphp
+                    <div class="flex flex-wrap gap-2 justify-end w-full">
+                        <button type="button" wire:click="closeDetail"
+                            class="min-h-[44px] min-w-[44px] px-4 rounded-xl border border-border bg-card text-xs font-semibold text-muted-foreground hover:bg-muted transition-all active:scale-95">
+                            Close
                         </button>
-                    @endif
-                    @if (in_array($detail->order_status->value, ['paid', 'completed'], true))
-                        <button type="button" wire:click="openReturnModal({{ $detail->id }})"
-                            x-on:click="window.erpMotion?.pulseHighlight($el)"
-                            class="min-h-[44px] min-w-[44px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-warning text-on-warning text-xs font-bold hover:bg-warning/90 transition-all active:scale-95 shadow-xs">
-                            <span class="material-symbols-rounded text-[16px]">keyboard_return</span> Return &amp; Refund
-                        </button>
-                    @endif
-                    @if ($detail->order_status->value === 'paid' && auth()->user()->can('void', $detail))
-                        <button type="button" wire:click="$set('voidingOrderId', {{ $detail->id }})"
-                            x-on:click="window.erpMotion?.pulseHighlight($el)"
-                            class="min-h-[44px] min-w-[44px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-destructive text-destructive-foreground text-xs font-bold hover:bg-destructive/90 transition-all active:scale-95 shadow-xs">
-                            <span class="material-symbols-rounded text-[16px]">cancel</span> Void Order
-                        </button>
-                    @endif
-                    @if (in_array($detail->order_status->value, ['paid', 'completed'], true))
-                        <button type="button" wire:click="requestReprint({{ $detail->id }})"
-                            x-on:click="window.erpMotion?.pulseHighlight($el)"
-                            class="min-h-[44px] min-w-[44px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-all active:scale-95 shadow-xs">
-                            <span class="material-symbols-rounded text-[16px]">print</span>
-                            <span>{{ (($detail->print_count ?? 0) > 0) ? 'Reprint (#' . (($detail->print_count ?? 0) + 1) . ')' : 'Print Receipt' }}</span>
-                        </button>
-                    @endif
-                </div>
+                        @if ($detail->order_status->value === 'pending' && $detail->payment_method?->value !== 'cash')
+                            <button type="button" wire:click="syncMidtransStatus({{ $detail->id }})"
+                                wire:loading.attr="disabled" wire:target="syncMidtransStatus"
+                                class="min-h-[44px] min-w-[44px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-all active:scale-95 shadow-xs disabled:opacity-50">
+                                <span wire:loading wire:target="syncMidtransStatus" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current/30 border-t-current"></span>
+                                <span wire:loading.remove wire:target="syncMidtransStatus" class="material-symbols-rounded text-[16px]">sync</span>
+                                <span>Sync Midtrans Status</span>
+                            </button>
+                        @endif
+                        @if (in_array($detail->order_status->value, ['paid', 'completed'], true))
+                            <button type="button" wire:click="openReturnModal({{ $detail->id }})"
+                                x-on:click="window.erpMotion?.pulseHighlight($el)"
+                                class="min-h-[44px] min-w-[44px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-warning text-on-warning text-xs font-bold hover:bg-warning/90 transition-all active:scale-95 shadow-xs">
+                                <span class="material-symbols-rounded text-[16px]">keyboard_return</span> Return &amp; Refund
+                            </button>
+                        @endif
+                        @if ($detail->order_status->value === 'paid' && auth()->user()->can('void', $detail))
+                            <button type="button" wire:click="$set('voidingOrderId', {{ $detail->id }})"
+                                x-on:click="window.erpMotion?.pulseHighlight($el)"
+                                class="min-h-[44px] min-w-[44px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-destructive text-destructive-foreground text-xs font-bold hover:bg-destructive/90 transition-all active:scale-95 shadow-xs">
+                                <span class="material-symbols-rounded text-[16px]">cancel</span> Void Order
+                            </button>
+                        @endif
+                        @if (in_array($detail->order_status->value, ['paid', 'completed'], true))
+                            <button type="button" wire:click="requestReprint({{ $detail->id }})"
+                                x-on:click="window.erpMotion?.pulseHighlight($el)"
+                                class="min-h-[44px] min-w-[44px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-all active:scale-95 shadow-xs">
+                                <span class="material-symbols-rounded text-[16px]">print</span>
+                                <span>{{ (($detail->print_count ?? 0) > 0) ? 'Reprint (#' . (($detail->print_count ?? 0) + 1) . ')' : 'Print Receipt' }}</span>
+                            </button>
+                        @endif
+                    </div>
+                @endif
             </x-slot:footer>
         </x-ui.modal>
-    @endif
+    </div>
 
     {{-- ==================== VOID ORDER MODAL ==================== --}}
-    @if ($this->voidingOrderId)
-        <x-ui.modal :open="true" maxWidth="md" role="alertdialog" onClose="$wire.set('voidingOrderId', null)" @keydown.escape.stop.prevent="$wire.set('voidingOrderId', null)">
+    <div wire:key="void-order-modal-shell"
+        x-data="{ openVoidModal: false }"
+        x-init="
+            openVoidModal = Boolean($wire.voidingOrderId);
+            $watch('$wire.voidingOrderId', value => { openVoidModal = Boolean(value); });
+        "
+    >
+        <x-ui.modal name="void-order-modal" x-model="openVoidModal" :instant="true" maxWidth="md" role="alertdialog" onClose="$wire.set('voidingOrderId', null)">
             <x-slot:header>
                 <div class="text-destructive">
                     <h3 id="void-modal-title" class="font-bold text-base">Void Order</h3>
@@ -436,7 +463,7 @@
                 </div>
             </x-slot:footer>
         </x-ui.modal>
-    @endif
+    </div>
 
     {{-- ==================== RETURN & REFUND MODAL ==================== --}}
     <x-ui.modal wire:model="showReturnModal" maxWidth="2xl" onClose="$wire.set('showReturnModal', false)">

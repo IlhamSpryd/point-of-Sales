@@ -34,8 +34,8 @@
                 };
             });
 
-            // Low retry + 0 delay: fail fast and fallback to manual print dialog
-            connecting = qz.websocket.connect({ retries: 1, delay: 0 })
+            // Restrict hosts to local loopback (matching CSP connect-src) and fail fast to browser print
+            connecting = qz.websocket.connect({ host: ['localhost', '127.0.0.1'], retries: 0, delay: 0 })
                 .finally(() => { connecting = null; });
 
             return connecting;

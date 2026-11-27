@@ -172,7 +172,8 @@
             }
 
             const db = await openDatabase();
-            const uuid = orderPayload.offline_client_uuid || this.generateUuid();
+            const plainInput = JSON.parse(JSON.stringify(orderPayload || {}));
+            const uuid = plainInput.offline_client_uuid || this.generateUuid();
             const userId = getActiveUserId();
             const parsedUserId = parseInt(userId, 10) || null;
             const parsedShiftId = window.__APEIRON_BOOT__?.shiftId || window.ApeironShiftId || null;
@@ -182,10 +183,10 @@
                 tenant_id: String(tenantId),
                 offline_created_by_user_id: parsedUserId,
                 offline_shift_id: parsedShiftId ? parseInt(parsedShiftId, 10) : null,
-                idempotency_key: orderPayload.idempotency_key || ('offline-sync-' + uuid),
+                idempotency_key: plainInput.idempotency_key || ('offline-sync-' + uuid),
                 payment_method: 'cash',
                 payload: {
-                    ...orderPayload,
+                    ...plainInput,
                     offline_client_uuid: uuid,
                     offline_created_by_user_id: parsedUserId,
                     offline_shift_id: parsedShiftId ? parseInt(parsedShiftId, 10) : null,

@@ -26,6 +26,7 @@ use App\Modules\Sales\Services\ReturnRefundService;
 use DomainException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\Support\TwoTenantFixture;
 use Tests\TestCase;
 
@@ -467,5 +468,96 @@ class OrderReturnAndDispositionTest extends TestCase
             reason: 'Klaim retur berlebih',
             idempotencyKey: 'ret-key-excess'
         );
+    }
+
+    /**
+     * Regresi: Saat pos.stock_balances_authoritative aktif, retur disposisi restock
+     * hanya menambah product_stock_balances.quantity tepat +qty (tidak double-increment lewat Product::saved).
+     */
+    public function test_authoritative_stock_balance_increments_exactly_once_on_restock_return(): void
+    {
+        config(['pos.stock_balances_authoritative' => true]);
+
+        $order = Order::forceCreate([
+            'tenant_id' => $this->tenantA->id,
+            'store_id' => $this->storeA->id,
+            'user_id' => $this->cashier->id,
+            'shift_id' => $this->shift->id,
+            'created_by_device_id' => $this->device->id,
+            'order_code' => 'ORD-RET-AUTH-01',
+            'idempotency_key' => 'idemp-ret-auth-01',
+            'order_date' => now()->toDateString(),
+            'order_type' => 'takeaway',
+            'order_status' => OrderStatus::Paid,
+            'payment_method' => 'cash',
+            'subtotal_amount' => 200000,
+            'order_amount' => 200000,
+        ]);
+
+        $orderItem = OrderItem::create([
+            'tenant_id' => $this->tenantA->id,
+            'store_id' => $this->storeA->id,
+            'order_id' => $order->id,
+            'product_id' => $this->retailProduct->id,
+            'qty' => 2,
+            'order_price' => 100000,
+            'order_subtotal' => 200000,
+        ]);
+
+        $payment = Payment::forceCreate([
+            'tenant_id' => $this->tenantA->id,
+            'store_id' => $this->storeA->id,
+            'order_id' => $order->id,
+            'shift_id' => $this->shift->id,
+            'device_id' => $this->device->id,
+            'payment_method' => PaymentMethod::Cash,
+            'amount' => 200000,
+            'amount_tendered' => 200000,
+            'change_amount' => 0,
+            'status' => PaymentStatusEnum::Captured,
+            'captured_at' => now(),
+            'processed_by' => $this->cashier->id,
+            'idempotency_key' => 'pay-ret-auth-01',
+        ]);
+
+        $balanceBefore = (float) DB::table('product_stock_balances')
+            ->where('tenant_id', $this->tenantA->id)
+            ->where('store_id', $this->storeA->id)
+            ->where('product_id', $this->retailProduct->id)
+            ->value('quantity');
+
+        $this->service->createReturnAndRefund(
+            order: $order,
+            returnItemsWithDisposition: [
+                [
+                    'order_item_id' => $orderItem->id,
+                    'quantity' => 1,
+                    'disposition' => ReturnDispositionEnum::Restock,
+                    'disposition_reason' => 'Exact single restock check',
+                ],
+            ],
+            refundAllocations: [
+                [
+                    'payment_id' => $payment->id,
+                    'amount' => 100000,
+                    'refund_method' => 'cash',
+                ],
+            ],
+            shiftId: $this->shift->id,
+            deviceId: $this->device->id,
+            actorUserId: $this->cashier->id,
+            supervisorPin: '654321',
+            reason: 'Uji konsistensi authoritative stock balance',
+            idempotencyKey: 'ret-key-auth-single-01'
+        );
+
+        $balanceAfter = (float) DB::table('product_stock_balances')
+            ->where('tenant_id', $this->tenantA->id)
+            ->where('store_id', $this->storeA->id)
+            ->where('product_id', $this->retailProduct->id)
+            ->value('quantity');
+
+        $this->assertEquals($balanceBefore + 1.0, $balanceAfter);
+        $this->assertSame(11, (int) $this->retailProduct->fresh()->stock);
     }
 }

@@ -234,6 +234,7 @@ class ShiftManager extends Component
         $this->notes = '';
         $this->cashierPin = '';
 
+        $this->dispatch('shift-closed');
         $this->dispatch('toast', message: 'Register shift closed successfully.', type: 'success');
     }
 

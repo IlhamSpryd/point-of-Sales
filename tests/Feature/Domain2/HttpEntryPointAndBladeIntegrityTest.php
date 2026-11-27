@@ -6,6 +6,8 @@ namespace Tests\Feature\Domain2;
 
 use App\Core\Context\TenantContext;
 use App\Enums\PaymentMethod;
+use App\Modules\Organization\Models\Role;
+use App\Modules\Organization\Models\User;
 use App\Modules\Pricing\Models\Discount;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\Shift;
@@ -227,5 +229,58 @@ class HttpEntryPointAndBladeIntegrityTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['payment_method']);
+    }
+
+    /**
+     * Regresi: Kasir yang memiliki ability ShiftPolicy::open dapat mengakses GET /shifts (200 OK),
+     * sedangkan role tanpa izin shift (mis. Waiter) ditolak 403 Forbidden.
+     */
+    public function test_kasir_can_access_shifts_index_while_waiter_is_forbidden(): void
+    {
+        app(TenantContext::class)->setTenantId($this->tenantA->id);
+        app(TenantContext::class)->setStoreId($this->storeA->id);
+
+        $roleKasir = Role::withoutTenantScope()->firstOrCreate(
+            ['name' => 'Kasir', 'tenant_id' => $this->tenantA->id],
+            ['is_active' => 1]
+        );
+        $kasir = User::create([
+            'tenant_id' => $this->tenantA->id,
+            'name' => 'Kasir Shift Check',
+            'email' => 'kasir-shift-check@test.com',
+            'password' => bcrypt('password'),
+            'pin_hash' => bcrypt('123456'),
+            'role_id' => $roleKasir->id,
+            'is_active' => 1,
+            'email_verified_at' => now(),
+        ]);
+        $kasir->stores()->attach($this->storeA->id, ['tenant_id' => $this->tenantA->id]);
+
+        $this->actingAs($kasir)
+            ->withSession(['active_store_id' => $this->storeA->id])
+            ->get(route('shifts.index'))
+            ->assertOk()
+            ->assertSeeLivewire('shift-manager');
+
+        $roleWaiter = Role::withoutTenantScope()->firstOrCreate(
+            ['name' => 'Waiter', 'tenant_id' => $this->tenantA->id],
+            ['is_active' => 1]
+        );
+        $waiter = User::create([
+            'tenant_id' => $this->tenantA->id,
+            'name' => 'Waiter Shift Check',
+            'email' => 'waiter-shift-check@test.com',
+            'password' => bcrypt('password'),
+            'pin_hash' => bcrypt('123456'),
+            'role_id' => $roleWaiter->id,
+            'is_active' => 1,
+            'email_verified_at' => now(),
+        ]);
+        $waiter->stores()->attach($this->storeA->id, ['tenant_id' => $this->tenantA->id]);
+
+        $this->actingAs($waiter)
+            ->withSession(['active_store_id' => $this->storeA->id])
+            ->get(route('shifts.index'))
+            ->assertForbidden();
     }
 }

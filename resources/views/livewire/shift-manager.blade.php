@@ -1,11 +1,13 @@
 <div x-data="{
     openCloseModal: false,
-    expectedCash: {{ $expectedCash ?? 0 }},
+    expectedCash: {{ (int) ($expectedCash ?? 0) }},
     countedCash: 0,
     get discrepancy() {
         return (parseInt(this.countedCash) || 0) - this.expectedCash;
     }
-}" data-gsap="page-enter">
+}"
+    @shift-closed.window="openCloseModal = false; countedCash = 0;"
+    data-gsap="page-enter">
     @if(!$activeShift)
         {{-- Form Open Shift --}}
         <div class="bg-card rounded-3xl p-8 border border-border shadow-sm max-w-lg mx-auto text-center" data-gsap="kpi-card">
@@ -114,7 +116,7 @@
                         class="px-3.5 py-2 rounded-xl border border-border bg-card text-xs font-bold text-foreground hover:bg-secondary active:scale-95 transition-all shadow-sm flex items-center gap-1.5">
                         <span class="material-symbols-rounded text-[20px]">swap_horiz</span> Handover
                     </button>
-                    <button type="button" x-on:click="openCloseModal = true; window.erpMotion?.pulseHighlight($el)"
+                    <button type="button" x-on:click="expectedCash = {{ (int) ($expectedCash ?? 0) }}; openCloseModal = true; window.erpMotion?.pulseHighlight($el)"
                         class="px-4 py-2 rounded-xl bg-foreground text-background text-xs font-bold hover:opacity-90 active:scale-95 transition-all shadow-sm flex items-center gap-1.5">
                         <span class="material-symbols-rounded text-[20px]">lock</span> Close Shift
                     </button>
@@ -305,6 +307,9 @@
             @endif
         </div>
 
+        {{-- Modals kept mounted outside activeShift @if/@else branch so Alpine x-teleport teardown never outlives component state --}}
+    @endif
+
         {{-- Record Cash Movement Modal (Cash-In / Cash-Out / Cash Drop) --}}
         <x-ui.modal wire:model="isMovementModalOpen" maxWidth="md">
             <x-slot:header>
@@ -435,7 +440,7 @@
         </x-ui.modal>
 
         {{-- Normal Close Shift Modal (Alpine controlled) --}}
-        <x-ui.modal x-model="openCloseModal" maxWidth="md">
+        <x-ui.modal name="close-shift-modal" x-model="openCloseModal" maxWidth="md">
             <x-slot:header>
                 <div>
                     <h3 class="text-base font-bold text-foreground">
@@ -483,11 +488,11 @@
 
             <x-slot:footer>
                 <div class="flex items-center justify-end gap-2 w-full">
-                    <button type="button" x-on:click="openCloseModal = false" class="px-4 py-2 rounded-xl border border-border text-xs font-semibold text-muted-foreground hover:bg-muted transition-colors">
+                <button type="button" x-on:click="openCloseModal = false" class="px-4 py-2 rounded-xl border border-border text-xs font-semibold text-muted-foreground hover:bg-muted transition-colors">
                         Cancel
                     </button>
                     <button type="submit" form="close-shift-form" wire:loading.attr="disabled"
-                        x-on:click="window.erpMotion?.pulseHighlight($el)"
+                        x-on:click="openCloseModal = false; window.erpMotion?.pulseHighlight($el)"
                         class="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 shadow-sm active:scale-95 transition-all disabled:opacity-50">
                         Confirm Close Shift
                     </button>
@@ -539,5 +544,4 @@
                 </div>
             </x-slot:footer>
         </x-ui.modal>
-    @endif
 </div>
