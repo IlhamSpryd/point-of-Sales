@@ -9,7 +9,7 @@ use App\Http\Controllers\Api\V1\WebhookSubscriptionApiController;
 use App\Http\Controllers\Api\WebhookController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\HealthCheckController;
-use App\Modules\Integration\Controllers\PaymentNotificationController;
+use App\Modules\Sales\Controllers\MidtransNotificationController;
 use Illuminate\Support\Facades\Route;
 
 // throttle:120,1 sebelum verify.webhook -- pola identik
@@ -40,8 +40,9 @@ Route::get('/health/live', [HealthCheckController::class, 'live'])->name('api.he
 Route::get('/health/ready', [HealthCheckController::class, 'ready'])->name('api.health.ready');
 Route::get('/metrics', [\App\Http\Controllers\Observability\MetricsController::class, 'index'])->name('api.observability.metrics');
 
-// Midtrans Payment Webhook Notification
-Route::post('/payment/notification', [PaymentNotificationController::class, 'handle'])
+// Midtrans Payment Webhook Notification (consolidated canonical pipeline)
+Route::post('/payment/notification', [MidtransNotificationController::class, 'handle'])
+    ->middleware('throttle:120,1')
     ->name('api.payment.notification');
 
 // Scoped Sanctum REST API for external integrations (e.g. n8n & external ERP)

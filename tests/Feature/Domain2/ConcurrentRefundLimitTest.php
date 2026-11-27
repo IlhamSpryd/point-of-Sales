@@ -165,8 +165,8 @@ class ConcurrentRefundLimitTest extends TestCase
             'order_id' => $order->id,
             'product_id' => $this->product->id,
             'qty' => 1,
-            'order_price' => 75000,
-            'order_subtotal' => 75000,
+            'order_price' => 100000,
+            'order_subtotal' => 100000,
         ]);
 
         $orderItem2 = OrderItem::create([
@@ -175,8 +175,8 @@ class ConcurrentRefundLimitTest extends TestCase
             'order_id' => $order->id,
             'product_id' => $this->product->id,
             'qty' => 1,
-            'order_price' => 75000,
-            'order_subtotal' => 75000,
+            'order_price' => 50000,
+            'order_subtotal' => 50000,
         ]);
 
         // Payment tunggal senilai Rp150.000

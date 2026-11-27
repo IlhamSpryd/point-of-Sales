@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Integration\Services;
 
+use App\Core\Context\TenantContext;
 use App\Modules\Integration\Contracts\PaymentGatewayInterface;
+use App\Modules\Organization\Models\Setting;
 use Midtrans\Config;
 use Midtrans\Snap;
 use Midtrans\Transaction;
@@ -29,8 +31,7 @@ class MidtransPaymentGatewayAdapter implements PaymentGatewayInterface
             return $mockToken;
         }
 
-        $serverKey = (string) config('services.midtrans.server_key', '');
-        $isProduction = (bool) config('services.midtrans.is_production', false);
+        ['server_key' => $serverKey, 'is_production' => $isProduction] = $this->resolveCredentials();
 
         if (
             ! $isProduction
@@ -53,17 +54,40 @@ class MidtransPaymentGatewayAdapter implements PaymentGatewayInterface
 
     public function getTransactionStatus(string $orderId): object
     {
+        ['server_key' => $serverKey, 'is_production' => $isProduction] = $this->resolveCredentials();
+        $this->configureMidtrans($serverKey, $isProduction);
+
         $mockStatus = config('services.midtrans.mock_status_response');
         if (is_array($mockStatus) || is_object($mockStatus)) {
             return (object) $mockStatus;
         }
 
+        return (object) Transaction::status($orderId);
+    }
+
+    /**
+     * @return array{server_key: string, is_production: bool}
+     */
+    private function resolveCredentials(): array
+    {
         $serverKey = (string) config('services.midtrans.server_key', '');
         $isProduction = (bool) config('services.midtrans.is_production', false);
 
-        $this->configureMidtrans($serverKey, $isProduction);
+        if (app(TenantContext::class)->getTenantId() !== null) {
+            $tenantKey = Setting::get('midtrans_server_key', '');
+            if (is_string($tenantKey) && $tenantKey !== '') {
+                $serverKey = $tenantKey;
+            }
+            $tenantProd = Setting::get('midtrans_is_production', null);
+            if ($tenantProd !== null) {
+                $isProduction = filter_var($tenantProd, FILTER_VALIDATE_BOOLEAN);
+            }
+        }
 
-        return (object) Transaction::status($orderId);
+        return [
+            'server_key' => $serverKey,
+            'is_production' => $isProduction,
+        ];
     }
 
     private function configureMidtrans(string $serverKey, bool $isProduction): void

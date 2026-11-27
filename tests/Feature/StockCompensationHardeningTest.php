@@ -98,6 +98,7 @@ class StockCompensationHardeningTest extends TestCase
             orderCode: $order->order_code,
             transactionStatus: 'expire',
             fraudStatus: null,
+            grossAmount: (int) $order->order_amount,
         );
 
         $this->assertEquals(
@@ -112,6 +113,7 @@ class StockCompensationHardeningTest extends TestCase
             orderCode: $order->order_code,
             transactionStatus: 'expire',
             fraudStatus: null,
+            grossAmount: (int) $order->order_amount,
         );
 
         $this->assertEquals(10, $this->productA->fresh()->stock);
@@ -163,6 +165,7 @@ class StockCompensationHardeningTest extends TestCase
             orderCode: $order->order_code,
             transactionStatus: 'settlement',
             fraudStatus: null,
+            grossAmount: (int) $order->order_amount,
         );
 
         $this->assertEquals(8, $this->productA->fresh()->stock);

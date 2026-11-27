@@ -116,27 +116,53 @@ class InventoryLedgerService
             return [];
         }
 
-        // 1. Cek Idempotency Key batch / item terlebih dahulu
-        foreach ($movements as $item) {
-            if (! empty($item['idempotency_key'])) {
-                $existing = $this->findExistingMovement($tenantId, $item['item_type'], $item['idempotency_key']);
-                if ($existing) {
-                    $balance = $this->getBalance($tenantId, $item['store_id'], $item['item_type'], $item['item_id']);
+        // 1. Evaluasi Idempotency Key per-item agar item baru dalam batch yang sama tidak ter-drop
+        $resultsByIndex = [];
+        $pendingEntries = [];
+        $seenIdempotencyKeys = [];
+        $deferredDuplicates = [];
 
-                    return [[
+        foreach ($movements as $idx => $item) {
+            $itemKey = $item['idempotency_key'] ?? null;
+            if (! empty($itemKey)) {
+                $existing = $this->findExistingMovement($tenantId, $item['item_type'], (string) $itemKey);
+                if ($existing) {
+                    $balance = $this->getBalance($tenantId, (int) $item['store_id'], $item['item_type'], (int) $item['item_id']);
+                    $resultsByIndex[$idx] = [
                         'movement' => $existing,
                         'balance' => $balance,
                         'previous_quantity' => (string) ($balance->quantity ?? 0),
                         'new_quantity' => (string) ($balance->quantity ?? 0),
-                    ]];
+                    ];
+
+                    continue;
                 }
+                if (isset($seenIdempotencyKeys[$itemKey])) {
+                    $deferredDuplicates[$idx] = $seenIdempotencyKeys[$itemKey];
+
+                    continue;
+                }
+                $seenIdempotencyKeys[$itemKey] = $idx;
             }
+            $pendingEntries[] = ['index' => $idx, 'item' => $item];
         }
 
-        return DB::transaction(function () use ($tenantId, $movements) {
+        if (empty($pendingEntries)) {
+            foreach ($deferredDuplicates as $dupIdx => $originIdx) {
+                if (isset($resultsByIndex[$originIdx])) {
+                    $resultsByIndex[$dupIdx] = $resultsByIndex[$originIdx];
+                }
+            }
+            ksort($resultsByIndex);
+
+            return array_values($resultsByIndex);
+        }
+
+        return DB::transaction(function () use ($tenantId, $pendingEntries, $resultsByIndex, $deferredDuplicates) {
             // 2. Kumpulkan target unik untuk penguncian kanonik (INV-M4-07)
             $uniqueTargets = [];
-            foreach ($movements as $m) {
+            foreach ($pendingEntries as $entry) {
+                $m = $entry['item'];
                 $key = "{$m['store_id']}_{$m['item_type']}_{$m['item_id']}";
                 if (! isset($uniqueTargets[$key])) {
                     $uniqueTargets[$key] = [
@@ -200,10 +226,11 @@ class InventoryLedgerService
             }
 
             // 6. Eksekusi mutasi baris per baris
-            $results = [];
             $storesToFlushCache = [];
 
-            foreach ($movements as $m) {
+            foreach ($pendingEntries as $entry) {
+                $idx = $entry['index'];
+                $m = $entry['item'];
                 $storeId = (int) $m['store_id'];
                 $itemType = $m['item_type'];
                 $itemId = (int) $m['item_id'];
@@ -283,7 +310,7 @@ class InventoryLedgerService
                 $currentBalance->last_unit_cost = bc_num($newLastCost);
                 $currentBalance->last_movement_id = $movementId;
 
-                $results[] = [
+                $resultsByIndex[$idx] = [
                     'movement' => (object) [
                         'id' => $movementId,
                         'tenant_id' => $tenantId,
@@ -303,6 +330,13 @@ class InventoryLedgerService
                 $storesToFlushCache[$storeId] = true;
             }
 
+            foreach ($deferredDuplicates as $dupIdx => $originIdx) {
+                if (isset($resultsByIndex[$originIdx])) {
+                    $resultsByIndex[$dupIdx] = $resultsByIndex[$originIdx];
+                }
+            }
+            ksort($resultsByIndex);
+
             // 10. Post-commit side effects (invalidasi menu cache)
             DB::afterCommit(function () use ($tenantId, $storesToFlushCache) {
                 foreach (array_keys($storesToFlushCache) as $storeId) {
@@ -310,7 +344,7 @@ class InventoryLedgerService
                 }
             });
 
-            return $results;
+            return array_values($resultsByIndex);
         });
     }
 
@@ -450,14 +484,8 @@ class InventoryLedgerService
         $table = $itemType === 'product' ? 'product_stock_balances' : 'ingredient_stock_balances';
         $column = $itemType === 'product' ? 'product_id' : 'ingredient_id';
 
+        // Invariant isolasi cabang: setiap cabang baru wajib mulai dari 0, bukan mengkloning stok global/cabang lain
         $initialQty = 0;
-        if ($itemType === 'product') {
-            $legacyStock = DB::table('products')->where('tenant_id', $tenantId)->where('id', $itemId)->value('stock');
-            $initialQty = $legacyStock !== null ? (float) $legacyStock : 0;
-        } else {
-            $legacyStock = DB::table('ingredients')->where('tenant_id', $tenantId)->where('id', $itemId)->value('current_stock');
-            $initialQty = $legacyStock !== null ? (float) $legacyStock : 0;
-        }
 
         DB::table($table)->insertOrIgnore([
             'tenant_id' => $tenantId,

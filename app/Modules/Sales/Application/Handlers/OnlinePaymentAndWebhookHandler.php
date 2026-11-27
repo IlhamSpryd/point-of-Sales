@@ -56,12 +56,14 @@ class OnlinePaymentAndWebhookHandler
             $expectedAmount = (int) $order->order_amount;
             $isAmountValid = false;
 
-            if ($grossAmount === null || $grossAmount === $expectedAmount) {
-                $isAmountValid = true;
-            } elseif ($originalAmount !== null && $originalAmount === $expectedAmount) {
-                $isAmountValid = true;
-            } elseif ($grossAmount > $expectedAmount && ($grossAmount - $expectedAmount) <= max(10000, (int) round($expectedAmount * 0.15))) {
-                $isAmountValid = true;
+            if ($grossAmount !== null) {
+                if ($grossAmount === $expectedAmount) {
+                    $isAmountValid = true;
+                } elseif ($originalAmount !== null && $originalAmount === $expectedAmount) {
+                    $isAmountValid = true;
+                } elseif ($grossAmount > $expectedAmount && ($grossAmount - $expectedAmount) <= max(10000, (int) round($expectedAmount * 0.15))) {
+                    $isAmountValid = true;
+                }
             }
 
             if (! $isAmountValid) {
@@ -324,9 +326,15 @@ class OnlinePaymentAndWebhookHandler
 
                 if ($totalCaptured >= (int) $order->order_amount) {
                     $wasAlreadyPaid = $order->order_status === OrderStatus::Paid;
+                    $rawFulfillment = $order->getRawOriginal('fulfillment_status');
 
                     $order->forceFill([
                         'order_status' => OrderStatus::Paid,
+                        'order_lifecycle_status' => OrderLifecycleStatus::Confirmed->value,
+                        'payment_status' => OrderPaymentStatus::Paid->value,
+                        'fulfillment_status' => (! $wasAlreadyPaid && ($rawFulfillment === null || $rawFulfillment === '' || $rawFulfillment === OrderFulfillmentStatus::Unfulfilled->value))
+                            ? OrderFulfillmentStatus::InPreparation->value
+                            : $order->fulfillment_status,
                         'payment_method' => $pmEnum,
                         'cash_received' => $pmEnum === PaymentMethod::Cash ? $tendered : $order->cash_received,
                         'order_change' => $pmEnum === PaymentMethod::Cash ? $change : $order->order_change,
@@ -422,12 +430,14 @@ class OnlinePaymentAndWebhookHandler
                 $expectedAmount = $attempt ? (int) $attempt->amount : (int) $lockedOrder->order_amount;
                 $isAmountValid = false;
 
-                if ($grossAmount === null || $grossAmount === $expectedAmount) {
-                    $isAmountValid = true;
-                } elseif ($originalAmount !== null && $originalAmount === $expectedAmount) {
-                    $isAmountValid = true;
-                } elseif ($grossAmount > $expectedAmount && ($grossAmount - $expectedAmount) <= max(10000, (int) round($expectedAmount * 0.15))) {
-                    $isAmountValid = true;
+                if ($grossAmount !== null) {
+                    if ($grossAmount === $expectedAmount) {
+                        $isAmountValid = true;
+                    } elseif ($originalAmount !== null && $originalAmount === $expectedAmount) {
+                        $isAmountValid = true;
+                    } elseif ($grossAmount > $expectedAmount && ($grossAmount - $expectedAmount) <= max(10000, (int) round($expectedAmount * 0.15))) {
+                        $isAmountValid = true;
+                    }
                 }
 
                 if (! $isAmountValid) {
@@ -488,16 +498,24 @@ class OnlinePaymentAndWebhookHandler
         int $taxAmount,
         int $totalAmount,
         string $dominantPaymentMethod,
-        ?int $customerId = null
+        ?int $customerId = null,
+        ?float $serviceChargeAmount = null
     ): array {
+        $resolvedServiceCharge = (int) round((float) ($serviceChargeAmount ?? ($order->service_charge_amount ?? 0)));
         $itemDetails = [
-            ['id' => 'ORDER-'.$order->id, 'price' => (int) $subtotalAmount, 'quantity' => 1, 'name' => 'POS Order'],
-            ['id' => 'TAX-PPN', 'price' => (int) $taxAmount, 'quantity' => 1, 'name' => 'Tax'],
+            ['id' => 'ORDER-'.$order->id, 'price' => (int) round($subtotalAmount), 'quantity' => 1, 'name' => 'POS Order'],
         ];
-        if ((int) $discountAmount > 0) {
-            $itemDetails[] = ['id' => 'DISCOUNT', 'price' => -(int) $discountAmount, 'quantity' => 1, 'name' => 'Discount'];
+        if ($resolvedServiceCharge > 0) {
+            $itemDetails[] = ['id' => 'SERVICE-CHARGE', 'price' => $resolvedServiceCharge, 'quantity' => 1, 'name' => 'Service Charge'];
         }
-        $snapRounding = (int) $totalAmount - ((int) $subtotalAmount - (int) $discountAmount + (int) $taxAmount);
+        if ($taxAmount > 0) {
+            $itemDetails[] = ['id' => 'TAX-PPN', 'price' => $taxAmount, 'quantity' => 1, 'name' => 'Tax'];
+        }
+        if ((int) round($discountAmount) > 0) {
+            $itemDetails[] = ['id' => 'DISCOUNT', 'price' => -(int) round($discountAmount), 'quantity' => 1, 'name' => 'Discount'];
+        }
+        $itemsSum = array_sum(array_map(static fn (array $item): int => $item['price'] * $item['quantity'], $itemDetails));
+        $snapRounding = $totalAmount - $itemsSum;
         if ($snapRounding !== 0) {
             $itemDetails[] = ['id' => 'ROUNDING', 'price' => $snapRounding, 'quantity' => 1, 'name' => 'Rounding'];
         }

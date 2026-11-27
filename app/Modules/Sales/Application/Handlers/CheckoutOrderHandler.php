@@ -569,7 +569,7 @@ class CheckoutOrderHandler
 
                     $snapParams = $this->onlinePaymentHandler->buildSnapParams(
                         $order, $subtotalAmount, (float) $discountAmount, $taxAmount, $totalAmount,
-                        (string) $dominantPaymentMethod, ! empty($data['customer_id']) ? (int) $data['customer_id'] : null
+                        (string) $dominantPaymentMethod, ! empty($data['customer_id']) ? (int) $data['customer_id'] : null, $serviceChargeAmount
                     );
 
                     $capturedOrder = $order;
@@ -581,7 +581,7 @@ class CheckoutOrderHandler
                         } catch (\Throwable $e) {
                             Log::error('[SNAP] gagal membuat token', ['order' => $capturedOrder->order_code, 'error' => $e->getMessage()]);
                             try {
-                                $this->onlinePaymentHandler->updateStatusFromMidtransNotification($capturedOrder->order_code, 'cancel', null);
+                                $this->onlinePaymentHandler->updateStatusFromMidtransNotification($capturedOrder->order_code, 'cancel', null, (int) $capturedOrder->order_amount);
                             } catch (\Throwable $inner) {
                                 Log::critical('[SNAP] gagal membatalkan order setelah Snap gagal', ['order' => $capturedOrder->order_code, 'error' => $inner->getMessage()]);
                             }

@@ -25,6 +25,7 @@ use App\Modules\Pricing\Services\GiftCardService;
 use App\Modules\Pricing\Services\LoyaltyService;
 use App\Modules\Pricing\Services\StoreCreditService;
 use App\Modules\Pricing\Services\VoucherService;
+use App\Modules\Sales\Domain\Services\ReturnProportionCalculatorService;
 use App\Modules\Sales\Enums\ArLedgerEntryTypeEnum;
 use App\Modules\Sales\Enums\CreditNoteStatusEnum;
 use App\Modules\Sales\Enums\CustomerInvoiceStatusEnum;
@@ -42,6 +43,7 @@ use App\Modules\Sales\Models\SalesCreditNote;
 use App\Modules\Sales\Models\SalesCreditNoteApplication;
 use App\Modules\Sales\Models\Shift;
 use App\Platform\Documents\DocumentSequenceService;
+use App\Platform\Money\Money;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Support\Facades\DB;
@@ -153,7 +155,7 @@ class ReturnRefundService
                     ->get()
                     ->keyBy('id');
 
-                // 3.3 Lock Shift jika ada refund tunai
+                // 3.3 Lock Shift sesuai tenant & store order
                 $hasCashRefund = collect($refundAllocations)->contains(function ($alloc) use ($lockedPayments) {
                     $payment = $lockedPayments->get($alloc['payment_id']);
                     $origMethod = $payment ? (is_string($payment->payment_method) ? $payment->payment_method : $payment->payment_method->value) : null;
@@ -162,16 +164,15 @@ class ReturnRefundService
                     return $targetMethod === 'cash';
                 });
 
-                $lockedShift = null;
-                if ($hasCashRefund) {
-                    $lockedShift = Shift::withoutGlobalScopes()
-                        ->where('id', $shiftId)
-                        ->lockForUpdate()
-                        ->firstOrFail();
+                $lockedShift = Shift::withoutGlobalScopes()
+                    ->where('tenant_id', $lockedOrder->tenant_id)
+                    ->where('store_id', $lockedOrder->store_id)
+                    ->where('id', $shiftId)
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
-                    if ($lockedShift->status !== 'open') {
-                        throw new DomainException("Shift #{$shiftId} is not in open status.");
-                    }
+                if ($hasCashRefund && $lockedShift->status !== 'open') {
+                    throw new DomainException("Shift #{$shiftId} is not in open status.");
                 }
 
                 // 3.4 Lock Order Items & Products
@@ -213,7 +214,7 @@ class ReturnRefundService
                 }
 
                 $validatedReturnItems = [];
-                $subtotalReturned = 0;
+                $subtotalReturnedMoney = Money::zero();
 
                 foreach ($returnItemsWithDisposition as $itemInput) {
                     $itemId = (int) ($itemInput['order_item_id'] ?? 0);
@@ -262,16 +263,16 @@ class ReturnRefundService
                         $dispositionReason = ($dispositionReason ? $dispositionReason.' | ' : '').'Automatic write_off_waste';
                     }
 
-                    $linePrice = (float) $orderItem->order_price;
-                    $lineRefundAmount = $linePrice * $qty;
-                    $subtotalReturned += $lineRefundAmount;
+                    $linePriceMoney = Money::fromDecimal((string) $orderItem->order_price);
+                    $lineRefundMoney = $linePriceMoney->multiply($qty);
+                    $subtotalReturnedMoney = $subtotalReturnedMoney->add($lineRefundMoney);
 
                     $validatedReturnItems[] = [
                         'order_item' => $orderItem,
                         'product' => $product,
                         'quantity' => $qty,
-                        'unit_price' => $linePrice,
-                        'line_amount' => $lineRefundAmount,
+                        'unit_price' => (float) $linePriceMoney->toDecimal(2),
+                        'line_amount' => (float) $lineRefundMoney->toDecimal(2),
                         'disposition' => $disposition,
                         'disposition_reason' => $dispositionReason,
                     ];
@@ -285,11 +286,11 @@ class ReturnRefundService
                 }
 
                 $validatedAllocations = [];
-                $totalRefundAmount = 0;
+                $totalRefundMoney = Money::zero();
 
                 foreach ($refundAllocations as $alloc) {
                     $paymentId = (int) $alloc['payment_id'];
-                    $amount = (float) $alloc['amount'];
+                    $amountMoney = Money::fromDecimal((string) $alloc['amount']);
 
                     $payment = $lockedPayments->get($paymentId);
                     if (! $payment) {
@@ -298,21 +299,23 @@ class ReturnRefundService
                         ]);
                     }
 
-                    if ($amount <= 0) {
+                    if ($amountMoney->minor <= 0) {
                         throw ValidationException::withMessages([
                             'refunds' => 'Refund amount must be greater than zero.',
                         ]);
                     }
 
                     // INV-07: SUM(refund_amount) <= payment.amount
-                    $alreadyRefunded = (float) PaymentRefund::withoutGlobalScopes()
+                    $alreadyRefundedRaw = PaymentRefund::withoutGlobalScopes()
                         ->where('payment_id', $payment->id)
                         ->whereNotIn('request_status', [PaymentRefund::REQUEST_FAILED, PaymentRefund::REQUEST_CANCELLED])
                         ->sum('amount');
 
-                    $remainingRefundable = (float) $payment->amount - $alreadyRefunded;
-                    if ($amount > $remainingRefundable) {
-                        throw new DomainException('Refund amount ('.number_format($amount, 2).') exceeds remaining refundable amount ('.number_format($remainingRefundable, 2).") on payment #{$payment->id}.");
+                    $remainingRefundableMoney = Money::fromDecimal((string) $payment->amount)
+                        ->subtract(Money::fromDecimal((string) $alreadyRefundedRaw));
+
+                    if ($amountMoney->greaterThan($remainingRefundableMoney)) {
+                        throw new DomainException('Refund amount ('.$amountMoney->toDecimal(2).') exceeds remaining refundable amount ('.$remainingRefundableMoney->toDecimal(2).") on payment #{$payment->id}.");
                     }
 
                     $origMethod = is_string($payment->payment_method) ? $payment->payment_method : $payment->payment_method->value;
@@ -323,43 +326,55 @@ class ReturnRefundService
                         throw new DomainException("Cash refund exception for method {$origMethod} requires supervisor authorization.");
                     }
 
+                    $cardNumber = $payment->reference_number ?: ($alloc['card_number'] ?? null);
+                    if (($targetMethod === 'gift_card' || $targetMethod === PaymentMethod::GiftCard->value) && empty(trim((string) $cardNumber))) {
+                        throw ValidationException::withMessages([
+                            'card_number' => 'Gift card number is required for gift card refunds.',
+                        ]);
+                    }
+
                     // AC-3.3: Jika refund tunai, periksa kecukupan fisik kas di laci shift aktif
                     if ($targetMethod === 'cash') {
-                        /** @var Shift $lockedShift */
-                        $opening = (float) $lockedShift->opening_balance;
-                        $cashIn = (float) CashDrawerMovement::where('shift_id', $lockedShift->id)->where('type', 'cash_in')->sum('amount');
-                        $cashPayments = (float) Payment::where('shift_id', $lockedShift->id)->where('payment_method', 'cash')->where('status', 'captured')->sum('amount');
-                        $cashOut = (float) CashDrawerMovement::where('shift_id', $lockedShift->id)->where('type', 'cash_out')->sum('amount');
-                        $availableCash = $opening + $cashIn + $cashPayments - $cashOut;
+                        $openingMoney = Money::fromDecimal((string) $lockedShift->opening_balance);
+                        $cashInMoney = Money::fromDecimal((string) CashDrawerMovement::where('shift_id', $lockedShift->id)->where('type', 'cash_in')->sum('amount'));
+                        $cashPaymentsMoney = Money::fromDecimal((string) Payment::where('shift_id', $lockedShift->id)->where('payment_method', 'cash')->where('status', 'captured')->sum('amount'));
+                        $cashOutMoney = Money::fromDecimal((string) CashDrawerMovement::where('shift_id', $lockedShift->id)->where('type', 'cash_out')->sum('amount'));
+                        $availableCashMoney = $openingMoney->add($cashInMoney)->add($cashPaymentsMoney)->subtract($cashOutMoney);
 
-                        if ($amount > $availableCash) {
-                            throw new DomainException("Physical cash in shift drawer #{$lockedShift->id} is insufficient for cash refund (Available: ".number_format($availableCash, 2).', Required: '.number_format($amount, 2).').');
+                        if ($amountMoney->greaterThan($availableCashMoney)) {
+                            throw new DomainException("Physical cash in shift drawer #{$lockedShift->id} is insufficient for cash refund (Available: ".$availableCashMoney->toDecimal(2).', Required: '.$amountMoney->toDecimal(2).').');
                         }
                     }
 
-                    $totalRefundAmount += $amount;
+                    $totalRefundMoney = $totalRefundMoney->add($amountMoney);
 
                     $validatedAllocations[] = [
                         'payment' => $payment,
-                        'amount' => $amount,
+                        'amount' => $amountMoney->toDecimal(2),
                         'original_method' => $origMethod,
                         'refund_method' => $targetMethod,
-                        'card_number' => $alloc['card_number'] ?? null,
+                        'card_number' => $cardNumber,
                         'is_override' => $isOverride,
                         'override_reason' => $alloc['method_override_reason'] ?? null,
                     ];
                 }
 
-                // 6. Buat Record OrderReturn
+                // 6. Kalkulasi Proporsi Retur & Tegakkan Plafon Refund <= Nilai Barang Diretur
                 $returnNumber = 'RET-'.now()->format('Ymd').'-'.strtoupper(Str::random(6));
-
                 $totalOrderQty = (int) $lockedOrder->orderItems()->sum('qty');
                 $totalReturnedAll = (int) OrderReturnItem::whereIn('order_item_id', $lockedOrder->orderItems()->pluck('id'))->sum('quantity_returned')
                     + collect($validatedReturnItems)->sum('quantity');
-
                 $returnType = $totalReturnedAll >= $totalOrderQty ? OrderReturn::TYPE_FULL : OrderReturn::TYPE_PARTIAL;
 
-                $proportions = app(\App\Modules\Sales\Domain\Services\ReturnProportionCalculatorService::class)->calculateReturnProportions($lockedOrder, (string) $subtotalReturned, $returnType);
+                $subtotalReturned = $subtotalReturnedMoney->toDecimal(2);
+                $proportions = app(ReturnProportionCalculatorService::class)->calculateReturnProportions($lockedOrder, $subtotalReturned, $returnType);
+                $maxRefundableFromReturn = Money::fromDecimal((string) $proportions['net_refund_amount']);
+
+                if ($totalRefundMoney->greaterThan($maxRefundableFromReturn)) {
+                    throw new DomainException('Total refund allocations ('.$totalRefundMoney->toDecimal(2).') exceed returned item refundable total ('.$maxRefundableFromReturn->toDecimal(2).').');
+                }
+
+                $totalRefundAmount = (float) $totalRefundMoney->toDecimal(2);
 
                 $orderReturn = OrderReturn::forceCreate([
                     'tenant_id' => $lockedOrder->tenant_id,
@@ -507,21 +522,16 @@ class ReturnRefundService
 
                     // AC-3.3c: Refund ke Gift Card (Tender / Reversal)
                     if ($targetMethod === 'gift_card' || $targetMethod === PaymentMethod::GiftCard->value) {
-                        $cardNumber = $payment->reference_number;
-                        if (! $cardNumber && ! empty($vAlloc['card_number'])) {
-                            $cardNumber = $vAlloc['card_number'];
-                        }
-                        if ($cardNumber) {
-                            app(GiftCardService::class)->refundToGiftCard(
-                                cardNumber: $cardNumber,
-                                amount: (string) $amount,
-                                storeId: (int) $lockedOrder->store_id,
-                                referenceType: 'ORDER_RETURN',
-                                referenceId: (int) $orderReturn->id,
-                                actor: $actorUser,
-                                idempotencyKey: "gc_refund:{$orderReturn->id}:{$i}"
-                            );
-                        }
+                        $cardNumber = (string) ($vAlloc['card_number'] ?? $payment->reference_number);
+                        app(GiftCardService::class)->refundToGiftCard(
+                            cardNumber: $cardNumber,
+                            amount: (string) $amount,
+                            storeId: (int) $lockedOrder->store_id,
+                            referenceType: 'ORDER_RETURN',
+                            referenceId: (int) $orderReturn->id,
+                            actor: $actorUser,
+                            idempotencyKey: "gc_refund:{$orderReturn->id}:{$i}"
+                        );
                     }
 
                     PaymentRefund::forceCreate([
@@ -580,8 +590,9 @@ class ReturnRefundService
                                     if ($originalDpp <= 0) {
                                         $originalDpp = (float) max(1.0, $lockedOrder->order_amount);
                                     }
-                                    $refundDpp = (float) ($subtotalReturned - (float) ($orderReturn->discount_reversed ?? 0));
-                                    $ratio = min(1.0, max(0.0, $refundDpp / $originalDpp));
+                                    $refundDppMoney = Money::fromDecimal($subtotalReturned)
+                                        ->subtract(Money::fromDecimal((string) ($orderReturn->discount_reversed ?? 0)));
+                                    $ratio = min(1.0, max(0.0, (float) $refundDppMoney->toDecimal(2) / $originalDpp));
                                     $pointsToReverse = (int) round($earnedPoints * $ratio);
                                     $pointsToReverse = min($pointsToReverse, $remainingEarned);
                                 }
@@ -635,11 +646,7 @@ class ReturnRefundService
                     metadata: ['order_id' => $lockedOrder->id, 'return_number' => $returnNumber, 'total_refund' => $totalRefundAmount, 'approved_by' => $approvedByUserId]
                 );
 
-                try {
-                    app(FinancialOutboxDispatcherService::class)->dispatchSalesReturnRefunded($orderReturn);
-                } catch (\Throwable $e) {
-                    Log::warning("[FINANCE OUTBOX] Gagal dispatch outbox retur #{$orderReturn->id}: ".$e->getMessage());
-                }
+                app(FinancialOutboxDispatcherService::class)->dispatchSalesReturnRefunded($orderReturn);
 
                 return $orderReturn;
             }, attempts: 3);
@@ -1436,16 +1443,8 @@ class ReturnRefundService
             throw new DomainException('Cross-tenant access denied.');
         }
 
-        return $tenantContext->runAs($creditNote->tenant_id, $creditNote->store_id, function () use (
-            $creditNote,
-            $actorUserId
-
-        ) {
-            return DB::transaction(function () use (
-                $creditNote,
-                $actorUserId
-
-            ) {
+        return $tenantContext->runAs($creditNote->tenant_id, $creditNote->store_id, function () use ($creditNote, $actorUserId) {
+            return DB::transaction(function () use ($creditNote, $actorUserId) {
                 $locked = SalesCreditNote::withoutGlobalScopes()
                     ->where('id', $creditNote->id)
                     ->lockForUpdate()

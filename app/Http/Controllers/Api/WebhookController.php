@@ -98,33 +98,59 @@ class WebhookController extends Controller
         // HMAC Signature Verification untuk OFD (GrabFood / GoFood)
         $ofdManager = app(\App\Modules\Integration\Services\OnlineFoodDeliveryManager::class);
         if ($ofdManager->hasDriver($provider)) {
+            $normalizedProvider = strtolower($provider);
             $ofdConfig = \Illuminate\Support\Facades\DB::table('ofd_channel_configs')
                 ->where('tenant_id', $tenantId)
                 ->when($storeId, fn ($q) => $q->where('store_id', $storeId))
-                ->where('provider', strtolower($provider))
-                ->where('is_active', true)
+                ->where('provider', $normalizedProvider)
                 ->first();
 
-            if ($ofdConfig && ! empty($ofdConfig->signing_secret)) {
+            if ($ofdConfig !== null && ! $ofdConfig->is_active) {
+                Log::warning("Webhook rejected: {$provider} OFD channel is inactive on tenant #{$tenantId}.");
+
+                return response()->json(['message' => 'OFD channel is inactive'], 403);
+            }
+
+            if ($ofdConfig !== null) {
+                if (empty($ofdConfig->signing_secret)) {
+                    Log::warning("Webhook rejected: empty OFD signing secret for {$provider} on tenant #{$tenantId}.");
+
+                    return response()->json(['message' => 'Webhook signing secret not configured'], 401);
+                }
+
                 try {
                     $secret = \Illuminate\Support\Facades\Crypt::decryptString($ofdConfig->signing_secret);
                 } catch (\Throwable) {
                     $secret = $ofdConfig->signing_secret;
                 }
+            } else {
+                $globalSecret = (string) config("services.webhooks.{$normalizedProvider}_secret", '');
+                if ($globalSecret === '') {
+                    Log::warning("Webhook rejected: missing active OFD config and signing secret for {$provider} on tenant #{$tenantId}.");
 
-                $driver = $ofdManager->driver($provider);
-                $signature = match (strtolower($provider)) {
-                    'grabfood' => $request->header('X-Grab-Signature') ?? $request->header('x-grab-signature') ?? $request->header('X-Signature'),
-                    'gofood' => $request->header('X-Gojek-Signature') ?? $request->header('x-gojek-signature') ?? $request->header('X-Signature'),
-                    default => $request->header('X-Signature') ?? $request->header('x-signature'),
-                };
-
-                $rawContent = $request->getContent();
-                if (! $driver->verifyWebhookSignature($rawContent, $signature, (string) $secret)) {
-                    Log::warning("Webhook rejected: invalid HMAC signature for {$provider} on tenant #{$tenantId}.");
-
-                    return response()->json(['message' => 'Invalid webhook signature'], 401);
+                    return response()->json(['message' => 'Webhook signing secret not configured'], 401);
                 }
+                $secret = $globalSecret;
+            }
+
+            $driver = $ofdManager->driver($provider);
+            $signature = match ($normalizedProvider) {
+                'grabfood' => $request->header('X-Grab-Signature') ?? $request->header('x-grab-signature') ?? $request->header('X-Signature'),
+                'gofood' => $request->header('X-Gojek-Signature') ?? $request->header('x-gojek-signature') ?? $request->header('X-Signature'),
+                default => $request->header('X-Signature') ?? $request->header('x-signature'),
+            };
+
+            $rawContent = $request->getContent();
+            $timestamp = (string) ($request->header('X-Timestamp') ?? $request->header('x-timestamp') ?? '');
+            $isTimestampedGlobalMatch = $ofdConfig === null
+                && $timestamp !== ''
+                && is_string($signature)
+                && hash_equals(hash_hmac('sha256', $rawContent.$timestamp, (string) $secret), $signature);
+
+            if (! $isTimestampedGlobalMatch && ! $driver->verifyWebhookSignature($rawContent, $signature, (string) $secret)) {
+                Log::warning("Webhook rejected: invalid HMAC signature for {$provider} on tenant #{$tenantId}.");
+
+                return response()->json(['message' => 'Invalid webhook signature'], 401);
             }
         }
 

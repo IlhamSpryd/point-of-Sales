@@ -81,8 +81,9 @@ class MidtransNotificationController extends Controller
 
         if (! hash_equals($expectedSignature, (string) $signatureKey)) {
             Log::warning('Midtrans notification: signature TIDAK VALID.', ['order_id' => $orderId]);
+            $invalidStatus = $request->is('api/payment/notification') ? 401 : 403;
 
-            return response()->json(['message' => 'invalid signature'], 403);
+            return response()->json(['message' => 'invalid signature'], $invalidStatus);
         }
 
         // Routing Webhook Langganan SaaS (EXT-01, ADR-113)
