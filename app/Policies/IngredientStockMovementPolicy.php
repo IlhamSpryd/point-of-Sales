@@ -23,4 +23,3 @@ class IngredientStockMovementPolicy
             && $this->viewAny($user);
     }
 }
-
