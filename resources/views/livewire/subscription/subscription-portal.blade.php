@@ -118,33 +118,50 @@
     <!-- Upgrade Modal -->
     @if ($isUpgradeModalOpen)
         <x-ui.modal wire:model="isUpgradeModalOpen" title="Upgrade Subscription Tier" maxWidth="lg" onClose="$wire.set('isUpgradeModalOpen', false)">
-            <div class="space-y-3">
-                <label class="block text-xs font-semibold text-foreground">Select Target Tier</label>
-                @foreach ($allPlans as $plan)
-                    <div wire:key="plan-{{ $plan->id ?? $loop->index }}" wire:click="$set('selectedPlanId', {{ $plan->id }})"
-                        class="p-4 rounded-xl border cursor-pointer transition-all {{ $selectedPlanId === $plan->id ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-border bg-card hover:border-primary/50' }}">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <h4 class="font-bold text-foreground text-sm">{{ $plan->name }}</h4>
-                                <p class="text-xs text-muted-foreground">{{ $plan->description ?? 'Enterprise-grade features' }}</p>
-                            </div>
-                            <span class="text-sm font-bold text-foreground">Rp {{ number_format((float) $plan->price, 0, ',', '.') }}/mo</span>
-                        </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-foreground mb-2">Billing Cycle</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" wire:click="$set('billingCycle', 'monthly')"
+                            class="px-3 py-2 rounded-xl border text-xs font-semibold transition-all {{ $billingCycle === 'monthly' ? 'border-primary bg-primary/10 text-foreground ring-2 ring-primary/20' : 'border-border bg-card text-muted-foreground hover:text-foreground' }}">
+                            Monthly
+                        </button>
+                        <button type="button" wire:click="$set('billingCycle', 'annual')"
+                            class="px-3 py-2 rounded-xl border text-xs font-semibold transition-all {{ $billingCycle === 'annual' ? 'border-primary bg-primary/10 text-foreground ring-2 ring-primary/20' : 'border-border bg-card text-muted-foreground hover:text-foreground' }}">
+                            Annual (12 Months)
+                        </button>
                     </div>
-                @endforeach
+                </div>
+
+                <div class="space-y-3">
+                    <label class="block text-xs font-semibold text-foreground">Select Target Tier</label>
+                    @foreach ($allPlans as $plan)
+                        <div wire:key="plan-{{ $plan->id ?? $loop->index }}" wire:click="$set('selectedPlanId', {{ $plan->id }})"
+                            class="p-4 rounded-xl border cursor-pointer transition-all {{ $selectedPlanId === $plan->id ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-border bg-card hover:border-primary/50' }}">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-bold text-foreground text-sm">{{ $plan->name }}</h4>
+                                    <p class="text-xs text-muted-foreground">{{ $plan->description ?? 'Enterprise-grade features' }}</p>
+                                </div>
+                                <span class="text-sm font-bold text-foreground">Rp {{ number_format((float) $plan->price, 0, ',', '.') }}/mo</span>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
 
             <x-slot:footer>
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-3 w-full">
                     <button type="button" wire:click="requestPlanUpgrade" class="text-xs text-muted-foreground hover:text-foreground underline transition-colors">
-                        Request Upgrade
+                        Request Sales Assist
                     </button>
                     <div class="flex items-center gap-2">
                         <button type="button" wire:click="$set('isUpgradeModalOpen', false)" class="px-4 py-2 text-muted-foreground hover:text-foreground rounded-xl text-sm font-medium transition-colors">
                             Cancel
                         </button>
-                        <button type="button" wire:click="confirmInstantUpgrade" class="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-xs">
-                            Aktivasi Instan (Self-Serve)
+                        <button type="button" wire:click="initiatePaymentUpgrade" wire:loading.attr="disabled" wire:target="initiatePaymentUpgrade"
+                            class="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-xs disabled:opacity-50">
+                            Proceed to Payment
                         </button>
                     </div>
                 </div>

@@ -93,6 +93,9 @@ class AbilityRegistry
         // Organization module abilities
         $this->register(new Ability('organization.branch.switch', 'organization', Scope::COMPANY, false, 'Switch active branch context'));
 
+        // Subscription module abilities
+        $this->register(new Ability('subscription.manage', 'subscription', Scope::TENANT, false, 'Manage SaaS subscription plan upgrades and billing'));
+
         // Catalog module abilities
         $this->register(new Ability('catalog.view', 'catalog', Scope::BRANCH, false, 'View products and categories'));
         $this->register(new Ability('catalog.manage', 'catalog', Scope::TENANT, false, 'Manage product master data'));

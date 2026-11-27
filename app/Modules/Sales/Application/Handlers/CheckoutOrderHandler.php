@@ -226,9 +226,10 @@ class CheckoutOrderHandler
                     }
                 }
 
-                $prep = $this->linePreparationService->prepareOrderLines($mergedItems, $data, $activeStoreId);
+                $prep = $this->linePreparationService->prepareOrderLines($mergedItems, $data, $activeStoreId, $userId);
                 $lines = $prep['lines'];
                 $subtotalAmount = $prep['subtotalAmount'];
+                $approvalRequiredItemDiscountSum = (float) $prep['approvalRequiredItemDiscountSum'];
                 $bomBreakdownByLineIndex = $prep['bomBreakdownByLineIndex'];
                 $products = $prep['products'];
                 $lockedIngredients = $prep['lockedIngredients'];
@@ -272,10 +273,7 @@ class CheckoutOrderHandler
                         $baseForOrderDiscount = $discount->is_stackable ? max(0, $subtotalAmount - $totalItemDiscounts) : $subtotalAmount;
                         if ($discount->type === 'percentage') {
                             $calc = (int) round($baseForOrderDiscount * ($discount->value / 100));
-                            if ($discount->max_discount_amount) {
-                                $calc = min($calc, $discount->max_discount_amount);
-                            }
-                            $discountAmount = $calc;
+                            $discountAmount = $discount->max_discount_amount ? min($calc, $discount->max_discount_amount) : $calc;
                         } else {
                             $discountAmount = min((int) $baseForOrderDiscount, $discount->value);
                         }
@@ -284,13 +282,15 @@ class CheckoutOrderHandler
                     }
                 }
 
-                $manualDiscount = max(0, (int) ($data['manual_discount_amount'] ?? 0));
+                $manualDiscount = (int) ($data['manual_discount_amount'] ?? 0);
+                app(\App\Modules\Pricing\Services\DiscountApprovalService::class)->validateOrderDiscountsAndApprovals(
+                    (float) $subtotalAmount, $manualDiscount, $approvalRequiredItemDiscountSum,
+                    ! empty($data['approval_id']) ? (int) $data['approval_id'] : null, (int) $tenantId, $activeStoreId, $userId
+                );
                 if ($manualDiscount > 0) {
-                    if ($discount !== null && ! $discount->is_stackable) {
-                        $discountAmount = min((int) $subtotalAmount, max($discountAmount, $manualDiscount));
-                    } else {
-                        $discountAmount = min((int) $subtotalAmount, $discountAmount + $manualDiscount);
-                    }
+                    $discountAmount = ($discount !== null && ! $discount->is_stackable)
+                        ? min((int) $subtotalAmount, max($discountAmount, $manualDiscount))
+                        : min((int) $subtotalAmount, $discountAmount + $manualDiscount);
                 }
 
                 $lineNets = array_column($lines, 'effective_subtotal');
@@ -568,13 +568,8 @@ class CheckoutOrderHandler
                     }
 
                     $snapParams = $this->onlinePaymentHandler->buildSnapParams(
-                        order: $order,
-                        subtotalAmount: $subtotalAmount,
-                        discountAmount: (float) $discountAmount,
-                        taxAmount: $taxAmount,
-                        totalAmount: $totalAmount,
-                        dominantPaymentMethod: (string) $dominantPaymentMethod,
-                        customerId: ! empty($data['customer_id']) ? (int) $data['customer_id'] : null
+                        $order, $subtotalAmount, (float) $discountAmount, $taxAmount, $totalAmount,
+                        (string) $dominantPaymentMethod, ! empty($data['customer_id']) ? (int) $data['customer_id'] : null
                     );
 
                     $capturedOrder = $order;
@@ -588,10 +583,7 @@ class CheckoutOrderHandler
                             try {
                                 $this->onlinePaymentHandler->updateStatusFromMidtransNotification($capturedOrder->order_code, 'cancel', null);
                             } catch (\Throwable $inner) {
-                                Log::critical('[SNAP] gagal membatalkan order setelah Snap gagal', [
-                                    'order' => $capturedOrder->order_code,
-                                    'error' => $inner->getMessage(),
-                                ]);
+                                Log::critical('[SNAP] gagal membatalkan order setelah Snap gagal', ['order' => $capturedOrder->order_code, 'error' => $inner->getMessage()]);
                             }
                         }
                     };

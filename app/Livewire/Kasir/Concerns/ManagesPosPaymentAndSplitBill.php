@@ -320,11 +320,13 @@ trait ManagesPosPaymentAndSplitBill
                         'product_variant_id' => $raw['product_variant_id'] ?? null,
                         'uom_id' => isset($raw['uom_id']) ? (int) $raw['uom_id'] : null,
                         'custom_price' => isset($raw['custom_price']) ? (float) $raw['custom_price'] : null,
+                        'scale_barcode' => $raw['scale_barcode'] ?? null,
                         'quantity' => $line['qty'],
                         'extra_price' => $line['order_price'] - $product->product_price,
                         'options' => $line['options'],
                         'notes' => $line['notes'] ?? null,
                         'item_discount_amount' => (int) ($raw['item_discount_amount'] ?? 0),
+                        'item_approval_id' => $raw['item_approval_id'] ?? null,
                     ];
                 }
 

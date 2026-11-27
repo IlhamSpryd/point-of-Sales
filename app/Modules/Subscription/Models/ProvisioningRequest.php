@@ -50,6 +50,7 @@ class ProvisioningRequest extends Model
         'result_tenant_id',
         'result_user_id',
         'plan_id',
+        'purchased_billing_cycle',
         'expected_amount',
         'notes',
         'error_message',

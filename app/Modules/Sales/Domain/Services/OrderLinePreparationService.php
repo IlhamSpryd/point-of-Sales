@@ -31,19 +31,21 @@ class OrderLinePreparationService
      * @return array{
      *     lines: array<int, array<string, mixed>>,
      *     subtotalAmount: float,
+     *     approvalRequiredItemDiscountSum: float,
      *     ingredientRequirements: array<int, string>,
      *     bomBreakdownByLineIndex: array<int, list<array{ingredient_id: int, qty: string}>>,
      *     products: Collection<int, Product>,
      *     lockedIngredients: Collection<int, Ingredient>
      * }
      */
-    public function prepareOrderLines(array $mergedItems, array $data, ?int $activeStoreId): array
+    public function prepareOrderLines(array $mergedItems, array $data, ?int $activeStoreId, ?int $userId = null): array
     {
         $tenantContext = app(TenantContext::class);
         $lines = [];
         $ingredientRequirements = [];
         $bomBreakdownByLineIndex = [];
         $subtotalAmount = 0.0;
+        $approvalRequiredItemDiscountSum = 0.0;
 
         $productIds = array_unique(array_map('intval', array_column($mergedItems, 'product_id')));
         sort($productIds);
@@ -74,6 +76,22 @@ class OrderLinePreparationService
             : collect();
 
         $catalogPriceResolver = app(CatalogPriceResolverService::class);
+        $discountApprovalService = app(\App\Modules\Pricing\Services\DiscountApprovalService::class);
+        $resolvedUserId = $userId ?? (isset($data['user_id']) ? (int) $data['user_id'] : null);
+        $firstProduct = $products->first();
+        $firstTenantId = $firstProduct !== null ? $firstProduct->tenant_id : $tenantContext->getTenantId();
+        $actor = null;
+        if ($resolvedUserId !== null) {
+            $actor = $firstTenantId !== null
+                ? $tenantContext->runAs((int) $firstTenantId, $activeStoreId, fn () => \App\Modules\Organization\Models\User::with('role')->where('tenant_id', (int) $firstTenantId)->find($resolvedUserId))
+                : \App\Modules\Organization\Models\User::with('role')->find($resolvedUserId);
+        }
+        if ($actor === null) {
+            $authUser = auth()->user();
+            if ($authUser instanceof \App\Modules\Organization\Models\User) {
+                $actor = $authUser;
+            }
+        }
 
         foreach ($mergedItems as $item) {
             $product = $products->firstWhere('id', (int) $item['product_id']);
@@ -146,8 +164,20 @@ class OrderLinePreparationService
                 }
             }
 
-            $variantId = $item['product_variant_id'] ?? null;
-            $customPrice = isset($item['custom_price']) ? (float) $item['custom_price'] : null;
+            $variantId = isset($item['product_variant_id']) && $item['product_variant_id'] !== '' ? (int) $item['product_variant_id'] : null;
+            $uomId = isset($item['uom_id']) && $item['uom_id'] !== '' ? (int) $item['uom_id'] : null;
+            $customPrice = $this->resolveValidatedCustomPrice(
+                product: $product,
+                item: $item,
+                variantId: $variantId,
+                uomId: $uomId,
+                activeStoreId: $activeStoreId,
+                customerId: isset($data['customer_id']) ? (int) $data['customer_id'] : null,
+                channel: (string) ($data['origin_channel'] ?? 'pos_cashier'),
+                actor: $actor,
+                catalogPriceResolver: $catalogPriceResolver
+            );
+
             $baseProductPrice = $catalogPriceResolver->resolvePrice(
                 product: $product,
                 storeId: $activeStoreId,
@@ -156,7 +186,7 @@ class OrderLinePreparationService
                 customerId: $data['customer_id'] ?? null,
                 loyaltyTierId: null,
                 channel: $data['origin_channel'] ?? 'pos_cashier',
-                uomId: isset($item['uom_id']) ? (int) $item['uom_id'] : null,
+                uomId: $uomId,
                 customPrice: $customPrice
             );
             $unitPrice = $baseProductPrice + $serverExtraPrice;
@@ -165,18 +195,60 @@ class OrderLinePreparationService
 
             $lineIndex = count($lines);
 
-            $itemDiscountAmount = (float) ($item['item_discount_amount'] ?? 0);
-            if (! empty($item['item_discount_id']) && $itemDiscountAmount <= 0) {
-                $itemDiscount = Discount::find((int) $item['item_discount_id']);
-                if ($itemDiscount && $itemDiscount->is_active) {
-                    if ($itemDiscount->type === 'percentage') {
-                        $calc = (int) round($itemSubtotal * ($itemDiscount->value / 100));
-                        if ($itemDiscount->max_discount_amount) {
-                            $calc = min($calc, $itemDiscount->max_discount_amount);
-                        }
-                        $itemDiscountAmount = $calc;
+            $itemDiscountAmount = 0.0;
+            if (! empty($item['item_discount_id'])) {
+                $itemDiscount = Discount::where('tenant_id', $product->tenant_id)->find((int) $item['item_discount_id']);
+                $now = now();
+                if (! $itemDiscount || ! $itemDiscount->is_active
+                    || ($itemDiscount->valid_from && $now->lt($itemDiscount->valid_from))
+                    || ($itemDiscount->valid_until && $now->gt($itemDiscount->valid_until))) {
+                    throw ValidationException::withMessages([
+                        'items' => 'Selected item discount voucher is invalid or expired.',
+                    ]);
+                }
+
+                if ($itemDiscount->type === 'percentage') {
+                    $calc = (int) round($itemSubtotal * ($itemDiscount->value / 100));
+                    if ($itemDiscount->max_discount_amount) {
+                        $calc = min($calc, $itemDiscount->max_discount_amount);
+                    }
+                    $itemDiscountAmount = (float) min((int) $itemSubtotal, $calc);
+                } else {
+                    $itemDiscountAmount = (float) min((int) $itemSubtotal, $itemDiscount->value);
+                }
+            } elseif (isset($item['item_discount_amount']) && (float) $item['item_discount_amount'] !== 0.0) {
+                $itemDiscountAmount = (float) $item['item_discount_amount'];
+                if ($itemDiscountAmount < 0) {
+                    throw ValidationException::withMessages([
+                        'items' => 'Diskon item tidak boleh bernilai negatif.',
+                    ]);
+                }
+
+                if ($itemDiscountAmount > $itemSubtotal) {
+                    throw ValidationException::withMessages([
+                        'items' => "Diskon item untuk '{$product->product_name}' tidak boleh melebihi subtotal item.",
+                    ]);
+                }
+
+                $itemPercent = $itemSubtotal > 0 ? (($itemDiscountAmount / $itemSubtotal) * 100.0) : 100.0;
+                if ($discountApprovalService->evaluateThreshold($itemPercent, $itemDiscountAmount, $itemSubtotal)) {
+                    $itemApprovalId = ! empty($item['item_approval_id']) ? (int) $item['item_approval_id'] : (! empty($data['approval_id']) ? (int) $data['approval_id'] : null);
+                    if ($itemApprovalId === null) {
+                        throw ValidationException::withMessages([
+                            'items' => "Diskon item untuk '{$product->product_name}' melebihi batas aman kasir dan memerlukan persetujuan Supervisor.",
+                        ]);
+                    }
+
+                    if (! empty($item['item_approval_id'])) {
+                        $discountApprovalService->assertValidApproval(
+                            approvalId: $itemApprovalId,
+                            tenantId: (int) $product->tenant_id,
+                            storeId: $activeStoreId,
+                            actorUserId: (int) ($actor !== null ? $actor->id : ($resolvedUserId ?? 0)),
+                            requestedAmount: $itemDiscountAmount
+                        );
                     } else {
-                        $itemDiscountAmount = min((int) $itemSubtotal, $itemDiscount->value);
+                        $approvalRequiredItemDiscountSum += $itemDiscountAmount;
                     }
                 }
             }
@@ -290,10 +362,107 @@ class OrderLinePreparationService
         return [
             'lines' => $lines,
             'subtotalAmount' => $subtotalAmount,
+            'approvalRequiredItemDiscountSum' => $approvalRequiredItemDiscountSum,
             'ingredientRequirements' => $ingredientRequirements,
             'bomBreakdownByLineIndex' => $bomBreakdownByLineIndex,
             'products' => $products,
             'lockedIngredients' => $lockedIngredients,
         ];
+    }
+
+    /**
+     * Validates custom_price in domain layer across UOM conversions, scale barcodes, and open-price permissions (P0-02).
+     *
+     * @param  array<string, mixed>  $item
+     */
+    private function resolveValidatedCustomPrice(
+        Product $product,
+        array $item,
+        ?int $variantId,
+        ?int $uomId,
+        ?int $activeStoreId,
+        ?int $customerId,
+        string $channel,
+        ?\App\Modules\Organization\Models\User $actor,
+        CatalogPriceResolverService $catalogPriceResolver
+    ): ?float {
+        if (! array_key_exists('custom_price', $item) || $item['custom_price'] === null || $item['custom_price'] === '') {
+            return null;
+        }
+
+        $customPrice = (float) $item['custom_price'];
+        if ($customPrice < 0) {
+            throw ValidationException::withMessages([
+                'items' => 'Harga kustom tidak boleh bernilai negatif.',
+            ]);
+        }
+
+        $variant = $variantId !== null
+            ? \App\Modules\Catalog\Models\ProductVariant::where('tenant_id', $product->tenant_id)->find($variantId)
+            : null;
+        $isOpenPrice = $variant !== null ? (bool) ($variant->is_open_price ?? $product->is_open_price ?? false) : (bool) ($product->is_open_price ?? false);
+
+        if (! $isOpenPrice && $uomId !== null && $product->base_uom_id && $uomId !== (int) $product->base_uom_id) {
+            try {
+                $factor = (float) app(\App\Modules\Catalog\Services\UnitConversionService::class)->convertBetweenUoms(
+                    (int) $product->tenant_id, $uomId, (int) $product->base_uom_id, 1, (int) $product->id, 6
+                );
+            } catch (\Throwable) {
+                $conversion = $product->unitConversions()->where('from_uom_id', $uomId)->first();
+                $factor = $conversion ? (float) $conversion->conversion_factor : 0.0;
+            }
+
+            if ($factor > 0) {
+                $catalogBase = $catalogPriceResolver->resolvePrice(
+                    $product, $activeStoreId, $variantId, $item['quantity'] ?? 1, $customerId, null, $channel, $uomId, null
+                );
+                $expectedUomPrice = (float) bcmul((string) $catalogBase, (string) $factor, 2);
+                if (abs($customPrice - $expectedUomPrice) <= 0.01) {
+                    return $expectedUomPrice;
+                }
+            }
+
+            throw ValidationException::withMessages(['items' => "Harga konversi UOM tidak valid untuk produk '{$product->product_name}'."]);
+        }
+
+        if (! $isOpenPrice && ! empty($item['scale_barcode'])) {
+            $parsed = app(\App\Modules\Catalog\Services\RetailBarcodeService::class)->parseScaleBarcode((string) $item['scale_barcode']);
+            $matchesProduct = $parsed !== null && (
+                $product->product_code === $parsed['item_code'] || str_starts_with((string) $product->barcode, $parsed['prefix'].$parsed['item_code'])
+            );
+
+            if ($parsed !== null && $matchesProduct) {
+                $basePrice = $parsed['prefix'] === '02'
+                    ? $catalogPriceResolver->resolvePrice($product, $activeStoreId, $variantId, 1, $customerId, null, $channel, null, null)
+                    : 0.0;
+                $expectedScalePrice = $parsed['prefix'] === '02'
+                    ? (float) bcmul((string) $parsed['weight_kg'], (string) $basePrice, 2)
+                    : (float) $parsed['embedded_price'];
+
+                if (abs($customPrice - $expectedScalePrice) <= 0.01) {
+                    return $expectedScalePrice;
+                }
+            }
+
+            throw ValidationException::withMessages(['items' => "Barcode timbangan tidak valid untuk produk '{$product->product_name}'."]);
+        }
+
+        if (! $isOpenPrice) {
+            throw ValidationException::withMessages(['items' => "Produk '{$product->product_name}' tidak mendukung harga manual (open price)."]);
+        }
+
+        $actorRole = $actor !== null ? $actor->role : null;
+        $hasOpenPricePermission = $actor !== null && (
+            $actor->hasPermission('pos.price.open_entry')
+            || ($actorRole !== null && ($actorRole->is_admin || in_array($actorRole->name, ['Owner', 'Superadmin'], true)))
+        );
+
+        if (! $hasOpenPricePermission) {
+            throw ValidationException::withMessages([
+                'items' => 'Anda tidak memiliki hak akses untuk memasukkan harga terbuka (open price).',
+            ]);
+        }
+
+        return $customPrice;
     }
 }

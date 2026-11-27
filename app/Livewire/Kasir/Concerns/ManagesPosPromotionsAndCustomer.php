@@ -33,6 +33,7 @@ trait ManagesPosPromotionsAndCustomer
 
     public ?int $selectedDiscountId = null;
 
+    #[Locked]
     public array $itemDiscounts = [];
 
     public bool $isManualDiscountModalOpen = false;
@@ -43,10 +44,13 @@ trait ManagesPosPromotionsAndCustomer
 
     public string $manualDiscountReason = '';
 
+    #[Locked]
     public int $appliedManualDiscount = 0;
 
+    #[Locked]
     public string $appliedManualDiscountReason = '';
 
+    #[Locked]
     public ?int $manualDiscountApprovalId = null;
 
     public ?string $voucherCode = null;
@@ -181,7 +185,24 @@ trait ManagesPosPromotionsAndCustomer
 
     public function setItemDiscount(int $indexOrProductId, int $discountAmount): void
     {
-        $discountAmount = max(0, $discountAmount);
+        if ($discountAmount < 0) {
+            $this->addError('cart', 'Item discount cannot be negative.');
+
+            return;
+        }
+
+        $matchingLine = collect($this->cartLines())->first(function ($line) use ($indexOrProductId) {
+            return ($line['index'] ?? null) === $indexOrProductId || ($line['product_id'] ?? null) === $indexOrProductId;
+        });
+        if ($matchingLine !== null) {
+            $maxLineDiscount = (int) floor((float) ($matchingLine['order_subtotal'] ?? 0));
+            if ($discountAmount > $maxLineDiscount) {
+                $this->addError('cart', 'Item discount cannot exceed line subtotal.');
+
+                return;
+            }
+        }
+
         $this->itemDiscounts[$indexOrProductId] = $discountAmount;
         if (isset($this->cart[$indexOrProductId])) {
             $this->cart[$indexOrProductId]['item_discount_amount'] = $discountAmount;

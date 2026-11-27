@@ -22,6 +22,7 @@ trait ManagesPosCartAndVariants
 {
     use ManagesPosVariantPicker;
 
+    #[Locked]
     public array $cart = [];
 
     #[Locked]
@@ -109,7 +110,7 @@ trait ManagesPosCartAndVariants
             $this->addVariantToCart($res['variant']);
             $this->dispatch('toast', message: $res['message'] ?? 'Produk ditambahkan.', type: 'success');
         } elseif ($res['action'] === 'scale' && isset($res['scaleProduct'], $res['scaleData'])) {
-            $this->addScaleProductToCart($res['scaleProduct'], $res['scaleData']);
+            $this->addScaleProductToCart($res['scaleProduct'], $res['scaleData'], $code);
             $this->dispatch('toast', message: $res['message'] ?? 'Produk timbangan ditambahkan.', type: 'success');
         } elseif ($res['action'] === 'picker' && isset($res['product'])) {
             $this->openModifierPicker($res['product']->id);
@@ -145,7 +146,7 @@ trait ManagesPosCartAndVariants
     /**
      * @param  array{is_scale: bool, prefix: string, item_code: string, weight_grams: int, weight_kg: numeric-string, embedded_price: int, check_digit: int}  $scaleData
      */
-    public function addScaleProductToCart(Product $product, array $scaleData): void
+    public function addScaleProductToCart(Product $product, array $scaleData, ?string $rawBarcode = null): void
     {
         if ($this->pendingOrderId !== null) {
             $this->addError('cart', 'Pending self-orders are read-only and cannot be modified.');
@@ -161,7 +162,15 @@ trait ManagesPosCartAndVariants
             $notes = 'Timbangan: Rp '.number_format($linePrice, 0, ',', '.');
         }
 
-        $this->cart[] = ['product_id' => $product->id, 'product_variant_id' => null, 'qty' => 1, 'modifier_ids' => [], 'notes' => $notes, 'custom_price' => $linePrice];
+        $this->cart[] = [
+            'product_id' => $product->id,
+            'product_variant_id' => null,
+            'qty' => 1,
+            'modifier_ids' => [],
+            'notes' => $notes,
+            'custom_price' => $linePrice,
+            'scale_barcode' => $rawBarcode,
+        ];
         $this->dispatch('pos-cart-state-changed', dirty: true);
     }
 

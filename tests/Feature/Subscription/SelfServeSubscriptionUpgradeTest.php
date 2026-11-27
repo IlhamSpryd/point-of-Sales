@@ -141,17 +141,17 @@ class SelfServeSubscriptionUpgradeTest extends TestCase
         ]);
     }
 
-    public function test_livewire_subscription_portal_supports_instant_self_serve_upgrade(): void
+    public function test_livewire_subscription_portal_initiates_payment_upgrade_without_self_activation(): void
     {
         Livewire::actingAs($this->user)
             ->test(SubscriptionPortal::class)
             ->set('selectedPlanId', $this->enterprisePlan->id)
-            ->call('confirmInstantUpgrade')
+            ->call('initiatePaymentUpgrade')
             ->assertHasNoErrors()
             ->assertSet('isUpgradeModalOpen', false)
-            ->assertSee('Paket berhasil diupgrade ke Enterprise Unlimited');
+            ->assertDispatched('subscription-payment-initiated');
 
-        $this->assertSame('enterprise-plan', $this->tenant->fresh()->subscription_plan);
+        $this->assertSame('starter-plan', $this->tenant->fresh()->subscription_plan);
     }
 
     public function test_cross_tenant_isolation_on_subscription_upgrade(): void

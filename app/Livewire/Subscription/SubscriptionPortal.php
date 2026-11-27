@@ -29,13 +29,25 @@ class SubscriptionPortal extends Component
 
     public string $billingCycle = 'monthly';
 
+    public ?string $pendingPaymentOrderId = null;
+
+    public ?string $pendingPaymentToken = null;
+
+    public function boot(): void
+    {
+        $this->authorize('subscription.manage');
+    }
+
     /**
      * Legacy manual sales contact request handler (preserved for backward compatibility).
      */
     public function requestPlanUpgrade(): void
     {
+        $this->authorize('subscription.manage');
+
         $this->validate([
             'selectedPlanId' => 'required|integer|exists:plans,id',
+            'billingCycle' => 'required|in:monthly,annual',
         ]);
 
         $tenantId = (int) app(TenantContext::class)->getTenantId();
@@ -43,7 +55,7 @@ class SubscriptionPortal extends Component
         $user = auth()->user();
 
         $idempotencyKey = 'upgrade:'.$tenantId.':'.$plan->id.':'.now()->timestamp.':'.Str::random(6);
-        $fingerprint = hash('sha256', 'upgrade|'.$tenantId.'|'.$plan->id.'|'.($user->email ?? 'unknown'));
+        $fingerprint = hash('sha256', 'upgrade|'.$tenantId.'|'.$plan->id.'|'.$this->billingCycle.'|'.($user->email ?? 'unknown'));
 
         ProvisioningRequest::create([
             'idempotency_key' => $idempotencyKey,
@@ -53,6 +65,7 @@ class SubscriptionPortal extends Component
             'result_tenant_id' => $tenantId,
             'result_user_id' => $user?->id,
             'plan_id' => $plan->id,
+            'purchased_billing_cycle' => $this->billingCycle,
             'notes' => "Permintaan upgrade paket ke {$plan->name} dari Subscription Portal",
             'correlation_id' => (string) Str::uuid(),
             'started_at' => now(),
@@ -65,23 +78,36 @@ class SubscriptionPortal extends Component
     }
 
     /**
-     * Self-serve automated plan upgrade with immediate entitlement activation (EXT-01, ADR-113).
+     * Initiates a Midtrans Snap checkout session without activating entitlements.
+     * Activation occurs exclusively via verified Midtrans webhook settlement or Transaction::status() reconciliation.
      */
-    public function confirmInstantUpgrade(SubscriptionBillingOrchestrator $orchestrator): void
+    public function initiatePaymentUpgrade(SubscriptionBillingOrchestrator $orchestrator): void
     {
+        $this->authorize('subscription.manage');
+
         $this->validate([
             'selectedPlanId' => 'required|integer|exists:plans,id',
+            'billingCycle' => 'required|in:monthly,annual',
         ]);
 
         $tenantId = (int) app(TenantContext::class)->getTenantId();
         $targetPlan = Plan::findOrFail($this->selectedPlanId);
 
         $upgradeOrder = $orchestrator->initiateUpgrade($tenantId, (int) $targetPlan->id, $this->billingCycle);
-        $orchestrator->activatePaidSubscription($tenantId, (int) $targetPlan->id, $upgradeOrder['order_id']);
 
+        $this->pendingPaymentOrderId = $upgradeOrder['order_id'];
+        $this->pendingPaymentToken = $upgradeOrder['payment_token'];
         $this->isUpgradeModalOpen = false;
 
-        session()->flash('message', "Paket berhasil diupgrade ke {$targetPlan->name}! Entitas limit dan kuota telah diperbarui seketika.");
+        $this->dispatch('subscription-payment-initiated', [
+            'orderId' => $upgradeOrder['order_id'],
+            'paymentToken' => $upgradeOrder['payment_token'],
+            'amountFormatted' => $upgradeOrder['amount_formatted'],
+            'planName' => $targetPlan->name,
+            'billingCycle' => $upgradeOrder['billing_cycle'],
+        ]);
+
+        session()->flash('message', "Sesi pembayaran #{$upgradeOrder['order_id']} ({$upgradeOrder['amount_formatted']}) telah dibuat. Selesaikan pembayaran di Midtrans untuk mengaktifkan paket {$targetPlan->name}.");
     }
 
     public function render(): View

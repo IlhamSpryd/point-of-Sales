@@ -127,6 +127,113 @@ class DiscountApprovalService
     }
 
     /**
+     * Validates order-level manual discount ceilings and Supervisor Approval records (P0-02).
+     *
+     * @throws ValidationException
+     */
+    public function validateOrderDiscountsAndApprovals(
+        float $subtotalAmount,
+        int $manualDiscount,
+        float $approvalRequiredItemDiscountSum,
+        ?int $approvalId,
+        int $tenantId,
+        ?int $storeId,
+        int $actorUserId
+    ): void {
+        if ($manualDiscount < 0) {
+            throw ValidationException::withMessages([
+                'manual_discount_amount' => 'Manual discount cannot be negative.',
+            ]);
+        }
+
+        if ($manualDiscount > $subtotalAmount) {
+            throw ValidationException::withMessages([
+                'manual_discount_amount' => 'Manual discount cannot exceed order subtotal.',
+            ]);
+        }
+
+        $manualDiscountNeedsApproval = false;
+        if ($manualDiscount > 0) {
+            $manualPercent = $subtotalAmount > 0 ? (($manualDiscount / $subtotalAmount) * 100.0) : 100.0;
+            $manualDiscountNeedsApproval = $this->evaluateThreshold($manualPercent, (float) $manualDiscount, $subtotalAmount);
+        }
+
+        $totalApprovalRequired = $approvalRequiredItemDiscountSum + ($manualDiscountNeedsApproval ? (float) $manualDiscount : 0.0);
+        if ($totalApprovalRequired > 0.0) {
+            if ($approvalId === null || $approvalId <= 0) {
+                throw ValidationException::withMessages([
+                    'approval_id' => 'Discount exceeds cashier safe threshold and requires Supervisor approval.',
+                ]);
+            }
+
+            $this->assertValidApproval($approvalId, $tenantId, $storeId, $actorUserId, $totalApprovalRequired);
+        } elseif ($approvalId !== null && $approvalId > 0) {
+            $this->assertValidApproval($approvalId, $tenantId, $storeId, $actorUserId, (float) $manualDiscount);
+        }
+    }
+
+    /**
+     * Validates an existing Supervisor Approval record before applying an over-threshold discount or override.
+     *
+     * @throws ValidationException
+     */
+    public function assertValidApproval(
+        int $approvalId,
+        int $tenantId,
+        ?int $storeId,
+        int $actorUserId,
+        float $requestedAmount,
+        string $expectedAction = Approval::ACTION_MANUAL_DISCOUNT
+    ): Approval {
+        /** @var Approval|null $approval */
+        $approval = $this->tenantContext->runAs($tenantId, $storeId, function () use ($tenantId, $approvalId) {
+            return Approval::query()
+                ->where('tenant_id', $tenantId)
+                ->where('id', $approvalId)
+                ->lockForUpdate()
+                ->first();
+        });
+
+        if (! $approval) {
+            throw ValidationException::withMessages([
+                'approval_id' => 'Supervisor approval record was not found or belongs to another tenant.',
+            ]);
+        }
+
+        if ($approval->status !== Approval::STATUS_APPROVED) {
+            throw ValidationException::withMessages([
+                'approval_id' => 'Supervisor approval token has already been used or is no longer active.',
+            ]);
+        }
+
+        if ($approval->action_code !== $expectedAction) {
+            throw ValidationException::withMessages([
+                'approval_id' => "Supervisor approval action mismatch (expected {$expectedAction}).",
+            ]);
+        }
+
+        if ($storeId !== null && (int) $approval->store_id > 0 && (int) $approval->store_id !== $storeId) {
+            throw ValidationException::withMessages([
+                'approval_id' => 'Supervisor approval is not valid for the active store branch.',
+            ]);
+        }
+
+        if ((int) $approval->approver_user_id === $actorUserId) {
+            throw ValidationException::withMessages([
+                'approval_id' => 'Self-approval is prohibited. Cashiers cannot approve their own discounts.',
+            ]);
+        }
+
+        if (bccomp((string) $approval->amount, number_format($requestedAmount, 2, '.', ''), 2) < 0) {
+            throw ValidationException::withMessages([
+                'approval_id' => 'Discount amount exceeds the Supervisor approved limit.',
+            ]);
+        }
+
+        return $approval;
+    }
+
+    /**
      * Mengonsumsi token persetujuan saat transaksi selesai (atomic consumption).
      *
      * @throws DomainException
