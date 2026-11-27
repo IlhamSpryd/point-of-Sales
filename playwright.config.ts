@@ -19,7 +19,12 @@ export default defineConfig({
     },
     projects: [
         {
+            name: 'setup',
+            testMatch: /.*\.setup\.ts/,
+        },
+        {
             name: 'Desktop 14-inch Light',
+            dependencies: ['setup'],
             use: {
                 viewport: { width: 1366, height: 768 },
                 colorScheme: 'light',
@@ -27,6 +32,7 @@ export default defineConfig({
         },
         {
             name: 'Desktop 14-inch Dark',
+            dependencies: ['setup'],
             use: {
                 viewport: { width: 1366, height: 768 },
                 colorScheme: 'dark',
@@ -34,6 +40,7 @@ export default defineConfig({
         },
         {
             name: 'Tablet POS (iPad)',
+            dependencies: ['setup'],
             use: {
                 viewport: { width: 1024, height: 768 },
                 colorScheme: 'light',

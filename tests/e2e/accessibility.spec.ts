@@ -117,7 +117,7 @@ test.describe('Apeiron Accessibility & Interaction Suite', () => {
         await page.goto('/login');
         await page.waitForLoadState('networkidle');
         await page.fill('#email', 'admin@pos.test');
-        await page.fill('#password', '12345678');
+        await page.fill('#password', process.env.E2E_PASSWORD || 'password123');
         await page.click('button[type="submit"]');
 
         // Wait for redirect to dashboard
@@ -207,7 +207,7 @@ test.describe('Apeiron Accessibility & Interaction Suite', () => {
         await page.goto('/login');
         await page.waitForLoadState('networkidle');
         await page.fill('#email', 'admin@pos.test');
-        await page.fill('#password', '12345678');
+        await page.fill('#password', process.env.E2E_PASSWORD || 'password123');
         await page.click('button[type="submit"]');
         await page.waitForURL(/.*dashboard.*/i);
         await page.waitForLoadState('networkidle');
@@ -383,7 +383,7 @@ test.describe('Apeiron Accessibility & Interaction Suite', () => {
         await page.goto('/login');
         await page.waitForLoadState('networkidle');
         await page.fill('#email', 'admin@pos.test');
-        await page.fill('#password', '12345678');
+        await page.fill('#password', process.env.E2E_PASSWORD || 'password123');
         await page.click('button[type="submit"]');
         await page.waitForURL(/.*dashboard.*/i);
         await page.waitForLoadState('networkidle');
@@ -498,7 +498,7 @@ test.describe('Apeiron Accessibility & Interaction Suite', () => {
         await page.goto('/login');
         await page.waitForLoadState('networkidle');
         await page.fill('#email', 'admin@pos.test');
-        await page.fill('#password', '12345678');
+        await page.fill('#password', process.env.E2E_PASSWORD || 'password123');
         await page.click('button[type="submit"]');
         await page.waitForURL(/.*dashboard.*/i);
         await page.waitForLoadState('networkidle');

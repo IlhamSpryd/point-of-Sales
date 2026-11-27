@@ -34,3 +34,4 @@ ngrok
 /.agents/teamwork/
 /test-results/
 /playwright-report/
+/playwright/.auth/
