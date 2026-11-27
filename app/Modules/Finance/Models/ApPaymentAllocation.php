@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Finance\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Finance\Enums\ApPaymentAllocationStatusEnum;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Purchasing\Models\SupplierInvoice;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
@@ -30,6 +29,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ApPaymentAllocation extends Model
 {
     use AssignsTenant;
+    use HasStoreRelation;
     use ScopedToTenant;
 
     protected $table = 'ap_payment_allocations';
@@ -52,22 +52,6 @@ class ApPaymentAllocation extends Model
             'allocated_amount' => 'string',
             'discount_taken_amount' => 'string',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

@@ -88,6 +88,7 @@ class UserService
             // Link to existing employee if email matches and not yet linked,
             // or auto-provision baseline Employee profile to prevent orphaned user accounts
             $tenantId = (int) $user->tenant_id;
+            // @tenant-bypass: superadmin
             $existingEmployee = Employee::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->where(function ($q) use ($user) {
@@ -102,6 +103,7 @@ class UserService
                     $existingEmployee->save();
                 }
             } else {
+                // @tenant-bypass: superadmin
                 $defaultDept = Department::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
                     ->first();
@@ -117,6 +119,7 @@ class UserService
 
                 $roleName = $user->role ? $user->role->name : 'Staff';
                 $titleCode = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $roleName) ?: 'STAFF', 0, 16));
+                // @tenant-bypass: superadmin
                 $jobTitle = JobTitle::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
                     ->where('title_code', $titleCode)
@@ -283,6 +286,7 @@ class UserService
             $storeIds = $activeStoreId ? [(int) $activeStoreId] : [];
         }
 
+        // @tenant-bypass: superadmin
         $validStoreIds = Store::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereIn('id', array_map('intval', $storeIds))

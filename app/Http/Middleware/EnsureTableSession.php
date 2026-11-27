@@ -39,6 +39,7 @@ class EnsureTableSession
         }
 
         // Validasi meja masih aktif di SETIAP request
+        // @tenant-bypass: auth_lookup
         $table = Table::withoutGlobalScopes()
             ->where('id', $tableId)
             ->whereNull('deleted_at')
@@ -116,6 +117,7 @@ class EnsureTableSession
             abort(403, 'Ordering service is currently unavailable or suspended.');
         }
 
+        // @tenant-bypass: auth_lookup
         $store = Store::withoutTenantScope()
             ->where('tenant_id', $table->tenant_id)
             ->where('id', $table->store_id)

@@ -8,12 +8,12 @@ use App\Core\Context\TenantContext;
 use App\Modules\Finance\Services\FinancialOutboxDispatcherService;
 use App\Modules\Organization\Models\Device;
 use App\Modules\Organization\Models\User;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Organization\Services\CashierPinService;
 use App\Modules\Sales\Exceptions\ShiftClosedException;
 use App\Modules\Sales\Models\CashDrawerMovement;
 use App\Modules\Sales\Models\Payment;
 use App\Modules\Sales\Models\Shift;
+use App\Platform\Audit\AuditLoggerInterface;
 use DomainException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +23,7 @@ use Illuminate\Validation\ValidationException;
 class ShiftManagementService
 {
     public function __construct(
-        protected AuditTrailService $auditTrail,
+        protected AuditLoggerInterface $auditTrail,
         protected CashierPinService $cashierPinService,
         protected TenantContext $tenantContext,
         protected FinancialOutboxDispatcherService $financialOutboxDispatcher
@@ -42,7 +42,7 @@ class ShiftManagementService
         ?int $deviceId = null,
         ?string $cashierPin = null
     ): Shift {
-        $user = User::withoutGlobalScopes()->find($userId);
+        $user = app(TenantContext::class)->runAs($tenantId, $storeId, fn () => User::query()->find($userId));
         if (! $user) {
             throw new DomainException('Cashier user not found.');
         }
@@ -66,9 +66,9 @@ class ShiftManagementService
             throw new DomainException('Opening balance cannot be negative.');
         }
 
-        return DB::transaction(function () use ($tenantId, $storeId, $user, $openingBalance, $deviceId) {
+        return app(TenantContext::class)->runAs($tenantId, $storeId, fn () => DB::transaction(function () use ($tenantId, $storeId, $user, $openingBalance, $deviceId) {
             // Pemeriksaan shift aktif saat ini untuk kasir pada cabang ini
-            $existingOpenShift = Shift::withoutGlobalScopes()
+            $existingOpenShift = Shift::allStores()
                 ->where('tenant_id', $tenantId)
                 ->where('store_id', $storeId)
                 ->where('status', 'open')
@@ -87,7 +87,7 @@ class ShiftManagementService
 
             // Jika device_id diberikan, pastikan valid dan milik tenant & store yang sama
             if ($deviceId !== null) {
-                $device = Device::withoutGlobalScopes()->where('id', $deviceId)->first();
+                $device = Device::allStores()->where('id', $deviceId)->first();
                 if (! $device || (int) $device->tenant_id !== $tenantId || (int) $device->store_id !== $storeId) {
                     throw new DomainException('Cashier terminal is invalid or not registered to this branch.');
                 }
@@ -122,7 +122,7 @@ class ShiftManagementService
             );
 
             return $shift;
-        });
+        }));
     }
 
     /**
@@ -152,10 +152,10 @@ class ShiftManagementService
             throw new DomainException('Invalid cash movement type. Must be cash_in or cash_out.');
         }
 
-        return DB::transaction(function () use (
+        return app(TenantContext::class)->runAs($tenantId, $storeId, fn () => DB::transaction(function () use (
             $tenantId, $storeId, $shiftId, $userId, $type, $cleanAmount, $reason, $supervisorPin, $supervisorUserId, $category
         ) {
-            $shift = Shift::withoutGlobalScopes()
+            $shift = Shift::allStores()
                 ->where('tenant_id', $tenantId)
                 ->where('store_id', $storeId)
                 ->where('id', $shiftId)
@@ -174,7 +174,7 @@ class ShiftManagementService
 
             if ($supervisorPin !== null) {
                 if ($supervisorUserId) {
-                    $supervisor = User::withoutGlobalScopes()
+                    $supervisor = User::query()
                         ->where('tenant_id', $tenantId)
                         ->find($supervisorUserId);
                     if ($supervisor && $this->cashierPinService->verifyPin($supervisor, $supervisorPin, $shift)) {
@@ -184,7 +184,7 @@ class ShiftManagementService
                         throw ValidationException::withMessages(['supervisor_pin' => 'Invalid supervisor PIN.']);
                     }
                 } else {
-                    $allSupervisors = User::withoutGlobalScopes()
+                    $allSupervisors = User::query()
                         ->where('tenant_id', $tenantId)
                         ->whereHas('role', function ($q) {
                             $q->whereIn('name', ['Supervisor', 'Manager', 'Admin', 'Owner', 'Store Manager']);
@@ -249,7 +249,7 @@ class ShiftManagementService
             );
 
             return $movement;
-        });
+        }));
     }
 
     /**
@@ -278,10 +278,10 @@ class ShiftManagementService
 
         $toleranceAmount = (float) $tolerance;
 
-        return DB::transaction(function () use (
+        return app(TenantContext::class)->runAs($tenantId, $storeId, fn () => DB::transaction(function () use (
             $tenantId, $storeId, $shiftId, $userId, $counted, $notes, $supervisorPin, $toleranceAmount
         ) {
-            $shift = Shift::withoutGlobalScopes()
+            $shift = Shift::allStores()
                 ->where('tenant_id', $tenantId)
                 ->where('store_id', $storeId)
                 ->where('id', $shiftId)
@@ -314,7 +314,7 @@ class ShiftManagementService
                 }
 
                 // Verifikasi PIN supervisor
-                $allSupervisors = User::withoutGlobalScopes()
+                $allSupervisors = User::query()
                     ->where('tenant_id', $tenantId)
                     ->whereHas('role', function ($q) {
                         $q->whereIn('name', ['Supervisor', 'Manager', 'Admin', 'Owner', 'Store Manager']);
@@ -388,7 +388,7 @@ class ShiftManagementService
                 'cash_difference' => $discrepancy,
                 'is_within_tolerance' => $isWithinTolerance,
             ];
-        });
+        }));
     }
 
     /**
@@ -396,7 +396,7 @@ class ShiftManagementService
      */
     public function getActiveShift(int $tenantId, int $storeId, int $userId): ?Shift
     {
-        return Shift::withoutGlobalScopes()
+        return Shift::allStores()
             ->where('tenant_id', $tenantId)
             ->where('store_id', $storeId)
             ->where('status', 'open')

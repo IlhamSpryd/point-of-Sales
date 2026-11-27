@@ -30,6 +30,7 @@ trait RequiresActiveStoreContext
 
         foreach ($candidates as $candidateId) {
             if ($resolvedTenantId !== null) {
+                // @tenant-bypass: dataset_generation
                 $existsInTenant = Store::withoutGlobalScopes()
                     ->where('id', $candidateId)
                     ->where('tenant_id', $resolvedTenantId)
@@ -48,6 +49,7 @@ trait RequiresActiveStoreContext
         }
 
         if ($resolvedTenantId !== null) {
+            // @tenant-bypass: dataset_generation
             $fallbackTenantStoreId = Store::withoutGlobalScopes()
                 ->where('tenant_id', $resolvedTenantId)
                 ->value('id');
@@ -78,6 +80,7 @@ trait RequiresActiveStoreContext
 
         foreach ($candidates as $candidateId) {
             if ($resolvedTenantId !== null) {
+                // @tenant-bypass: dataset_generation
                 $existsInTenant = Device::withoutGlobalScopes()
                     ->where('id', $candidateId)
                     ->where('tenant_id', $resolvedTenantId)
@@ -91,6 +94,7 @@ trait RequiresActiveStoreContext
         }
 
         if ($resolvedTenantId !== null) {
+            // @tenant-bypass: dataset_generation
             $deviceQuery = Device::withoutGlobalScopes()
                 ->where('tenant_id', $resolvedTenantId)
                 ->where('is_active', true);

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Purchasing\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
 use App\Enums\PurchaseReturnStatusEnum;
-use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -43,6 +43,7 @@ use Illuminate\Support\Carbon;
 class PurchaseReturn extends Model
 {
     use AssignsTenant;
+    use HasStoreRelation;
     use ScopedToTenant;
 
     protected $table = 'purchase_returns';
@@ -74,14 +75,6 @@ class PurchaseReturn extends Model
         'returned_at' => 'datetime',
         'posted_at' => 'datetime',
     ];
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class, 'store_id');
-    }
 
     /**
      * @return BelongsTo<Supplier, $this>

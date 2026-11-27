@@ -6,7 +6,6 @@ namespace App\Modules\Workforce\Models;
 
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Workforce\Enums\SalaryComponentTypeEnum;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
@@ -25,7 +24,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $notes
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
- * @property-read Tenant|null $tenant
  * @property-read PayrollRecord|null $payrollRecord
  * @property-read StatutoryRuleVersion|null $statutoryRuleVersion
  */
@@ -55,14 +53,6 @@ class PayrollItem extends Model
             'amount' => 'decimal:2',
             'is_taxable' => 'boolean',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
     /**

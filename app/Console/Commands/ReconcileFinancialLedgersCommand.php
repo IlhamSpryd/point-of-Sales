@@ -48,11 +48,13 @@ class ReconcileFinancialLedgersCommand extends Command
 
             if ($periodInput) {
                 if (is_numeric($periodInput)) {
+                    // @tenant-bypass: cross_tenant_reconciliation
                     $p = AccountingPeriod::withoutTenantScope()
                         ->where('tenant_id', $tenant->id)
                         ->where('id', (int) $periodInput)
                         ->first();
                 } else {
+                    // @tenant-bypass: cross_tenant_reconciliation
                     $p = AccountingPeriod::withoutTenantScope()
                         ->where('tenant_id', $tenant->id)
                         ->where('period_code', $periodInput)
@@ -67,6 +69,7 @@ class ReconcileFinancialLedgersCommand extends Command
                 }
                 $periods->push($p);
             } elseif ($allOpen) {
+                // @tenant-bypass: cross_tenant_reconciliation
                 $periods = AccountingPeriod::withoutTenantScope()
                     ->where('tenant_id', $tenant->id)
                     ->whereIn('status', ['OPEN', 'SOFT_CLOSED'])
@@ -75,6 +78,7 @@ class ReconcileFinancialLedgersCommand extends Command
             } else {
                 // Default: periode bulan berjalan
                 $currentPeriodCode = now()->format('Y-m');
+                // @tenant-bypass: cross_tenant_reconciliation
                 $p = AccountingPeriod::withoutTenantScope()
                     ->where('tenant_id', $tenant->id)
                     ->where('period_code', $currentPeriodCode)

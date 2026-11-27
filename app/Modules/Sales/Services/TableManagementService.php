@@ -6,9 +6,9 @@ namespace App\Modules\Sales\Services;
 
 use App\Core\Context\TenantContext;
 use App\Modules\Catalog\Models\Product;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\Table;
+use App\Platform\Audit\AuditLoggerInterface;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -16,7 +16,7 @@ use InvalidArgumentException;
 class TableManagementService
 {
     public function __construct(
-        protected AuditTrailService $auditTrail,
+        protected AuditLoggerInterface $auditTrail,
         protected TenantContext $tenantContext
     ) {}
 

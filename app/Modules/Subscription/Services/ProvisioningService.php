@@ -114,6 +114,7 @@ class ProvisioningService
 
         // 2. Email duplication check -> 409
         $normalizedEmail = EmailNormalizer::normalize($data['owner_email']);
+        // @tenant-bypass: platform_entitlement
         $emailOwner = $this->tenantContext->runWithoutTenant(function () use ($normalizedEmail) {
             return DB::table('users')
                 ->where('email_normalized', $normalizedEmail)
@@ -139,6 +140,7 @@ class ProvisioningService
             $attempts++;
 
             try {
+                // @tenant-bypass: platform_entitlement
                 $result = $this->tenantContext->runWithoutTenant(function () use ($data, $idempotencyKey, $fencingToken) {
                     return DB::transaction(function () use ($data, $idempotencyKey, $fencingToken) {
                         return $this->provisionWithinTransaction($data, $idempotencyKey, $fencingToken);
@@ -162,6 +164,7 @@ class ProvisioningService
                 return $this->responseHelper->pendingResponse();
             } catch (\Throwable $e) {
                 if ($e instanceof QueryException && DatabaseErrorClassifier::isDuplicateEntry($e)) {
+                    // @tenant-bypass: platform_entitlement
                     $emailConflict = $this->tenantContext->runWithoutTenant(
                         fn () => DB::table('users')
                             ->where('email_normalized', $normalizedEmail)

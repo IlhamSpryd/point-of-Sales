@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Finance\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Finance\Enums\ApPaymentStatusEnum;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use App\Modules\Purchasing\Models\Supplier;
 use Carbon\CarbonInterface;
@@ -51,6 +50,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ApPayment extends Model
 {
     use AssignsTenant;
+    use HasStoreRelation;
     use ScopedToTenant;
 
     protected $table = 'ap_payments';
@@ -100,22 +100,6 @@ class ApPayment extends Model
             'posted_at' => 'datetime',
             'voided_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

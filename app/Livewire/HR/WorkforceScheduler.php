@@ -39,7 +39,7 @@ class WorkforceScheduler extends Component
         $this->weekStartDate = now()->startOfWeek()->toDateString();
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
-        $defaultStore = Store::withoutGlobalScopes()
+        $defaultStore = Store::query()
             ->where('tenant_id', $tenantId)
             ->first();
 
@@ -78,7 +78,7 @@ class WorkforceScheduler extends Component
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
         /** @var ShiftTemplate|null $template */
-        $template = ShiftTemplate::withoutTenantScope()
+        $template = ShiftTemplate::query()
             ->where('tenant_id', $tenantId)
             ->where('id', $this->assignShiftTemplateId)
             ->first();
@@ -111,7 +111,7 @@ class WorkforceScheduler extends Component
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
         /** @var Collection<int, Store> $stores */
-        $stores = Store::withoutGlobalScopes()
+        $stores = Store::query()
             ->where('tenant_id', $tenantId)
             ->get();
 
@@ -122,7 +122,7 @@ class WorkforceScheduler extends Component
         }
 
         /** @var Collection<int, Employee> $employees */
-        $employees = Employee::withoutTenantScope()
+        $employees = Employee::query()
             ->where('tenant_id', $tenantId)
             ->whereIn('employment_status', [EmploymentStatusEnum::ACTIVE, EmploymentStatusEnum::ON_PROBATION])
             ->orderBy('full_name')
@@ -131,14 +131,14 @@ class WorkforceScheduler extends Component
         $endDate = $days[6]->toDateString();
 
         /** @var Collection<int, WorkSchedule> $schedules */
-        $schedules = WorkSchedule::withoutTenantScope()
+        $schedules = WorkSchedule::query()
             ->where('tenant_id', $tenantId)
             ->whereBetween('schedule_date', [$this->weekStartDate, $endDate])
             ->with(['shiftTemplate'])
             ->get();
 
         /** @var Collection<int, ShiftTemplate> $shiftTemplates */
-        $shiftTemplates = ShiftTemplate::withoutTenantScope()
+        $shiftTemplates = ShiftTemplate::query()
             ->where('tenant_id', $tenantId)
             ->where('is_active', true)
             ->get();

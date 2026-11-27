@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace App\Modules\Sales\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -27,6 +25,7 @@ class AccountingReceivableOutbox extends Model
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
+    use HasStoreRelation;
     use ScopedToTenant;
 
     protected $table = 'accounting_receivable_outboxes';
@@ -54,21 +53,5 @@ class AccountingReceivableOutbox extends Model
             'retry_count' => 'integer',
             'processed_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 }

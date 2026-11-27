@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Workforce\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Organization\Models\Approval;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Workforce\Enums\OvertimeDayTypeEnum;
 use App\Modules\Workforce\Enums\OvertimeStatusEnum;
 use Carbon\CarbonInterface;
@@ -34,8 +33,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property OvertimeStatusEnum $status
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
- * @property-read Tenant|null $tenant
- * @property-read Store|null $store
  * @property-read Employee|null $employee
  * @property-read AttendanceRecord|null $attendanceRecord
  * @property-read Approval|null $approval
@@ -43,6 +40,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class OvertimeRecord extends Model
 {
     use AssignsTenant;
+    use HasStoreRelation;
     use ScopedToTenant;
 
     protected $table = 'overtime_records';
@@ -77,22 +75,6 @@ class OvertimeRecord extends Model
             'calculated_amount' => 'decimal:2',
             'status' => OvertimeStatusEnum::class,
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class, 'tenant_id');
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class, 'store_id');
     }
 
     /**

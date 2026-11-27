@@ -71,6 +71,7 @@ class OwnershipTransferService
 
             // 2. Actor row (mencegah perubahan status/role aktor selama transfer berjalan)
             /** @var User|null $lockedActor */
+            // @tenant-bypass: superadmin
             $lockedActor = User::withoutTenantScope()
                 ->withTrashed()
                 ->where('id', $actor->id)
@@ -82,6 +83,7 @@ class OwnershipTransferService
 
             // 3. Candidate New Owner row (termasuk soft-deleted untuk verifikasi integritas status)
             /** @var User|null $lockedNewOwner */
+            // @tenant-bypass: superadmin
             $lockedNewOwner = User::withoutTenantScope()
                 ->withTrashed()
                 ->where('id', $newOwner->id)
@@ -99,6 +101,7 @@ class OwnershipTransferService
             $oldOwnerId = $lockedTenant->owner_user_id !== null ? (int) $lockedTenant->owner_user_id : null;
             $lockedOldOwner = null;
             if ($oldOwnerId !== null) {
+                // @tenant-bypass: superadmin
                 $lockedOldOwner = User::withoutTenantScope()
                     ->where('id', $oldOwnerId)
                     ->where('tenant_id', $lockedTenant->id)
@@ -127,6 +130,7 @@ class OwnershipTransferService
             }
 
             // 8. Resolusi dan Validasi Role Kanonikal ROL-OWNER
+            // @tenant-bypass: superadmin
             $ownerRole = Role::withoutTenantScope()
                 ->where('tenant_id', $lockedTenant->id)
                 ->where('role_code', 'ROL-OWNER')
@@ -146,6 +150,7 @@ class OwnershipTransferService
                 throw new OwnershipTransferException('Role target demosi tidak boleh ROL-OWNER.');
             }
 
+            // @tenant-bypass: superadmin
             $demoteRole = Role::withoutTenantScope()
                 ->where('tenant_id', $lockedTenant->id)
                 ->where('role_code', $demoteRoleCode)
@@ -165,6 +170,7 @@ class OwnershipTransferService
             $roleTransitions = [];
 
             // 10. Penegakan Invarian "Tepat Satu ROL-OWNER" terhadap Anomali Legacy
+            // @tenant-bypass: superadmin
             $legacyOtherOwners = User::withoutTenantScope()->where('tenant_id', $lockedTenant->id)
                 ->where('role_id', $ownerRole->id)
                 ->where('id', '!=', $lockedNewOwner->id)
@@ -213,6 +219,7 @@ class OwnershipTransferService
 
             // 11. Promosi New Owner ke Role ROL-OWNER
             $previousNewOwnerRole = $lockedNewOwner->role_id
+                // @tenant-bypass: superadmin
                 ? Role::withoutTenantScope()->where('id', $lockedNewOwner->role_id)->value('role_code')
                 : null;
 
@@ -231,6 +238,7 @@ class OwnershipTransferService
             $lockedTenant->save();
 
             // 13. Verifikasi Post-Condition Invarian: Tepat 1 User Aktif dengan ROL-OWNER
+            // @tenant-bypass: superadmin
             $finalOwnersCount = User::withoutTenantScope()->where('tenant_id', $lockedTenant->id)
                 ->where('role_id', $ownerRole->id)
                 ->whereNull('deleted_at')
@@ -270,6 +278,7 @@ class OwnershipTransferService
 
         // 2. Resolusi Role Aktor secara Fail-Closed dari Database
         $actorRole = $lockedActor->role_id
+            // @tenant-bypass: superadmin
             ? Role::withoutTenantScope()->where('id', $lockedActor->role_id)->whereNull('deleted_at')->first()
             : null;
 
@@ -357,6 +366,7 @@ class OwnershipTransferService
         }
 
         $actorRole = $actor->role_id
+            // @tenant-bypass: superadmin
             ? Role::withoutTenantScope()->where('id', $actor->role_id)->first()
             : null;
 
@@ -365,6 +375,7 @@ class OwnershipTransferService
         $storeResolutionStrategy = 'none';
 
         if (! empty($options['store_id'])) {
+            // @tenant-bypass: superadmin
             $explicitStore = Store::withoutTenantScope()->where('tenant_id', $tenant->id)->where('id', $options['store_id'])->first();
             if (! $explicitStore) {
                 throw new OwnershipTransferException("store_id {$options['store_id']} tidak valid untuk tenant {$tenant->id}.");
@@ -373,6 +384,7 @@ class OwnershipTransferService
             $storeResolutionStrategy = 'explicit_option';
         } elseif (app(TenantContext::class)->getStoreId() !== null) {
             $contextStoreId = app(TenantContext::class)->getStoreId();
+            // @tenant-bypass: superadmin
             $contextStore = Store::withoutTenantScope()->where('tenant_id', $tenant->id)->where('id', $contextStoreId)->first();
             if ($contextStore) {
                 $resolvedStoreId = $contextStore->id;
@@ -389,6 +401,7 @@ class OwnershipTransferService
         }
 
         if ($resolvedStoreId === null) {
+            // @tenant-bypass: superadmin
             $primaryStore = Store::withoutTenantScope()->where('tenant_id', $tenant->id)->orderBy('id')->first();
             if ($primaryStore) {
                 $resolvedStoreId = $primaryStore->id;

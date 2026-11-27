@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Pricing\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Customers\Models\Customer;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Pricing\Enums\GiftCardStatusEnum;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -34,6 +33,7 @@ class GiftCard extends Model
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
+    use HasStoreRelation;
     use ScopedToTenant;
 
     protected $fillable = [
@@ -57,22 +57,6 @@ class GiftCard extends Model
             'current_balance' => 'decimal:2',
             'expires_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class, 'issued_store_id');
     }
 
     /**

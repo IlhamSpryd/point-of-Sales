@@ -33,6 +33,7 @@ class StoreUserInvitationRequest extends FormRequest
                 'integer',
                 Rule::exists('roles', 'id')->where('tenant_id', $tenantId),
                 function (string $attribute, mixed $value, \Closure $fail) use ($tenantId) {
+                    // @tenant-bypass: auth_lookup
                     $role = Role::withoutTenantScope()->where('id', $value)->where('tenant_id', $tenantId)->first();
                     if ($role && strtolower($role->name) === 'owner') {
                         $fail('Tidak dapat mengundang staf dengan peran Owner.');

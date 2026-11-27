@@ -12,9 +12,9 @@ use App\Modules\Catalog\Models\Product;
 use App\Modules\Inventory\Models\Ingredient;
 use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\User;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Purchasing\Models\PurchaseRequest;
 use App\Modules\Purchasing\Models\PurchaseRequestLine;
+use App\Platform\Audit\AuditLoggerInterface;
 use App\Platform\Documents\DocumentSequenceService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +25,7 @@ class PurchaseRequestService
     public function __construct(
         protected DocumentSequenceService $sequenceService,
         protected PurchaseApprovalService $approvalService,
-        protected AuditTrailService $auditTrailService,
+        protected AuditLoggerInterface $auditTrailService,
         protected TenantContext $tenantContext
     ) {}
 

@@ -54,6 +54,7 @@ class CheckoutController extends Controller
         }
 
         $tenantId = app(TenantContext::class)->requireTenantId();
+        // @tenant-bypass: auth_lookup
         $table = Table::withoutGlobalScopes()
             ->where('id', $tableId)
             ->where('tenant_id', $tenantId)
@@ -141,6 +142,7 @@ class CheckoutController extends Controller
 
             // DOMAIN 1 ACCEPTANCE CRITERIA: Validasi status meja di server pada checkout menggunakan state terbaru database.
             // Mencegah perubahan status antara pemindaian QR dan checkout melewati kebijakan.
+            // @tenant-bypass: auth_lookup
             $table = Table::withoutGlobalScopes()
                 ->where('id', $tableId)
                 ->where('tenant_id', $tenantId)

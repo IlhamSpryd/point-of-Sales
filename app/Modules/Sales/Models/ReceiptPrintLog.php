@@ -9,7 +9,6 @@ use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToStore;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Organization\Models\Device;
-use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -65,14 +64,6 @@ class ReceiptPrintLog extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

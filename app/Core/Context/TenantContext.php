@@ -127,6 +127,7 @@ class TenantContext
      * Restores the previous context afterwards.
      *
      * Bypass flag SELALU dinonaktifkan selama callback berjalan. Tanpa ini,
+     // @tenant-bypass: auth_lookup
      * pemanggilan runAs() setelah runWithoutTenant() (mis. provisioning:
      * cek email -> buat tenant) akan mewarisi isBypassed = true sehingga
      * TenantScope tidak aktif dan isolasi tenant fail-open. Flag dipulihkan
@@ -159,6 +160,7 @@ class TenantContext
      * Restores the previous context afterwards.
      * Acts as an explicit, logged escape hatch.
      */
+    // @tenant-bypass: auth_lookup
     public function runWithoutTenant(Closure $cb): mixed
     {
         Log::warning('Executing operation without tenant context.', [

@@ -18,7 +18,6 @@ use App\Modules\Inventory\Models\StockMovement;
 use App\Modules\Organization\Models\Device;
 use App\Modules\Organization\Models\Role;
 use App\Modules\Organization\Models\User;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Organization\Services\CashierPinService;
 use App\Modules\Pricing\Enums\StoreCreditLedgerTypeEnum;
 use App\Modules\Pricing\Services\GiftCardService;
@@ -42,6 +41,7 @@ use App\Modules\Sales\Models\PaymentRefund;
 use App\Modules\Sales\Models\SalesCreditNote;
 use App\Modules\Sales\Models\SalesCreditNoteApplication;
 use App\Modules\Sales\Models\Shift;
+use App\Platform\Audit\AuditLoggerInterface;
 use App\Platform\Documents\DocumentSequenceService;
 use App\Platform\Money\Money;
 use Carbon\Carbon;
@@ -68,7 +68,7 @@ class ReturnRefundService
 {
     public function __construct(
         protected CashierPinService $pinService,
-        protected AuditTrailService $auditTrail,
+        protected AuditLoggerInterface $auditTrail,
         protected ?DocumentSequenceService $sequenceService = null
     ) {}
 
@@ -112,7 +112,7 @@ class ReturnRefundService
             $restockInventory
         ) {
             // 1. Cek Idempotensi
-            $existingReturn = OrderReturn::withoutGlobalScopes()
+            $existingReturn = OrderReturn::allStores()
                 ->where('tenant_id', $order->tenant_id)
                 ->where('idempotency_key', $idempotencyKey)
                 ->first();
@@ -122,7 +122,7 @@ class ReturnRefundService
             }
 
             // 2. Verifikasi PIN Supervisor / Manager
-            $actorUser = User::withoutGlobalScopes()->findOrFail($actorUserId);
+            $actorUser = User::query()->findOrFail($actorUserId);
             $approvedByUserId = $this->resolveApproverUserId($actorUser, $supervisorPin, $order);
 
             // 3. Eksekusi Atomik dengan Penguncian Baris Kanonis (INV-10)
@@ -140,14 +140,14 @@ class ReturnRefundService
                 $restockInventory
             ) {
                 // 3.1 Lock Order
-                $lockedOrder = Order::withoutGlobalScopes()
+                $lockedOrder = Order::allStores()
                     ->where('id', $order->id)
                     ->lockForUpdate()
                     ->firstOrFail();
 
                 // 3.2 Lock Payment rows (ORDER BY id ASC untuk cegah deadlock)
                 $paymentIds = collect($refundAllocations)->pluck('payment_id')->unique()->sort()->values()->all();
-                $lockedPayments = Payment::withoutGlobalScopes()
+                $lockedPayments = Payment::allStores()
                     ->whereIn('id', $paymentIds)
                     ->where('order_id', $lockedOrder->id)
                     ->orderBy('id', 'asc')
@@ -164,7 +164,7 @@ class ReturnRefundService
                     return $targetMethod === 'cash';
                 });
 
-                $lockedShift = Shift::withoutGlobalScopes()
+                $lockedShift = Shift::allStores()
                     ->where('tenant_id', $lockedOrder->tenant_id)
                     ->where('store_id', $lockedOrder->store_id)
                     ->where('id', $shiftId)
@@ -177,7 +177,7 @@ class ReturnRefundService
 
                 // 3.4 Lock Order Items & Products
                 $orderItemIds = collect($returnItemsWithDisposition)->pluck('order_item_id')->unique()->sort()->values()->all();
-                $lockedOrderItems = OrderItem::withoutGlobalScopes()
+                $lockedOrderItems = OrderItem::allStores()
                     ->whereIn('id', $orderItemIds)
                     ->where('order_id', $lockedOrder->id)
                     ->orderBy('id', 'asc')
@@ -246,7 +246,7 @@ class ReturnRefundService
                     }
 
                     // INV-08: SUM(quantity_returned) <= order_item.qty
-                    $alreadyReturnedQty = (int) OrderReturnItem::withoutGlobalScopes()
+                    $alreadyReturnedQty = (int) OrderReturnItem::allStores()
                         ->where('order_item_id', $orderItem->id)
                         ->sum('quantity_returned');
 
@@ -306,7 +306,7 @@ class ReturnRefundService
                     }
 
                     // INV-07: SUM(refund_amount) <= payment.amount
-                    $alreadyRefundedRaw = PaymentRefund::withoutGlobalScopes()
+                    $alreadyRefundedRaw = PaymentRefund::allStores()
                         ->where('payment_id', $payment->id)
                         ->whereNotIn('request_status', [PaymentRefund::REQUEST_FAILED, PaymentRefund::REQUEST_CANCELLED])
                         ->sum('amount');
@@ -327,7 +327,7 @@ class ReturnRefundService
                     }
 
                     $cardNumber = $payment->reference_number ?: ($alloc['card_number'] ?? null);
-                    if (($targetMethod === 'gift_card' || $targetMethod === PaymentMethod::GiftCard->value) && empty(trim((string) $cardNumber))) {
+                    if ($targetMethod === PaymentMethod::GiftCard->value && empty(trim((string) $cardNumber))) {
                         throw ValidationException::withMessages([
                             'card_number' => 'Gift card number is required for gift card refunds.',
                         ]);
@@ -504,7 +504,7 @@ class ReturnRefundService
 
                     // AC-3.3b: Refund ke Store Credit (Tender / Reversal)
                     if ($targetMethod === 'store_credit' || $targetMethod === PaymentMethod::StoreCredit->value) {
-                        $cust = Customer::withoutGlobalScopes()->find($lockedOrder->customer_id);
+                        $cust = Customer::query()->find($lockedOrder->customer_id);
                         if (! $cust) {
                             throw new DomainException('Customer must be registered to receive refund as Store Credit.');
                         }
@@ -580,7 +580,7 @@ class ReturnRefundService
                         $remainingEarned = max(0, $earnedPoints - $alreadyReversed);
 
                         if ($remainingEarned > 0) {
-                            $customer = Customer::withoutGlobalScopes()->find($lockedOrder->customer_id);
+                            $customer = Customer::query()->find($lockedOrder->customer_id);
                             if ($customer) {
                                 $pointsToReverse = 0;
                                 if ($returnType === OrderReturn::TYPE_FULL) {
@@ -662,7 +662,7 @@ class ReturnRefundService
 
         return $tenantContext->runAs($refund->tenant_id, $refund->store_id, function () use ($refund) {
             return DB::transaction(function () use ($refund) {
-                $locked = PaymentRefund::withoutGlobalScopes()->where('id', $refund->id)->lockForUpdate()->firstOrFail();
+                $locked = PaymentRefund::allStores()->where('id', $refund->id)->lockForUpdate()->firstOrFail();
 
                 if ($locked->financial_status === PaymentRefund::FINANCIAL_SETTLED) {
                     return $locked;
@@ -696,7 +696,7 @@ class ReturnRefundService
         }
 
         // Jika kasir reguler, cari akun Supervisor / Manager / Owner di tenant yang sama dengan PIN yang cocok
-        $approver = User::withoutGlobalScopes()
+        $approver = User::query()
             ->where('tenant_id', $order->tenant_id)
             ->where('is_active', true)
             ->whereHas('role', function ($q) {
@@ -758,17 +758,17 @@ class ReturnRefundService
             $restockInventory
         ) {
             // 1. Cek Idempotensi
-            $existingReturn = OrderReturn::withoutGlobalScopes()
+            $existingReturn = OrderReturn::allStores()
                 ->where('tenant_id', $order->tenant_id)
                 ->where('idempotency_key', $idempotencyKey)
                 ->first();
 
             if ($existingReturn) {
-                $existingCn = SalesCreditNote::withoutGlobalScopes()
+                $existingCn = SalesCreditNote::allStores()
                     ->where('tenant_id', $order->tenant_id)
                     ->where('order_return_id', $existingReturn->id)
                     ->first();
-                $existingApp = $existingCn ? SalesCreditNoteApplication::withoutGlobalScopes()
+                $existingApp = $existingCn ? SalesCreditNoteApplication::query()
                     ->where('tenant_id', $order->tenant_id)
                     ->where('sales_credit_note_id', $existingCn->id)
                     ->first() : null;
@@ -781,7 +781,7 @@ class ReturnRefundService
             }
 
             // 2. Verifikasi PIN Supervisor / Manager
-            $actorUser = User::withoutGlobalScopes()->findOrFail($actorUserId);
+            $actorUser = User::query()->findOrFail($actorUserId);
             $approvedByUserId = $this->resolveApproverUserId($actorUser, $supervisorPin, $order);
 
             // 3. Eksekusi Atomik dengan Penguncian Baris Kanonis (A0/A8)
@@ -799,16 +799,16 @@ class ReturnRefundService
                 $restockInventory
             ) {
                 // Resolusi Shift & Device jika tidak disertakan
-                $resolvedShiftId = $shiftId ?: ($order->shift_id ?: Shift::withoutGlobalScopes()
+                $resolvedShiftId = $shiftId ?: ($order->shift_id ?: Shift::allStores()
                     ->where('tenant_id', $order->tenant_id)
                     ->where('store_id', $order->store_id)
                     ->where('status', 'open')
-                    ->value('id') ?: Shift::withoutGlobalScopes()
+                    ->value('id') ?: Shift::allStores()
                     ->where('tenant_id', $order->tenant_id)
                     ->where('store_id', $order->store_id)
                     ->value('id'));
 
-                $resolvedDeviceId = $deviceId ?: ($order->device_id ?: Device::withoutGlobalScopes()
+                $resolvedDeviceId = $deviceId ?: ($order->device_id ?: Device::allStores()
                     ->where('tenant_id', $order->tenant_id)
                     ->where('store_id', $order->store_id)
                     ->value('id'));
@@ -818,7 +818,7 @@ class ReturnRefundService
                 }
 
                 // 3.1 Lock Order
-                $lockedOrder = Order::withoutGlobalScopes()
+                $lockedOrder = Order::allStores()
                     ->where('id', $order->id)
                     ->lockForUpdate()
                     ->firstOrFail();
@@ -826,7 +826,7 @@ class ReturnRefundService
                 // 3.2 Lock Target Invoice jika disertakan
                 $lockedInvoice = null;
                 if ($customerInvoiceId) {
-                    $lockedInvoice = CustomerInvoice::withoutGlobalScopes()
+                    $lockedInvoice = CustomerInvoice::allStores()
                         ->where('tenant_id', $lockedOrder->tenant_id)
                         ->where('id', $customerInvoiceId)
                         ->lockForUpdate()
@@ -840,7 +840,7 @@ class ReturnRefundService
                 }
 
                 // 3.3 Lock Customer Credit Account jika ada
-                $creditAccount = CustomerCreditAccount::withoutGlobalScopes()
+                $creditAccount = CustomerCreditAccount::query()
                     ->where('tenant_id', $lockedOrder->tenant_id)
                     ->where('customer_id', $customerId)
                     ->lockForUpdate()
@@ -848,7 +848,7 @@ class ReturnRefundService
 
                 // 3.4 Lock Order Items & Products (ORDER BY id ASC)
                 $orderItemIds = collect($returnItemsWithDisposition)->pluck('order_item_id')->unique()->sort()->values()->all();
-                $lockedOrderItems = OrderItem::withoutGlobalScopes()
+                $lockedOrderItems = OrderItem::allStores()
                     ->whereIn('id', $orderItemIds)
                     ->where('order_id', $lockedOrder->id)
                     ->orderBy('id', 'asc')
@@ -916,7 +916,7 @@ class ReturnRefundService
                         ]);
                     }
 
-                    $alreadyReturnedQty = (int) OrderReturnItem::withoutGlobalScopes()
+                    $alreadyReturnedQty = (int) OrderReturnItem::allStores()
                         ->where('order_item_id', $orderItem->id)
                         ->sum('quantity_returned');
 
@@ -1174,7 +1174,7 @@ class ReturnRefundService
                 $idempotencyKey
             ) {
                 if ($idempotencyKey) {
-                    $existing = SalesCreditNote::withoutGlobalScopes()
+                    $existing = SalesCreditNote::allStores()
                         ->where('tenant_id', $tenantId)
                         ->where('idempotency_key', $idempotencyKey)
                         ->first();
@@ -1279,7 +1279,7 @@ class ReturnRefundService
         $idempotencyKey = $idempotencyKey ?: 'cn_app:'.Str::uuid();
 
         // 1. Cek idempotensi
-        $existing = SalesCreditNoteApplication::withoutGlobalScopes()
+        $existing = SalesCreditNoteApplication::query()
             ->where('tenant_id', $creditNote->tenant_id)
             ->where('idempotency_key', $idempotencyKey)
             ->first();
@@ -1289,19 +1289,19 @@ class ReturnRefundService
         }
 
         // 2. Lock kanonikal A0/A8: Customer Credit Account -> CustomerInvoice -> SalesCreditNote
-        $creditAccount = CustomerCreditAccount::withoutGlobalScopes()
+        $creditAccount = CustomerCreditAccount::query()
             ->where('tenant_id', $creditNote->tenant_id)
             ->where('customer_id', $creditNote->customer_id)
             ->lockForUpdate()
             ->first();
 
-        $lockedInvoice = CustomerInvoice::withoutGlobalScopes()
+        $lockedInvoice = CustomerInvoice::allStores()
             ->where('tenant_id', $invoice->tenant_id)
             ->where('id', $invoice->id)
             ->lockForUpdate()
             ->firstOrFail();
 
-        $lockedCreditNote = SalesCreditNote::withoutGlobalScopes()
+        $lockedCreditNote = SalesCreditNote::allStores()
             ->where('tenant_id', $creditNote->tenant_id)
             ->where('id', $creditNote->id)
             ->lockForUpdate()
@@ -1445,7 +1445,7 @@ class ReturnRefundService
 
         return $tenantContext->runAs($creditNote->tenant_id, $creditNote->store_id, function () use ($creditNote, $actorUserId) {
             return DB::transaction(function () use ($creditNote, $actorUserId) {
-                $locked = SalesCreditNote::withoutGlobalScopes()
+                $locked = SalesCreditNote::allStores()
                     ->where('id', $creditNote->id)
                     ->lockForUpdate()
                     ->firstOrFail();

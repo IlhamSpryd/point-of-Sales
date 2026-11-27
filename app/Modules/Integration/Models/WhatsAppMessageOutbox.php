@@ -6,10 +6,8 @@ namespace App\Modules\Integration\Models;
 
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Tenant;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * TR-006: Transactional Outbox untuk WhatsApp Business API.
@@ -66,12 +64,4 @@ class WhatsAppMessageOutbox extends Model
         'lease_expires_at' => 'datetime',
         'sent_at' => 'datetime',
     ];
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class, 'tenant_id');
-    }
 }

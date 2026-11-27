@@ -7,7 +7,6 @@ namespace App\Modules\Finance\Models;
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Finance\Enums\DepreciationScheduleStatusEnum;
-use App\Modules\Organization\Models\Tenant;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -60,14 +59,6 @@ class FixedAssetDepreciationSchedule extends Model
             'status' => DepreciationScheduleStatusEnum::class,
             'posted_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
     }
 
     /**

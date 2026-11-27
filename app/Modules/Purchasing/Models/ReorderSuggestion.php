@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Purchasing\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
 use App\Enums\ReorderSuggestionStatusEnum;
-use App\Modules\Organization\Models\Store;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -51,6 +51,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class ReorderSuggestion extends Model
 {
     use AssignsTenant;
+    use HasStoreRelation;
     use ScopedToTenant;
 
     protected $table = 'reorder_suggestions';
@@ -109,14 +110,6 @@ class ReorderSuggestion extends Model
             'estimated_total_cost' => 'string',
             'priority_score' => 'string',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class, 'store_id');
     }
 
     /**

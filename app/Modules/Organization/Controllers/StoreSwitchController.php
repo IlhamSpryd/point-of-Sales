@@ -73,6 +73,7 @@ class StoreSwitchController extends Controller
                 abort(403, 'Anda tidak memiliki hak akses ke cabang ini.');
             }
 
+            // @tenant-bypass: superadmin
             $targetStore = Store::withoutTenantScope()->where('tenant_id', $tenantId)->find($storeId);
             if (! $targetStore) {
                 abort(404, 'Cabang tidak ditemukan.');

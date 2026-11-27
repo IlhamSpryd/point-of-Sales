@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\ActivityLogController;
-use App\Http\Controllers\DeviceController;
-use App\Http\Controllers\OnboardingWizardController;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\SettingController;
-use App\Http\Controllers\StoreController;
-use App\Http\Controllers\StoreSwitchController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\UserInvitationController;
 use App\Livewire\Subscription\SubscriptionPortal;
+use App\Modules\Organization\Controllers\ActivityLogController;
+use App\Modules\Organization\Controllers\DeviceController;
+use App\Modules\Organization\Controllers\OnboardingWizardController;
+use App\Modules\Organization\Controllers\RoleController;
+use App\Modules\Organization\Controllers\SettingController;
+use App\Modules\Organization\Controllers\StoreController;
+use App\Modules\Organization\Controllers\StoreSwitchController;
+use App\Modules\Organization\Controllers\UserController;
+use App\Modules\Organization\Controllers\UserInvitationController;
 use Illuminate\Support\Facades\Route;
 
 /*

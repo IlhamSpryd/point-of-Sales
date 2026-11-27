@@ -15,7 +15,6 @@ use App\Modules\Customers\Services\CustomerCreditService;
 use App\Modules\Inventory\Services\InventoryLedgerService;
 use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\User;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Pricing\Services\CatalogPriceResolverService;
 use App\Modules\Sales\Enums\SalesOrderFulfillmentStatusEnum;
 use App\Modules\Sales\Enums\SalesOrderInvoicingStatusEnum;
@@ -25,6 +24,7 @@ use App\Modules\Sales\Models\OrderItem;
 use App\Modules\Sales\Models\Quotation;
 use App\Modules\Sales\Models\SalesOrder;
 use App\Modules\Sales\Models\SalesOrderLine;
+use App\Platform\Audit\AuditLoggerInterface;
 use App\Platform\Documents\DocumentSequenceService;
 use Carbon\Carbon;
 use DomainException;
@@ -37,7 +37,7 @@ class SalesOrderService
     public function __construct(
         protected CatalogPriceResolverService $priceResolver,
         protected DocumentSequenceService $sequenceService,
-        protected AuditTrailService $auditTrailService,
+        protected AuditLoggerInterface $auditTrailService,
         protected TenantContext $tenantContext,
         protected InventoryLedgerService $inventoryLedgerService,
         protected CustomerCreditService $customerCreditService
@@ -52,7 +52,7 @@ class SalesOrderService
     {
         $tenantId = (int) ($actor->tenant_id ?: $this->tenantContext->requireTenantId());
 
-        return DB::transaction(function () use ($payload, $actor, $tenantId, $idempotencyKey) {
+        return $this->tenantContext->runAs((int) $tenantId, null, fn () => DB::transaction(function () use ($payload, $actor, $tenantId, $idempotencyKey) {
             if ($idempotencyKey !== null && $idempotencyKey !== '') {
                 $existing = SalesOrder::allBranchesInTenant()
                     ->where('idempotency_key', $idempotencyKey)
@@ -70,7 +70,7 @@ class SalesOrderService
                 ]);
             }
 
-            $customer = Customer::withoutGlobalScopes()
+            $customer = Customer::query()
                 ->where('tenant_id', $tenantId)
                 ->where('id', $customerId)
                 ->first();
@@ -87,7 +87,7 @@ class SalesOrderService
             }
 
             if ($storeId <= 0) {
-                $firstStore = Store::withoutGlobalScopes()
+                $firstStore = Store::query()
                     ->where('tenant_id', $tenantId)
                     ->first();
                 $storeId = $firstStore ? (int) $firstStore->id : 1;
@@ -115,8 +115,8 @@ class SalesOrderService
             $billingAddressId = ! empty($payload['billing_address_id']) ? (int) $payload['billing_address_id'] : null;
             $shippingAddressId = ! empty($payload['shipping_address_id']) ? (int) $payload['shipping_address_id'] : null;
 
-            $billingAddress = $billingAddressId ? CustomerAddress::withoutGlobalScopes()->find($billingAddressId) : null;
-            $shippingAddress = $shippingAddressId ? CustomerAddress::withoutGlobalScopes()->find($shippingAddressId) : null;
+            $billingAddress = $billingAddressId ? CustomerAddress::query()->find($billingAddressId) : null;
+            $shippingAddress = $shippingAddressId ? CustomerAddress::query()->find($shippingAddressId) : null;
 
             $customerSnapshot = [
                 'customer_id' => $customer->id,
@@ -178,7 +178,7 @@ class SalesOrderService
             $lineNumber = 1;
             foreach ($items as $itemData) {
                 $productId = (int) ($itemData['product_id'] ?? 0);
-                $product = Product::withoutGlobalScopes()
+                $product = Product::query()
                     ->where('tenant_id', $tenantId)
                     ->where('id', $productId)
                     ->first();
@@ -299,7 +299,7 @@ class SalesOrderService
             );
 
             return $salesOrder->fresh(['lines', 'customer']) ?? $salesOrder;
-        });
+        }));
     }
 
     /**
@@ -309,7 +309,7 @@ class SalesOrderService
     {
         $tenantId = (int) $quotation->tenant_id;
 
-        return DB::transaction(function () use ($quotation, $actor, $tenantId, $idempotencyKey) {
+        return $this->tenantContext->runAs((int) $tenantId, (int) $quotation->store_id, fn () => DB::transaction(function () use ($quotation, $actor, $tenantId, $idempotencyKey) {
             $key = $idempotencyKey ?: "qtn_convert_{$quotation->id}_{$quotation->version_number}";
 
             $existing = SalesOrder::allBranchesInTenant()
@@ -388,7 +388,7 @@ class SalesOrderService
             );
 
             return $salesOrder->fresh(['lines', 'customer']) ?? $salesOrder;
-        });
+        }));
     }
 
     /**
@@ -401,7 +401,7 @@ class SalesOrderService
         bool $allowOverride = false,
         ?string $overrideReason = null
     ): SalesOrder {
-        return DB::transaction(function () use ($salesOrder, $actor, $allowOverride, $overrideReason) {
+        return $this->tenantContext->runAs((int) $salesOrder->tenant_id, (int) $salesOrder->store_id, fn () => DB::transaction(function () use ($salesOrder, $actor, $allowOverride, $overrideReason) {
             $locked = SalesOrder::allBranchesInTenant()
                 ->where('id', $salesOrder->id)
                 ->lockForUpdate()
@@ -441,7 +441,7 @@ class SalesOrderService
             );
 
             return $locked->fresh(['lines', 'customer']) ?? $locked;
-        });
+        }));
     }
 
     /**
@@ -456,12 +456,12 @@ class SalesOrderService
      */
     public function fulfillOrder(SalesOrder $salesOrder, array $fulfillmentLines, User $actor, ?string $idempotencyKey = null): Order
     {
-        return DB::transaction(function () use ($salesOrder, $fulfillmentLines, $actor, $idempotencyKey): Order {
+        return $this->tenantContext->runAs((int) $salesOrder->tenant_id, (int) $salesOrder->store_id, fn () => DB::transaction(function () use ($salesOrder, $fulfillmentLines, $actor, $idempotencyKey): Order {
             $tenantId = (int) $salesOrder->tenant_id;
             $storeId = (int) $salesOrder->store_id;
 
             // 1. Kunci Sales Order induk
-            $lockedSO = SalesOrder::withoutGlobalScopes()
+            $lockedSO = SalesOrder::allStores()
                 ->where('tenant_id', $tenantId)
                 ->where('id', $salesOrder->id)
                 ->lockForUpdate()
@@ -478,7 +478,7 @@ class SalesOrderService
             }
 
             // 2. Kunci seluruh baris SO (ORDER BY id ASC - Lock Order A0/A8)
-            $lines = SalesOrderLine::withoutGlobalScopes()
+            $lines = SalesOrderLine::query()
                 ->where('tenant_id', $tenantId)
                 ->where('sales_order_id', $lockedSO->id)
                 ->orderBy('id', 'asc')
@@ -619,7 +619,7 @@ class SalesOrderService
             $allCompleted = true;
             $anyFulfilled = false;
 
-            $freshLines = SalesOrderLine::withoutGlobalScopes()
+            $freshLines = SalesOrderLine::query()
                 ->where('tenant_id', $tenantId)
                 ->where('sales_order_id', $lockedSO->id)
                 ->get();
@@ -661,7 +661,7 @@ class SalesOrderService
             );
 
             return $order->fresh(['orderItems']) ?? $order;
-        });
+        }));
     }
 
     /**
@@ -672,7 +672,7 @@ class SalesOrderService
      */
     public function cancelOrder(SalesOrder $salesOrder, User $actor, string $reason): SalesOrder
     {
-        return DB::transaction(function () use ($salesOrder, $actor, $reason) {
+        return $this->tenantContext->runAs((int) $salesOrder->tenant_id, (int) $salesOrder->store_id, fn () => DB::transaction(function () use ($salesOrder, $actor, $reason) {
             $locked = SalesOrder::allBranchesInTenant()
                 ->where('id', $salesOrder->id)
                 ->lockForUpdate()
@@ -727,7 +727,7 @@ class SalesOrderService
             );
 
             return $locked->fresh(['lines', 'customer']) ?? $locked;
-        });
+        }));
     }
 
     /**
@@ -739,7 +739,7 @@ class SalesOrderService
     {
         $tenantId = (int) ($actor->tenant_id ?: $this->tenantContext->requireTenantId());
 
-        return DB::transaction(function () use ($sourceOrder, $actor, $tenantId) {
+        return $this->tenantContext->runAs((int) $tenantId, null, fn () => DB::transaction(function () use ($sourceOrder, $actor, $tenantId) {
             $source = $sourceOrder instanceof SalesOrder
                 ? $sourceOrder
                 : SalesOrder::allBranchesInTenant()
@@ -749,7 +749,7 @@ class SalesOrderService
 
             $freshItems = [];
             foreach ($source->lines as $line) {
-                $product = Product::withoutGlobalScopes()
+                $product = Product::query()
                     ->where('tenant_id', $tenantId)
                     ->where('id', $line->product_id)
                     ->first();
@@ -795,6 +795,6 @@ class SalesOrderService
             );
 
             return $newSO;
-        });
+        }));
     }
 }

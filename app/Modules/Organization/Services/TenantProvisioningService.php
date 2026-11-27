@@ -65,6 +65,7 @@ class TenantProvisioningService
             throw new InvalidArgumentException("Email [{$normalizedEmail}] sudah terdaftar di sistem.");
         }
 
+        // @tenant-bypass: superadmin
         return $this->tenantContext->runWithoutTenant(function () use ($tenantName, $ownerName, $normalizedEmail, $ownerPhone, $idempotencyKey) {
             return DB::transaction(function () use ($tenantName, $ownerName, $normalizedEmail, $ownerPhone, $idempotencyKey) {
                 $slug = Str::slug($tenantName);
@@ -264,6 +265,7 @@ class TenantProvisioningService
 
             foreach (['self_order', 'channel_order'] as $kind) {
                 $email = $this->systemUserEmail($tenant, $kind);
+                // @tenant-bypass: superadmin
                 if (! $this->tenantContext->runWithoutTenant(
                     fn () => User::query()->where('email', $email)->where('tenant_id', $tenant->id)->exists()
                 )) {
@@ -313,6 +315,7 @@ class TenantProvisioningService
     {
         $email = $this->systemUserEmail($tenant, $kind);
 
+        // @tenant-bypass: superadmin
         $user = $this->tenantContext->runWithoutTenant(
             fn () => User::query()->where('tenant_id', $tenant->id)->where('email', $email)->first()
         );

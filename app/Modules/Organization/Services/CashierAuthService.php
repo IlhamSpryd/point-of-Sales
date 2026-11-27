@@ -71,6 +71,7 @@ class CashierAuthService
     public function authenticate(int|User $userCandidate, string $pin, ?int $storeId = null): User
     {
         $user = is_int($userCandidate)
+            // @tenant-bypass: auth_lookup
             ? User::withoutGlobalScopes()->findOrFail($userCandidate)
             : $userCandidate;
 

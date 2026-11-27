@@ -103,7 +103,7 @@ class ChartOfAccountManager extends Component
 
         if ($parentId !== null) {
             $tenantId = (int) app(TenantContext::class)->requireTenantId();
-            $parent = ChartOfAccount::withoutGlobalScopes()
+            $parent = ChartOfAccount::query()
                 ->where('tenant_id', $tenantId)
                 ->find($parentId);
             if ($parent) {
@@ -119,7 +119,7 @@ class ChartOfAccountManager extends Component
     {
         $this->resetValidation();
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
-        $account = ChartOfAccount::withoutGlobalScopes()
+        $account = ChartOfAccount::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($id);
 
@@ -148,7 +148,7 @@ class ChartOfAccountManager extends Component
                 'string',
                 'max:50',
                 function ($attribute, $value, $fail) use ($tenantId) {
-                    $query = ChartOfAccount::withoutGlobalScopes()
+                    $query = ChartOfAccount::query()
                         ->where('tenant_id', $tenantId)
                         ->where('account_code', $value);
                     if ($this->editingAccountId) {
@@ -187,7 +187,7 @@ class ChartOfAccountManager extends Component
         ];
 
         if ($this->editingAccountId) {
-            $account = ChartOfAccount::withoutGlobalScopes()
+            $account = ChartOfAccount::query()
                 ->where('tenant_id', $tenantId)
                 ->findOrFail($this->editingAccountId);
             $this->authorize('update', $account);
@@ -205,7 +205,7 @@ class ChartOfAccountManager extends Component
     public function toggleActive(int $id, ChartOfAccountService $service): void
     {
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
-        $account = ChartOfAccount::withoutGlobalScopes()
+        $account = ChartOfAccount::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($id);
 
@@ -222,7 +222,7 @@ class ChartOfAccountManager extends Component
     {
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
-        $query = ChartOfAccount::withoutGlobalScopes()
+        $query = ChartOfAccount::query()
             ->where('tenant_id', $tenantId)
             ->with(['parent', 'children']);
 
@@ -246,7 +246,7 @@ class ChartOfAccountManager extends Component
 
         $accounts = $query->orderBy('account_code')->paginate(20);
 
-        $parentOptions = ChartOfAccount::withoutGlobalScopes()
+        $parentOptions = ChartOfAccount::query()
             ->where('tenant_id', $tenantId)
             ->where('is_postable', false)
             ->orderBy('account_code')

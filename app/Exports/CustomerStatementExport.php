@@ -31,6 +31,7 @@ class CustomerStatementExport implements FromArray, ShouldAutoSize, WithHeadings
     ) {
         $arService = app(AccountsReceivableService::class);
         $this->statementData = $arService->generateCustomerStatement($customerId, $startDate, $endDate);
+        // @tenant-bypass: background_job
         $this->customer = Customer::withoutGlobalScopes()->find($customerId);
     }
 

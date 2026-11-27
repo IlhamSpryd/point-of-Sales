@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\RestockForecastController;
 use App\Livewire\Inventory\GoodsReceiptManager;
 use App\Livewire\Inventory\IngredientLedger;
 use App\Livewire\Inventory\IngredientManager;
@@ -11,6 +10,7 @@ use App\Livewire\Inventory\StockAdjustmentManager;
 use App\Livewire\Inventory\StockOpnameManager;
 use App\Livewire\Inventory\StockTransferManager;
 use App\Livewire\Inventory\SupplierReturnManager;
+use App\Modules\Inventory\Controllers\RestockForecastController;
 use Illuminate\Support\Facades\Route;
 
 /*

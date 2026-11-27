@@ -167,6 +167,7 @@ class SetTenantContext
         $sessionCompanyId = $request->hasSession() ? $request->session()->get('active_company_id') : null;
         $activeCompanyId = null;
         if ($sessionCompanyId !== null) {
+            // @tenant-bypass: auth_lookup
             $activeCompany = Company::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->where('is_active', true)
@@ -181,6 +182,7 @@ class SetTenantContext
                     return (int) $defaultComp->id;
                 }
 
+                // @tenant-bypass: auth_lookup
                 $fallbackId = Company::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
                     ->where('is_active', true)

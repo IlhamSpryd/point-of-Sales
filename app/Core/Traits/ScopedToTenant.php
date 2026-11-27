@@ -23,6 +23,7 @@ trait ScopedToTenant
      *
      * @return Builder<static>
      */
+    // @tenant-bypass: auth_lookup
     public static function withoutTenantScope(): Builder
     {
         Log::warning('Bypassing tenant scope.', [
@@ -30,6 +31,7 @@ trait ScopedToTenant
             'trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3),
         ]);
 
+        // @tenant-bypass: auth_lookup
         return static::query()->withoutGlobalScope(TenantScope::class);
     }
 }

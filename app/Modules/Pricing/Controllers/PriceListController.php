@@ -12,10 +12,10 @@ use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Services\MenuCacheService;
 use App\Modules\Customers\Models\Customer;
 use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Pricing\Models\LoyaltyTier;
 use App\Modules\Pricing\Models\PriceList;
 use App\Modules\Pricing\Models\PriceListItem;
+use App\Platform\Audit\AuditLoggerInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,9 +25,9 @@ class PriceListController extends Controller
 {
     public function __construct(
         protected MenuCacheService $menuCache,
-        protected ?AuditTrailService $auditTrail = null
+        protected ?AuditLoggerInterface $auditTrail = null
     ) {
-        $this->auditTrail ??= app(AuditTrailService::class);
+        $this->auditTrail ??= app(AuditLoggerInterface::class);
     }
 
     public function index(Request $request): View

@@ -57,6 +57,7 @@ class ProcessWebhookOrderJob implements ShouldQueue
 
     public function handle(TransactionService $transactionService): void
     {
+        // @tenant-bypass: cross_tenant_reconciliation
         $affected = ChannelOrderLog::withoutGlobalScopes()
             ->where('id', $this->log->id)
             ->where('status', 'pending')
@@ -208,6 +209,7 @@ class ProcessWebhookOrderJob implements ShouldQueue
         // Auto customer matching for omnichannel order (Modul 6)
         $customerId = null;
         if (! empty($normalized->customerPhone) || ! empty($normalized->customerEmail) || ! empty($normalized->customerName)) {
+            // @tenant-bypass: cross_tenant_reconciliation
             $customerQuery = Customer::withoutGlobalScopes()->where('tenant_id', $this->log->tenant_id);
             if (! empty($normalized->customerPhone)) {
                 $matchedCustomer = (clone $customerQuery)->where('phone', $normalized->customerPhone)->first();

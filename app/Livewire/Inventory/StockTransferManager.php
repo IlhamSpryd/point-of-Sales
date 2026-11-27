@@ -320,7 +320,7 @@ class StockTransferManager extends Component
         $tenantId = $context->getTenantId();
         $storeId = $context->getStoreId();
 
-        $query = StockTransfer::withoutGlobalScopes()
+        $query = StockTransfer::query()
             ->where('tenant_id', $tenantId)
             ->with(['fromStore', 'toStore', 'creator', 'shipper', 'receiver'])
             ->withCount('items')
@@ -350,32 +350,32 @@ class StockTransferManager extends Component
         $transfers = $query->paginate(10);
 
         // Preload destination stores
-        $destinationStores = Store::withoutGlobalScopes()
+        $destinationStores = Store::query()
             ->where('tenant_id', $tenantId)
             ->where('id', '!=', $storeId)
             ->orderBy('name')
             ->get(['id', 'name']);
 
         // Preload catalog
-        $availableProducts = Product::withoutGlobalScopes()
+        $availableProducts = Product::query()
             ->where('tenant_id', $tenantId)
             ->orderBy('product_name')
             ->get(['id', 'product_name as name', 'product_code as code']);
 
-        $availableIngredients = Ingredient::withoutGlobalScopes()
+        $availableIngredients = Ingredient::query()
             ->where('tenant_id', $tenantId)
             ->orderBy('name')
             ->get(['id', 'name', 'ingredient_code as code']);
 
         $selectedTransfer = $this->selectedTransferId
-            ? StockTransfer::withoutGlobalScopes()
+            ? StockTransfer::query()
                 ->where('tenant_id', $tenantId)
                 ->with(['items.product', 'items.ingredient', 'fromStore', 'toStore', 'creator', 'shipper', 'receiver', 'canceller'])
                 ->find($this->selectedTransferId)
             : null;
 
         $activeTransfer = $this->activeTransferId
-            ? StockTransfer::withoutGlobalScopes()
+            ? StockTransfer::query()
                 ->where('tenant_id', $tenantId)
                 ->with(['items.product', 'items.ingredient', 'fromStore', 'toStore'])
                 ->find($this->activeTransferId)
@@ -399,7 +399,7 @@ class StockTransferManager extends Component
         $tenantId = $context->getTenantId();
         $storeId = $context->getStoreId();
 
-        return StockTransfer::withoutGlobalScopes()
+        return StockTransfer::query()
             ->where('tenant_id', $tenantId)
             ->involvingStore($storeId)
             ->with(['items.product', 'items.ingredient', 'fromStore', 'toStore'])

@@ -20,6 +20,7 @@ trait ScopedToStoreForDiscount
 
     public static function allStores(): Builder
     {
+        // @tenant-bypass: auth_lookup
         return static::withoutGlobalScope(DiscountStoreScope::class);
     }
 }

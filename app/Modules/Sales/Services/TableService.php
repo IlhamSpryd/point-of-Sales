@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Services;
 
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\Table;
 use App\Modules\Sales\Models\TableSession;
+use App\Platform\Audit\AuditLoggerInterface;
 use DomainException;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -47,7 +47,7 @@ class TableService
             $table = Table::create($data);
 
             try {
-                app(AuditTrailService::class)->log(
+                app(AuditLoggerInterface::class)->log(
                     tenantId: (int) $table->tenant_id,
                     action: 'table.created',
                     userId: auth()->id(),
@@ -74,7 +74,7 @@ class TableService
             $table->update($data);
 
             try {
-                app(AuditTrailService::class)->log(
+                app(AuditLoggerInterface::class)->log(
                     tenantId: (int) $table->tenant_id,
                     action: 'table.updated',
                     userId: auth()->id(),
@@ -103,7 +103,7 @@ class TableService
             }
 
             try {
-                app(AuditTrailService::class)->log(
+                app(AuditLoggerInterface::class)->log(
                     tenantId: (int) $table->tenant_id,
                     action: 'table.deleted',
                     userId: auth()->id(),
@@ -143,7 +143,7 @@ class TableService
             }
 
             try {
-                app(AuditTrailService::class)->log(
+                app(AuditLoggerInterface::class)->log(
                     tenantId: (int) $table->tenant_id,
                     action: 'table.qr_rotated',
                     userId: $actorId ?? auth()->id(),
@@ -241,7 +241,7 @@ class TableService
                     ]);
 
                 try {
-                    app(AuditTrailService::class)->log(
+                    app(AuditLoggerInterface::class)->log(
                         tenantId: (int) $lockedTable->tenant_id,
                         action: 'table.released',
                         userId: $actorId ?? auth()->id(),
@@ -285,7 +285,7 @@ class TableService
             ]);
 
             try {
-                app(AuditTrailService::class)->log(
+                app(AuditLoggerInterface::class)->log(
                     tenantId: (int) $lockedTable->tenant_id,
                     action: 'table.disabled',
                     userId: $actorId ?? auth()->id(),

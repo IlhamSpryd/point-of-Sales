@@ -25,6 +25,7 @@ class SystemUserResolver
     {
         $email = static::selfOrderEmail($tenantId);
 
+        // @tenant-bypass: superadmin
         $user = User::withoutGlobalScopes()->where('email', $email)->where('tenant_id', $tenantId)->first();
 
         if (! $user) {
@@ -39,6 +40,7 @@ class SystemUserResolver
     {
         $email = static::channelEmail($tenantId);
 
+        // @tenant-bypass: superadmin
         $user = User::withoutGlobalScopes()->where('email', $email)->where('tenant_id', $tenantId)->first();
 
         if (! $user) {

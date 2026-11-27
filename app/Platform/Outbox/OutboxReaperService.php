@@ -85,6 +85,7 @@ class OutboxReaperService
         $cutoff = Carbon::now()->subMinutes($staleMinutes);
 
         return DB::transaction(function () use ($cutoff, $staleMinutes) {
+            // @tenant-bypass: background_job
             $stuckInboxes = PaymentInbox::withoutGlobalScopes()
                 ->where('status', 'processing')
                 ->where('updated_at', '<=', $cutoff)

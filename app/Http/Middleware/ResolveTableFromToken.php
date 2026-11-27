@@ -27,6 +27,7 @@ class ResolveTableFromToken
     {
         $token = $request->route('token');
 
+        // @tenant-bypass: auth_lookup
         $table = Table::withoutGlobalScopes()
             ->where(function ($q) use ($token) {
                 $q->where('qr_token', $token)
@@ -53,6 +54,7 @@ class ResolveTableFromToken
             abort(403, 'Layanan pemesanan sedang tidak aktif atau ditangguhkan.');
         }
 
+        // @tenant-bypass: auth_lookup
         $store = Store::withoutTenantScope()
             ->where('tenant_id', $table->tenant_id)
             ->where('id', $table->store_id)

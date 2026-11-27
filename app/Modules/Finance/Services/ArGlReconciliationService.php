@@ -112,6 +112,7 @@ class ArGlReconciliationService
         $subledgerTotal = bcsub($ledgerDebit, $ledgerCredit, 2);
 
         // 3. Total Tagihan pada Akun Kredit Pelanggan (invoiced_exposure)
+        // @tenant-bypass: cross_tenant_reconciliation
         $exposureTotal = (string) (CustomerCreditAccount::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->sum('invoiced_exposure') ?? '0.00');
@@ -119,12 +120,14 @@ class ArGlReconciliationService
         // 4. Saldo Akun Kontrol Piutang (AR_CONTROL) di Buku Besar (GL)
         $arAccount = $this->coaService->getAccountBySystemKey('AR_CONTROL', $tenantId);
 
+        // @tenant-bypass: cross_tenant_reconciliation
         $glDebit = (string) (JournalLine::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->where('account_id', $arAccount->id)
             ->whereHas('journalEntry', fn ($q) => $q->where('status', 'POSTED'))
             ->sum('debit_amount') ?? '0.00');
 
+        // @tenant-bypass: cross_tenant_reconciliation
         $glCredit = (string) (JournalLine::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->where('account_id', $arAccount->id)
@@ -164,6 +167,7 @@ class ArGlReconciliationService
     public function reconcileCustomerUnappliedCredits(int $tenantId): array
     {
         // 1. Saldo operasional unapplied credit di modul pelanggan
+        // @tenant-bypass: cross_tenant_reconciliation
         $operationalCredits = (string) (CustomerCreditAccount::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->sum('unapplied_credit_balance') ?? '0.00');
@@ -171,12 +175,14 @@ class ArGlReconciliationService
         // 2. Saldo liabilitas CUSTOMER_UNAPPLIED_CREDIT_LIABILITY di GL (Kredit - Debit)
         $liabilityAccount = $this->coaService->getAccountBySystemKey('CUSTOMER_UNAPPLIED_CREDIT_LIABILITY', $tenantId);
 
+        // @tenant-bypass: cross_tenant_reconciliation
         $glCredit = (string) (JournalLine::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->where('account_id', $liabilityAccount->id)
             ->whereHas('journalEntry', fn ($q) => $q->where('status', 'POSTED'))
             ->sum('credit_amount') ?? '0.00');
 
+        // @tenant-bypass: cross_tenant_reconciliation
         $glDebit = (string) (JournalLine::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->where('account_id', $liabilityAccount->id)

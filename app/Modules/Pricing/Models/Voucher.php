@@ -8,7 +8,6 @@ use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Customers\Models\Customer;
 use App\Modules\Customers\Models\CustomerGroup;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Pricing\Enums\VoucherDiscountTypeEnum;
 use App\Modules\Pricing\Enums\VoucherStatusEnum;
 use Carbon\Carbon;
@@ -78,14 +77,6 @@ class Voucher extends Model
             'valid_from' => 'datetime',
             'valid_until' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
     }
 
     /**

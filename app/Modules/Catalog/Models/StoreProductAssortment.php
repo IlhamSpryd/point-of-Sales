@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Catalog\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 /** @use HasFactory<Factory<static>> */
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -30,6 +29,8 @@ class StoreProductAssortment extends Model
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
+    use HasStoreRelation;
 
     protected $table = 'store_product_assortments';
 
@@ -64,14 +65,6 @@ class StoreProductAssortment extends Model
     }
 
     /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
-    }
-
-    /**
      * @return BelongsTo<Product, $this>
      */
     public function product(): BelongsTo
@@ -85,13 +78,5 @@ class StoreProductAssortment extends Model
     public function productVariant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
     }
 }

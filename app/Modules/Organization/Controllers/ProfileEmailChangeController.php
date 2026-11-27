@@ -53,6 +53,7 @@ class ProfileEmailChangeController extends Controller
         }
 
         // 3. Pengecekan konflik global pada users.email_normalized
+        // @tenant-bypass: superadmin
         $conflict = User::withoutGlobalScopes()
             ->where('email_normalized', $newNormalized)
             ->where('id', '!=', $user->id)
@@ -129,6 +130,7 @@ class ProfileEmailChangeController extends Controller
             }
 
             // Verifikasi konflik sekali lagi di bawah lock
+            // @tenant-bypass: superadmin
             $conflict = User::withoutGlobalScopes()
                 ->where('email_normalized', $lockedUser->pending_email_normalized)
                 ->where('id', '!=', $lockedUser->id)

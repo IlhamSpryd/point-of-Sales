@@ -149,7 +149,7 @@ class AccountsReceivableManager extends Component
     protected function loadCustomerOpenInvoices(int $customerId): void
     {
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $openInvoices = CustomerInvoice::withoutGlobalScopes()
+        $openInvoices = CustomerInvoice::allStores()
             ->where('tenant_id', $tenantId)
             ->where('customer_id', $customerId)
             ->whereIn('status', [CustomerInvoiceStatusEnum::POSTED, CustomerInvoiceStatusEnum::PARTIALLY_PAID])
@@ -333,7 +333,7 @@ class AccountsReceivableManager extends Component
             ->orderBy('id', 'desc')
             ->paginate(15);
 
-        $customers = Customer::withoutGlobalScopes()
+        $customers = Customer::query()
             ->where('tenant_id', $tenantId)
             ->where('is_active', true)
             ->orderBy('name', 'asc')
@@ -341,7 +341,7 @@ class AccountsReceivableManager extends Component
 
         $openCustomerInvoices = [];
         if ($this->paymentCustomerId) {
-            $openCustomerInvoices = CustomerInvoice::withoutGlobalScopes()
+            $openCustomerInvoices = CustomerInvoice::allStores()
                 ->where('tenant_id', $tenantId)
                 ->where('customer_id', $this->paymentCustomerId)
                 ->whereIn('status', [CustomerInvoiceStatusEnum::POSTED, CustomerInvoiceStatusEnum::PARTIALLY_PAID])

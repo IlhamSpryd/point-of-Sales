@@ -12,7 +12,7 @@ use App\Modules\Customers\Models\CustomerAddress;
 use App\Modules\Customers\Models\CustomerContact;
 use App\Modules\Customers\Models\CustomerMergeLog;
 use App\Modules\Organization\Models\User;
-use App\Modules\Organization\Services\AuditTrailService;
+use App\Platform\Audit\AuditLoggerInterface;
 use App\Platform\Documents\DocumentSequenceService;
 use DomainException;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +22,7 @@ class CustomerService implements CustomerSegmentReaderInterface
 {
     public function __construct(
         protected DocumentSequenceService $sequenceService,
-        protected AuditTrailService $auditTrailService,
+        protected AuditLoggerInterface $auditTrailService,
         protected TenantContext $tenantContext
     ) {}
 
@@ -65,12 +65,12 @@ class CustomerService implements CustomerSegmentReaderInterface
     {
         $tenantId = (int) ($actor && $actor->tenant_id ? $actor->tenant_id : $this->tenantContext->requireTenantId());
 
-        return DB::transaction(function () use ($data, $actor, $tenantId) {
+        return $this->tenantContext->runAs((int) $tenantId, null, fn () => DB::transaction(function () use ($data, $actor, $tenantId) {
             $code = ! empty($data['customer_code'])
                 ? trim((string) $data['customer_code'])
                 : $this->sequenceService->nextNumber($tenantId, 'CUST');
 
-            $existing = Customer::withoutGlobalScopes()
+            $existing = Customer::query()
                 ->where('tenant_id', $tenantId)
                 ->where('customer_code', $code)
                 ->exists();
@@ -90,7 +90,7 @@ class CustomerService implements CustomerSegmentReaderInterface
 
             $phone = $this->normalizePhone($data['phone'] ?? null);
             if ($phone !== null) {
-                $phoneExists = Customer::withoutGlobalScopes()
+                $phoneExists = Customer::query()
                     ->where('tenant_id', $tenantId)
                     ->whereNull('deleted_at')
                     ->where('phone', $phone)
@@ -105,7 +105,7 @@ class CustomerService implements CustomerSegmentReaderInterface
 
             $email = $this->normalizeEmail($data['email'] ?? null);
             if ($email !== null) {
-                $emailExists = Customer::withoutGlobalScopes()
+                $emailExists = Customer::query()
                     ->where('tenant_id', $tenantId)
                     ->whereNull('deleted_at')
                     ->where('email', $email)
@@ -146,7 +146,7 @@ class CustomerService implements CustomerSegmentReaderInterface
 
             // Inisialisasi CustomerLoyaltyAccount jika pelanggan eligible
             if ($customer->is_loyalty_eligible) {
-                \App\Modules\Pricing\Models\CustomerLoyaltyAccount::withoutGlobalScopes()->firstOrCreate(
+                \App\Modules\Pricing\Models\CustomerLoyaltyAccount::query()->firstOrCreate(
                     [
                         'tenant_id' => $tenantId,
                         'customer_id' => $customer->id,
@@ -184,7 +184,7 @@ class CustomerService implements CustomerSegmentReaderInterface
             );
 
             return $customer;
-        });
+        }));
     }
 
     /**
@@ -196,7 +196,7 @@ class CustomerService implements CustomerSegmentReaderInterface
     {
         $tenantId = (int) $customer->tenant_id;
 
-        return DB::transaction(function () use ($customer, $data, $actor, $tenantId) {
+        return $this->tenantContext->runAs((int) $tenantId, null, fn () => DB::transaction(function () use ($customer, $data, $actor, $tenantId) {
             $oldValues = $customer->only([
                 'name',
                 'customer_type',
@@ -216,7 +216,7 @@ class CustomerService implements CustomerSegmentReaderInterface
             if (isset($data['phone'])) {
                 $phone = $this->normalizePhone($data['phone']);
                 if ($phone !== null && $phone !== $customer->phone) {
-                    $phoneExists = Customer::withoutGlobalScopes()
+                    $phoneExists = Customer::query()
                         ->where('tenant_id', $tenantId)
                         ->whereNull('deleted_at')
                         ->where('phone', $phone)
@@ -235,7 +235,7 @@ class CustomerService implements CustomerSegmentReaderInterface
             if (isset($data['email'])) {
                 $email = $this->normalizeEmail($data['email']);
                 if ($email !== null && $email !== $customer->email) {
-                    $emailExists = Customer::withoutGlobalScopes()
+                    $emailExists = Customer::query()
                         ->where('tenant_id', $tenantId)
                         ->whereNull('deleted_at')
                         ->where('email', $email)
@@ -325,7 +325,7 @@ class CustomerService implements CustomerSegmentReaderInterface
             );
 
             return $customer;
-        });
+        }));
     }
 
     /**
@@ -335,7 +335,7 @@ class CustomerService implements CustomerSegmentReaderInterface
     {
         $tenantId = (int) $customer->tenant_id;
 
-        return DB::transaction(function () use ($customer, $actor, $tenantId, $reason) {
+        return $this->tenantContext->runAs((int) $tenantId, null, fn () => DB::transaction(function () use ($customer, $actor, $tenantId, $reason) {
             $customer->is_active = false;
             $customer->save();
 
@@ -354,7 +354,7 @@ class CustomerService implements CustomerSegmentReaderInterface
             );
 
             return $deleted;
-        });
+        }));
     }
 
     /**
@@ -372,12 +372,12 @@ class CustomerService implements CustomerSegmentReaderInterface
 
         $tenantId = (int) $source->tenant_id;
 
-        return DB::transaction(function () use ($source, $target, $actor, $tenantId, $reason) {
+        return $this->tenantContext->runAs((int) $tenantId, null, fn () => DB::transaction(function () use ($source, $target, $actor, $tenantId, $reason) {
             // 1. Akuisisi row lock deterministik pada kedua record (ORDER BY id ASC)
             $customerIds = [$source->id, $target->id];
             sort($customerIds);
 
-            $lockedCustomers = Customer::withoutGlobalScopes()
+            $lockedCustomers = Customer::query()
                 ->where('tenant_id', $tenantId)
                 ->whereIn('id', $customerIds)
                 ->orderBy('id', 'asc')
@@ -412,7 +412,7 @@ class CustomerService implements CustomerSegmentReaderInterface
             $reassigned['orders'] = $ordersReassigned;
 
             // 3. Reassign Addresses (tandai non-default agar tidak konflik dengan target)
-            $addressesReassigned = CustomerAddress::withoutGlobalScopes()
+            $addressesReassigned = CustomerAddress::query()
                 ->where('tenant_id', $tenantId)
                 ->where('customer_id', $lockedSource->id)
                 ->update([
@@ -423,7 +423,7 @@ class CustomerService implements CustomerSegmentReaderInterface
             $reassigned['customer_addresses'] = $addressesReassigned;
 
             // 4. Reassign Contacts (tandai non-primary)
-            $contactsReassigned = CustomerContact::withoutGlobalScopes()
+            $contactsReassigned = CustomerContact::query()
                 ->where('tenant_id', $tenantId)
                 ->where('customer_id', $lockedSource->id)
                 ->update([
@@ -492,7 +492,7 @@ class CustomerService implements CustomerSegmentReaderInterface
             );
 
             return $mergeLog;
-        });
+        }));
     }
 
     /**
@@ -504,19 +504,19 @@ class CustomerService implements CustomerSegmentReaderInterface
     {
         $tenantId = (int) $customer->tenant_id;
 
-        return DB::transaction(function () use ($customer, $data, $tenantId) {
+        return $this->tenantContext->runAs((int) $tenantId, null, fn () => DB::transaction(function () use ($customer, $data, $tenantId) {
             $isDefaultBilling = ! empty($data['is_default_billing']);
             $isDefaultShipping = ! empty($data['is_default_shipping']);
 
             if ($isDefaultBilling) {
-                CustomerAddress::withoutGlobalScopes()
+                CustomerAddress::query()
                     ->where('tenant_id', $tenantId)
                     ->where('customer_id', $customer->id)
                     ->update(['is_default_billing' => false]);
             }
 
             if ($isDefaultShipping) {
-                CustomerAddress::withoutGlobalScopes()
+                CustomerAddress::query()
                     ->where('tenant_id', $tenantId)
                     ->where('customer_id', $customer->id)
                     ->update(['is_default_shipping' => false]);
@@ -538,7 +538,7 @@ class CustomerService implements CustomerSegmentReaderInterface
                 'is_default_billing' => $isDefaultBilling,
                 'is_default_shipping' => $isDefaultShipping,
             ]);
-        });
+        }));
     }
 
     /**
@@ -550,9 +550,9 @@ class CustomerService implements CustomerSegmentReaderInterface
     {
         $tenantId = (int) $address->tenant_id;
 
-        return DB::transaction(function () use ($address, $data, $tenantId) {
+        return $this->tenantContext->runAs((int) $tenantId, null, fn () => DB::transaction(function () use ($address, $data, $tenantId) {
             if (! empty($data['is_default_billing'])) {
-                CustomerAddress::withoutGlobalScopes()
+                CustomerAddress::query()
                     ->where('tenant_id', $tenantId)
                     ->where('customer_id', $address->customer_id)
                     ->where('id', '!=', $address->id)
@@ -563,7 +563,7 @@ class CustomerService implements CustomerSegmentReaderInterface
             }
 
             if (! empty($data['is_default_shipping'])) {
-                CustomerAddress::withoutGlobalScopes()
+                CustomerAddress::query()
                     ->where('tenant_id', $tenantId)
                     ->where('customer_id', $address->customer_id)
                     ->where('id', '!=', $address->id)
@@ -607,7 +607,7 @@ class CustomerService implements CustomerSegmentReaderInterface
             $address->save();
 
             return $address;
-        });
+        }));
     }
 
     /**
@@ -627,11 +627,11 @@ class CustomerService implements CustomerSegmentReaderInterface
     {
         $tenantId = (int) $customer->tenant_id;
 
-        return DB::transaction(function () use ($customer, $data, $tenantId) {
+        return $this->tenantContext->runAs((int) $tenantId, null, fn () => DB::transaction(function () use ($customer, $data, $tenantId) {
             $isPrimary = ! empty($data['is_primary']);
 
             if ($isPrimary) {
-                CustomerContact::withoutGlobalScopes()
+                CustomerContact::query()
                     ->where('tenant_id', $tenantId)
                     ->where('customer_id', $customer->id)
                     ->update(['is_primary' => false]);
@@ -646,7 +646,7 @@ class CustomerService implements CustomerSegmentReaderInterface
                 'phone' => $this->normalizePhone($data['phone'] ?? null),
                 'is_primary' => $isPrimary,
             ]);
-        });
+        }));
     }
 
     /**
@@ -658,9 +658,9 @@ class CustomerService implements CustomerSegmentReaderInterface
     {
         $tenantId = (int) $contact->tenant_id;
 
-        return DB::transaction(function () use ($contact, $data, $tenantId) {
+        return $this->tenantContext->runAs((int) $tenantId, null, fn () => DB::transaction(function () use ($contact, $data, $tenantId) {
             if (! empty($data['is_primary'])) {
-                CustomerContact::withoutGlobalScopes()
+                CustomerContact::query()
                     ->where('tenant_id', $tenantId)
                     ->where('customer_id', $contact->customer_id)
                     ->where('id', '!=', $contact->id)
@@ -686,7 +686,7 @@ class CustomerService implements CustomerSegmentReaderInterface
             $contact->save();
 
             return $contact;
-        });
+        }));
     }
 
     /**

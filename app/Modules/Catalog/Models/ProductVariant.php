@@ -6,7 +6,6 @@ namespace App\Modules\Catalog\Models;
 
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -64,14 +63,6 @@ class ProductVariant extends Model
         'sort_order' => 'integer',
         'is_open_price' => 'boolean',
     ];
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
 
     /**
      * @return BelongsTo<Product, $this>

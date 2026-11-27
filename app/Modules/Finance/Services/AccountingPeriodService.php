@@ -57,7 +57,7 @@ class AccountingPeriodService
                 $periodNumber = $i + 1;
                 $periodCode = sprintf('%04d-%02d', $fiscalYear, $periodNumber);
 
-                $period = AccountingPeriod::withoutTenantScope()->firstOrCreate(
+                $period = AccountingPeriod::withoutTenantScope()->firstOrCreate( // @tenant-bypass: maintenance
                     [
                         'tenant_id' => $tenantId,
                         'period_code' => $periodCode,
@@ -88,7 +88,7 @@ class AccountingPeriodService
 
         $dateStr = $date instanceof CarbonInterface ? $date->toDateString() : Carbon::parse($date)->toDateString();
 
-        $period = AccountingPeriod::withoutTenantScope()
+        $period = AccountingPeriod::withoutTenantScope() // @tenant-bypass: maintenance
             ->where('tenant_id', $tenantId)
             ->where('start_date', '<=', $dateStr)
             ->where('end_date', '>=', $dateStr)
@@ -111,7 +111,7 @@ class AccountingPeriodService
 
         $dateStr = $date instanceof CarbonInterface ? $date->toDateString() : Carbon::parse($date)->toDateString();
 
-        $period = AccountingPeriod::withoutTenantScope()
+        $period = AccountingPeriod::withoutTenantScope() // @tenant-bypass: maintenance
             ->where('tenant_id', $tenantId)
             ->where('start_date', '<=', $dateStr)
             ->where('end_date', '>=', $dateStr)
@@ -396,7 +396,7 @@ class AccountingPeriodService
 
         // Persist checklists
         foreach ($results as $gate) {
-            PeriodClosingChecklist::withoutTenantScope()->updateOrCreate(
+            PeriodClosingChecklist::withoutTenantScope()->updateOrCreate( // @tenant-bypass: maintenance
                 [
                     'tenant_id' => $tenantId,
                     'accounting_period_id' => $period->id,
@@ -429,7 +429,7 @@ class AccountingPeriodService
         }
 
         return DB::transaction(function () use ($period, $actor, $tenantId) {
-            $lockedPeriod = AccountingPeriod::withoutTenantScope()
+            $lockedPeriod = AccountingPeriod::withoutTenantScope() // @tenant-bypass: maintenance
                 ->where('id', $period->id)
                 ->where('tenant_id', $tenantId)
                 ->lockForUpdate()
@@ -543,7 +543,7 @@ class AccountingPeriodService
         }
 
         return DB::transaction(function () use ($fiscalYear, $actor, $tenantId) {
-            $periods = AccountingPeriod::withoutTenantScope()
+            $periods = AccountingPeriod::withoutTenantScope() // @tenant-bypass: maintenance
                 ->where('tenant_id', $tenantId)
                 ->where('fiscal_year', $fiscalYear)
                 ->where('is_adjustment_period', false)
@@ -566,7 +566,7 @@ class AccountingPeriodService
             $lastPeriod = $periods->last();
             $idempotencyKey = "year_end_close:{$tenantId}:{$fiscalYear}";
 
-            $existingJournal = JournalEntry::withoutTenantScope()
+            $existingJournal = JournalEntry::withoutTenantScope() // @tenant-bypass: maintenance
                 ->where('tenant_id', $tenantId)
                 ->where('idempotency_key', $idempotencyKey)
                 ->first();
@@ -581,7 +581,7 @@ class AccountingPeriodService
             }
 
             // Temukan akun RETAINED_EARNINGS (Kode 3200)
-            $retainedEarningsAccount = ChartOfAccount::withoutTenantScope()
+            $retainedEarningsAccount = ChartOfAccount::withoutTenantScope() // @tenant-bypass: maintenance
                 ->where('tenant_id', $tenantId)
                 ->where(function ($q) {
                     $q->where('account_code', '3200')
@@ -757,12 +757,12 @@ class AccountingPeriodService
     public function finalizeAccountPeriodBalances(AccountingPeriod $period): void
     {
         $tenantId = $period->tenant_id;
-        $accounts = ChartOfAccount::withoutTenantScope()
+        $accounts = ChartOfAccount::withoutTenantScope() // @tenant-bypass: maintenance
             ->where('tenant_id', $tenantId)
             ->where('is_postable', true)
             ->get();
 
-        $prevPeriod = AccountingPeriod::withoutTenantScope()
+        $prevPeriod = AccountingPeriod::withoutTenantScope() // @tenant-bypass: maintenance
             ->where('tenant_id', $tenantId)
             ->where('id', '<', $period->id)
             ->where('is_adjustment_period', false)
@@ -774,7 +774,7 @@ class AccountingPeriodService
             $openingCredit = '0.00';
 
             if ($prevPeriod) {
-                $prevBalance = AccountPeriodBalance::withoutTenantScope()
+                $prevBalance = AccountPeriodBalance::withoutTenantScope() // @tenant-bypass: maintenance
                     ->where('tenant_id', $tenantId)
                     ->where('accounting_period_id', $prevPeriod->id)
                     ->where('account_id', $account->id)
@@ -833,7 +833,7 @@ class AccountingPeriodService
                 }
             }
 
-            AccountPeriodBalance::withoutTenantScope()->updateOrCreate(
+            AccountPeriodBalance::withoutTenantScope()->updateOrCreate( // @tenant-bypass: maintenance
                 [
                     'tenant_id' => $tenantId,
                     'accounting_period_id' => $period->id,
@@ -907,14 +907,14 @@ class AccountingPeriodService
     protected function rollForwardPermanentAccounts(AccountingPeriod $sourcePeriod, AccountingPeriod $targetPeriod): void
     {
         $tenantId = $sourcePeriod->tenant_id;
-        $balances = AccountPeriodBalance::withoutTenantScope()
+        $balances = AccountPeriodBalance::withoutTenantScope() // @tenant-bypass: maintenance
             ->where('tenant_id', $tenantId)
             ->where('accounting_period_id', $sourcePeriod->id)
             ->where('store_scope_key', 0)
             ->get();
 
         foreach ($balances as $b) {
-            $account = ChartOfAccount::withoutTenantScope()->find($b->account_id);
+            $account = ChartOfAccount::withoutTenantScope()->find($b->account_id); // @tenant-bypass: maintenance
             if (! $account) {
                 continue;
             }
@@ -929,7 +929,7 @@ class AccountingPeriodService
                 continue;
             }
 
-            AccountPeriodBalance::withoutTenantScope()->updateOrCreate(
+            AccountPeriodBalance::withoutTenantScope()->updateOrCreate( // @tenant-bypass: maintenance
                 [
                     'tenant_id' => $tenantId,
                     'accounting_period_id' => $targetPeriod->id,

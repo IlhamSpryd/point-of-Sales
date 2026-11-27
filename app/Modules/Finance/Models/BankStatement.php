@@ -6,7 +6,6 @@ namespace App\Modules\Finance\Models;
 
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
@@ -53,14 +52,6 @@ class BankStatement extends Model
             'opening_balance' => 'string',
             'closing_balance' => 'string',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
     }
 
     /**

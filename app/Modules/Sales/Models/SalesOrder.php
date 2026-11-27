@@ -10,8 +10,6 @@ use App\Core\Traits\ScopedToStore;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Customers\Models\Customer;
 use App\Modules\Customers\Models\CustomerAddress;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use App\Modules\Sales\Enums\SalesOrderFulfillmentStatusEnum;
 use App\Modules\Sales\Enums\SalesOrderInvoicingStatusEnum;
@@ -116,22 +114,6 @@ class SalesOrder extends Model
             'total_amount' => 'string',
             'reserved_credit_amount' => 'string',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

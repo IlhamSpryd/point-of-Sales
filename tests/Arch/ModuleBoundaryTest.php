@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
  */
 class ModuleBoundaryTest extends TestCase
 {
-    public const MAX_CROSS_MODULE_IMPORTS = 760;
+    public const MAX_CROSS_MODULE_IMPORTS = 560;
 
     public function test_no_wrapper_classes_remain_in_app_models_and_app_services(): void
     {
@@ -33,6 +33,33 @@ class ModuleBoundaryTest extends TestCase
         $this->assertEmpty(
             $serviceFiles,
             'Legacy wrapper classes still exist in app/Services: '.implode(', ', $serviceFiles).'. All services must reside in canonical app/Modules/<Context>/Services or app/Platform.'
+        );
+    }
+
+    public function test_no_wrapper_classes_remain_in_app_http_controllers(): void
+    {
+        $basePath = dirname(__DIR__, 2);
+        $controllersDir = $basePath.'/app/Http/Controllers';
+        $this->assertDirectoryExists($controllersDir);
+
+        $wrappers = [];
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($controllersDir));
+
+        /** @var \SplFileInfo $file */
+        foreach ($iterator as $file) {
+            if (! $file->isFile() || $file->getExtension() !== 'php') {
+                continue;
+            }
+
+            $content = file_get_contents($file->getRealPath());
+            if ($content !== false && preg_match('/extends\s+\\\\?App\\\\Modules\\\\/', $content)) {
+                $wrappers[] = str_replace($basePath.'/', '', $file->getRealPath());
+            }
+        }
+
+        $this->assertEmpty(
+            $wrappers,
+            'Legacy ADR-114 thin controller wrappers still exist in app/Http/Controllers: '.implode(', ', $wrappers)
         );
     }
 

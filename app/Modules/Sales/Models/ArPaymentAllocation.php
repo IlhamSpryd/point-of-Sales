@@ -7,7 +7,6 @@ namespace App\Modules\Sales\Models;
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Customers\Models\Customer;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -60,14 +59,6 @@ class ArPaymentAllocation extends Model
             'is_reversed' => 'boolean',
             'reversed_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
     }
 
     /**

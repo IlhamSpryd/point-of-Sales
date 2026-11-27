@@ -6,13 +6,12 @@ namespace App\Modules\Inventory\Services;
 
 use App\Enums\IngredientStockMovementTypeEnum;
 use App\Enums\StockMovementType;
-use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Services\MenuCacheService;
 use App\Modules\Inventory\Exceptions\InsufficientStockException;
 use App\Modules\Inventory\Models\Ingredient;
 use App\Modules\Inventory\Models\IngredientStockBalance;
 use App\Modules\Inventory\Models\StockBalance;
-use App\Modules\Organization\Services\AuditTrailService;
+use App\Platform\Audit\AuditLoggerInterface;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -38,7 +37,7 @@ class InventoryLedgerService
 {
     public function __construct(
         protected MenuCacheService $menuCache,
-        protected AuditTrailService $auditTrail
+        protected AuditLoggerInterface $auditTrail
     ) {}
 
     /**

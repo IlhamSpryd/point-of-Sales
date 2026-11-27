@@ -10,8 +10,6 @@ use App\Core\Traits\ScopedToStore;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Customers\Models\Customer;
 use App\Modules\Customers\Models\CustomerAddress;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use App\Modules\Sales\Enums\QuotationStatusEnum;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -100,22 +98,6 @@ class Quotation extends Model
             'tax_amount' => 'string',
             'total_amount' => 'string',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

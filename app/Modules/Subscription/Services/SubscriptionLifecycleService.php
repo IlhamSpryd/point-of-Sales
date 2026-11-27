@@ -32,6 +32,7 @@ class SubscriptionLifecycleService
             $expiresAt = $now->copy()->addDays($trialDays);
 
             /** @var TenantSubscription $sub */
+            // @tenant-bypass: platform_entitlement
             $sub = TenantSubscription::withoutGlobalScopes()->create([
                 'tenant_id' => $tenant->id,
                 'plan_id' => $plan->id,
@@ -64,6 +65,7 @@ class SubscriptionLifecycleService
             $expiresAt = $now->copy()->addDays($durationDays);
 
             /** @var TenantSubscription $sub */
+            // @tenant-bypass: platform_entitlement
             $sub = TenantSubscription::withoutGlobalScopes()->create([
                 'tenant_id' => $tenant->id,
                 'plan_id' => $plan->id,
@@ -93,6 +95,7 @@ class SubscriptionLifecycleService
     {
         return DB::transaction(function () use ($tenant, $reason) {
             /** @var TenantSubscription|null $activeSub */
+            // @tenant-bypass: platform_entitlement
             $activeSub = TenantSubscription::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
                 ->latest('id')
@@ -109,6 +112,7 @@ class SubscriptionLifecycleService
                     ['name' => 'Starter Plan', 'price' => 0]
                 );
 
+                // @tenant-bypass: platform_entitlement
                 $activeSub = TenantSubscription::withoutGlobalScopes()->create([
                     'tenant_id' => $tenant->id,
                     'plan_id' => $defaultPlan->id,
@@ -136,6 +140,7 @@ class SubscriptionLifecycleService
     {
         return DB::transaction(function () use ($tenant) {
             /** @var TenantSubscription|null $sub */
+            // @tenant-bypass: platform_entitlement
             $sub = TenantSubscription::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
                 ->latest('id')
@@ -164,6 +169,7 @@ class SubscriptionLifecycleService
         $normalized = strtolower(trim($newStatus));
         if ($normalized === self::STATUS_SUSPENDED) {
             /** @var Tenant $tenant */
+            // @tenant-bypass: platform_entitlement
             $tenant = Tenant::withoutGlobalScopes()->findOrFail($subscription->tenant_id);
 
             return $this->suspend($tenant, $reason);

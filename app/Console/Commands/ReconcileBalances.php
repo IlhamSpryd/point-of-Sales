@@ -32,6 +32,7 @@ class ReconcileBalances extends Command
                 }
 
                 // --- Products ---
+                // @tenant-bypass: cross_tenant_reconciliation
                 $products = Product::withoutTenantScope()->where('tenant_id', $tenant->id)->get();
                 foreach ($products as $product) {
                     // (a) legacy column

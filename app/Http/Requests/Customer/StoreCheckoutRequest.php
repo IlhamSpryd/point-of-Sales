@@ -42,6 +42,7 @@ class StoreCheckoutRequest extends FormRequest
 
             $tenantId = app(TenantContext::class)->getTenantId();
             if ($tenantId !== null) {
+                // @tenant-bypass: auth_lookup
                 $table = Table::withoutGlobalScopes()
                     ->where('id', $tableId)
                     ->where('tenant_id', $tenantId)

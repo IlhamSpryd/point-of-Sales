@@ -41,7 +41,7 @@ trait ManagesCustomerStatementsAndMerge
     public function openMerge(int $sourceId): void
     {
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $source = Customer::withoutGlobalScopes()
+        $source = Customer::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($sourceId);
 
@@ -61,11 +61,11 @@ trait ManagesCustomerStatementsAndMerge
         ]);
 
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $source = Customer::withoutGlobalScopes()
+        $source = Customer::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($this->mergeSourceId);
 
-        $target = Customer::withoutGlobalScopes()
+        $target = Customer::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($this->mergeTargetId);
 

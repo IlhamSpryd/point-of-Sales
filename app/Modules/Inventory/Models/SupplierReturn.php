@@ -9,7 +9,6 @@ use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToStore;
 use App\Core\Traits\ScopedToTenant;
 use App\Enums\SupplierReturnStatusEnum;
-use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -90,16 +89,6 @@ class SupplierReturn extends Model
     public function items(): HasMany
     {
         return $this->hasMany(SupplierReturnItem::class, 'supplier_return_id');
-    }
-
-    /**
-     * Cabang / Toko pengirim retur.
-     *
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class, 'store_id');
     }
 
     /**

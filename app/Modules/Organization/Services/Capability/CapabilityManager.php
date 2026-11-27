@@ -62,6 +62,7 @@ class CapabilityManager
 
         // Check Store-level override if store is specified
         if ($storeId !== null) {
+            // @tenant-bypass: superadmin
             $storeOverride = StoreCapability::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->where('store_id', $storeId)
@@ -79,6 +80,7 @@ class CapabilityManager
         }
 
         // Check Tenant Default Activation
+        // @tenant-bypass: superadmin
         $tenantCap = TenantCapability::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('capability_code', $capabilityCode)
@@ -161,6 +163,7 @@ class CapabilityManager
         // 4. Compatibility Check (Mutual exclusion)
         if (! empty($definition->incompatible_with)) {
             foreach ($definition->incompatible_with as $conflictingCode) {
+                // @tenant-bypass: superadmin
                 $conflict = TenantCapability::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
                     ->where('capability_code', (string) $conflictingCode)
@@ -194,6 +197,7 @@ class CapabilityManager
             throw new DomainException("Cannot enable capability: {$eligibility['reason']} ({$eligibility['status_code']})");
         }
 
+        // @tenant-bypass: superadmin
         TenantCapability::withoutGlobalScopes()->updateOrInsert(
             ['tenant_id' => $tenantId, 'capability_code' => $capabilityCode],
             [
@@ -214,6 +218,7 @@ class CapabilityManager
         // Safety Assertion Checks
         $this->assertSafeToDeactivate($tenantId, $capabilityCode);
 
+        // @tenant-bypass: superadmin
         TenantCapability::withoutGlobalScopes()->updateOrInsert(
             ['tenant_id' => $tenantId, 'capability_code' => $capabilityCode],
             [
@@ -231,6 +236,7 @@ class CapabilityManager
     public function assertSafeToDeactivate(int $tenantId, string $capabilityCode): void
     {
         // 1. Dependent Capabilities Check (Topological Safety Guard)
+        // @tenant-bypass: superadmin
         $activeCapabilities = TenantCapability::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('is_enabled', true)
@@ -288,6 +294,7 @@ class CapabilityManager
 
     protected function bumpConfigVersionAndClearCache(int $tenantId): void
     {
+        // @tenant-bypass: superadmin
         Tenant::withoutGlobalScopes()->where('id', $tenantId)->increment('config_version');
 
         Cache::forget("tenant_{$tenantId}_capabilities");

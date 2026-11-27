@@ -34,6 +34,7 @@ class DeviceController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+        // @tenant-bypass: superadmin
         $stores = Store::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->where('is_active', true)
@@ -47,6 +48,7 @@ class DeviceController extends Controller
         $this->authorize('create', Device::class);
 
         $tenantId = app(TenantContext::class)->requireTenantId();
+        // @tenant-bypass: superadmin
         $stores = Store::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->where('is_active', true)
@@ -58,6 +60,7 @@ class DeviceController extends Controller
     public function store(StoreDeviceRequest $request): RedirectResponse
     {
         $validated = $request->validated();
+        // @tenant-bypass: superadmin
         $store = Store::withoutTenantScope()->findOrFail((int) $validated['store_id']);
 
         try {

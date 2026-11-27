@@ -50,6 +50,7 @@ class LoginRequest extends FormRequest
 
         $rawEmail = $this->string('email');
         $normalizedEmail = EmailNormalizer::normalize($rawEmail);
+        // @tenant-bypass: auth_lookup
         $userCandidate = User::withoutGlobalScopes()->where('email_normalized', $normalizedEmail)->first();
 
         // 1. Cek apakah user terkunci di level database (15 menit)
@@ -128,6 +129,7 @@ class LoginRequest extends FormRequest
     {
         $rawEmail = $this->string('email');
         $normalizedEmail = EmailNormalizer::normalize($rawEmail);
+        // @tenant-bypass: auth_lookup
         $userCandidate = User::withoutGlobalScopes()->where('email_normalized', $normalizedEmail)->first();
         if ($userCandidate && $userCandidate->isLockedOut()) {
             event(new Lockout($this));

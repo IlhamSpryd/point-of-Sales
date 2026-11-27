@@ -128,7 +128,7 @@ class LoyaltyAndValueInstrumentManager extends Component
         ]);
 
         if ($this->gift_card_customer_id) {
-            $customer = Customer::withoutGlobalScopes()
+            $customer = Customer::query()
                 ->where('tenant_id', app(TenantContext::class)->requireTenantId())
                 ->findOrFail($this->gift_card_customer_id);
             $this->authorize('view', $customer);
@@ -158,7 +158,7 @@ class LoyaltyAndValueInstrumentManager extends Component
             'store_credit_amount' => 'required|numeric|min:1000',
         ]);
 
-        $customer = Customer::withoutGlobalScopes()
+        $customer = Customer::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($this->store_credit_customer_id);
 
@@ -247,7 +247,7 @@ class LoyaltyAndValueInstrumentManager extends Component
         $storeCredits = collect();
 
         if ($this->activeTab === 'vouchers') {
-            $q = Voucher::withoutGlobalScopes()
+            $q = Voucher::query()
                 ->where('tenant_id', $tenantId)
                 ->with(['customer', 'customerGroup']);
             if ($this->search !== '') {
@@ -256,7 +256,7 @@ class LoyaltyAndValueInstrumentManager extends Component
             }
             $vouchers = $q->orderByDesc('id')->paginate(15);
         } elseif ($this->activeTab === 'gift_cards') {
-            $q = GiftCard::withoutGlobalScopes()
+            $q = GiftCard::query()
                 ->where('tenant_id', $tenantId)
                 ->with(['customer', 'store']);
             if ($this->search !== '') {
@@ -265,7 +265,7 @@ class LoyaltyAndValueInstrumentManager extends Component
             }
             $giftCards = $q->orderByDesc('id')->paginate(15);
         } elseif ($this->activeTab === 'store_credits') {
-            $q = StoreCreditAccount::withoutGlobalScopes()
+            $q = StoreCreditAccount::query()
                 ->where('tenant_id', $tenantId)
                 ->with(['customer']);
             if ($this->search !== '') {
@@ -275,7 +275,7 @@ class LoyaltyAndValueInstrumentManager extends Component
             $storeCredits = $q->orderByDesc('current_balance')->paginate(15);
         }
 
-        $customers = Customer::withoutGlobalScopes()
+        $customers = Customer::query()
             ->where('tenant_id', $tenantId)
             ->whereNull('merged_into_customer_id')
             ->where('is_active', true)

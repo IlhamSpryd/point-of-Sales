@@ -104,7 +104,7 @@ class VoucherManager extends Component
     {
         $this->resetValidation();
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
-        $voucher = Voucher::withoutGlobalScopes()
+        $voucher = Voucher::query()
             ->where('tenant_id', $tenantId)
             ->where('id', $id)
             ->firstOrFail();
@@ -132,7 +132,7 @@ class VoucherManager extends Component
     public function save(): void
     {
         if ($this->editingVoucherId) {
-            $existing = Voucher::withoutGlobalScopes()
+            $existing = Voucher::query()
                 ->where('tenant_id', (int) app(TenantContext::class)->requireTenantId())
                 ->where('id', $this->editingVoucherId)
                 ->firstOrFail();
@@ -160,7 +160,7 @@ class VoucherManager extends Component
         ];
 
         if ($this->editingVoucherId) {
-            $voucher = Voucher::withoutGlobalScopes()
+            $voucher = Voucher::query()
                 ->where('tenant_id', $tenantId)
                 ->where('id', $this->editingVoucherId)
                 ->firstOrFail();
@@ -176,7 +176,7 @@ class VoucherManager extends Component
     public function toggleStatus(int $id): void
     {
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
-        $voucher = Voucher::withoutGlobalScopes()
+        $voucher = Voucher::query()
             ->where('tenant_id', $tenantId)
             ->where('id', $id)
             ->firstOrFail();
@@ -197,7 +197,7 @@ class VoucherManager extends Component
     {
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
-        $query = Voucher::withoutGlobalScopes()
+        $query = Voucher::query()
             ->where('tenant_id', $tenantId)
             ->orderBy('id', 'desc');
 

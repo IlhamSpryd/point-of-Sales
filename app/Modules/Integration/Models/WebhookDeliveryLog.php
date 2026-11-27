@@ -6,7 +6,6 @@ namespace App\Modules\Integration\Models;
 
 use App\Core\Scopes\TenantScope;
 use App\Core\Traits\AssignsTenant;
-use App\Modules\Organization\Models\Tenant;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -30,7 +29,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
  * @property-read WebhookSubscription $subscription
- * @property-read Tenant $tenant
  */
 #[ScopedBy(TenantScope::class)]
 class WebhookDeliveryLog extends Model
@@ -68,13 +66,5 @@ class WebhookDeliveryLog extends Model
     public function subscription(): BelongsTo
     {
         return $this->belongsTo(WebhookSubscription::class, 'subscription_id');
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
     }
 }

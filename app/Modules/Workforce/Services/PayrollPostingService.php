@@ -37,6 +37,7 @@ class PayrollPostingService
         // Cek jika sudah terhubung ke jurnal
         if ($batch->gl_accrual_journal_id) {
             /** @var JournalEntry|null $existing */
+            // @tenant-bypass: background_job
             $existing = JournalEntry::withoutTenantScope()
                 ->where('tenant_id', $batch->tenant_id)
                 ->where('id', $batch->gl_accrual_journal_id)
@@ -50,6 +51,7 @@ class PayrollPostingService
         $idempotencyKey = "PAYROLL-{$batch->tenant_id}-{$batch->id}-ACCRUAL";
 
         /** @var JournalEntry|null $existingByIdemp */
+        // @tenant-bypass: background_job
         $existingByIdemp = JournalEntry::withoutTenantScope()
             ->where('tenant_id', $batch->tenant_id)
             ->where('idempotency_key', $idempotencyKey)
@@ -64,6 +66,7 @@ class PayrollPostingService
 
         return DB::transaction(function () use ($batch, $userId, $idempotencyKey) {
             // Agregasi dari payroll_records untuk akurasi sub-komponen
+            // @tenant-bypass: background_job
             $records = PayrollRecord::withoutTenantScope()
                 ->where('tenant_id', $batch->tenant_id)
                 ->where('payroll_batch_id', $batch->id)
@@ -320,6 +323,7 @@ class PayrollPostingService
 
         if ($batch->gl_payment_journal_id) {
             /** @var JournalEntry|null $existing */
+            // @tenant-bypass: background_job
             $existing = JournalEntry::withoutTenantScope()
                 ->where('tenant_id', $batch->tenant_id)
                 ->where('id', $batch->gl_payment_journal_id)
@@ -333,6 +337,7 @@ class PayrollPostingService
         $idempotencyKey = "PAYROLL-{$batch->tenant_id}-{$batch->id}-PAYMENT";
 
         /** @var JournalEntry|null $existingByIdemp */
+        // @tenant-bypass: background_job
         $existingByIdemp = JournalEntry::withoutTenantScope()
             ->where('tenant_id', $batch->tenant_id)
             ->where('idempotency_key', $idempotencyKey)
@@ -351,6 +356,7 @@ class PayrollPostingService
             $payrollPayableAccount = $this->resolveAccount('PAYROLL_PAYABLE', $batch->tenant_id, [], '2102');
 
             /** @var ChartOfAccount|null $cashBankAccount */
+            // @tenant-bypass: background_job
             $cashBankAccount = ChartOfAccount::withoutTenantScope()
                 ->where('tenant_id', $batch->tenant_id)
                 ->where('id', $cashBankAccountId)
@@ -423,6 +429,7 @@ class PayrollPostingService
         $keys = array_merge([$primaryKey], $fallbackKeys);
 
         foreach ($keys as $key) {
+            // @tenant-bypass: background_job
             $account = ChartOfAccount::withoutTenantScope()
                 ->where('tenant_id', $tenantId)
                 ->where('system_account_key', $key)
@@ -435,6 +442,7 @@ class PayrollPostingService
         }
 
         if ($fallbackCode) {
+            // @tenant-bypass: background_job
             $account = ChartOfAccount::withoutTenantScope()
                 ->where('tenant_id', $tenantId)
                 ->where('account_code', $fallbackCode)

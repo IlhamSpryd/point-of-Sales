@@ -9,7 +9,6 @@ use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToStore;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Catalog\Models\Product;
-use App\Modules\Organization\Models\Store;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -82,13 +81,5 @@ class StockBalance extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 }

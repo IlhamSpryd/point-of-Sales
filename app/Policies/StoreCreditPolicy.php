@@ -11,6 +11,7 @@ class StoreCreditPolicy
 {
     private function hasRolePermission(User $user, string $permission): bool
     {
+        // @tenant-bypass: auth_lookup
         $role = $user->relationLoaded('role') ? $user->role : $user->role()->withoutGlobalScopes()->first();
         if (! $role) {
             return false;

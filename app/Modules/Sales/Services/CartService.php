@@ -6,11 +6,11 @@ use App\Core\Context\TenantContext;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Inventory\Models\Modifier;
 use App\Modules\Organization\Models\Device;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Pricing\Models\Discount;
 use App\Modules\Pricing\Services\CatalogPriceResolverService;
 use App\Modules\Sales\Models\ParkedCart;
 use App\Modules\Sales\Models\Shift;
+use App\Platform\Audit\AuditLoggerInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -384,7 +384,7 @@ class CartService
             'expires_at' => now()->addHours(24),
         ]);
 
-        app(AuditTrailService::class)->log(
+        app(AuditLoggerInterface::class)->log(
             tenantId: $tenantId,
             action: 'cart.parked',
             userId: $userId,
@@ -570,7 +570,7 @@ class CartService
                 $payload = $revalidatedItems;
             }
 
-            app(AuditTrailService::class)->log(
+            app(AuditLoggerInterface::class)->log(
                 tenantId: $tenantId,
                 action: 'cart.resumed',
                 userId: $userId,
@@ -615,7 +615,7 @@ class CartService
                 'status' => ParkedCart::STATUS_DISCARDED,
             ]);
 
-            app(AuditTrailService::class)->log(
+            app(AuditLoggerInterface::class)->log(
                 tenantId: $tenantId,
                 action: 'cart.discarded',
                 userId: $userId,

@@ -7,7 +7,6 @@ namespace App\Modules\Purchasing\Models;
 use App\Core\Support\EmailNormalizer;
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Tenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -53,14 +52,6 @@ class SupplierContact extends Model
                 $contact->email = EmailNormalizer::normalize($contact->email);
             }
         });
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
     }
 
     /**

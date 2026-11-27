@@ -240,7 +240,7 @@ class JournalEntryManager extends Component
     public function viewJournal(int $id): void
     {
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
-        $this->selectedJournal = JournalEntry::withoutGlobalScopes()
+        $this->selectedJournal = JournalEntry::query()
             ->where('tenant_id', $tenantId)
             ->with(['lines.account', 'createdByUser'])
             ->findOrFail($id);
@@ -264,7 +264,7 @@ class JournalEntryManager extends Component
         ]);
 
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
-        $journal = JournalEntry::withoutGlobalScopes()
+        $journal = JournalEntry::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($this->selectedJournalId);
 
@@ -292,7 +292,7 @@ class JournalEntryManager extends Component
     {
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
-        $query = JournalEntry::withoutGlobalScopes()
+        $query = JournalEntry::query()
             ->where('tenant_id', $tenantId)
             ->with(['lines.account']);
 
@@ -319,7 +319,7 @@ class JournalEntryManager extends Component
 
         $journals = $query->orderByDesc('posting_date')->orderByDesc('id')->paginate(15);
 
-        $accounts = ChartOfAccount::withoutGlobalScopes()
+        $accounts = ChartOfAccount::query()
             ->where('tenant_id', $tenantId)
             ->where('is_active', true)
             ->where('is_postable', true)

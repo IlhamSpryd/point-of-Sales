@@ -22,6 +22,7 @@ class TenantOnboardingService
      */
     public function getInitialStore(Tenant $tenant): Store
     {
+        // @tenant-bypass: superadmin
         $store = Store::withoutTenantScope()
             ->where('tenant_id', $tenant->id)
             ->orderBy('id')
@@ -31,6 +32,7 @@ class TenantOnboardingService
             return $store;
         }
 
+        // @tenant-bypass: superadmin
         $created = Store::withoutTenantScope()->create([
             'tenant_id' => $tenant->id,
             'name' => ($tenant->name ?: 'Business').' - Main Branch',
@@ -100,6 +102,7 @@ class TenantOnboardingService
 
             foreach ($settings as $key => $value) {
                 if ($value !== null) {
+                    // @tenant-bypass: superadmin
                     Setting::withoutTenantScope()->updateOrCreate(
                         ['tenant_id' => $tenant->id, 'key' => $key],
                         ['value' => (string) $value, 'type' => 'string']
@@ -132,6 +135,7 @@ class TenantOnboardingService
             $lockedTenant = Tenant::whereKey($tenant->id)->lockForUpdate()->firstOrFail();
 
             // Cari store awal dengan lock FOR UPDATE
+            // @tenant-bypass: superadmin
             $store = Store::withoutTenantScope()
                 ->where('tenant_id', $tenant->id)
                 ->orderBy('id')
@@ -193,6 +197,7 @@ class TenantOnboardingService
     {
         $normalizedEmail = EmailNormalizer::normalize($email);
 
+        // @tenant-bypass: superadmin
         $user = User::withoutGlobalScopes()
             ->where('email_normalized', $normalizedEmail)
             ->first();
@@ -203,6 +208,7 @@ class TenantOnboardingService
         }
 
         // Cari token yang ada
+        // @tenant-bypass: superadmin
         $existingToken = OwnerOnboardingToken::withoutGlobalScopes()
             ->where('tenant_id', $user->tenant_id)
             ->where('user_id', $user->id)
@@ -218,6 +224,7 @@ class TenantOnboardingService
         $tokenHash = hash('sha256', $rawToken);
         $expiresAt = now()->addMinutes(60);
 
+        // @tenant-bypass: superadmin
         OwnerOnboardingToken::withoutGlobalScopes()->updateOrCreate(
             ['tenant_id' => $user->tenant_id, 'user_id' => $user->id],
             [

@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Finance\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Finance\Enums\ApEntryTypeEnum;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use App\Modules\Purchasing\Models\PurchaseDebitNote;
 use App\Modules\Purchasing\Models\Supplier;
@@ -41,6 +40,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ApLedgerEntry extends Model
 {
     use AssignsTenant;
+    use HasStoreRelation;
     use ScopedToTenant;
 
     protected $table = 'ap_ledger_entries';
@@ -73,22 +73,6 @@ class ApLedgerEntry extends Model
             'credit_amount' => 'string',
             'running_balance' => 'string',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

@@ -7,8 +7,8 @@ use App\Http\Controllers\Api\V1\OrderApiController;
 use App\Http\Controllers\Api\V1\ProductApiController;
 use App\Http\Controllers\Api\V1\WebhookSubscriptionApiController;
 use App\Http\Controllers\Api\WebhookController;
-use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\HealthCheckController;
+use App\Modules\Organization\Controllers\DeviceController;
 use App\Modules\Sales\Controllers\MidtransNotificationController;
 use Illuminate\Support\Facades\Route;
 

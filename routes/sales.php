@@ -2,11 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\MidtransNotificationController;
-use App\Http\Controllers\QzTraySigningController;
-use App\Http\Controllers\ShiftController;
-use App\Http\Controllers\TableController;
-use App\Http\Controllers\TransactionController;
 use App\Livewire\ChannelMappingManager;
 use App\Livewire\Kasir\CreateOrder;
 use App\Livewire\Kds\Board;
@@ -14,7 +9,12 @@ use App\Livewire\Sales\AccountsReceivableManager;
 use App\Livewire\Sales\QuotationManager;
 use App\Livewire\Sales\ReturnCreditNoteManager;
 use App\Livewire\Sales\SalesOrderManager;
+use App\Modules\Sales\Controllers\MidtransNotificationController;
 use App\Modules\Sales\Controllers\OfflineOrderSyncController;
+use App\Modules\Sales\Controllers\QzTraySigningController;
+use App\Modules\Sales\Controllers\ShiftController;
+use App\Modules\Sales\Controllers\TableController;
+use App\Modules\Sales\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 
 /*

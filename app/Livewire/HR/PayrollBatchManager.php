@@ -100,7 +100,7 @@ class PayrollBatchManager extends Component
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
         /** @var PayrollBatch|null $batch */
-        $batch = PayrollBatch::withoutTenantScope()
+        $batch = PayrollBatch::query()
             ->where('tenant_id', $tenantId)
             ->where('id', $batchId)
             ->first();
@@ -127,7 +127,7 @@ class PayrollBatchManager extends Component
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
         /** @var PayrollBatch|null $batch */
-        $batch = PayrollBatch::withoutTenantScope()
+        $batch = PayrollBatch::query()
             ->where('tenant_id', $tenantId)
             ->where('id', $batchId)
             ->first();
@@ -241,7 +241,7 @@ class PayrollBatchManager extends Component
     {
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
-        $query = PayrollBatch::withoutTenantScope()
+        $query = PayrollBatch::query()
             ->where('tenant_id', $tenantId)
             ->orderBy('id', 'desc');
 
@@ -257,26 +257,26 @@ class PayrollBatchManager extends Component
         /** @var Collection<int, PayrollRecord> $records */
         $records = collect();
         if ($this->selectedBatchId) {
-            $records = PayrollRecord::withoutTenantScope()
+            $records = PayrollRecord::query()
                 ->where('tenant_id', $tenantId)
                 ->where('payroll_batch_id', $this->selectedBatchId)
                 ->get();
         }
 
-        $totalBatchesCount = PayrollBatch::withoutTenantScope()
+        $totalBatchesCount = PayrollBatch::query()
             ->where('tenant_id', $tenantId)
             ->count();
 
-        $finalizedBatchesCount = PayrollBatch::withoutTenantScope()
+        $finalizedBatchesCount = PayrollBatch::query()
             ->where('tenant_id', $tenantId)
             ->whereIn('status', [PayrollBatchStatusEnum::FINALIZED, PayrollBatchStatusEnum::PAID])
             ->count();
 
-        $totalGrossDisbursed = (float) PayrollBatch::withoutTenantScope()
+        $totalGrossDisbursed = (float) PayrollBatch::query()
             ->where('tenant_id', $tenantId)
             ->sum('total_gross_amount');
 
-        $totalNetDisbursed = (float) PayrollBatch::withoutTenantScope()
+        $totalNetDisbursed = (float) PayrollBatch::query()
             ->where('tenant_id', $tenantId)
             ->sum('total_net_amount');
 

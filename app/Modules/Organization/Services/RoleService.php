@@ -176,6 +176,7 @@ class RoleService
             $candidateName = $baseName;
             $counter = 1;
 
+            // @tenant-bypass: superadmin
             while (Role::withoutTenantScope()->where('tenant_id', $tenantId)->where('name', $candidateName)->exists()) {
                 $counter++;
                 $candidateName = $baseName.' '.$counter;

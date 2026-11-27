@@ -34,7 +34,7 @@ class LeaveManager extends Component
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
         /** @var LeaveRequest|null $request */
-        $request = LeaveRequest::withoutTenantScope()
+        $request = LeaveRequest::query()
             ->where('tenant_id', $tenantId)
             ->where('id', $requestId)
             ->first();
@@ -48,7 +48,7 @@ class LeaveManager extends Component
         $primaryBranch = $request->employee?->primaryBranchAssignment;
         $storeId = $primaryBranch ? $primaryBranch->store_id : 0;
         if (! $storeId) {
-            $firstStore = Store::withoutGlobalScopes()->where('tenant_id', $tenantId)->first();
+            $firstStore = Store::query()->where('tenant_id', $tenantId)->first();
             $storeId = $firstStore instanceof Store ? $firstStore->id : 1;
         }
 
@@ -82,7 +82,7 @@ class LeaveManager extends Component
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
         /** @var LeaveRequest|null $request */
-        $request = LeaveRequest::withoutTenantScope()
+        $request = LeaveRequest::query()
             ->where('tenant_id', $tenantId)
             ->where('id', $requestId)
             ->first();
@@ -108,7 +108,7 @@ class LeaveManager extends Component
     {
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
-        $query = LeaveRequest::withoutTenantScope()
+        $query = LeaveRequest::query()
             ->where('tenant_id', $tenantId)
             ->with(['employee', 'policy'])
             ->orderBy('id', 'desc');
@@ -123,28 +123,28 @@ class LeaveManager extends Component
         $requests = $query->paginate(12);
 
         /** @var Collection<int, LeaveBalance> $balances */
-        $balances = LeaveBalance::withoutTenantScope()
+        $balances = LeaveBalance::query()
             ->where('tenant_id', $tenantId)
             ->with(['employee', 'policy'])
             ->orderBy('id', 'desc')
             ->take(20)
             ->get();
 
-        $pendingCount = LeaveRequest::withoutTenantScope()
+        $pendingCount = LeaveRequest::query()
             ->where('tenant_id', $tenantId)
             ->where('status', LeaveRequestStatusEnum::PENDING)
             ->count();
 
-        $approvedCount = LeaveRequest::withoutTenantScope()
+        $approvedCount = LeaveRequest::query()
             ->where('tenant_id', $tenantId)
             ->where('status', LeaveRequestStatusEnum::APPROVED)
             ->count();
 
-        $totalBalanceCount = LeaveBalance::withoutTenantScope()
+        $totalBalanceCount = LeaveBalance::query()
             ->where('tenant_id', $tenantId)
             ->count();
 
-        $totalDaysApproved = (float) LeaveRequest::withoutTenantScope()
+        $totalDaysApproved = (float) LeaveRequest::query()
             ->where('tenant_id', $tenantId)
             ->where('status', LeaveRequestStatusEnum::APPROVED)
             ->sum('total_days');

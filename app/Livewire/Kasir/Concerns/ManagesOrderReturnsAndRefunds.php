@@ -39,7 +39,7 @@ trait ManagesOrderReturnsAndRefunds
 
         $this->returnItems = [];
         foreach ($order->orderItems as $item) {
-            $alreadyReturned = (int) OrderReturnItem::withoutGlobalScopes()
+            $alreadyReturned = (int) OrderReturnItem::allStores()
                 ->where('order_item_id', $item->id)
                 ->sum('quantity_returned');
             $remaining = max(0, (int) $item->qty - $alreadyReturned);
@@ -62,7 +62,7 @@ trait ManagesOrderReturnsAndRefunds
 
         $this->refundAllocations = [];
         foreach ($order->payments as $payment) {
-            $alreadyRefunded = (float) PaymentRefund::withoutGlobalScopes()
+            $alreadyRefunded = (float) PaymentRefund::allStores()
                 ->where('payment_id', $payment->id)
                 ->whereNotIn('request_status', [PaymentRefund::REQUEST_FAILED, PaymentRefund::REQUEST_CANCELLED])
                 ->sum('amount');

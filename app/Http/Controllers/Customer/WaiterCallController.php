@@ -29,6 +29,7 @@ class WaiterCallController extends Controller
             return response()->json(['message' => 'Invalid table session.'], 422);
         }
 
+        // @tenant-bypass: auth_lookup
         $table = Table::withoutGlobalScopes()->find($tableId);
         $tenantId = $table ? (int) $table->tenant_id : (app(TenantContext::class)->getTenantId() ?? 0);
         $storeId = $table ? (int) $table->store_id : app(TenantContext::class)->getStoreId();

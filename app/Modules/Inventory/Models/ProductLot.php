@@ -11,8 +11,6 @@ use App\Core\Traits\BelongsToCompany;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductVariant;
 use App\Modules\Organization\Models\Company;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\Warehouse;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
@@ -42,9 +40,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonInterface|null $updated_at
  * @property-read Product $product
  * @property-read ProductVariant|null $variant
- * @property-read Store|null $store
  * @property-read Company|null $company
- * @property-read Tenant $tenant
  */
 #[ScopedBy(TenantScope::class)]
 class ProductLot extends Model
@@ -111,14 +107,6 @@ class ProductLot extends Model
     }
 
     /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
-    }
-
-    /**
      * @return BelongsTo<Warehouse, $this>
      */
     public function warehouse(): BelongsTo
@@ -132,13 +120,5 @@ class ProductLot extends Model
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
     }
 }

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\DiscountController;
 use App\Livewire\Pricing\PromotionCampaignManager;
 use App\Livewire\Pricing\VoucherManager;
+use App\Modules\Pricing\Controllers\DiscountController;
 use Illuminate\Support\Facades\Route;
 
 /*

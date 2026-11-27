@@ -9,7 +9,6 @@ use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToStore;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Customers\Models\Customer;
-use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\User;
 use App\Modules\Sales\Enums\CreditNoteStatusEnum;
 use Illuminate\Database\Eloquent\Model;
@@ -83,14 +82,6 @@ class SalesCreditNote extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class, 'customer_id');
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class, 'store_id');
     }
 
     /**

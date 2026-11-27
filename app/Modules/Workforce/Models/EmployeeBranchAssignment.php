@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Workforce\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Workforce\Enums\AssignmentTypeEnum;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,13 +24,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $notes
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
- * @property-read Tenant|null $tenant
  * @property-read Employee|null $employee
- * @property-read Store|null $store
  */
 class EmployeeBranchAssignment extends Model
 {
     use AssignsTenant;
+    use HasStoreRelation;
     use ScopedToTenant;
 
     protected $table = 'employee_branch_assignments';
@@ -56,27 +54,11 @@ class EmployeeBranchAssignment extends Model
     }
 
     /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class, 'tenant_id');
-    }
-
-    /**
      * @return BelongsTo<Employee, $this>
      */
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class, 'employee_id');
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class, 'store_id');
     }
 
     /**

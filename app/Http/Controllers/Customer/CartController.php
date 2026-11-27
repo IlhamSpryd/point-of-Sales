@@ -37,6 +37,7 @@ class CartController extends Controller
         $tableId = session('current_table_id');
         $currentTable = null;
         if ($tableId) {
+            // @tenant-bypass: auth_lookup
             $currentTable = Table::withoutGlobalScopes()
                 ->where('id', $tableId)
                 ->where('tenant_id', app(TenantContext::class)->getTenantId())

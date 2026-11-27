@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\FinanceDashboardController;
 use App\Livewire\Finance\AccountingPeriodManager;
 use App\Livewire\Finance\BankReconciliationWorkbench;
 use App\Livewire\Finance\ChartOfAccountManager;
 use App\Livewire\Finance\FixedAssetManager;
 use App\Livewire\Finance\JournalEntryManager;
+use App\Modules\Finance\Controllers\FinanceDashboardController;
 use Illuminate\Support\Facades\Route;
 
 /*

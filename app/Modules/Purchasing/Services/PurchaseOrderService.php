@@ -14,7 +14,6 @@ use App\Enums\PurchaseRequestStatusEnum;
 use App\Enums\SupplierStatusEnum;
 use App\Modules\Organization\Models\Setting;
 use App\Modules\Organization\Models\User;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Purchasing\Models\PurchaseOrder;
 use App\Modules\Purchasing\Models\PurchaseOrderLine;
 use App\Modules\Purchasing\Models\PurchaseOrderLinePrAllocation;
@@ -22,6 +21,7 @@ use App\Modules\Purchasing\Models\PurchaseOrderRevision;
 use App\Modules\Purchasing\Models\PurchaseRequest;
 use App\Modules\Purchasing\Models\PurchaseRequestLine;
 use App\Modules\Purchasing\Models\Supplier;
+use App\Platform\Audit\AuditLoggerInterface;
 use App\Platform\Documents\DocumentSequenceService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
@@ -34,7 +34,7 @@ class PurchaseOrderService
     public function __construct(
         protected DocumentSequenceService $sequenceService,
         protected PurchaseApprovalService $approvalService,
-        protected AuditTrailService $auditTrailService,
+        protected AuditLoggerInterface $auditTrailService,
         protected TenantContext $tenantContext
     ) {}
 

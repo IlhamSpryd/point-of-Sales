@@ -314,7 +314,7 @@ class SupplierReturnManager extends Component
         $context = app(TenantContext::class);
 
         /** @var SupplierReturn */
-        return SupplierReturn::withoutGlobalScopes()
+        return SupplierReturn::allStores()
             ->where('tenant_id', $context->getTenantId())
             ->where('store_id', $context->getStoreId())
             ->where('id', $id)
@@ -327,7 +327,7 @@ class SupplierReturnManager extends Component
         $tenantId = $context->getTenantId();
         $storeId = $context->getStoreId();
 
-        $query = SupplierReturn::withoutGlobalScopes()
+        $query = SupplierReturn::allStores()
             ->where('tenant_id', $tenantId)
             ->where('store_id', $storeId)
             ->with(['creator', 'poster', 'goodsReceipt'])
@@ -349,17 +349,17 @@ class SupplierReturnManager extends Component
         $returns = $query->paginate(10);
 
         // Fetch selectable items for active store
-        $products = Product::withoutGlobalScopes()
+        $products = Product::query()
             ->where('tenant_id', $tenantId)
             ->orderBy('product_name')
             ->get(['id', 'product_name', 'product_code']);
 
-        $ingredients = Ingredient::withoutGlobalScopes()
+        $ingredients = Ingredient::query()
             ->where('tenant_id', $tenantId)
             ->orderBy('name')
             ->get(['id', 'name', 'ingredient_code', 'unit']);
 
-        $recentReceipts = GoodsReceipt::withoutGlobalScopes()
+        $recentReceipts = GoodsReceipt::allStores()
             ->where('tenant_id', $tenantId)
             ->where('store_id', $storeId)
             ->where('status', 'POSTED')
@@ -368,7 +368,7 @@ class SupplierReturnManager extends Component
             ->get(['id', 'receipt_number', 'supplier_reference']);
 
         $selectedReturn = $this->selectedReturnId
-            ? SupplierReturn::withoutGlobalScopes()
+            ? SupplierReturn::allStores()
                 ->where('tenant_id', $tenantId)
                 ->where('store_id', $storeId)
                 ->where('id', $this->selectedReturnId)

@@ -11,7 +11,6 @@ use App\Modules\Customers\Models\CustomerCreditAccount;
 use App\Modules\Customers\Services\CustomerCreditService;
 use App\Modules\Finance\Models\ArReceipt;
 use App\Modules\Organization\Models\User;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Sales\Enums\ArLedgerEntryTypeEnum;
 use App\Modules\Sales\Enums\CustomerInvoiceStatusEnum;
 use App\Modules\Sales\Enums\SalesOrderInvoicingStatusEnum;
@@ -22,6 +21,7 @@ use App\Modules\Sales\Models\CustomerInvoice;
 use App\Modules\Sales\Models\CustomerInvoiceLine;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\SalesOrder;
+use App\Platform\Audit\AuditLoggerInterface;
 use App\Platform\Documents\DocumentSequenceService;
 use Carbon\Carbon;
 use DomainException;
@@ -35,7 +35,7 @@ class AccountsReceivableService
     public function __construct(
         protected TenantContext $tenantContext,
         protected DocumentSequenceService $sequenceService,
-        protected AuditTrailService $auditTrailService,
+        protected AuditLoggerInterface $auditTrailService,
         protected CustomerCreditService $creditService,
     ) {}
 

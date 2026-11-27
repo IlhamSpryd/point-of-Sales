@@ -9,7 +9,6 @@ use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToStore;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Catalog\Models\Product;
-use App\Modules\Organization\Models\Store;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -92,16 +91,6 @@ class StockAdjustmentItem extends Model
     public function ingredient(): BelongsTo
     {
         return $this->belongsTo(Ingredient::class, 'ingredient_id');
-    }
-
-    /**
-     * Cabang / Toko.
-     *
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class, 'store_id');
     }
 
     /**

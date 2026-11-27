@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Finance\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Finance\Enums\OutboxStatusEnum;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -38,6 +37,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class FinancialEventOutbox extends Model
 {
     use AssignsTenant;
+    use HasStoreRelation;
     use ScopedToTenant;
 
     protected $table = 'financial_event_outboxes';
@@ -74,22 +74,6 @@ class FinancialEventOutbox extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

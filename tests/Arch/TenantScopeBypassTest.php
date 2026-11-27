@@ -15,12 +15,12 @@ class TenantScopeBypassTest extends TestCase
     /**
      * Ratchet ceiling for total allowable scope bypasses in app/ (must decrease each milestone).
      */
-    public const MAX_ALLOWED_BYPASSES = 990;
+    public const MAX_ALLOWED_BYPASSES = 680;
 
     /**
      * Ratchet ceiling for legacy unannotated bypasses. Any new bypass must be annotated with @tenant-bypass.
      */
-    public const MAX_UNANNOTATED_BYPASSES = 990;
+    public const MAX_UNANNOTATED_BYPASSES = 350;
 
     /**
      * Recognized valid categories for @tenant-bypass annotations.

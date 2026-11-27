@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace App\Modules\Reporting\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -27,6 +25,7 @@ class StoreTarget extends Model
 {
     use AssignsTenant;
     use HasFactory;
+    use HasStoreRelation;
     use ScopedToTenant;
 
     protected $table = 'store_targets';
@@ -50,15 +49,5 @@ class StoreTarget extends Model
             'max_shrinkage_pct' => 'string',
             'max_labor_cost_pct' => 'string',
         ];
-    }
-
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
-    }
-
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
     }
 }

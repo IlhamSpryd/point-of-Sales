@@ -59,6 +59,7 @@ class ReconcileProvisioningLedger extends Command
         // TX-009: State machine rekonsiliasi non-terminal:
         // 1. Baris PROCESSING dengan expired lease (atau null)
         // 2. Baris PENDING / FAILED yang berpotensi memiliki committed tenant di database
+        // @tenant-bypass: cross_tenant_reconciliation
         $candidates = ProvisioningRequest::withoutGlobalScopes()
             ->where(function ($q) use ($cutoff) {
                 // Klaim processing yang sudah expired
@@ -94,6 +95,7 @@ class ReconcileProvisioningLedger extends Command
                     continue;
                 }
 
+                // @tenant-bypass: cross_tenant_reconciliation
                 $affected = ProvisioningRequest::withoutGlobalScopes()
                     ->whereKey($ledger->id)
                     ->where('status', $ledger->status)
@@ -130,6 +132,7 @@ class ReconcileProvisioningLedger extends Command
                     continue;
                 }
 
+                // @tenant-bypass: cross_tenant_reconciliation
                 $affected = ProvisioningRequest::withoutGlobalScopes()
                     ->whereKey($ledger->id)
                     ->where('status', ProvisioningRequest::STATUS_PROCESSING)
@@ -182,6 +185,7 @@ class ReconcileProvisioningLedger extends Command
 
         // Owner diambil dari token onboarding (dibuat di transaksi yang sama)
         // — bukan lewat pencarian email, yang tidak unik per request.
+        // @tenant-bypass: cross_tenant_reconciliation
         $userId = OwnerOnboardingToken::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->orderBy('id')
@@ -195,6 +199,7 @@ class ReconcileProvisioningLedger extends Command
         }
 
         if ($userId === null) {
+            // @tenant-bypass: cross_tenant_reconciliation
             $userId = app(TenantContext::class)->runWithoutTenant(
                 fn () => User::query()->where('tenant_id', $tenantId)->orderBy('id')->value('id')
             );

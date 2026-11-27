@@ -12,12 +12,12 @@ use App\Enums\StockMovementType;
 use App\Modules\Finance\Services\InventoryAccountingService;
 use App\Modules\Inventory\Services\InventoryLedgerService;
 use App\Modules\Organization\Models\User;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Purchasing\Exceptions\OverReceiptToleranceExceededException;
 use App\Modules\Purchasing\Models\GoodsReceivedNote;
 use App\Modules\Purchasing\Models\GoodsReceivedNoteLine;
 use App\Modules\Purchasing\Models\PurchaseOrder;
 use App\Modules\Purchasing\Models\PurchaseOrderLine;
+use App\Platform\Audit\AuditLoggerInterface;
 use App\Platform\Documents\DocumentSequenceService;
 use DomainException;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +28,7 @@ class GoodsReceivedNoteService
     public function __construct(
         protected DocumentSequenceService $sequenceService,
         protected InventoryLedgerService $inventoryLedgerService,
-        protected AuditTrailService $auditTrailService,
+        protected AuditLoggerInterface $auditTrailService,
         protected ?SupplierPerformanceService $performanceService = null
     ) {
         $this->performanceService = $performanceService ?? app(SupplierPerformanceService::class);

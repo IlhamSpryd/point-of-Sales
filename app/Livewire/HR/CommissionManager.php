@@ -41,7 +41,7 @@ class CommissionManager extends Component
     {
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
-        $query = CommissionRecord::withoutTenantScope()
+        $query = CommissionRecord::query()
             ->where('tenant_id', $tenantId)
             ->with(['employee'])
             ->orderBy('id', 'desc');
@@ -60,23 +60,23 @@ class CommissionManager extends Component
         $records = $query->paginate(15);
 
         /** @var Collection<int, Employee> $employees */
-        $employees = Employee::withoutTenantScope()
+        $employees = Employee::query()
             ->where('tenant_id', $tenantId)
             ->whereIn('employment_status', [EmploymentStatusEnum::ACTIVE, EmploymentStatusEnum::ON_PROBATION])
             ->orderBy('full_name')
             ->get();
 
-        $totalEarned = (float) CommissionRecord::withoutTenantScope()
+        $totalEarned = (float) CommissionRecord::query()
             ->where('tenant_id', $tenantId)
             ->where('type', CommissionRecordTypeEnum::STANDARD)
             ->sum('commission_amount');
 
-        $totalReversed = (float) CommissionRecord::withoutTenantScope()
+        $totalReversed = (float) CommissionRecord::query()
             ->where('tenant_id', $tenantId)
             ->where('type', CommissionRecordTypeEnum::REVERSAL)
             ->sum('commission_amount');
 
-        $totalRecordsCount = CommissionRecord::withoutTenantScope()
+        $totalRecordsCount = CommissionRecord::query()
             ->where('tenant_id', $tenantId)
             ->count();
 

@@ -10,7 +10,6 @@ use App\Core\Traits\ScopedToStore;
 use App\Core\Traits\ScopedToTenant;
 use App\Enums\StockAdjustmentReasonEnum;
 use App\Enums\StockAdjustmentStatusEnum;
-use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -79,16 +78,6 @@ class StockAdjustment extends Model
     public function items(): HasMany
     {
         return $this->hasMany(StockAdjustmentItem::class, 'stock_adjustment_id');
-    }
-
-    /**
-     * Cabang / Toko terkait.
-     *
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class, 'store_id');
     }
 
     /**

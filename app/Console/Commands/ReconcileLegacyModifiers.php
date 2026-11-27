@@ -32,6 +32,7 @@ class ReconcileLegacyModifiers extends Command
         $dryRun = $this->option('dry-run');
         $chunkSize = (int) $this->option('chunk');
 
+        // @tenant-bypass: cross_tenant_reconciliation
         $query = OrderItem::withoutGlobalScopes()->whereNotNull('options')->where('options', '!=', '[]')->where('options', '!=', '{}');
         $total = $query->count();
 

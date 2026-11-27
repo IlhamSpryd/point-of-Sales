@@ -6,11 +6,20 @@ namespace App\Core\Traits;
 
 use App\Core\Context\TenantContext;
 use App\Modules\Organization\Models\Store;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
 use RuntimeException;
 
 trait AssignsStore
 {
+    /**
+     * @return BelongsTo<Store, $this>
+     */
+    public function store(): BelongsTo
+    {
+        return $this->belongsTo(Store::class);
+    }
+
     protected static function bootAssignsStore(): void
     {
         static::creating(function ($model) {

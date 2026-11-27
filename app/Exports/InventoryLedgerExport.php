@@ -45,6 +45,7 @@ class InventoryLedgerExport implements FromCollection, WithColumnWidths, WithHea
 
         // 1. Ambil mutasi produk jika itemType 'all' atau 'product'
         if ($this->itemType === 'all' || $this->itemType === 'product') {
+            // @tenant-bypass: background_job
             $productMovementsQuery = StockMovement::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->whereBetween('created_at', [$this->startDate->startOfDay(), $this->endDate->endOfDay()])
@@ -87,6 +88,7 @@ class InventoryLedgerExport implements FromCollection, WithColumnWidths, WithHea
 
         // 2. Ambil mutasi bahan baku jika itemType 'all' atau 'ingredient'
         if ($this->itemType === 'all' || $this->itemType === 'ingredient') {
+            // @tenant-bypass: background_job
             $ingredientMovementsQuery = IngredientStockMovement::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->whereBetween('created_at', [$this->startDate->startOfDay(), $this->endDate->endOfDay()])

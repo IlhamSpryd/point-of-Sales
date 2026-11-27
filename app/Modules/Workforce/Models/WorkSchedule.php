@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Workforce\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Workforce\Enums\WorkScheduleStatusEnum;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,8 +26,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string|null $notes
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
- * @property-read Tenant|null $tenant
- * @property-read Store|null $store
  * @property-read Employee|null $employee
  * @property-read ShiftTemplate|null $shiftTemplate
  * @property-read WorkSchedule|null $swappedWith
@@ -36,6 +33,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class WorkSchedule extends Model
 {
     use AssignsTenant;
+    use HasStoreRelation;
     use ScopedToTenant;
 
     protected $table = 'work_schedules';
@@ -57,22 +55,6 @@ class WorkSchedule extends Model
             'schedule_date' => 'date',
             'status' => WorkScheduleStatusEnum::class,
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class, 'tenant_id');
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class, 'store_id');
     }
 
     /**

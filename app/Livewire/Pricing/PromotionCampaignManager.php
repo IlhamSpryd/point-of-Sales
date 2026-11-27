@@ -125,7 +125,7 @@ class PromotionCampaignManager extends Component
     {
         $this->resetValidation();
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
-        $campaign = PromotionCampaign::withoutGlobalScopes()
+        $campaign = PromotionCampaign::query()
             ->where('tenant_id', $tenantId)
             ->where('id', $id)
             ->with(['rules.rewards'])
@@ -169,7 +169,7 @@ class PromotionCampaignManager extends Component
     public function save(): void
     {
         if ($this->editingCampaignId) {
-            $existing = PromotionCampaign::withoutGlobalScopes()
+            $existing = PromotionCampaign::query()
                 ->where('tenant_id', (int) app(TenantContext::class)->requireTenantId())
                 ->where('id', $this->editingCampaignId)
                 ->firstOrFail();
@@ -205,7 +205,7 @@ class PromotionCampaignManager extends Component
             ];
 
             if ($this->editingCampaignId) {
-                $campaign = PromotionCampaign::withoutGlobalScopes()
+                $campaign = PromotionCampaign::query()
                     ->where('tenant_id', $tenantId)
                     ->where('id', $this->editingCampaignId)
                     ->firstOrFail();
@@ -240,7 +240,7 @@ class PromotionCampaignManager extends Component
     public function toggleStatus(int $id): void
     {
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
-        $campaign = PromotionCampaign::withoutGlobalScopes()
+        $campaign = PromotionCampaign::query()
             ->where('tenant_id', $tenantId)
             ->where('id', $id)
             ->firstOrFail();
@@ -262,7 +262,7 @@ class PromotionCampaignManager extends Component
     {
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
-        $query = PromotionCampaign::withoutGlobalScopes()
+        $query = PromotionCampaign::query()
             ->where('tenant_id', $tenantId)
             ->withCount(['rules'])
             ->orderBy('priority', 'desc')

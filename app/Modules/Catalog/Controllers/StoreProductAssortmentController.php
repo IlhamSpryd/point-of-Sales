@@ -11,7 +11,7 @@ use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\StoreProductAssortment;
 use App\Modules\Catalog\Services\MenuCacheService;
 use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Services\AuditTrailService;
+use App\Platform\Audit\AuditLoggerInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -20,9 +20,9 @@ class StoreProductAssortmentController extends Controller
 {
     public function __construct(
         protected MenuCacheService $menuCache,
-        protected ?AuditTrailService $auditTrail = null
+        protected ?AuditLoggerInterface $auditTrail = null
     ) {
-        $this->auditTrail ??= app(AuditTrailService::class);
+        $this->auditTrail ??= app(AuditLoggerInterface::class);
     }
 
     public function index(Request $request): View

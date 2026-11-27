@@ -10,10 +10,10 @@ use App\Enums\SupplierStatusEnum;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Inventory\Models\Ingredient;
 use App\Modules\Organization\Models\User;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Purchasing\Models\Supplier;
 use App\Modules\Purchasing\Models\SupplierContact;
 use App\Modules\Purchasing\Models\SupplierProduct;
+use App\Platform\Audit\AuditLoggerInterface;
 use App\Platform\Documents\DocumentSequenceService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -22,7 +22,7 @@ class SupplierService
 {
     public function __construct(
         protected DocumentSequenceService $sequenceService,
-        protected AuditTrailService $auditTrailService,
+        protected AuditLoggerInterface $auditTrailService,
         protected TenantContext $tenantContext
     ) {}
 

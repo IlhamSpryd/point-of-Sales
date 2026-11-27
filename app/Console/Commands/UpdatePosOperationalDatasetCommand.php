@@ -128,9 +128,11 @@ class UpdatePosOperationalDatasetCommand extends Command
     {
         $tenantId = (int) $tenant->id;
         $hashedPassword = Hash::make($rawPassword);
+        // @tenant-bypass: dataset_generation
         $allStores = Store::withoutGlobalScopes()->where('tenant_id', $tenantId)->get();
 
         // 0. Sinkronisasi Dashboard Archetype pada Seluruh Roles
+        // @tenant-bypass: dataset_generation
         $roles = Role::withoutGlobalScopes()->where('tenant_id', $tenantId)->get();
         foreach ($roles as $r) {
             $archetype = match (strtolower(trim($r->name))) {
@@ -146,12 +148,15 @@ class UpdatePosOperationalDatasetCommand extends Command
             DB::table('roles')->where('id', $r->id)->update(['dashboard_archetype' => $archetype]);
         }
 
+        // @tenant-bypass: dataset_generation
         $roleOwner = Role::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('name', 'Owner')->first();
         $roleManager = Role::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('name', 'Manager')->first();
+        // @tenant-bypass: dataset_generation
         $roleKasir = Role::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('name', 'Kasir')->first();
 
         // 1. Sinkronisasi Owner Utama
         $ownerEmail = $tenantId === 1 ? 'ilhamsepriyadi8@gmail.com' : 'ilhamsepriyadi0@gmail.com';
+        // @tenant-bypass: dataset_generation
         $ownerUser = User::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('email', $ownerEmail)->first();
 
         if ($ownerUser) {
@@ -172,6 +177,7 @@ class UpdatePosOperationalDatasetCommand extends Command
         }
 
         // 2. Sinkronisasi seluruh akun staf dan kasir
+        // @tenant-bypass: dataset_generation
         $staffUsers = User::withoutGlobalScopes()->where('tenant_id', $tenantId)->get();
         foreach ($staffUsers as $usr) {
             $usr->password = $hashedPassword;
@@ -184,6 +190,7 @@ class UpdatePosOperationalDatasetCommand extends Command
         // 3. Siapkan akun kasir demo eksplisit
         $demoKasirEmail = $tenantId === 1 ? 'kasir.fnb@apeiron.test' : 'kasir.retail@apeiron.test';
         $demoKasirName = $tenantId === 1 ? 'Sari Kasir F&B' : 'Budi Kasir Retail';
+        // @tenant-bypass: dataset_generation
         $demoKasir = User::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('email', $demoKasirEmail)->first();
 
         if (! $demoKasir) {
@@ -227,11 +234,13 @@ class UpdatePosOperationalDatasetCommand extends Command
     private function restockProductsAndIngredients(Tenant $tenant): array
     {
         $tenantId = (int) $tenant->id;
+        // @tenant-bypass: dataset_generation
         $stores = Store::withoutGlobalScopes()->where('tenant_id', $tenantId)->get();
         $now = now();
         $isRetail = ($tenant->primary_industry === 'retail');
         $targetProductStock = $isRetail ? 250 : 150;
 
+        // @tenant-bypass: dataset_generation
         $products = Product::withoutGlobalScopes()->where('tenant_id', $tenantId)->get();
         $ingredients = Ingredient::withoutGlobalScopes()->where('tenant_id', $tenantId)->get();
 
@@ -399,6 +408,7 @@ class UpdatePosOperationalDatasetCommand extends Command
     private function setupWorkSchedules(Tenant $tenant): int
     {
         $tenantId = (int) $tenant->id;
+        // @tenant-bypass: dataset_generation
         $stores = Store::withoutGlobalScopes()->where('tenant_id', $tenantId)->get();
         $employees = Employee::withoutGlobalScopes()->where('tenant_id', $tenantId)->get();
 
@@ -512,11 +522,13 @@ class UpdatePosOperationalDatasetCommand extends Command
     private function setupActiveShiftsForStores(Tenant $tenant, array $users): array
     {
         $tenantId = (int) $tenant->id;
+        // @tenant-bypass: dataset_generation
         $stores = Store::withoutGlobalScopes()->where('tenant_id', $tenantId)->get();
         $today = Carbon::today();
         $activeShifts = [];
 
         // 1. Tutup shift usang dari hari-hari sebelumnya yang masih berstatus 'open'
+        // @tenant-bypass: dataset_generation
         $staleShifts = Shift::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('status', 'open')
@@ -539,6 +551,7 @@ class UpdatePosOperationalDatasetCommand extends Command
             app(TenantContext::class)->setTenantId($tenantId);
             app(TenantContext::class)->setStoreId($store->id);
 
+            // @tenant-bypass: dataset_generation
             $device = Device::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->where('store_id', $store->id)
@@ -559,6 +572,7 @@ class UpdatePosOperationalDatasetCommand extends Command
             }
 
             // Ambil kasir yang bertugas di store ini
+            // @tenant-bypass: dataset_generation
             $cashierUser = User::withoutGlobalScopes()
                 ->join('roles as r', 'r.id', '=', 'users.role_id')
                 ->join('user_stores as us', 'us.user_id', '=', 'users.id')
@@ -574,6 +588,7 @@ class UpdatePosOperationalDatasetCommand extends Command
 
             // Skenario Selisih Kas Kemarin (2026-11-10) di Cabang Utama (Unapproved Variance)
             if ($store->id === $stores->first()->id) {
+                // @tenant-bypass: dataset_generation
                 $yesterdayShift = Shift::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
                     ->where('store_id', $store->id)
@@ -618,6 +633,7 @@ class UpdatePosOperationalDatasetCommand extends Command
             }
 
             // Periksa apakah shift hari ini sudah ada dan aktif
+            // @tenant-bypass: dataset_generation
             $shift = Shift::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->where('store_id', $store->id)
@@ -627,6 +643,7 @@ class UpdatePosOperationalDatasetCommand extends Command
 
             if (! $shift) {
                 // Tutup shift lain pada user yang sama jika ada di store ini
+                // @tenant-bypass: dataset_generation
                 Shift::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
                     ->where('store_id', $store->id)
@@ -666,6 +683,7 @@ class UpdatePosOperationalDatasetCommand extends Command
     private function generateRecentTransactions(Tenant $tenant, array $users, array $activeShifts): array
     {
         $tenantId = (int) $tenant->id;
+        // @tenant-bypass: dataset_generation
         $mainStore = Store::withoutGlobalScopes()->where('tenant_id', $tenantId)->first();
         if (! $mainStore || ! isset($activeShifts[$mainStore->id])) {
             return ['count' => 0];
@@ -674,6 +692,7 @@ class UpdatePosOperationalDatasetCommand extends Command
         $storeId = (int) $mainStore->id;
         $shift = $activeShifts[$storeId];
         $cashier = $users['kasir'];
+        // @tenant-bypass: dataset_generation
         $customer = Customer::withoutGlobalScopes()->where('tenant_id', $tenantId)->first();
         $tables = Table::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('store_id', $storeId)->get();
 
@@ -690,6 +709,7 @@ class UpdatePosOperationalDatasetCommand extends Command
         app(TenantContext::class)->setTenantId($tenantId);
         app(TenantContext::class)->setStoreId($storeId);
 
+        // @tenant-bypass: dataset_generation
         $sampleProducts = Product::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('stock', '>', 5)
@@ -701,6 +721,7 @@ class UpdatePosOperationalDatasetCommand extends Command
         }
 
         $idempotencyCheck = "op_trx_cash_{$tenantId}_20261111_001";
+        // @tenant-bypass: dataset_generation
         if (Order::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('idempotency_key', $idempotencyCheck)->exists()) {
             return ['count' => 4];
         }
@@ -942,6 +963,7 @@ class UpdatePosOperationalDatasetCommand extends Command
         $apAccId = $coaMap['2101'] ?? array_values($coaMap)[0];
         $expAccId = $coaMap['6101'] ?? array_values($coaMap)[0];
 
+        // @tenant-bypass: dataset_generation
         $mainStore = Store::withoutGlobalScopes()->where('tenant_id', $tenantId)->first();
         $storeId = $mainStore?->id;
         $userId = $users['owner']->id ?? 1;

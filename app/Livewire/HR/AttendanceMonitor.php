@@ -42,7 +42,7 @@ class AttendanceMonitor extends Component
         $this->dateFilter = now()->toDateString();
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
-        $defaultStore = Store::withoutGlobalScopes()
+        $defaultStore = Store::query()
             ->where('tenant_id', $tenantId)
             ->first();
 
@@ -56,7 +56,7 @@ class AttendanceMonitor extends Component
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
         /** @var AttendanceRecord|null $record */
-        $record = AttendanceRecord::withoutTenantScope()
+        $record = AttendanceRecord::query()
             ->where('tenant_id', $tenantId)
             ->where('id', $recordId)
             ->first();
@@ -90,7 +90,7 @@ class AttendanceMonitor extends Component
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
         /** @var AttendanceRecord|null $record */
-        $record = AttendanceRecord::withoutTenantScope()
+        $record = AttendanceRecord::query()
             ->where('tenant_id', $tenantId)
             ->where('id', $this->editingRecordId)
             ->first();
@@ -115,11 +115,11 @@ class AttendanceMonitor extends Component
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
         /** @var Collection<int, Store> $stores */
-        $stores = Store::withoutGlobalScopes()
+        $stores = Store::query()
             ->where('tenant_id', $tenantId)
             ->get();
 
-        $query = AttendanceRecord::withoutTenantScope()
+        $query = AttendanceRecord::query()
             ->where('tenant_id', $tenantId)
             ->with(['employee'])
             ->orderBy('id', 'desc');
@@ -142,7 +142,7 @@ class AttendanceMonitor extends Component
 
         $records = $query->paginate(15);
 
-        $statsBase = AttendanceRecord::withoutTenantScope()->where('tenant_id', $tenantId);
+        $statsBase = AttendanceRecord::query()->where('tenant_id', $tenantId);
         if ($this->selectedStoreId) {
             $statsBase->where('store_id', $this->selectedStoreId);
         }

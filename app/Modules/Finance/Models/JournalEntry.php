@@ -6,11 +6,10 @@ namespace App\Modules\Finance\Models;
 
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\BelongsToCompany;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Finance\Enums\JournalStatusEnum;
 use App\Modules\Finance\Enums\JournalTypeEnum;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
@@ -51,6 +50,7 @@ class JournalEntry extends Model
 {
     use AssignsTenant;
     use BelongsToCompany;
+    use HasStoreRelation;
     use ScopedToTenant;
 
     protected $table = 'journal_entries';
@@ -96,22 +96,6 @@ class JournalEntry extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

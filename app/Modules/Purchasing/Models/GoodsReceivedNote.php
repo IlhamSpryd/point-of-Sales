@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Purchasing\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
 use App\Enums\GrnStatusEnum;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Collection;
@@ -37,8 +36,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $idempotency_key
  * @property CarbonInterface $created_at
  * @property CarbonInterface $updated_at
- * @property-read Tenant $tenant
- * @property-read Store $store
  * @property-read Supplier $supplier
  * @property-read PurchaseOrder $purchaseOrder
  * @property-read User $receivedBy
@@ -50,6 +47,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class GoodsReceivedNote extends Model
 {
     use AssignsTenant;
+    use HasStoreRelation;
     use ScopedToTenant;
 
     protected $table = 'goods_received_notes';
@@ -84,22 +82,6 @@ class GoodsReceivedNote extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

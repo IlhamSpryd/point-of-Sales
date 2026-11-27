@@ -41,6 +41,7 @@ class UserInvitationService
         $storeIds = array_map('intval', $data['store_ids']);
 
         // 1. Validasi Keberadaan dan Kepemilikan Role (bukan Owner)
+        // @tenant-bypass: auth_lookup
         $role = Role::withoutTenantScope()
             ->where('id', $roleId)
             ->where('tenant_id', $tenantId)
@@ -59,6 +60,7 @@ class UserInvitationService
             ]);
         }
 
+        // @tenant-bypass: auth_lookup
         $validStoresCount = Store::withoutTenantScope()
             ->whereIn('id', $storeIds)
             ->where('tenant_id', $tenantId)
@@ -71,6 +73,7 @@ class UserInvitationService
         }
 
         // 3. Privacy-Preserving Cross-Tenant Guard [4B]
+        // @tenant-bypass: auth_lookup
         $existingActiveUser = User::withoutGlobalScopes()
             ->where('email_normalized', $emailNormalized)
             ->whereNull('deleted_at')
@@ -275,6 +278,7 @@ class UserInvitationService
 
             // Cross-Tenant Lockout Check saat aktivasi:
             // Jika ada user aktif dengan email ini di tenant mana pun, tolak dengan 409
+            // @tenant-bypass: auth_lookup
             $activeUser = User::withoutGlobalScopes()
                 ->where('email_normalized', $invitation->email_normalized)
                 ->whereNull('deleted_at')
@@ -365,6 +369,7 @@ class UserInvitationService
                 abort(422, 'Email akun Google/Apple Anda tidak cocok dengan email tujuan undangan.');
             }
 
+            // @tenant-bypass: auth_lookup
             $activeUser = User::withoutGlobalScopes()
                 ->where('email_normalized', $invitation->email_normalized)
                 ->whereNull('deleted_at')

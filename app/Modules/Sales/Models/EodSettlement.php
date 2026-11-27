@@ -8,7 +8,6 @@ use App\Core\Traits\AssignsStore;
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToStore;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -86,14 +85,6 @@ class EodSettlement extends Model
             'payment_breakdown_snapshot' => 'array',
             'closed_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

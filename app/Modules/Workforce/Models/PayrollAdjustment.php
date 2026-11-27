@@ -7,7 +7,6 @@ namespace App\Modules\Workforce\Models;
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Organization\Models\Approval;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use App\Modules\Workforce\Enums\PayrollAdjustmentTypeEnum;
 use Carbon\CarbonInterface;
@@ -26,7 +25,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $created_by_user_id
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
- * @property-read Tenant|null $tenant
  * @property-read Employee|null $employee
  * @property-read PayrollBatch|null $batch
  * @property-read Approval|null $approval
@@ -56,14 +54,6 @@ class PayrollAdjustment extends Model
             'adjustment_type' => PayrollAdjustmentTypeEnum::class,
             'amount' => 'decimal:2',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
     /**

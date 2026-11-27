@@ -29,6 +29,7 @@ class ApGlReconciliationService
     {
         $asOf = $asOfDate ? Carbon::parse($asOfDate)->startOfDay() : now()->startOfDay();
 
+        // @tenant-bypass: cross_tenant_reconciliation
         $query = SupplierInvoice::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->where('status', SupplierInvoiceStatusEnum::ApprovedPayable)
@@ -115,6 +116,7 @@ class ApGlReconciliationService
     public function reconcileApToGl(int $tenantId, ?string $asOfDate = null): array
     {
         // 1. Total dari Faktur Pemasok (Supplier Invoices)
+        // @tenant-bypass: cross_tenant_reconciliation
         $invoiceTotal = (string) (SupplierInvoice::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->where('status', SupplierInvoiceStatusEnum::ApprovedPayable)
@@ -122,9 +124,11 @@ class ApGlReconciliationService
         $invoiceTotal = bcadd($invoiceTotal, '0', 2);
 
         // 2. Total dari Subledger AP (ap_ledger_entries)
+        // @tenant-bypass: cross_tenant_reconciliation
         $subledgerCredit = (string) (ApLedgerEntry::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->sum('credit_amount') ?? '0.00');
+        // @tenant-bypass: cross_tenant_reconciliation
         $subledgerDebit = (string) (ApLedgerEntry::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->sum('debit_amount') ?? '0.00');
@@ -133,12 +137,14 @@ class ApGlReconciliationService
         // 3. Saldo Akun Kontrol AP di General Ledger
         $apAccount = $this->coaService->getAccountBySystemKey('AP_CONTROL', $tenantId);
 
+        // @tenant-bypass: cross_tenant_reconciliation
         $glCredit = (string) (JournalLine::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->where('account_id', $apAccount->id)
             ->whereHas('journalEntry', fn ($q) => $q->where('status', 'POSTED'))
             ->sum('credit_amount') ?? '0.00');
 
+        // @tenant-bypass: cross_tenant_reconciliation
         $glDebit = (string) (JournalLine::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->where('account_id', $apAccount->id)
@@ -175,12 +181,14 @@ class ApGlReconciliationService
         // 1. Akun GR_IR_CLEARING di GL
         $grIrAccount = $this->coaService->getAccountBySystemKey('GR_IR_CLEARING', $tenantId);
 
+        // @tenant-bypass: cross_tenant_reconciliation
         $glCredit = (string) (JournalLine::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->where('account_id', $grIrAccount->id)
             ->whereHas('journalEntry', fn ($q) => $q->where('status', 'POSTED'))
             ->sum('credit_amount') ?? '0.00');
 
+        // @tenant-bypass: cross_tenant_reconciliation
         $glDebit = (string) (JournalLine::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->where('account_id', $grIrAccount->id)
@@ -191,6 +199,7 @@ class ApGlReconciliationService
 
         // 2. Hitung nilai GRN posted yang belum difakturkan secara operasional
         // Baris GRN yang sudah diposting
+        // @tenant-bypass: cross_tenant_reconciliation
         $grnLines = GoodsReceivedNoteLine::withoutTenantScope()
             ->with('purchaseOrderLine')
             ->where('tenant_id', $tenantId)
@@ -212,6 +221,7 @@ class ApGlReconciliationService
             $grnLineTotal = bcmul($receivedQty, $cost, 2);
 
             // Cek matched qty pada supplier_invoice_grn_matches
+            // @tenant-bypass: cross_tenant_reconciliation
             $matchedQty = (string) (SupplierInvoiceGrnMatch::withoutTenantScope()
                 ->where('tenant_id', $tenantId)
                 ->where('goods_received_note_line_id', $gl->id)

@@ -40,10 +40,12 @@ class FinancialStatementService
             throw new DomainException('TenantContext tidak valid.');
         }
 
+        // @tenant-bypass: maintenance
         $period = AccountingPeriod::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->findOrFail($periodId);
 
+        // @tenant-bypass: maintenance
         $accounts = ChartOfAccount::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->where('is_active', true)
@@ -219,6 +221,7 @@ class FinancialStatementService
             throw new DomainException('TenantContext tidak valid.');
         }
 
+        // @tenant-bypass: maintenance
         $period = AccountingPeriod::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->findOrFail($periodId);
@@ -228,6 +231,7 @@ class FinancialStatementService
             : $period->start_date->toDateString();
         $endDate = $period->end_date->toDateString();
 
+        // @tenant-bypass: maintenance
         $accounts = ChartOfAccount::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->where('is_active', true)
@@ -397,12 +401,14 @@ class FinancialStatementService
             throw new DomainException('TenantContext tidak valid.');
         }
 
+        // @tenant-bypass: maintenance
         $period = AccountingPeriod::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->findOrFail($periodId);
 
         $asOfDate = $period->end_date->toDateString();
 
+        // @tenant-bypass: maintenance
         $accounts = ChartOfAccount::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->where('is_active', true)
@@ -594,6 +600,7 @@ class FinancialStatementService
             throw new DomainException('TenantContext tidak valid.');
         }
 
+        // @tenant-bypass: maintenance
         $period = AccountingPeriod::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->findOrFail($periodId);
@@ -602,6 +609,7 @@ class FinancialStatementService
         $endDate = $period->end_date->toDateString();
 
         // 1. Dapatkan akun Kas & Bank
+        // @tenant-bypass: maintenance
         $cashAccounts = ChartOfAccount::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->where('is_active', true)
@@ -790,14 +798,17 @@ class FinancialStatementService
             throw new DomainException('TenantContext tidak valid.');
         }
 
+        // @tenant-bypass: maintenance
         $period = AccountingPeriod::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->findOrFail($periodId);
 
+        // @tenant-bypass: maintenance
         $accounts = ChartOfAccount::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->get();
 
+        // @tenant-bypass: maintenance
         $prevPeriod = AccountingPeriod::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->where('end_date', '<', $period->start_date->toDateString())
@@ -811,6 +822,7 @@ class FinancialStatementService
             $openingCredit = '0.00';
 
             if ($prevPeriod) {
+                // @tenant-bypass: maintenance
                 $prevBalance = AccountPeriodBalance::withoutTenantScope()
                     ->where('tenant_id', $tenantId)
                     ->where('accounting_period_id', $prevPeriod->id)
@@ -870,6 +882,7 @@ class FinancialStatementService
                 }
             }
 
+            // @tenant-bypass: maintenance
             AccountPeriodBalance::withoutTenantScope()->updateOrCreate(
                 [
                     'tenant_id' => $tenantId,

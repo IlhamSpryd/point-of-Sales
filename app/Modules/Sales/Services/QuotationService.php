@@ -12,12 +12,12 @@ use App\Modules\Customers\Models\CustomerAddress;
 use App\Modules\Customers\Services\CustomerCreditService;
 use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\User;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Pricing\Services\CatalogPriceResolverService;
 use App\Modules\Sales\Enums\QuotationStatusEnum;
 use App\Modules\Sales\Models\Quotation;
 use App\Modules\Sales\Models\QuotationLine;
 use App\Modules\Sales\Models\SalesOrder;
+use App\Platform\Audit\AuditLoggerInterface;
 use App\Platform\Documents\DocumentSequenceService;
 use Carbon\Carbon;
 use DomainException;
@@ -30,7 +30,7 @@ class QuotationService
         protected CatalogPriceResolverService $priceResolver,
         protected SalesOrderService $salesOrderService,
         protected DocumentSequenceService $sequenceService,
-        protected AuditTrailService $auditTrailService,
+        protected AuditLoggerInterface $auditTrailService,
         protected TenantContext $tenantContext,
         protected CustomerCreditService $customerCreditService
     ) {}
@@ -44,7 +44,7 @@ class QuotationService
     {
         $tenantId = (int) ($actor && $actor->tenant_id ? $actor->tenant_id : $this->tenantContext->requireTenantId());
 
-        return DB::transaction(function () use ($payload, $actor, $tenantId) {
+        return $this->tenantContext->runAs((int) $tenantId, null, fn () => DB::transaction(function () use ($payload, $actor, $tenantId) {
             $customerId = (int) ($payload['customer_id'] ?? 0);
             if ($customerId <= 0) {
                 throw ValidationException::withMessages([
@@ -52,7 +52,7 @@ class QuotationService
                 ]);
             }
 
-            $customer = Customer::withoutGlobalScopes()
+            $customer = Customer::query()
                 ->where('tenant_id', $tenantId)
                 ->where('id', $customerId)
                 ->first();
@@ -69,7 +69,7 @@ class QuotationService
             }
 
             if ($storeId <= 0) {
-                $firstStore = Store::withoutGlobalScopes()
+                $firstStore = Store::query()
                     ->where('tenant_id', $tenantId)
                     ->first();
                 $storeId = $firstStore ? (int) $firstStore->id : 1;
@@ -95,7 +95,7 @@ class QuotationService
                 : $this->sequenceService->nextNumber($tenantId, 'QTN', $storeId);
 
             $customerAddressId = ! empty($payload['customer_address_id']) ? (int) $payload['customer_address_id'] : null;
-            $customerAddress = $customerAddressId ? CustomerAddress::withoutGlobalScopes()->find($customerAddressId) : null;
+            $customerAddress = $customerAddressId ? CustomerAddress::query()->find($customerAddressId) : null;
 
             $customerSnapshot = [
                 'customer_id' => $customer->id,
@@ -151,7 +151,7 @@ class QuotationService
             $lineNumber = 1;
             foreach ($items as $itemData) {
                 $productId = (int) ($itemData['product_id'] ?? 0);
-                $product = Product::withoutGlobalScopes()
+                $product = Product::query()
                     ->where('tenant_id', $tenantId)
                     ->where('id', $productId)
                     ->first();
@@ -274,7 +274,7 @@ class QuotationService
             );
 
             return $quotation->fresh(['lines', 'customer']) ?? $quotation;
-        });
+        }));
     }
 
     /**
@@ -282,8 +282,8 @@ class QuotationService
      */
     public function submitForApprovalOrSend(Quotation $quotation, User $actor): Quotation
     {
-        return DB::transaction(function () use ($quotation, $actor) {
-            $locked = Quotation::withoutGlobalScopes()
+        return $this->tenantContext->runAs((int) $quotation->tenant_id, (int) $quotation->store_id, fn () => DB::transaction(function () use ($quotation, $actor) {
+            $locked = Quotation::allStores()
                 ->where('tenant_id', $quotation->tenant_id)
                 ->where('id', $quotation->id)
                 ->lockForUpdate()
@@ -325,7 +325,7 @@ class QuotationService
             );
 
             return $locked;
-        });
+        }));
     }
 
     /**
@@ -333,8 +333,8 @@ class QuotationService
      */
     public function approve(Quotation $quotation, User $approver, ?string $notes = null): Quotation
     {
-        return DB::transaction(function () use ($quotation, $approver, $notes) {
-            $locked = Quotation::withoutGlobalScopes()
+        return $this->tenantContext->runAs((int) $quotation->tenant_id, (int) $quotation->store_id, fn () => DB::transaction(function () use ($quotation, $approver, $notes) {
+            $locked = Quotation::allStores()
                 ->where('tenant_id', $quotation->tenant_id)
                 ->where('id', $quotation->id)
                 ->lockForUpdate()
@@ -364,7 +364,7 @@ class QuotationService
             );
 
             return $locked;
-        });
+        }));
     }
 
     /**
@@ -372,8 +372,8 @@ class QuotationService
      */
     public function reject(Quotation $quotation, User $actor, string $reason): Quotation
     {
-        return DB::transaction(function () use ($quotation, $actor, $reason) {
-            $locked = Quotation::withoutGlobalScopes()
+        return $this->tenantContext->runAs((int) $quotation->tenant_id, (int) $quotation->store_id, fn () => DB::transaction(function () use ($quotation, $actor, $reason) {
+            $locked = Quotation::allStores()
                 ->where('tenant_id', $quotation->tenant_id)
                 ->where('id', $quotation->id)
                 ->lockForUpdate()
@@ -399,7 +399,7 @@ class QuotationService
             );
 
             return $locked;
-        });
+        }));
     }
 
     /**
@@ -407,8 +407,8 @@ class QuotationService
      */
     public function accept(Quotation $quotation, User $actor): Quotation
     {
-        return DB::transaction(function () use ($quotation, $actor) {
-            $locked = Quotation::withoutGlobalScopes()
+        return $this->tenantContext->runAs((int) $quotation->tenant_id, (int) $quotation->store_id, fn () => DB::transaction(function () use ($quotation, $actor) {
+            $locked = Quotation::allStores()
                 ->where('tenant_id', $quotation->tenant_id)
                 ->where('id', $quotation->id)
                 ->lockForUpdate()
@@ -439,7 +439,7 @@ class QuotationService
             );
 
             return $locked;
-        });
+        }));
     }
 
     /**
@@ -449,8 +449,8 @@ class QuotationService
      */
     public function createRevision(Quotation $quotation, array $changes, User $actor): Quotation
     {
-        return DB::transaction(function () use ($quotation, $changes, $actor) {
-            $locked = Quotation::withoutGlobalScopes()
+        return $this->tenantContext->runAs((int) $quotation->tenant_id, (int) $quotation->store_id, fn () => DB::transaction(function () use ($quotation, $changes, $actor) {
+            $locked = Quotation::allStores()
                 ->where('tenant_id', $quotation->tenant_id)
                 ->where('id', $quotation->id)
                 ->lockForUpdate()
@@ -505,7 +505,7 @@ class QuotationService
             );
 
             return $revision;
-        });
+        }));
     }
 
     /**
@@ -514,9 +514,9 @@ class QuotationService
      */
     public function convertToSalesOrder(Quotation $quotation, User $actor, ?string $idempotencyKey = null): SalesOrder
     {
-        return DB::transaction(function () use ($quotation, $actor, $idempotencyKey) {
+        return $this->tenantContext->runAs((int) $quotation->tenant_id, (int) $quotation->store_id, fn () => DB::transaction(function () use ($quotation, $actor, $idempotencyKey) {
             // 1. Kunci baris Quotation (A0/A8 Lock Graph Rule)
-            $locked = Quotation::withoutGlobalScopes()
+            $locked = Quotation::allStores()
                 ->where('tenant_id', $quotation->tenant_id)
                 ->where('id', $quotation->id)
                 ->lockForUpdate()
@@ -566,6 +566,6 @@ class QuotationService
             );
 
             return $salesOrder;
-        });
+        }));
     }
 }

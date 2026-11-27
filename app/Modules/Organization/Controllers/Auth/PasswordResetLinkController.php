@@ -37,6 +37,7 @@ class PasswordResetLinkController extends Controller
         $normalized = EmailNormalizer::normalize($rawEmail);
 
         // Cari pengguna aktif tanpa membocorkan eksistensinya ke publik (Anti-Enumerasi [REQ-SEC-23])
+        // @tenant-bypass: auth_lookup
         $user = User::withoutGlobalScopes()
             ->where('email_normalized', $normalized)
             ->whereNull('deleted_at')

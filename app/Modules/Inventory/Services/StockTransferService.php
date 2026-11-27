@@ -14,7 +14,7 @@ use App\Modules\Inventory\Models\Ingredient;
 use App\Modules\Inventory\Models\StockTransfer;
 use App\Modules\Inventory\Models\StockTransferItem;
 use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Services\AuditTrailService;
+use App\Platform\Audit\AuditLoggerInterface;
 use App\Platform\Documents\DocumentSequenceService;
 use DomainException;
 use Illuminate\Support\Facades\DB;
@@ -45,7 +45,7 @@ class StockTransferService
 {
     public function __construct(
         protected InventoryLedgerService $ledgerService,
-        protected AuditTrailService $auditTrailService,
+        protected AuditLoggerInterface $auditTrailService,
         protected ?DocumentSequenceService $sequenceService = null
     ) {}
 
@@ -74,11 +74,13 @@ class StockTransferService
             throw new InvalidArgumentException('Origin branch (from_store_id) cannot be the same as destination branch (to_store_id).');
         }
 
+        // @tenant-bypass: maintenance
         $fromStore = Store::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('id', $fromStoreId)
             ->first();
 
+        // @tenant-bypass: maintenance
         $toStore = Store::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('id', $toStoreId)
@@ -95,8 +97,8 @@ class StockTransferService
         $shipIdempotencyKey = $data['ship_idempotency_key'] ?? (string) Str::uuid();
 
         // Idempotency check
-        $existing = StockTransfer::withoutTenantScope()
-            ->withoutGlobalScopes()
+        // @tenant-bypass: maintenance
+        $existing = StockTransfer::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('ship_idempotency_key', $shipIdempotencyKey)
             ->first();
@@ -157,8 +159,8 @@ class StockTransferService
     {
         return DB::transaction(function () use ($transfer, $data, $userId) {
             /** @var StockTransfer $lockedTransfer */
-            $lockedTransfer = StockTransfer::withoutTenantScope()
-                ->withoutGlobalScopes()
+            // @tenant-bypass: maintenance
+            $lockedTransfer = StockTransfer::withoutGlobalScopes()
                 ->where('tenant_id', $transfer->tenant_id)
                 ->where('id', $transfer->id)
                 ->lockForUpdate()
@@ -206,8 +208,8 @@ class StockTransferService
     {
         return DB::transaction(function () use ($transfer, $userId, $shippedQuantities) {
             /** @var StockTransfer $lockedTransfer */
-            $lockedTransfer = StockTransfer::withoutTenantScope()
-                ->withoutGlobalScopes()
+            // @tenant-bypass: maintenance
+            $lockedTransfer = StockTransfer::withoutGlobalScopes()
                 ->where('tenant_id', $transfer->tenant_id)
                 ->where('id', $transfer->id)
                 ->lockForUpdate()
@@ -343,8 +345,8 @@ class StockTransferService
     {
         return DB::transaction(function () use ($transfer, $receiptData, $userId) {
             /** @var StockTransfer $lockedTransfer */
-            $lockedTransfer = StockTransfer::withoutTenantScope()
-                ->withoutGlobalScopes()
+            // @tenant-bypass: maintenance
+            $lockedTransfer = StockTransfer::withoutGlobalScopes()
                 ->where('tenant_id', $transfer->tenant_id)
                 ->where('id', $transfer->id)
                 ->lockForUpdate()
@@ -532,8 +534,8 @@ class StockTransferService
     {
         return DB::transaction(function () use ($transfer, $userId, $reason) {
             /** @var StockTransfer $lockedTransfer */
-            $lockedTransfer = StockTransfer::withoutTenantScope()
-                ->withoutGlobalScopes()
+            // @tenant-bypass: maintenance
+            $lockedTransfer = StockTransfer::withoutGlobalScopes()
                 ->where('tenant_id', $transfer->tenant_id)
                 ->where('id', $transfer->id)
                 ->lockForUpdate()
@@ -627,6 +629,7 @@ class StockTransferService
                 throw new InvalidArgumentException('Items of type product must include product_id and leave ingredient_id empty.');
             }
 
+            // @tenant-bypass: maintenance
             $product = Product::withoutGlobalScopes()
                 ->where('tenant_id', $transfer->tenant_id)
                 ->where('id', $productId)
@@ -640,6 +643,7 @@ class StockTransferService
                 throw new InvalidArgumentException('Items of type ingredient must include ingredient_id and leave product_id empty.');
             }
 
+            // @tenant-bypass: maintenance
             $ingredient = Ingredient::withoutGlobalScopes()
                 ->where('tenant_id', $transfer->tenant_id)
                 ->where('id', $ingredientId)

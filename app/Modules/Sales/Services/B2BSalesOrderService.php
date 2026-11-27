@@ -8,12 +8,12 @@ use App\Core\Context\TenantContext;
 use App\Modules\Customers\Services\CustomerCreditService;
 use App\Modules\Inventory\Services\InventoryLedgerService;
 use App\Modules\Organization\Models\User;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Sales\Models\CustomerInvoice;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\Quotation;
 use App\Modules\Sales\Models\SalesOrder;
 use App\Modules\Sales\Models\SalesOrderLine;
+use App\Platform\Audit\AuditLoggerInterface;
 use DomainException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +25,7 @@ class B2BSalesOrderService
         protected CustomerCreditService $customerCreditService,
         protected InventoryLedgerService $inventoryLedgerService,
         protected AccountsReceivableService $accountsReceivableService,
-        protected AuditTrailService $auditTrailService,
+        protected AuditLoggerInterface $auditTrailService,
         protected TenantContext $tenantContext
     ) {}
 

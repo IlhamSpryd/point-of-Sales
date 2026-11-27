@@ -186,6 +186,7 @@ class ProcessProvisioningOutboxJob implements ShouldQueue
         $rawToken = $this->tokenFromLink($body);
         if ($rawToken !== null) {
             $tokenHash = OwnerOnboardingToken::hash($rawToken);
+            // @tenant-bypass: background_job
             $tokenRecord = OwnerOnboardingToken::withoutGlobalScopes()
                 ->where('tenant_id', $outbox->tenant_id)
                 ->where('user_id', $outbox->user_id)
@@ -204,6 +205,7 @@ class ProcessProvisioningOutboxJob implements ShouldQueue
         // Jalur 2: Token diteruskan via payload job ($this->onboardingToken)
         if (is_string($this->onboardingToken) && $this->onboardingToken !== '') {
             $expectedHash = OwnerOnboardingToken::hash($this->onboardingToken);
+            // @tenant-bypass: background_job
             $tokenRecord = OwnerOnboardingToken::withoutGlobalScopes()
                 ->where('tenant_id', $outbox->tenant_id)
                 ->where('user_id', $outbox->user_id)
@@ -223,6 +225,7 @@ class ProcessProvisioningOutboxJob implements ShouldQueue
         // Jalur 3: Token di database ada tapi body hanya memuat hash (mis. legacy)
         $hashInBody = $this->hashFromBody($body);
         if ($hashInBody !== null) {
+            // @tenant-bypass: background_job
             $tokenRecord = OwnerOnboardingToken::withoutGlobalScopes()
                 ->where('tenant_id', $outbox->tenant_id)
                 ->where('user_id', $outbox->user_id)

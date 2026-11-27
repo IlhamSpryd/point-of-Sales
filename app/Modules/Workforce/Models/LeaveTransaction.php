@@ -6,7 +6,6 @@ namespace App\Modules\Workforce\Models;
 
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use App\Modules\Workforce\Enums\LeaveTransactionTypeEnum;
 use Carbon\CarbonInterface;
@@ -24,7 +23,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $reason
  * @property int $actor_user_id
  * @property CarbonInterface $created_at
- * @property-read Tenant|null $tenant
  * @property-read Employee|null $employee
  * @property-read LeavePolicy|null $policy
  * @property-read LeaveRequest|null $leaveRequest
@@ -58,14 +56,6 @@ class LeaveTransaction extends Model
             'days_delta' => 'decimal:2',
             'created_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
     /**

@@ -21,6 +21,7 @@ class StoreInitialBranchRequest extends FormRequest
     public function rules(): array
     {
         $tenantId = $this->user()?->tenant_id;
+        // @tenant-bypass: auth_lookup
         $initialStoreId = Store::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->orderBy('id')

@@ -52,7 +52,7 @@ class AuthenticatedSessionController extends Controller
         // Satu sumber kebenaran untuk redirect per-role: HomeController.
         // Tidak ada lagi duplikasi mapping di sini. Semua role (termasuk
         // Supervisor, Cook, dan role custom) aman — tidak pernah 403.
-        // @see §2.1 audit navigasi, App\Http\Controllers\HomeController
+        // @see §2.1 audit navigasi, App\Modules\Organization\Controllers\HomeController
         return redirect()->intended(route('home', absolute: false));
     }
 

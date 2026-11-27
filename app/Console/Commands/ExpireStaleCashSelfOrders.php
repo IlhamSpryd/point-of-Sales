@@ -20,11 +20,13 @@ class ExpireStaleCashSelfOrders extends Command
         // self-order CASH. Order QRIS/E-wallet yang macet karena Snap
         // gagal terbuat (snap_token tetap NULL) sebelumnya tidak PERNAH
         // disapu, membuat stok/BOM menggantung permanen. | 2026-09-25
+        // @tenant-bypass: console_command
         $staleSelfOrderCash = Order::withoutGlobalScopes()->where('order_status', OrderStatus::Pending)
             ->where('payment_method', 'cash')
             ->whereNotNull('table_id')
             ->where('created_at', '<=', now()->subMinutes(30));
 
+        // @tenant-bypass: console_command
         $staleNonCashStuck = Order::withoutGlobalScopes()->where('order_status', OrderStatus::Pending)
             ->whereIn('payment_method', ['qris', 'ewallet'])
             ->whereNull('snap_token')

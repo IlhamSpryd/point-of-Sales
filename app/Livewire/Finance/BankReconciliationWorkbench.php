@@ -72,7 +72,7 @@ class BankReconciliationWorkbench extends Component
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
         if (! $this->selectedAccountId) {
-            $firstAccount = CashBankAccount::withoutGlobalScopes()
+            $firstAccount = CashBankAccount::query()
                 ->where('tenant_id', $tenantId)
                 ->where('is_active', true)
                 ->first();
@@ -80,7 +80,7 @@ class BankReconciliationWorkbench extends Component
         }
 
         if ($this->selectedAccountId && ! $this->selectedSessionId) {
-            $activeSession = BankReconciliationSession::withoutGlobalScopes()
+            $activeSession = BankReconciliationSession::query()
                 ->where('tenant_id', $tenantId)
                 ->where('cash_bank_account_id', $this->selectedAccountId)
                 ->where('status', BankReconciliationSessionStatusEnum::IN_PROGRESS)
@@ -95,7 +95,7 @@ class BankReconciliationWorkbench extends Component
     public function updatedSelectedAccountId(): void
     {
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
-        $activeSession = BankReconciliationSession::withoutGlobalScopes()
+        $activeSession = BankReconciliationSession::query()
             ->where('tenant_id', $tenantId)
             ->where('cash_bank_account_id', $this->selectedAccountId)
             ->where('status', BankReconciliationSessionStatusEnum::IN_PROGRESS)
@@ -130,7 +130,7 @@ class BankReconciliationWorkbench extends Component
         ]);
 
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
-        $account = CashBankAccount::withoutGlobalScopes()
+        $account = CashBankAccount::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($this->selectedAccountId);
 
@@ -166,7 +166,7 @@ class BankReconciliationWorkbench extends Component
         }
 
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
-        $session = BankReconciliationSession::withoutGlobalScopes()
+        $session = BankReconciliationSession::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($this->selectedSessionId);
 
@@ -196,17 +196,17 @@ class BankReconciliationWorkbench extends Component
         }
 
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
-        $session = BankReconciliationSession::withoutGlobalScopes()
+        $session = BankReconciliationSession::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($this->selectedSessionId);
 
         $this->authorize('reconcile', $session->account);
 
-        $statementLine = BankStatementLine::withoutGlobalScopes()
+        $statementLine = BankStatementLine::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($this->selectedStatementLineId);
 
-        $transaction = CashBankTransaction::withoutGlobalScopes()
+        $transaction = CashBankTransaction::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($this->selectedTransactionId);
 
@@ -225,7 +225,7 @@ class BankReconciliationWorkbench extends Component
     public function unmatch(int $matchId, BankReconciliationService $service): void
     {
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
-        $match = BankReconciliationMatch::withoutGlobalScopes()
+        $match = BankReconciliationMatch::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($matchId);
 
@@ -252,7 +252,7 @@ class BankReconciliationWorkbench extends Component
         }
 
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
-        $session = BankReconciliationSession::withoutGlobalScopes()
+        $session = BankReconciliationSession::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($this->selectedSessionId);
 
@@ -273,7 +273,7 @@ class BankReconciliationWorkbench extends Component
     {
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
-        $accounts = CashBankAccount::withoutGlobalScopes()
+        $accounts = CashBankAccount::query()
             ->where('tenant_id', $tenantId)
             ->where('is_active', true)
             ->orderBy('account_code')
@@ -286,7 +286,7 @@ class BankReconciliationWorkbench extends Component
         $difference = '0.00';
 
         if ($this->selectedSessionId) {
-            $session = BankReconciliationSession::withoutGlobalScopes()
+            $session = BankReconciliationSession::query()
                 ->where('tenant_id', $tenantId)
                 ->with(['account', 'matches.statementLine', 'matches.transaction'])
                 ->find($this->selectedSessionId);
@@ -294,14 +294,14 @@ class BankReconciliationWorkbench extends Component
             if ($session) {
                 $difference = $service->calculateUnreconciledDifference($session);
 
-                $unreconciledStatementLines = BankStatementLine::withoutGlobalScopes()
+                $unreconciledStatementLines = BankStatementLine::query()
                     ->where('tenant_id', $tenantId)
                     ->where('cash_bank_account_id', $session->cash_bank_account_id)
                     ->where('match_status', BankStatementLineMatchStatusEnum::UNMATCHED)
                     ->orderBy('value_date')
                     ->get();
 
-                $unreconciledTransactions = CashBankTransaction::withoutGlobalScopes()
+                $unreconciledTransactions = CashBankTransaction::query()
                     ->where('tenant_id', $tenantId)
                     ->where('cash_bank_account_id', $session->cash_bank_account_id)
                     ->where('is_reconciled', false)
@@ -312,7 +312,7 @@ class BankReconciliationWorkbench extends Component
             }
         }
 
-        $sessionsList = BankReconciliationSession::withoutGlobalScopes()
+        $sessionsList = BankReconciliationSession::query()
             ->where('tenant_id', $tenantId)
             ->when($this->selectedAccountId, fn ($q) => $q->where('cash_bank_account_id', $this->selectedAccountId))
             ->orderByDesc('id')

@@ -9,13 +9,13 @@ use App\Enums\OrderStatus;
 use App\Modules\Finance\Services\FinancialOutboxDispatcherService;
 use App\Modules\Organization\Models\Device;
 use App\Modules\Organization\Models\User;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Organization\Services\CashierPinService;
 use App\Modules\Sales\Models\CashDrawerMovement;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\Payment;
 use App\Modules\Sales\Models\Shift;
 use App\Modules\Sales\Models\ShiftHandover;
+use App\Platform\Audit\AuditLoggerInterface;
 use DomainException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +26,7 @@ use InvalidArgumentException;
 class ShiftService
 {
     public function __construct(
-        protected AuditTrailService $auditTrail,
+        protected AuditLoggerInterface $auditTrail,
         protected CashierPinService $cashierPinService,
         protected TenantContext $tenantContext
     ) {}

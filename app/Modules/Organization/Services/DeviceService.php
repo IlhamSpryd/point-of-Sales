@@ -30,6 +30,7 @@ class DeviceService
     {
         $tenantId = app(TenantContext::class)->requireTenantId();
 
+        // @tenant-bypass: superadmin
         $query = Device::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->with('store')
@@ -130,6 +131,7 @@ class DeviceService
     ): Device {
         return DB::transaction(function () use ($pairingToken, $fingerprint, $ipAddress, $metadata) {
             /** @var Device|null $device */
+            // @tenant-bypass: superadmin
             $device = Device::withoutGlobalScopes()
                 ->where('pairing_token', trim($pairingToken))
                 ->lockForUpdate()

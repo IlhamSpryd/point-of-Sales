@@ -121,6 +121,7 @@ class OwnerOnboardingController extends Controller
                 ->update(['consumed_at' => now()]);
 
             // Transisi status onboarding tenant ke STEP_1_BUSINESS_PROFILE
+            // @tenant-bypass: superadmin
             $tenant = Tenant::withoutGlobalScopes()->find($lockedToken->tenant_id);
             if ($tenant && in_array($tenant->onboarding_status, [Tenant::ONBOARDING_PENDING_VERIFICATION, Tenant::ONBOARDING_PENDING, null, ''], true)) {
                 $tenant->update(['onboarding_status' => Tenant::ONBOARDING_BUSINESS_PROFILE]);
@@ -209,12 +210,14 @@ class OwnerOnboardingController extends Controller
      * Ambil user milik tenant token yang tetap melewati TenantScope secara
      * eksplisit tetapi SELALU terikat pada tenant_id token.
      *
+     // @tenant-bypass: superadmin
      * Menggunakan withoutGlobalScopes() pada model saja tanpa filter tenant
      * melemahkan lapis 1 pertahanan isolasi; karena itu filter tenant_id
      * diwajibkan di sini agar relasi lintas-tenant tetap mustahil.
      */
     private function findTenantScopedUser(int $tenantId, int $userId, bool $includeTrashed = false): ?User
     {
+        // @tenant-bypass: superadmin
         $query = User::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('id', $userId);

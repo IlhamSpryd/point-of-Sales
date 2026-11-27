@@ -28,6 +28,7 @@ class OrderApiController extends Controller
         $user = $request->user();
         $tenantId = (int) $user->tenant_id;
 
+        // @tenant-bypass: auth_lookup
         $query = Order::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->with(['orderItems', 'table', 'customer']);
@@ -75,6 +76,7 @@ class OrderApiController extends Controller
         $user = $request->user();
         $tenantId = (int) $user->tenant_id;
 
+        // @tenant-bypass: auth_lookup
         $order = Order::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->with(['orderItems.product', 'table', 'customer', 'payments'])

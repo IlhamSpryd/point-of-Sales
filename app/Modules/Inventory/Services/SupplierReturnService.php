@@ -13,7 +13,7 @@ use App\Modules\Inventory\Models\Ingredient;
 use App\Modules\Inventory\Models\SupplierReturn;
 use App\Modules\Inventory\Models\SupplierReturnItem;
 use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Services\AuditTrailService;
+use App\Platform\Audit\AuditLoggerInterface;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -34,7 +34,7 @@ class SupplierReturnService
 {
     public function __construct(
         protected InventoryLedgerService $ledgerService,
-        protected AuditTrailService $auditTrailService
+        protected AuditLoggerInterface $auditTrailService
     ) {}
 
     /**
@@ -62,6 +62,7 @@ class SupplierReturnService
      */
     public function createDraft(int $tenantId, int $storeId, array $data, int $userId): SupplierReturn
     {
+        // @tenant-bypass: maintenance
         $store = Store::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('id', $storeId)
@@ -78,8 +79,8 @@ class SupplierReturnService
         $idempotencyKey = $data['idempotency_key'] ?? (string) Str::uuid();
 
         // Idempotency check
-        $existing = SupplierReturn::withoutTenantScope()
-            ->withoutGlobalScopes()
+        // @tenant-bypass: maintenance
+        $existing = SupplierReturn::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('idempotency_key', $idempotencyKey)
             ->first();
@@ -93,6 +94,7 @@ class SupplierReturnService
 
             $goodsReceiptId = isset($data['goods_receipt_id']) ? (int) $data['goods_receipt_id'] : null;
             if ($goodsReceiptId !== null) {
+                // @tenant-bypass: maintenance
                 $gr = GoodsReceipt::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
                     ->where('id', $goodsReceiptId)
@@ -155,8 +157,8 @@ class SupplierReturnService
     {
         return DB::transaction(function () use ($return, $data, $userId) {
             /** @var SupplierReturn $locked */
-            $locked = SupplierReturn::withoutTenantScope()
-                ->withoutGlobalScopes()
+            // @tenant-bypass: maintenance
+            $locked = SupplierReturn::withoutGlobalScopes()
                 ->where('tenant_id', $return->tenant_id)
                 ->where('id', $return->id)
                 ->lockForUpdate()
@@ -205,8 +207,8 @@ class SupplierReturnService
     {
         return DB::transaction(function () use ($return, $userId, $reason) {
             /** @var SupplierReturn $locked */
-            $locked = SupplierReturn::withoutTenantScope()
-                ->withoutGlobalScopes()
+            // @tenant-bypass: maintenance
+            $locked = SupplierReturn::withoutGlobalScopes()
                 ->where('tenant_id', $return->tenant_id)
                 ->where('id', $return->id)
                 ->lockForUpdate()
@@ -247,8 +249,8 @@ class SupplierReturnService
     {
         return DB::transaction(function () use ($return, $userId) {
             /** @var SupplierReturn $locked */
-            $locked = SupplierReturn::withoutTenantScope()
-                ->withoutGlobalScopes()
+            // @tenant-bypass: maintenance
+            $locked = SupplierReturn::withoutGlobalScopes()
                 ->where('tenant_id', $return->tenant_id)
                 ->where('id', $return->id)
                 ->lockForUpdate()
@@ -344,8 +346,8 @@ class SupplierReturnService
     {
         return DB::transaction(function () use ($return, $userId, $reason) {
             /** @var SupplierReturn $locked */
-            $locked = SupplierReturn::withoutTenantScope()
-                ->withoutGlobalScopes()
+            // @tenant-bypass: maintenance
+            $locked = SupplierReturn::withoutGlobalScopes()
                 ->where('tenant_id', $return->tenant_id)
                 ->where('id', $return->id)
                 ->lockForUpdate()
@@ -439,6 +441,7 @@ class SupplierReturnService
 
         // Pastikan entitas ada dan milik tenant yang sama
         if ($itemType === 'product') {
+            // @tenant-bypass: maintenance
             $product = Product::withoutGlobalScopes()
                 ->where('tenant_id', $return->tenant_id)
                 ->where('id', $productId)
@@ -447,6 +450,7 @@ class SupplierReturnService
                 throw new InvalidArgumentException("Produk #{$productId} tidak ditemukan untuk tenant ini.");
             }
         } else {
+            // @tenant-bypass: maintenance
             $ingredient = Ingredient::withoutGlobalScopes()
                 ->where('tenant_id', $return->tenant_id)
                 ->where('id', $ingredientId)

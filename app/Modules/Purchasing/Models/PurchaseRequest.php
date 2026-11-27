@@ -6,11 +6,10 @@ namespace App\Modules\Purchasing\Models;
 
 use App\Core\Context\TenantContext;
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
 use App\Enums\PurchaseRequestFulfillmentStatusEnum;
 use App\Enums\PurchaseRequestStatusEnum;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Collection;
@@ -41,6 +40,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class PurchaseRequest extends Model
 {
     use AssignsTenant;
+    use HasStoreRelation;
     use ScopedToTenant;
     use SoftDeletes;
 
@@ -74,22 +74,6 @@ class PurchaseRequest extends Model
             'updated_at' => 'datetime',
             'deleted_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

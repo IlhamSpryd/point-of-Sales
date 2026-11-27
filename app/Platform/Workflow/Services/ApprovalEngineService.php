@@ -76,6 +76,7 @@ class ApprovalEngineService
         return DB::transaction(function () use ($approvable, $requester, $amountStr, $level, $storeId, $documentType, $tenantId) {
             // Cari atau buat rule persetujuan berjenjang untuk tenant ini
             $roleName = $this->resolveRoleNameForLevel($level);
+            // @tenant-bypass: background_job
             $role = Role::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->where('name', $roleName)
@@ -88,10 +89,12 @@ class ApprovalEngineService
                     2 => 'Manager',
                     default => 'Owner',
                 };
+                // @tenant-bypass: background_job
                 $role = Role::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
                     ->where('name', $canonicalFallback)
                     ->first()
+                    // @tenant-bypass: background_job
                     ?? Role::withoutGlobalScopes()
                         ->where('tenant_id', $tenantId)
                         ->whereIn('name', ['Owner', 'Supervisor', 'Admin'])
@@ -111,6 +114,7 @@ class ApprovalEngineService
             };
 
             /** @var PurchaseApprovalRule $rule */
+            // @tenant-bypass: background_job
             $rule = PurchaseApprovalRule::withoutGlobalScopes()->firstOrCreate(
                 [
                     'tenant_id' => $tenantId,
@@ -128,6 +132,7 @@ class ApprovalEngineService
             );
 
             /** @var PurchaseApprovalRequest $request */
+            // @tenant-bypass: background_job
             $request = PurchaseApprovalRequest::withoutGlobalScopes()->create([
                 'tenant_id' => $tenantId,
                 'approvable_type' => $approvable->getMorphClass(),
@@ -139,6 +144,7 @@ class ApprovalEngineService
             ]);
 
             // Catat log pengajuan awal (Append-Only)
+            // @tenant-bypass: background_job
             PurchaseApprovalLog::withoutGlobalScopes()->create([
                 'tenant_id' => $tenantId,
                 'approval_request_id' => $request->id,
@@ -177,6 +183,7 @@ class ApprovalEngineService
 
         return DB::transaction(function () use ($request, $approver, $notes, $tenantId) {
             /** @var PurchaseApprovalRequest $lockedRequest */
+            // @tenant-bypass: background_job
             $lockedRequest = PurchaseApprovalRequest::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->lockForUpdate()
@@ -193,6 +200,7 @@ class ApprovalEngineService
             ]);
 
             // Catat log persetujuan (Append-Only)
+            // @tenant-bypass: background_job
             PurchaseApprovalLog::withoutGlobalScopes()->create([
                 'tenant_id' => $tenantId,
                 'approval_request_id' => $lockedRequest->id,
@@ -235,6 +243,7 @@ class ApprovalEngineService
 
         return DB::transaction(function () use ($request, $approver, $trimmedReason, $tenantId) {
             /** @var PurchaseApprovalRequest $lockedRequest */
+            // @tenant-bypass: background_job
             $lockedRequest = PurchaseApprovalRequest::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->lockForUpdate()
@@ -252,6 +261,7 @@ class ApprovalEngineService
             ]);
 
             // Catat log penolakan (Append-Only)
+            // @tenant-bypass: background_job
             PurchaseApprovalLog::withoutGlobalScopes()->create([
                 'tenant_id' => $tenantId,
                 'approval_request_id' => $lockedRequest->id,

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Manufacturing\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Inventory\Models\Ingredient;
-use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class KitchenWasteLog extends Model
 {
     use AssignsTenant, ScopedToTenant;
+    use HasStoreRelation;
 
     protected $table = 'kitchen_waste_logs';
 
@@ -56,14 +57,6 @@ class KitchenWasteLog extends Model
     public function ingredient(): BelongsTo
     {
         return $this->belongsTo(Ingredient::class, 'ingredient_id');
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class, 'store_id');
     }
 
     /**

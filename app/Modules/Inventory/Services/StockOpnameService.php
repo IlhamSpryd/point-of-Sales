@@ -15,7 +15,7 @@ use App\Modules\Inventory\Models\Ingredient;
 use App\Modules\Inventory\Models\StockOpname;
 use App\Modules\Inventory\Models\StockOpnameItem;
 use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Services\AuditTrailService;
+use App\Platform\Audit\AuditLoggerInterface;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -37,7 +37,7 @@ class StockOpnameService
 {
     public function __construct(
         protected InventoryLedgerService $ledgerService,
-        protected AuditTrailService $auditTrailService
+        protected AuditLoggerInterface $auditTrailService
     ) {}
 
     /**
@@ -58,6 +58,7 @@ class StockOpnameService
      */
     public function createDraft(int $tenantId, int $storeId, array $data, int $userId): StockOpname
     {
+        // @tenant-bypass: maintenance
         $store = Store::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('id', $storeId)
@@ -70,8 +71,8 @@ class StockOpnameService
         $idempotencyKey = $data['idempotency_key'] ?? (string) Str::uuid();
 
         // Idempotency check
-        $existing = StockOpname::withoutTenantScope()
-            ->withoutGlobalScopes()
+        // @tenant-bypass: maintenance
+        $existing = StockOpname::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('idempotency_key', $idempotencyKey)
             ->first();
@@ -97,6 +98,7 @@ class StockOpnameService
 
             if (! empty($data['all_items'])) {
                 // Populate all products and ingredients
+                // @tenant-bypass: maintenance
                 $products = Product::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
                     ->get(['id']);
@@ -110,6 +112,7 @@ class StockOpnameService
                     ];
                 }
 
+                // @tenant-bypass: maintenance
                 $ingredients = Ingredient::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
                     ->get(['id']);
@@ -159,8 +162,8 @@ class StockOpnameService
     {
         return DB::transaction(function () use ($opname, $userId) {
             /** @var StockOpname $lockedOpname */
-            $lockedOpname = StockOpname::withoutTenantScope()
-                ->withoutGlobalScopes()
+            // @tenant-bypass: maintenance
+            $lockedOpname = StockOpname::withoutGlobalScopes()
                 ->where('tenant_id', $opname->tenant_id)
                 ->where('id', $opname->id)
                 ->lockForUpdate()
@@ -225,8 +228,8 @@ class StockOpnameService
     {
         return DB::transaction(function () use ($opname, $counts) {
             /** @var StockOpname $lockedOpname */
-            $lockedOpname = StockOpname::withoutTenantScope()
-                ->withoutGlobalScopes()
+            // @tenant-bypass: maintenance
+            $lockedOpname = StockOpname::withoutGlobalScopes()
                 ->where('tenant_id', $opname->tenant_id)
                 ->where('id', $opname->id)
                 ->lockForUpdate()
@@ -292,8 +295,8 @@ class StockOpnameService
     {
         return DB::transaction(function () use ($opname, $userId) {
             /** @var StockOpname $lockedOpname */
-            $lockedOpname = StockOpname::withoutTenantScope()
-                ->withoutGlobalScopes()
+            // @tenant-bypass: maintenance
+            $lockedOpname = StockOpname::withoutGlobalScopes()
                 ->where('tenant_id', $opname->tenant_id)
                 ->where('id', $opname->id)
                 ->lockForUpdate()
@@ -359,8 +362,8 @@ class StockOpnameService
 
         return DB::transaction(function () use ($opname, $itemId, $resolutionEnum, $userId) {
             /** @var StockOpname $lockedOpname */
-            $lockedOpname = StockOpname::withoutTenantScope()
-                ->withoutGlobalScopes()
+            // @tenant-bypass: maintenance
+            $lockedOpname = StockOpname::withoutGlobalScopes()
                 ->where('tenant_id', $opname->tenant_id)
                 ->where('id', $opname->id)
                 ->lockForUpdate()
@@ -445,8 +448,8 @@ class StockOpnameService
     {
         return DB::transaction(function () use ($opname, $userId, $driftResolutions) {
             /** @var StockOpname $lockedOpname */
-            $lockedOpname = StockOpname::withoutTenantScope()
-                ->withoutGlobalScopes()
+            // @tenant-bypass: maintenance
+            $lockedOpname = StockOpname::withoutGlobalScopes()
                 ->where('tenant_id', $opname->tenant_id)
                 ->where('id', $opname->id)
                 ->lockForUpdate()
@@ -632,8 +635,8 @@ class StockOpnameService
     {
         return DB::transaction(function () use ($opname, $userId, $reason) {
             /** @var StockOpname $lockedOpname */
-            $lockedOpname = StockOpname::withoutTenantScope()
-                ->withoutGlobalScopes()
+            // @tenant-bypass: maintenance
+            $lockedOpname = StockOpname::withoutGlobalScopes()
                 ->where('tenant_id', $opname->tenant_id)
                 ->where('id', $opname->id)
                 ->lockForUpdate()
@@ -690,6 +693,7 @@ class StockOpnameService
                 throw new InvalidArgumentException('Items of type product must include product_id and leave ingredient_id empty.');
             }
 
+            // @tenant-bypass: maintenance
             $product = Product::withoutGlobalScopes()
                 ->where('tenant_id', $opname->tenant_id)
                 ->where('id', $productId)
@@ -703,6 +707,7 @@ class StockOpnameService
                 throw new InvalidArgumentException('Items of type ingredient must include ingredient_id and leave product_id empty.');
             }
 
+            // @tenant-bypass: maintenance
             $ingredient = Ingredient::withoutGlobalScopes()
                 ->where('tenant_id', $opname->tenant_id)
                 ->where('id', $ingredientId)
@@ -796,8 +801,8 @@ class StockOpnameService
         $datePrefix = date('Ymd');
         $prefix = "OPN-{$storeId}-{$datePrefix}-";
 
-        $latest = StockOpname::withoutTenantScope()
-            ->withoutGlobalScopes()
+        // @tenant-bypass: maintenance
+        $latest = StockOpname::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('store_id', $storeId)
             ->where('opname_number', 'LIKE', "{$prefix}%")

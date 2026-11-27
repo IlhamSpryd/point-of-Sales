@@ -33,6 +33,7 @@ class EvaluateSubscriptionStatusCommand extends Command
         $this->info("Menjalankan evaluasi status langganan pada {$now->toDateTimeString()}...");
 
         // Ambil seluruh langganan aktif/trialing/past_due yang telah melewati tanggal ends_at
+        // @tenant-bypass: console_command
         $subscriptions = TenantSubscription::withoutGlobalScopes()
             ->whereIn('status', [TenantSubscription::STATUS_ACTIVE, TenantSubscription::STATUS_TRIALING, 'past_due'])
             ->whereNotNull('ends_at')
@@ -47,6 +48,7 @@ class EvaluateSubscriptionStatusCommand extends Command
             $graceCutoff = $endsAt->copy()->addDays(3);
 
             DB::transaction(function () use ($subscription, $tenantId, $now, $graceCutoff, $entitlementService, &$transitionedCount) {
+                // @tenant-bypass: console_command
                 $tenant = Tenant::withoutGlobalScopes()->find($tenantId);
                 if ($tenant === null) {
                     return;

@@ -6,7 +6,6 @@ namespace App\Modules\Workforce\Models;
 
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Tenant;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -45,7 +44,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $payslip_token
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
- * @property-read Tenant|null $tenant
  * @property-read PayrollBatch|null $batch
  * @property-read Employee|null $employee
  */
@@ -108,14 +106,6 @@ class PayrollRecord extends Model
             'other_deductions_amount' => 'decimal:2',
             'net_pay_amount' => 'decimal:2',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
     /**

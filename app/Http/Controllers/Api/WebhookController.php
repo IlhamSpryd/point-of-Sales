@@ -80,6 +80,7 @@ class WebhookController extends Controller
                 return response()->json(['message' => 'Store ID mismatch detected'], 400);
             }
             $storeId = reset($uniqueStores);
+            // @tenant-bypass: cross_tenant_reconciliation
             if (! Store::withoutTenantScope()->where('id', $storeId)->where('tenant_id', $tenantId)->exists()) {
                 Log::warning("Webhook rejected: store #{$storeId} does not belong to tenant #{$tenantId}.");
 
@@ -87,6 +88,7 @@ class WebhookController extends Controller
             }
         } else {
             // Selesaikan store default untuk tenant jika hanya ada 1 store atau fallback ke store pertama
+            // @tenant-bypass: cross_tenant_reconciliation
             $storeId = Store::withoutTenantScope()->where('tenant_id', $tenantId)->orderBy('id')->value('id');
         }
 

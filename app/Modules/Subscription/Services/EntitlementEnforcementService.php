@@ -32,6 +32,7 @@ class EntitlementEnforcementService
     public function resolveActivePlanForTenant(int $tenantId): ?Plan
     {
         /** @var TenantSubscription|null $subscription */
+        // @tenant-bypass: platform_entitlement
         $subscription = TenantSubscription::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereIn('status', ['active', 'trial', 'grace_period', 'ACTIVE', 'TRIAL', 'GRACE_PERIOD'])
@@ -43,6 +44,7 @@ class EntitlementEnforcementService
         }
 
         /** @var Tenant|null $tenant */
+        // @tenant-bypass: platform_entitlement
         $tenant = Tenant::withoutGlobalScopes()->find($tenantId);
         if ($tenant && ! empty($tenant->plan_code)) {
             return Plan::where('code', $tenant->plan_code)->first();
@@ -60,6 +62,7 @@ class EntitlementEnforcementService
 
         return (int) Cache::remember($cacheKey, 60, function () use ($tenantId, $quotaCode) {
             // 1. Cek override spesifik tenant
+            // @tenant-bypass: platform_entitlement
             $override = TenantEntitlementOverride::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->where('feature_code', $quotaCode)
@@ -100,6 +103,7 @@ class EntitlementEnforcementService
             return;
         }
 
+        // @tenant-bypass: platform_entitlement
         $currentCount = Store::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->count();
@@ -121,6 +125,7 @@ class EntitlementEnforcementService
             return;
         }
 
+        // @tenant-bypass: platform_entitlement
         $currentCount = Device::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('store_id', $storeId)
@@ -143,6 +148,7 @@ class EntitlementEnforcementService
             return;
         }
 
+        // @tenant-bypass: platform_entitlement
         $currentCount = User::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->count();

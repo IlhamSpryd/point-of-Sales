@@ -37,6 +37,7 @@ class EmailVerificationOtpService
 
         return DB::transaction(function () use ($userId, $action, $ipAddress, $userAgent) {
             // 1. Kunci baris induk User yang sudah pasti ada (mencegah gap-lock deadlock)
+            // @tenant-bypass: superadmin
             $lockedUser = User::withoutGlobalScopes()
                 ->whereKey($userId)
                 ->lockForUpdate()
@@ -141,6 +142,7 @@ class EmailVerificationOtpService
 
         return DB::transaction(function () use ($userId, $code, $action) {
             // 1. Kunci baris induk User terlebih dahulu
+            // @tenant-bypass: superadmin
             $lockedUser = User::withoutGlobalScopes()
                 ->whereKey($userId)
                 ->lockForUpdate()

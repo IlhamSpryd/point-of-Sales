@@ -72,6 +72,8 @@ class NavigationGovernanceTest extends TestCase
             $routeCounts[$page->route] = ($routeCounts[$page->route] ?? 0) + 1;
         }
 
+        $this->assertNotEmpty($routeCounts, 'NavigationRegistry must expose canonical page routes.');
+
         foreach ($routeCounts as $route => $count) {
             if ($count <= 1) {
                 continue;

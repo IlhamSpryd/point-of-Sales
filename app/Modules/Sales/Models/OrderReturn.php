@@ -10,7 +10,6 @@ use App\Core\Traits\ScopedToStore;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Customers\Models\Customer;
 use App\Modules\Organization\Models\Device;
-use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\User;
 use App\Modules\Sales\Contracts\OrderReturnReaderInterface;
 use Illuminate\Database\Eloquent\Model;
@@ -180,14 +179,6 @@ class OrderReturn extends Model implements OrderReturnReaderInterface
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

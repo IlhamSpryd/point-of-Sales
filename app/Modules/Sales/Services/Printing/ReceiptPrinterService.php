@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Modules\Sales\Services\Printing;
 
 use App\Enums\OrderStatus;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Organization\Services\CashierPinService;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\ReceiptPrintLog;
+use App\Platform\Audit\AuditLoggerInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
@@ -72,7 +72,7 @@ class ReceiptPrinterService
             ]);
 
             // Audit Trail
-            app(AuditTrailService::class)->log(
+            app(AuditLoggerInterface::class)->log(
                 tenantId: (int) $lockedOrder->tenant_id,
                 action: $isReprint ? 'receipt.reprinted' : 'receipt.printed',
                 userId: $actorUserId,

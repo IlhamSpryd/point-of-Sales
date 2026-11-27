@@ -190,6 +190,7 @@ class TwoFactorAuthenticationController extends Controller
                 return redirect()->route('login')->withErrors(['email' => 'Your two-factor verification session has expired. Please sign in again.']);
             }
 
+            // @tenant-bypass: auth_lookup
             $user = User::withoutGlobalScopes()->find((int) $pendingId);
 
             if (! $user || ! $user->hasTwoFactorEnabled() || ! $user->is_active || (bool) $user->tenant?->isSuspended()) {

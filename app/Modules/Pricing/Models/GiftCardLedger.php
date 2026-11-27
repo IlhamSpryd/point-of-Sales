@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Pricing\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use App\Modules\Pricing\Enums\GiftCardLedgerTypeEnum;
 use Illuminate\Database\Eloquent\Model;
@@ -26,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class GiftCardLedger extends Model
 {
     use AssignsTenant;
+    use HasStoreRelation;
     use ScopedToTenant;
 
     public $timestamps = false;
@@ -55,27 +55,11 @@ class GiftCardLedger extends Model
     }
 
     /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    /**
      * @return BelongsTo<GiftCard, $this>
      */
     public function giftCard(): BelongsTo
     {
         return $this->belongsTo(GiftCard::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

@@ -22,7 +22,7 @@ use App\Modules\Catalog\Services\ProductService;
 use App\Modules\Inventory\Models\Ingredient;
 use App\Modules\Inventory\Models\ModifierGroup;
 use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Services\AuditTrailService;
+use App\Platform\Audit\AuditLoggerInterface;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,9 +38,9 @@ class ProductController extends Controller
 {
     public function __construct(
         protected ProductService $productService,
-        protected ?AuditTrailService $auditTrail = null
+        protected ?AuditLoggerInterface $auditTrail = null
     ) {
-        $this->auditTrail ??= app(AuditTrailService::class);
+        $this->auditTrail ??= app(AuditLoggerInterface::class);
     }
 
     /**

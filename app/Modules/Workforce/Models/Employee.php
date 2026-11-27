@@ -7,7 +7,6 @@ namespace App\Modules\Workforce\Models;
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\BelongsToCompany;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use App\Modules\Workforce\Enums\AssignmentTypeEnum;
 use App\Modules\Workforce\Enums\EmploymentStatusEnum;
@@ -56,7 +55,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
  * @property CarbonInterface|null $deleted_at
- * @property-read Tenant|null $tenant
  * @property-read User|null $user
  * @property-read Department $department
  * @property-read JobTitle $jobTitle
@@ -142,14 +140,6 @@ class Employee extends Model
             'contract_end_date' => 'date',
             'termination_date' => 'date',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
     }
 
     /**

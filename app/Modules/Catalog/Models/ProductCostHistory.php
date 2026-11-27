@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Catalog\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -31,6 +31,7 @@ class ProductCostHistory extends Model
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
+    use HasStoreRelation;
     use ScopedToTenant;
 
     public const UPDATED_AT = null;
@@ -109,14 +110,6 @@ class ProductCostHistory extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

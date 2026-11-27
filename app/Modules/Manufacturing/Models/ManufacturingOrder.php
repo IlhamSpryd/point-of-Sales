@@ -9,8 +9,6 @@ use App\Core\Traits\AssignsStore;
 use App\Core\Traits\AssignsTenant;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Inventory\Models\Ingredient;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -75,22 +73,6 @@ class ManufacturingOrder extends Model
     public function isPrepOrder(): bool
     {
         return $this->destination_type === 'ingredient';
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

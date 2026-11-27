@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace App\Modules\Pricing\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Customers\Models\Customer;
 use App\Modules\Customers\Models\CustomerGroup;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -48,6 +47,7 @@ class PriceList extends Model
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
+    use HasStoreRelation;
     use ScopedToTenant;
     use SoftDeletes;
 
@@ -98,14 +98,6 @@ class PriceList extends Model
     ];
 
     /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    /**
      * @return BelongsTo<CustomerGroup, $this>
      */
     public function customerGroup(): BelongsTo
@@ -119,14 +111,6 @@ class PriceList extends Model
     public function approvedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by_user_id');
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

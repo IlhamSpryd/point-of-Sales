@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Customers\Services;
 
+use App\Core\Context\TenantContext;
 use App\Modules\Customers\Enums\CreditStatusEnum;
 use App\Modules\Customers\Models\CustomerCreditAccount;
 use App\Modules\Customers\Models\CustomerCreditLog;
@@ -33,7 +34,7 @@ class CustomerCreditLimitService
         ?int $actorUserId = null,
         ?string $reason = null
     ): CustomerCreditAccount {
-        return DB::transaction(function () use (
+        return app(TenantContext::class)->runAs($tenantId, null, fn () => DB::transaction(function () use (
             $tenantId,
             $customerId,
             $creditLimit,
@@ -48,7 +49,7 @@ class CustomerCreditLimitService
             }
 
             /** @var CustomerCreditAccount|null $account */
-            $account = CustomerCreditAccount::withoutGlobalScopes()
+            $account = CustomerCreditAccount::query()
                 ->where('tenant_id', $tenantId)
                 ->where('customer_id', $customerId)
                 ->lockForUpdate()
@@ -58,7 +59,7 @@ class CustomerCreditLimitService
             $oldStatus = $account ? $account->credit_status->value : CreditStatusEnum::ACTIVE->value;
 
             if (! $account) {
-                $account = CustomerCreditAccount::withoutGlobalScopes()->create([
+                $account = CustomerCreditAccount::query()->create([
                     'tenant_id' => $tenantId,
                     'customer_id' => $customerId,
                     'credit_limit' => $limitStr,
@@ -82,7 +83,7 @@ class CustomerCreditLimitService
             }
 
             // Catat log perubahan kredit secara append-only
-            CustomerCreditLog::withoutGlobalScopes()->create([
+            CustomerCreditLog::query()->create([
                 'tenant_id' => $tenantId,
                 'customer_id' => $customerId,
                 'event_type' => 'LIMIT_ADJUSTMENT',
@@ -96,7 +97,7 @@ class CustomerCreditLimitService
             ]);
 
             return $account;
-        });
+        }));
     }
 
     /**
@@ -111,10 +112,10 @@ class CustomerCreditLimitService
         $amountStr = bcadd((string) (float) $requiredAmount, '0', 2);
 
         /** @var CustomerCreditAccount|null $account */
-        $account = CustomerCreditAccount::withoutGlobalScopes()
+        $account = app(TenantContext::class)->runAs($tenantId, null, fn () => CustomerCreditAccount::query()
             ->where('tenant_id', $tenantId)
             ->where('customer_id', $customerId)
-            ->first();
+            ->first());
 
         if (! $account) {
             return false;
@@ -140,7 +141,7 @@ class CustomerCreditLimitService
         int $referenceId,
         ?int $actorUserId = null
     ): void {
-        DB::transaction(function () use (
+        app(TenantContext::class)->runAs($tenantId, null, fn () => DB::transaction(function () use (
             $tenantId,
             $customerId,
             $amount,
@@ -152,7 +153,7 @@ class CustomerCreditLimitService
             $amountStr = bcadd((string) (float) $amount, '0', 2);
 
             /** @var CustomerCreditAccount|null $account */
-            $account = CustomerCreditAccount::withoutGlobalScopes()
+            $account = CustomerCreditAccount::query()
                 ->where('tenant_id', $tenantId)
                 ->where('customer_id', $customerId)
                 ->lockForUpdate()
@@ -181,7 +182,7 @@ class CustomerCreditLimitService
             $account->updated_by_user_id = $actorUserId;
             $account->save();
 
-            CustomerCreditLog::withoutGlobalScopes()->create([
+            CustomerCreditLog::query()->create([
                 'tenant_id' => $tenantId,
                 'customer_id' => $customerId,
                 'event_type' => 'EXPOSURE_RESERVATION',
@@ -193,6 +194,6 @@ class CustomerCreditLimitService
                 'reason' => "Reservasi kredit untuk {$referenceType} #{$referenceId}",
                 'created_at' => Carbon::now(),
             ]);
-        });
+        }));
     }
 }

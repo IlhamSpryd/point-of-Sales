@@ -10,9 +10,9 @@ use App\Modules\Catalog\Models\Category;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\TaxClass;
 use App\Modules\Catalog\Models\UnitOfMeasure;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Subscription\Models\PlanEntitlement;
 use App\Modules\Subscription\Services\EntitlementService;
+use App\Platform\Audit\AuditLoggerInterface;
 use DomainException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
@@ -26,9 +26,9 @@ class ProductImportService
     public function __construct(
         protected MenuCacheService $menuCache,
         protected EntitlementService $entitlementService,
-        protected ?AuditTrailService $auditTrail = null
+        protected ?AuditLoggerInterface $auditTrail = null
     ) {
-        $this->auditTrail ??= app(AuditTrailService::class);
+        $this->auditTrail ??= app(AuditLoggerInterface::class);
     }
 
     /**
@@ -157,26 +157,31 @@ class ProductImportService
             }
 
             // Preload relasi katalog tenant untuk efisiensi
+            // @tenant-bypass: maintenance
             $categoriesByName = Category::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->pluck('id', 'category_name')
                 ->mapWithKeys(fn ($id, $name) => [strtolower((string) $name) => $id]);
 
+            // @tenant-bypass: maintenance
             $brandsByName = Brand::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->pluck('id', 'name')
                 ->mapWithKeys(fn ($id, $name) => [strtolower((string) $name) => $id]);
 
+            // @tenant-bypass: maintenance
             $uomsByCode = UnitOfMeasure::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->pluck('id', 'code')
                 ->mapWithKeys(fn ($id, $code) => [strtolower((string) $code) => $id]);
 
+            // @tenant-bypass: maintenance
             $taxClassesByCode = TaxClass::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->pluck('id', 'code')
                 ->mapWithKeys(fn ($id, $code) => [strtolower((string) $code) => $id]);
 
+            // @tenant-bypass: maintenance
             $existingSkus = Product::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->whereNotNull('product_code')
@@ -185,6 +190,7 @@ class ProductImportService
                 ->flip()
                 ->all();
 
+            // @tenant-bypass: maintenance
             $existingBarcodes = Product::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->whereNotNull('barcode')
@@ -253,6 +259,7 @@ class ProductImportService
                     $hasExplicitCategory = false;
                     if (! empty($row['category_id']) && is_numeric($row['category_id'])) {
                         $hasExplicitCategory = true;
+                        // @tenant-bypass: maintenance
                         $catExists = Category::withoutGlobalScopes()
                             ->where('tenant_id', $tenantId)
                             ->where('id', (int) $row['category_id'])
@@ -276,6 +283,7 @@ class ProductImportService
                     if (! $hasExplicitCategory && empty($rowErrors)) {
                         $defaultCatId = $categoriesByName->first();
                         if (! $defaultCatId) {
+                            // @tenant-bypass: maintenance
                             $defaultCategory = Category::withoutGlobalScopes()
                                 ->where('tenant_id', $tenantId)
                                 ->first();
@@ -296,6 +304,7 @@ class ProductImportService
                     // Resolusi brand
                     $brandId = null;
                     if (! empty($row['brand_id']) && is_numeric($row['brand_id'])) {
+                        // @tenant-bypass: maintenance
                         $brandExists = Brand::withoutGlobalScopes()
                             ->where('tenant_id', $tenantId)
                             ->where('id', (int) $row['brand_id'])
@@ -317,6 +326,7 @@ class ProductImportService
                     // Resolusi base UoM
                     $baseUomId = null;
                     if (! empty($row['base_uom_id']) && is_numeric($row['base_uom_id'])) {
+                        // @tenant-bypass: maintenance
                         $uomExists = UnitOfMeasure::withoutGlobalScopes()
                             ->where('tenant_id', $tenantId)
                             ->where('id', (int) $row['base_uom_id'])
@@ -338,6 +348,7 @@ class ProductImportService
                     // Resolusi Tax Class
                     $taxClassId = null;
                     if (! empty($row['tax_class_id']) && is_numeric($row['tax_class_id'])) {
+                        // @tenant-bypass: maintenance
                         $tcExists = TaxClass::withoutGlobalScopes()
                             ->where('tenant_id', $tenantId)
                             ->where('id', (int) $row['tax_class_id'])

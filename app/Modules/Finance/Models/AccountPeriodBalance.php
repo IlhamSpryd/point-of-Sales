@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Finance\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -32,6 +31,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class AccountPeriodBalance extends Model
 {
     use AssignsTenant;
+    use HasStoreRelation;
     use ScopedToTenant;
 
     protected $table = 'account_period_balances';
@@ -61,14 +61,6 @@ class AccountPeriodBalance extends Model
     }
 
     /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    /**
      * @return BelongsTo<AccountingPeriod, $this>
      */
     public function period(): BelongsTo
@@ -82,13 +74,5 @@ class AccountPeriodBalance extends Model
     public function account(): BelongsTo
     {
         return $this->belongsTo(ChartOfAccount::class, 'account_id');
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 }

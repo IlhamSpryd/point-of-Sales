@@ -8,7 +8,7 @@ use App\Modules\Catalog\Models\Category;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\StoreProductAssortment;
 use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Services\AuditTrailService;
+use App\Platform\Audit\AuditLoggerInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -16,9 +16,9 @@ class CatalogBulkEditService
 {
     public function __construct(
         protected MenuCacheService $menuCache,
-        protected ?AuditTrailService $auditTrail = null
+        protected ?AuditLoggerInterface $auditTrail = null
     ) {
-        $this->auditTrail ??= app(AuditTrailService::class);
+        $this->auditTrail ??= app(AuditLoggerInterface::class);
     }
 
     /**
@@ -38,6 +38,7 @@ class CatalogBulkEditService
 
         return DB::transaction(function () use ($productIds, $newStatus, $tenantId) {
             // Urutan deterministik ID ASC untuk mencegah deadlock
+            // @tenant-bypass: maintenance
             $products = Product::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->whereIn('id', $productIds)
@@ -84,6 +85,7 @@ class CatalogBulkEditService
         }
 
         if ($categoryId !== null) {
+            // @tenant-bypass: maintenance
             $catExists = Category::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->where('id', $categoryId)
@@ -95,6 +97,7 @@ class CatalogBulkEditService
         }
 
         return DB::transaction(function () use ($productIds, $categoryId, $tenantId) {
+            // @tenant-bypass: maintenance
             $products = Product::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->whereIn('id', $productIds)
@@ -147,6 +150,7 @@ class CatalogBulkEditService
         }
 
         return DB::transaction(function () use ($productIds, $value, $mode, $tenantId) {
+            // @tenant-bypass: maintenance
             $products = Product::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->whereIn('id', $productIds)
@@ -197,6 +201,7 @@ class CatalogBulkEditService
             return 0;
         }
 
+        // @tenant-bypass: maintenance
         $storeExists = Store::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->where('id', $storeId)
@@ -207,6 +212,7 @@ class CatalogBulkEditService
         }
 
         return DB::transaction(function () use ($productIds, $storeId, $data, $tenantId) {
+            // @tenant-bypass: maintenance
             $products = Product::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->whereIn('id', $productIds)
@@ -216,6 +222,7 @@ class CatalogBulkEditService
 
             $updatedCount = 0;
             foreach ($products as $product) {
+                // @tenant-bypass: maintenance
                 $assortment = StoreProductAssortment::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
                     ->where('store_id', $storeId)

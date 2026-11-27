@@ -12,7 +12,6 @@ use App\Core\Traits\ScopedToStore;
 use App\Core\Traits\ScopedToTenant;
 use App\Enums\StockMovementType;
 use App\Modules\Catalog\Models\Product;
-use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\Warehouse;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\OrderItem;
@@ -35,7 +34,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Product|null $product
- * @property-read Store|null $store
  * @property-read Order|null $order
  * @property-read OrderItem|null $orderItem
  * @property numeric-string $balance_before
@@ -95,14 +93,6 @@ class StockMovement extends Model
     public function orderItem(): BelongsTo
     {
         return $this->belongsTo(OrderItem::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

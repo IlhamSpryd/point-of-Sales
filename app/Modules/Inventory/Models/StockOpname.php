@@ -9,7 +9,6 @@ use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToStore;
 use App\Core\Traits\ScopedToTenant;
 use App\Enums\StockOpnameStatusEnum;
-use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -80,16 +79,6 @@ class StockOpname extends Model
     public function items(): HasMany
     {
         return $this->hasMany(StockOpnameItem::class, 'stock_opname_id');
-    }
-
-    /**
-     * Cabang / Toko tempat opname dilakukan.
-     *
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class, 'store_id');
     }
 
     /**

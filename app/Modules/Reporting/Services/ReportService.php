@@ -12,7 +12,6 @@ use App\Enums\PaymentStatusEnum;
 use App\Exports\SalesExport;
 use App\Jobs\ProcessInventoryLedgerExportJob;
 use App\Jobs\ProcessSalesReportExportJob;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Organization\Services\CashierPinService;
 use App\Modules\Reporting\Models\ExportTask;
 use App\Modules\Sales\Models\EodSettlement;
@@ -21,6 +20,7 @@ use App\Modules\Sales\Models\Payment;
 use App\Modules\Sales\Models\PaymentAttempt;
 use App\Modules\Sales\Models\PaymentRefund;
 use App\Modules\Sales\Models\Shift;
+use App\Platform\Audit\AuditLoggerInterface;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -320,7 +320,7 @@ class ReportService
                 'notes' => $notes,
             ]);
 
-            app(AuditTrailService::class)->log(
+            app(AuditLoggerInterface::class)->log(
                 tenantId: $tenantId,
                 action: 'store.eod_closed',
                 userId: $managerUserId,

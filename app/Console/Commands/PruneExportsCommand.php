@@ -33,6 +33,7 @@ class PruneExportsCommand extends Command
 
         $this->info("Memangkas file ekspor yang dibuat sebelum {$cutoff->toDateTimeString()} ({$days} hari)...");
 
+        // @tenant-bypass: console_command
         $tasks = ExportTask::withoutGlobalScopes()
             ->where('created_at', '<', $cutoff)
             ->whereIn('status', [ExportTaskStatus::Completed, ExportTaskStatus::Failed])

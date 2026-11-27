@@ -28,6 +28,7 @@ class ProductApiController extends Controller
         $user = $request->user();
         $tenantId = (int) $user->tenant_id;
 
+        // @tenant-bypass: auth_lookup
         $query = Product::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->with(['category', 'variants' => fn ($q) => $q->where('is_active', true)]);

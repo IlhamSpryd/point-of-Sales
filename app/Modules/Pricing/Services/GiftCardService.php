@@ -42,7 +42,7 @@ class GiftCardService
             ? strtoupper(trim((string) $data['card_number']))
             : 'GC-'.strtoupper(Str::random(4)).'-'.strtoupper(Str::random(4)).'-'.strtoupper(Str::random(4));
 
-        $existing = GiftCard::withoutGlobalScopes()
+        $existing = GiftCard::query()
             ->where('tenant_id', $tenantId)
             ->where('card_number', $cardNumber)
             ->exists();
@@ -131,7 +131,7 @@ class GiftCardService
             $idempotencyKey
         ) {
             /** @var GiftCard $lockedCard */
-            $lockedCard = GiftCard::withoutGlobalScopes()
+            $lockedCard = GiftCard::query()
                 ->where('tenant_id', $tenantId)
                 ->where('card_number', $cardNumber)
                 ->lockForUpdate()
@@ -214,7 +214,7 @@ class GiftCardService
             $idempotencyKey
         ) {
             /** @var GiftCard $lockedCard */
-            $lockedCard = GiftCard::withoutGlobalScopes()
+            $lockedCard = GiftCard::query()
                 ->where('tenant_id', $tenantId)
                 ->where('card_number', $cardNumber)
                 ->lockForUpdate()
@@ -264,7 +264,7 @@ class GiftCardService
         $tenantId = (int) $this->tenantContext->requireTenantId();
 
         /** @var GiftCard $card */
-        $card = GiftCard::withoutGlobalScopes()
+        $card = GiftCard::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($cardId);
 
@@ -282,7 +282,7 @@ class GiftCardService
         $tenantId = (int) $this->tenantContext->requireTenantId();
 
         /** @var GiftCard $card */
-        $card = GiftCard::withoutGlobalScopes()
+        $card = GiftCard::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($cardId);
 

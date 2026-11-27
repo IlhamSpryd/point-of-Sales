@@ -122,7 +122,7 @@ class SubscriptionPortal extends Component
         $gate = app(EntitlementGateInterface::class);
 
         $activePlan = $gate->resolveActivePlanForTenant($tenantId);
-        $subscription = TenantSubscription::withoutGlobalScopes()
+        $subscription = TenantSubscription::query()
             ->where('tenant_id', $tenantId)
             ->latest('id')
             ->first();
@@ -136,13 +136,13 @@ class SubscriptionPortal extends Component
 
         // Quotas & Current Usages
         $maxStores = $gate->getQuota($tenantId, EntitlementEnforcementService::QUOTA_MAX_STORES);
-        $currentStores = Store::withoutGlobalScopes()->where('tenant_id', $tenantId)->count();
+        $currentStores = Store::query()->where('tenant_id', $tenantId)->count();
 
         $maxDevices = $gate->getQuota($tenantId, EntitlementEnforcementService::QUOTA_MAX_DEVICES);
-        $currentDevices = Device::withoutGlobalScopes()->where('tenant_id', $tenantId)->count();
+        $currentDevices = Device::allStores()->where('tenant_id', $tenantId)->count();
 
         $maxUsers = $gate->getQuota($tenantId, EntitlementEnforcementService::QUOTA_MAX_USERS);
-        $currentUsers = User::withoutGlobalScopes()->where('tenant_id', $tenantId)->count();
+        $currentUsers = User::query()->where('tenant_id', $tenantId)->count();
 
         $allPlans = Plan::where('is_active', true)->orderBy('price')->get();
 

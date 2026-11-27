@@ -20,10 +20,13 @@ trait ScopedToStore
     /**
      * Mode baca lintas-cabang. HANYA boleh dipakai di jalur yang sudah
      * memverifikasi peran Owner (laporan).
+     *
+     * @return Builder<static>
      */
     public static function allStores(): Builder
     {
-        return static::withoutGlobalScope(StoreScope::class);
+        // @tenant-bypass: auth_lookup
+        return static::query()->withoutGlobalScope(StoreScope::class);
     }
 
     /**
@@ -34,6 +37,7 @@ trait ScopedToStore
      */
     public function scopeAllBranchesInTenant(Builder $query): Builder
     {
+        // @tenant-bypass: auth_lookup
         return $query->withoutGlobalScope(StoreScope::class);
     }
 
@@ -45,6 +49,7 @@ trait ScopedToStore
      */
     public function scopeForBranch(Builder $query, int $storeId): Builder
     {
+        // @tenant-bypass: auth_lookup
         return $query->withoutGlobalScope(StoreScope::class)->where($this->qualifyColumn('store_id'), $storeId);
     }
 }

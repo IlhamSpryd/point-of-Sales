@@ -7,7 +7,6 @@ namespace App\Modules\Workforce\Models;
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\BelongsToCompany;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use App\Modules\Workforce\Enums\PayrollBatchStatusEnum;
 use Carbon\CarbonInterface;
@@ -42,7 +41,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property CarbonInterface|null $paid_at
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
- * @property-read Tenant|null $tenant
  * @property-read PayrollPeriod|null $period
  * @property-read User|null $creator
  * @property-read User|null $approver
@@ -100,14 +98,6 @@ class PayrollBatch extends Model
             'finalized_at' => 'datetime',
             'paid_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
     /**

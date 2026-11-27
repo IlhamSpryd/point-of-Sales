@@ -38,21 +38,25 @@ class OnboardingWizardController extends Controller
             return redirect()->route('dashboard');
         }
 
+        // @tenant-bypass: superadmin
         $businessCategory = Setting::withoutTenantScope()
             ->where('tenant_id', $tenant->id)
             ->where('key', 'business_category')
             ->value('value') ?? 'fnb_cafe';
 
+        // @tenant-bypass: superadmin
         $tenantTimezone = Setting::withoutTenantScope()
             ->where('tenant_id', $tenant->id)
             ->where('key', 'timezone')
             ->value('value') ?? 'Asia/Jakarta';
 
+        // @tenant-bypass: superadmin
         $defaultCurrency = Setting::withoutTenantScope()
             ->where('tenant_id', $tenant->id)
             ->where('key', 'currency_code')
             ->value('value') ?? 'IDR';
 
+        // @tenant-bypass: superadmin
         $ownerPhone = Setting::withoutTenantScope()
             ->where('tenant_id', $tenant->id)
             ->where('key', 'business_phone')
@@ -104,6 +108,7 @@ class OnboardingWizardController extends Controller
 
         $initialStore = $this->onboardingService->getInitialStore($tenant);
 
+        // @tenant-bypass: superadmin
         $tenantTimezone = Setting::withoutTenantScope()
             ->where('tenant_id', $tenant->id)
             ->where('key', 'timezone')

@@ -12,6 +12,7 @@ class ActivityLogPolicy
 {
     private function canView(User $user): bool
     {
+        // @tenant-bypass: auth_lookup
         $role = $user->relationLoaded('role') ? $user->role : $user->role()->withoutGlobalScopes()->first();
         if (! $role instanceof Role) {
             return false;

@@ -44,6 +44,7 @@ class CompanyService
             : 'CMP-'.strtoupper(Str::random(6));
 
         // Check company code uniqueness per tenant
+        // @tenant-bypass: superadmin
         $codeExists = Company::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('company_code', $companyCode)
@@ -60,12 +61,14 @@ class CompanyService
         return DB::transaction(function () use ($tenantId, $companyName, $companyCode, $data, $isDefault, $actor) {
             if ($isDefault) {
                 // If setting as default, clear default from existing companies for this tenant
+                // @tenant-bypass: superadmin
                 Company::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
                     ->where('is_default', true)
                     ->update(['is_default' => false]);
             } else {
                 // If this is the tenant's first company, force default = true
+                // @tenant-bypass: superadmin
                 $hasAny = Company::withoutGlobalScopes()->where('tenant_id', $tenantId)->exists();
                 if (! $hasAny) {
                     $isDefault = true;
@@ -115,6 +118,7 @@ class CompanyService
 
         return DB::transaction(function () use ($company, $data, $tenantId, $actor) {
             if (isset($data['is_default']) && (bool) $data['is_default'] && ! $company->is_default) {
+                // @tenant-bypass: superadmin
                 Company::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
                     ->where('id', '!=', $company->id)
@@ -170,6 +174,7 @@ class CompanyService
      */
     public function getCompaniesForTenant(int $tenantId): Collection
     {
+        // @tenant-bypass: superadmin
         return Company::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->orderByDesc('is_default')

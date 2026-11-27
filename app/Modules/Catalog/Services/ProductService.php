@@ -13,8 +13,8 @@ use App\Modules\Catalog\Models\ProductVariant;
 use App\Modules\Catalog\Models\ProductVariantAttributeValue;
 use App\Modules\Catalog\Models\StoreProductAssortment;
 use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Subscription\Services\EntitlementService;
+use App\Platform\Audit\AuditLoggerInterface;
 use DomainException;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -33,10 +33,10 @@ class ProductService
 {
     public function __construct(
         protected MenuCacheService $menuCache,
-        protected ?AuditTrailService $auditTrail = null,
+        protected ?AuditLoggerInterface $auditTrail = null,
         protected ?BundleComponentExpanderService $bundleExpander = null
     ) {
-        $this->auditTrail ??= app(AuditTrailService::class);
+        $this->auditTrail ??= app(AuditLoggerInterface::class);
         $this->bundleExpander ??= app(BundleComponentExpanderService::class);
     }
 

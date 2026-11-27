@@ -20,6 +20,7 @@ class TenantAwareUserProvider extends EloquentUserProvider
      */
     protected function newModelQuery($model = null)
     {
+        // @tenant-bypass: auth_lookup
         return parent::newModelQuery($model)->withoutGlobalScope(TenantScope::class);
     }
 }

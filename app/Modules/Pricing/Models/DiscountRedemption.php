@@ -9,7 +9,6 @@ use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToStore;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Customers\Models\Customer;
-use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\User;
 use App\Modules\Sales\Models\Order;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -63,14 +62,6 @@ class DiscountRedemption extends Model
             'redeemed_at' => 'datetime',
             'reversed_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

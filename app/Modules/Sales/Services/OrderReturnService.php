@@ -7,12 +7,12 @@ namespace App\Modules\Sales\Services;
 use App\Core\Context\TenantContext;
 use App\Enums\OrderStatus;
 use App\Modules\Organization\Models\Device;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\OrderItem;
 use App\Modules\Sales\Models\OrderReturn;
 use App\Modules\Sales\Models\Payment;
 use App\Modules\Sales\Models\Shift;
+use App\Platform\Audit\AuditLoggerInterface;
 use DomainException;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -22,7 +22,7 @@ class OrderReturnService
     public function __construct(
         protected ReturnRefundService $returnRefundService,
         protected TenantContext $tenantContext,
-        protected AuditTrailService $auditTrail
+        protected AuditLoggerInterface $auditTrail
     ) {}
 
     /**

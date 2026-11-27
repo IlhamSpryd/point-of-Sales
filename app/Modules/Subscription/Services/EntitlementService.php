@@ -69,6 +69,7 @@ class EntitlementService implements EntitlementGateInterface
 
         return (bool) Cache::remember($cacheKey, 3600, function () use ($tenantId, $featureCode) {
             // 1. Cek override spesifik tenant
+            // @tenant-bypass: platform_entitlement
             $override = TenantEntitlementOverride::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->where('feature_code', $featureCode)
@@ -118,6 +119,7 @@ class EntitlementService implements EntitlementGateInterface
 
         return (int) Cache::remember($cacheKey, 3600, function () use ($tenantId, $quotaCode) {
             // 1. Cek override spesifik tenant
+            // @tenant-bypass: platform_entitlement
             $override = TenantEntitlementOverride::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->where('feature_code', $quotaCode)
@@ -160,6 +162,7 @@ class EntitlementService implements EntitlementGateInterface
             return;
         }
 
+        // @tenant-bypass: platform_entitlement
         $currentCount = Store::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->count();
@@ -181,6 +184,7 @@ class EntitlementService implements EntitlementGateInterface
             return;
         }
 
+        // @tenant-bypass: platform_entitlement
         $currentCount = Device::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('store_id', $storeId)
@@ -218,6 +222,7 @@ class EntitlementService implements EntitlementGateInterface
      */
     public function assertCanCreateProduct(int $tenantId): void
     {
+        // @tenant-bypass: platform_entitlement
         $hasExplicitQuota = TenantEntitlementOverride::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('feature_code', self::QUOTA_MAX_PRODUCTS)
@@ -298,6 +303,7 @@ class EntitlementService implements EntitlementGateInterface
         }
 
         // Cek tenant override
+        // @tenant-bypass: platform_entitlement
         $override = TenantEntitlementOverride::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('feature_code', self::FEATURE_TABLE_MANAGEMENT)
@@ -313,6 +319,7 @@ class EntitlementService implements EntitlementGateInterface
 
         // 2. Cek Konfigurasi Operasional Cabang
         if ($storeId !== null) {
+            // @tenant-bypass: platform_entitlement
             $storeSetting = Setting::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->whereIn('key', ["store.{$storeId}.tables_enabled", "store_{$storeId}_tables_enabled"])
@@ -322,6 +329,7 @@ class EntitlementService implements EntitlementGateInterface
             }
         }
 
+        // @tenant-bypass: platform_entitlement
         $posSetting = Setting::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereIn('key', ['pos.tables_enabled', 'tables_enabled'])
@@ -343,6 +351,7 @@ class EntitlementService implements EntitlementGateInterface
             return false;
         }
 
+        // @tenant-bypass: platform_entitlement
         $bizCat = Setting::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('key', 'business_category')
@@ -373,6 +382,7 @@ class EntitlementService implements EntitlementGateInterface
             }
         }
 
+        // @tenant-bypass: platform_entitlement
         $override = TenantEntitlementOverride::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('feature_code', self::FEATURE_SELF_ORDER)
@@ -384,6 +394,7 @@ class EntitlementService implements EntitlementGateInterface
         }
 
         if ($storeId !== null) {
+            // @tenant-bypass: platform_entitlement
             $storeSetting = Setting::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->whereIn('key', ["store.{$storeId}.self_order_enabled", "store_{$storeId}_self_order_enabled"])
@@ -393,6 +404,7 @@ class EntitlementService implements EntitlementGateInterface
             }
         }
 
+        // @tenant-bypass: platform_entitlement
         $posSetting = Setting::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereIn('key', ['pos.self_order_enabled', 'self_order_enabled'])
@@ -410,6 +422,7 @@ class EntitlementService implements EntitlementGateInterface
     public function resolveActivePlanForTenant(int $tenantId): ?Plan
     {
         /** @var TenantSubscription|null $subscription */
+        // @tenant-bypass: platform_entitlement
         $subscription = TenantSubscription::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereIn('status', [TenantSubscription::STATUS_ACTIVE, TenantSubscription::STATUS_TRIALING])
@@ -421,6 +434,7 @@ class EntitlementService implements EntitlementGateInterface
         }
 
         /** @var Tenant|null $tenant */
+        // @tenant-bypass: platform_entitlement
         $tenant = Tenant::withoutGlobalScopes()->find($tenantId);
         $planCode = $tenant !== null && $tenant->subscription_plan ? $tenant->subscription_plan : 'standard_trial';
 

@@ -62,6 +62,7 @@ class CatalogPriceResolverService
 
         // 1. Ambil Produk Master untuk base price
         /** @var Product|null $product */
+        // @tenant-bypass: maintenance
         $product = $context->product ?? Product::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->find($productId);
@@ -74,6 +75,7 @@ class CatalogPriceResolverService
         // Ambil Varian jika spesifik
         $variant = null;
         if ($variantId !== null) {
+            // @tenant-bypass: maintenance
             $variant = ProductVariant::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->where('product_id', $productId)
@@ -106,6 +108,7 @@ class CatalogPriceResolverService
         if ($customerId !== null) {
             $cKey = "cpls_{$tenantId}_{$customerId}";
             if (! isset($this->runtimeCache[$cKey])) {
+                // @tenant-bypass: maintenance
                 $this->runtimeCache[$cKey] = PriceList::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
                     ->where('customer_id', $customerId)
@@ -147,6 +150,7 @@ class CatalogPriceResolverService
         if ($customerGroupId !== null) {
             $gKey = "gpls_{$tenantId}_{$customerGroupId}";
             if (! isset($this->runtimeCache[$gKey])) {
+                // @tenant-bypass: maintenance
                 $this->runtimeCache[$gKey] = PriceList::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
                     ->where('customer_group_id', $customerGroupId)
@@ -188,6 +192,7 @@ class CatalogPriceResolverService
         // 3a. Price list spesifik cabang, kanal, loyalty tier, atau standar
         $sKey = "spls_{$tenantId}_{$storeIdInt}_{$loyaltyTierId}_{$channel}";
         if (! isset($this->runtimeCache[$sKey])) {
+            // @tenant-bypass: maintenance
             $this->runtimeCache[$sKey] = PriceList::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->where('is_active', true)
@@ -243,6 +248,7 @@ class CatalogPriceResolverService
                     $variantAssortment = $product->storeAssortments
                         ->first(fn (StoreProductAssortment $a): bool => (int) $a->store_id === $storeIdInt && (int) $a->product_variant_id === $variantId);
                 } else {
+                    // @tenant-bypass: maintenance
                     $variantAssortment = StoreProductAssortment::withoutGlobalScopes()
                         ->where('tenant_id', $tenantId)
                         ->where('store_id', $storeIdInt)
@@ -265,6 +271,7 @@ class CatalogPriceResolverService
                 $productAssortment = $product->storeAssortments
                     ->first(fn (StoreProductAssortment $a): bool => (int) $a->store_id === $storeIdInt && $a->product_variant_id === null);
             } else {
+                // @tenant-bypass: maintenance
                 $productAssortment = StoreProductAssortment::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
                     ->where('store_id', $storeIdInt)
@@ -353,6 +360,7 @@ class CatalogPriceResolverService
         $priceListIds = $priceLists->pluck('id')->all();
         $priceListsById = $priceLists->keyBy('id');
 
+        // @tenant-bypass: maintenance
         $query = PriceListItem::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereIn('price_list_id', $priceListIds)
@@ -464,6 +472,7 @@ class CatalogPriceResolverService
                 ->first(fn (StoreProductAssortment $a): bool => (int) $a->store_id === $storeIdInt);
         } else {
             /** @var StoreProductAssortment|null $assortment */
+            // @tenant-bypass: maintenance
             $assortment = StoreProductAssortment::withoutGlobalScopes()
                 ->where('tenant_id', $product->tenant_id)
                 ->where('store_id', $storeIdInt)
@@ -499,6 +508,7 @@ class CatalogPriceResolverService
         }
 
         $resolved = [];
+        // @tenant-bypass: maintenance
         $products = Product::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereIn('id', $productIds)

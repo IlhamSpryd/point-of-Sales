@@ -9,7 +9,6 @@ use App\Core\Traits\ScopedToTenant;
 use App\Modules\Finance\Enums\AccountSubtypeEnum;
 use App\Modules\Finance\Enums\AccountTypeEnum;
 use App\Modules\Finance\Enums\NormalBalanceEnum;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
@@ -78,14 +77,6 @@ class ChartOfAccount extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
     }
 
     /**

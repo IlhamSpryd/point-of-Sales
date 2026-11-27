@@ -9,7 +9,6 @@ use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToStore;
 use App\Core\Traits\ScopedToTenant;
 use App\Enums\IngredientStockMovementTypeEnum;
-use App\Modules\Organization\Models\Store;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,7 +27,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $idempotency_key
  * @property Carbon|null $created_at
  * @property-read Ingredient|null $ingredient
- * @property-read Store|null $store
  * @property int|null $order_item_id
  * @property int|null $created_by
  */
@@ -67,14 +65,6 @@ class IngredientStockMovement extends Model
     public function ingredient(): BelongsTo
     {
         return $this->belongsTo(Ingredient::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     public function update(array $attributes = [], array $options = [])

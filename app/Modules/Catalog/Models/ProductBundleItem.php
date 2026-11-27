@@ -6,7 +6,6 @@ namespace App\Modules\Catalog\Models;
 
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -56,14 +55,6 @@ class ProductBundleItem extends Model
         'cost_allocation_ratio' => 'decimal:4',
         'sort_order' => 'integer',
     ];
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
 
     /**
      * @return BelongsTo<Product, $this>

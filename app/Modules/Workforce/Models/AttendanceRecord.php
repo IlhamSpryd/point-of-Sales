@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Workforce\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Organization\Models\Device;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use App\Modules\Workforce\Enums\AttendanceSourceEnum;
 use App\Modules\Workforce\Enums\AttendanceStatusEnum;
@@ -44,8 +43,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $notes
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
- * @property-read Tenant|null $tenant
- * @property-read Store|null $store
  * @property-read Employee|null $employee
  * @property-read WorkSchedule|null $workSchedule
  * @property-read Device|null $device
@@ -55,6 +52,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class AttendanceRecord extends Model
 {
     use AssignsTenant;
+    use HasStoreRelation;
     use ScopedToTenant;
 
     protected $table = 'attendance_records';
@@ -98,22 +96,6 @@ class AttendanceRecord extends Model
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class, 'tenant_id');
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class, 'store_id');
     }
 
     /**

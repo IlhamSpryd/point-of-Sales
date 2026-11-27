@@ -6,7 +6,6 @@ namespace App\Modules\Workforce\Models;
 
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Workforce\Enums\PtkpStatusEnum;
 use App\Modules\Workforce\Enums\TaxCalculationMethodEnum;
 use Carbon\CarbonInterface;
@@ -24,7 +23,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonInterface $effective_from
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
- * @property-read Tenant|null $tenant
  * @property-read Employee $employee
  */
 class EmployeeTaxProfile extends Model
@@ -56,14 +54,6 @@ class EmployeeTaxProfile extends Model
             'is_eligible_for_dtp' => 'boolean',
             'effective_from' => 'date',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
     }
 
     /**

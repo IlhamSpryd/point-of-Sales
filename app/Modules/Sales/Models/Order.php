@@ -18,7 +18,6 @@ use App\Enums\PaymentStatusEnum;
 use App\Modules\Customers\Models\Customer;
 use App\Modules\Organization\Models\Device;
 use App\Modules\Organization\Models\OperationalUnit;
-use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\User;
 use App\Modules\Pricing\Models\Discount;
 use App\Modules\Pricing\Models\DiscountRedemption;
@@ -382,14 +381,6 @@ class Order extends Model implements PosOrderReaderInterface
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

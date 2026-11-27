@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Pricing\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToStoreForDiscount;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 /** @use HasFactory<Factory<static>> */
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -37,6 +36,7 @@ class PromotionCampaign extends Model
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
+    use HasStoreRelation;
     use ScopedToStoreForDiscount;
     use ScopedToTenant;
     use SoftDeletes;
@@ -161,22 +161,6 @@ class PromotionCampaign extends Model
     public function reservations(): HasMany
     {
         return $this->hasMany(PromotionReservation::class, 'campaign_id');
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

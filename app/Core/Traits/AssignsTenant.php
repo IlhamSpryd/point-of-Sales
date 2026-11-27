@@ -5,10 +5,20 @@ declare(strict_types=1);
 namespace App\Core\Traits;
 
 use App\Core\Context\TenantContext;
+use App\Modules\Organization\Models\Tenant;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use RuntimeException;
 
 trait AssignsTenant
 {
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
     protected static function bootAssignsTenant(): void
     {
         static::creating(function ($model) {

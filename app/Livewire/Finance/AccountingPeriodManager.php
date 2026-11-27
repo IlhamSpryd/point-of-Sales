@@ -70,7 +70,7 @@ class AccountingPeriodManager extends Component
         $this->authorize('close', AccountingPeriod::class);
 
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
-        $period = AccountingPeriod::withoutGlobalScopes()
+        $period = AccountingPeriod::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($periodId);
 
@@ -95,7 +95,7 @@ class AccountingPeriodManager extends Component
         $this->authorize('close', AccountingPeriod::class);
 
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
-        $period = AccountingPeriod::withoutGlobalScopes()
+        $period = AccountingPeriod::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($periodId);
 
@@ -120,7 +120,7 @@ class AccountingPeriodManager extends Component
         $this->authorize('close', AccountingPeriod::class);
 
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
-        $period = AccountingPeriod::withoutGlobalScopes()
+        $period = AccountingPeriod::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($periodId);
 
@@ -159,7 +159,7 @@ class AccountingPeriodManager extends Component
         ]);
 
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
-        $period = AccountingPeriod::withoutGlobalScopes()
+        $period = AccountingPeriod::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($this->selectedPeriodId);
 
@@ -180,7 +180,7 @@ class AccountingPeriodManager extends Component
     public function evaluateGates(int $periodId, AccountingPeriodService $service): void
     {
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
-        $this->gatesPeriod = AccountingPeriod::withoutGlobalScopes()
+        $this->gatesPeriod = AccountingPeriod::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($periodId);
 
@@ -195,13 +195,13 @@ class AccountingPeriodManager extends Component
     {
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
-        $periods = AccountingPeriod::withoutGlobalScopes()
+        $periods = AccountingPeriod::query()
             ->where('tenant_id', $tenantId)
             ->where('fiscal_year', $this->selectedFiscalYear)
             ->orderBy('period_number')
             ->get();
 
-        $availableYears = AccountingPeriod::withoutGlobalScopes()
+        $availableYears = AccountingPeriod::query()
             ->where('tenant_id', $tenantId)
             ->distinct()
             ->pluck('fiscal_year')

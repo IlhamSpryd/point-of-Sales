@@ -36,7 +36,7 @@ class VoucherService
             throw ValidationException::withMessages(['code' => ['Voucher code is required.']]);
         }
 
-        $existing = Voucher::withoutGlobalScopes()
+        $existing = Voucher::query()
             ->where('tenant_id', $tenantId)
             ->where('code', $code)
             ->exists();
@@ -89,7 +89,7 @@ class VoucherService
         $code = strtoupper(trim($code));
 
         /** @var Voucher|null $voucher */
-        $voucher = Voucher::withoutGlobalScopes()
+        $voucher = Voucher::query()
             ->where('tenant_id', $tenantId)
             ->where('code', $code)
             ->first();
@@ -189,7 +189,7 @@ class VoucherService
 
         return DB::transaction(function () use ($tenantId, $code, $cartUuid, $storeId, $customerId, $reservedAmount) {
             /** @var Voucher $lockedVoucher */
-            $lockedVoucher = Voucher::withoutGlobalScopes()
+            $lockedVoucher = Voucher::query()
                 ->where('tenant_id', $tenantId)
                 ->where('code', $code)
                 ->lockForUpdate()
@@ -326,7 +326,7 @@ class VoucherService
 
         return DB::transaction(function () use ($tenantId, $code, $customer, $orderAmount) {
             /** @var Voucher $lockedVoucher */
-            $lockedVoucher = Voucher::withoutGlobalScopes()
+            $lockedVoucher = Voucher::query()
                 ->where('tenant_id', $tenantId)
                 ->where('code', $code)
                 ->lockForUpdate()
@@ -401,7 +401,7 @@ class VoucherService
         $tenantId = (int) $this->tenantContext->requireTenantId();
 
         /** @var Voucher $voucher */
-        $voucher = Voucher::withoutGlobalScopes()
+        $voucher = Voucher::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($voucherId);
 
@@ -419,7 +419,7 @@ class VoucherService
         $tenantId = (int) $this->tenantContext->requireTenantId();
 
         /** @var Voucher $voucher */
-        $voucher = Voucher::withoutGlobalScopes()
+        $voucher = Voucher::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($voucherId);
 

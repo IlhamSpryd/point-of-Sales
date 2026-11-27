@@ -27,6 +27,7 @@ class ReconcilePendingMidtransOrders extends Command
         PaymentGatewayInterface $paymentGateway,
         TenantContext $tenantContext,
     ): int {
+        // @tenant-bypass: cross_tenant_reconciliation
         $stale = Order::withoutGlobalScopes()
             ->where('order_status', OrderStatus::Pending)
             ->where('payment_method', '!=', 'cash')

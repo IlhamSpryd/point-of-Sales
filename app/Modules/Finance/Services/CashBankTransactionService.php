@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Services;
 
+use App\Core\Context\TenantContext;
 use App\Modules\Finance\DataTransferObjects\JournalLineDto;
 use App\Modules\Finance\Enums\CashBankAccountTypeEnum;
 use App\Modules\Finance\Enums\CashBankTransactionStatusEnum;
@@ -47,8 +48,8 @@ class CashBankTransactionService
         $referenceNumber = $data['reference_number'] ?? null;
         $idempotencyKey = $data['idempotency_key'] ?? "cbt:rec:{$tenantId}:".Str::uuid();
 
-        return DB::transaction(function () use ($tenantId, $account, $amount, $dateStr, $description, $referenceNumber, $idempotencyKey, $data, $actor) {
-            $lockedAccount = CashBankAccount::withoutTenantScope()
+        return app(TenantContext::class)->runAs((int) $tenantId, null, fn () => DB::transaction(function () use ($tenantId, $account, $amount, $dateStr, $description, $referenceNumber, $idempotencyKey, $data, $actor) {
+            $lockedAccount = CashBankAccount::query()
                 ->where('tenant_id', $tenantId)
                 ->lockForUpdate()
                 ->findOrFail($account->id);
@@ -94,7 +95,7 @@ class CashBankTransactionService
                 $journalId = $journal->id;
             }
 
-            return CashBankTransaction::withoutTenantScope()->create([
+            return CashBankTransaction::query()->create([
                 'tenant_id' => $tenantId,
                 'store_id' => $lockedAccount->store_id,
                 'cash_bank_account_id' => $lockedAccount->id,
@@ -111,7 +112,7 @@ class CashBankTransactionService
                 'created_by_user_id' => $actor->id,
                 'posted_by_user_id' => $actor->id,
             ]);
-        });
+        }));
     }
 
     /**
@@ -134,8 +135,8 @@ class CashBankTransactionService
         $referenceNumber = $data['reference_number'] ?? null;
         $idempotencyKey = $data['idempotency_key'] ?? "cbt:disb:{$tenantId}:".Str::uuid();
 
-        return DB::transaction(function () use ($tenantId, $account, $amount, $dateStr, $description, $referenceNumber, $idempotencyKey, $data, $actor) {
-            $lockedAccount = CashBankAccount::withoutTenantScope()
+        return app(TenantContext::class)->runAs((int) $tenantId, null, fn () => DB::transaction(function () use ($tenantId, $account, $amount, $dateStr, $description, $referenceNumber, $idempotencyKey, $data, $actor) {
+            $lockedAccount = CashBankAccount::query()
                 ->where('tenant_id', $tenantId)
                 ->lockForUpdate()
                 ->findOrFail($account->id);
@@ -185,7 +186,7 @@ class CashBankTransactionService
                 $journalId = $journal->id;
             }
 
-            return CashBankTransaction::withoutTenantScope()->create([
+            return CashBankTransaction::query()->create([
                 'tenant_id' => $tenantId,
                 'store_id' => $lockedAccount->store_id,
                 'cash_bank_account_id' => $lockedAccount->id,
@@ -202,7 +203,7 @@ class CashBankTransactionService
                 'created_by_user_id' => $actor->id,
                 'posted_by_user_id' => $actor->id,
             ]);
-        });
+        }));
     }
 
     /**
@@ -238,16 +239,16 @@ class CashBankTransactionService
         $dateStr = $date instanceof CarbonInterface ? $date->toDateString() : Carbon::parse($date)->toDateString();
         $idempotencyBase = $idempotencyKey ?: Str::uuid()->toString();
 
-        return DB::transaction(function () use ($tenantId, $sourceAccount, $destinationAccount, $normAmount, $dateStr, $description, $referenceNumber, $idempotencyBase, $actor) {
+        return app(TenantContext::class)->runAs((int) $tenantId, null, fn () => DB::transaction(function () use ($tenantId, $sourceAccount, $destinationAccount, $normAmount, $dateStr, $description, $referenceNumber, $idempotencyBase, $actor) {
             // Lock accounts in ascending ID order to prevent deadlocks
             $firstId = min($sourceAccount->id, $destinationAccount->id);
             $secondId = max($sourceAccount->id, $destinationAccount->id);
 
-            CashBankAccount::withoutTenantScope()->where('tenant_id', $tenantId)->where('id', $firstId)->lockForUpdate()->first();
-            CashBankAccount::withoutTenantScope()->where('tenant_id', $tenantId)->where('id', $secondId)->lockForUpdate()->first();
+            CashBankAccount::query()->where('tenant_id', $tenantId)->where('id', $firstId)->lockForUpdate()->first();
+            CashBankAccount::query()->where('tenant_id', $tenantId)->where('id', $secondId)->lockForUpdate()->first();
 
-            $lockedSource = CashBankAccount::withoutTenantScope()->where('tenant_id', $tenantId)->findOrFail($sourceAccount->id);
-            $lockedDest = CashBankAccount::withoutTenantScope()->where('tenant_id', $tenantId)->findOrFail($destinationAccount->id);
+            $lockedSource = CashBankAccount::query()->where('tenant_id', $tenantId)->findOrFail($sourceAccount->id);
+            $lockedDest = CashBankAccount::query()->where('tenant_id', $tenantId)->findOrFail($destinationAccount->id);
 
             // Check sender account balance
             if (bccomp((string) $lockedSource->current_balance, $normAmount, 2) < 0) {
@@ -299,7 +300,7 @@ class CashBankTransactionService
             );
 
             // Transaksi Keluar pada Akun Sumber
-            $outTxn = CashBankTransaction::withoutTenantScope()->create([
+            $outTxn = CashBankTransaction::query()->create([
                 'tenant_id' => $tenantId,
                 'store_id' => $lockedSource->store_id,
                 'cash_bank_account_id' => $lockedSource->id,
@@ -319,7 +320,7 @@ class CashBankTransactionService
             ]);
 
             // Transaksi Masuk pada Akun Tujuan
-            $inTxn = CashBankTransaction::withoutTenantScope()->create([
+            $inTxn = CashBankTransaction::query()->create([
                 'tenant_id' => $tenantId,
                 'store_id' => $lockedDest->store_id,
                 'cash_bank_account_id' => $lockedDest->id,
@@ -343,7 +344,7 @@ class CashBankTransactionService
                 'in_transaction' => $inTxn,
                 'journal_entry' => $journal,
             ];
-        });
+        }));
     }
 
     /**
@@ -380,15 +381,15 @@ class CashBankTransactionService
         $idempotencyBase = $idempotencyKey ?: Str::uuid()->toString();
         $depositRef = $referenceNumber ?: ($shiftId ? "SHIFT-DEP-{$shiftId}" : ('DEP-'.date('Ymd').'-'.Str::upper(Str::random(4))));
 
-        return DB::transaction(function () use ($tenantId, $drawerAccount, $safeOrBankAccount, $normAmount, $dateStr, $depositRef, $idempotencyBase, $shiftId, $actor) {
+        return app(TenantContext::class)->runAs((int) $tenantId, null, fn () => DB::transaction(function () use ($tenantId, $drawerAccount, $safeOrBankAccount, $normAmount, $dateStr, $depositRef, $idempotencyBase, $shiftId, $actor) {
             $firstId = min($drawerAccount->id, $safeOrBankAccount->id);
             $secondId = max($drawerAccount->id, $safeOrBankAccount->id);
 
-            CashBankAccount::withoutTenantScope()->where('tenant_id', $tenantId)->where('id', $firstId)->lockForUpdate()->first();
-            CashBankAccount::withoutTenantScope()->where('tenant_id', $tenantId)->where('id', $secondId)->lockForUpdate()->first();
+            CashBankAccount::query()->where('tenant_id', $tenantId)->where('id', $firstId)->lockForUpdate()->first();
+            CashBankAccount::query()->where('tenant_id', $tenantId)->where('id', $secondId)->lockForUpdate()->first();
 
-            $lockedDrawer = CashBankAccount::withoutTenantScope()->where('tenant_id', $tenantId)->findOrFail($drawerAccount->id);
-            $lockedSafe = CashBankAccount::withoutTenantScope()->where('tenant_id', $tenantId)->findOrFail($safeOrBankAccount->id);
+            $lockedDrawer = CashBankAccount::query()->where('tenant_id', $tenantId)->findOrFail($drawerAccount->id);
+            $lockedSafe = CashBankAccount::query()->where('tenant_id', $tenantId)->findOrFail($safeOrBankAccount->id);
 
             $drawerNewBalance = bcsub((string) $lockedDrawer->current_balance, $normAmount, 2);
             $lockedDrawer->current_balance = $drawerNewBalance;
@@ -435,7 +436,7 @@ class CashBankTransactionService
             $drawerTxnNumber = 'CBT-SDEP-OUT-'.$lockedDrawer->id.'-'.date('Ymd').'-'.Str::upper(Str::random(4));
             $safeTxnNumber = 'CBT-SDEP-IN-'.$lockedSafe->id.'-'.date('Ymd').'-'.Str::upper(Str::random(4));
 
-            $drawerTxn = CashBankTransaction::withoutTenantScope()->create([
+            $drawerTxn = CashBankTransaction::query()->create([
                 'tenant_id' => $tenantId,
                 'store_id' => $lockedDrawer->store_id,
                 'cash_bank_account_id' => $lockedDrawer->id,
@@ -454,7 +455,7 @@ class CashBankTransactionService
                 'posted_by_user_id' => $actor->id,
             ]);
 
-            $depositTxn = CashBankTransaction::withoutTenantScope()->create([
+            $depositTxn = CashBankTransaction::query()->create([
                 'tenant_id' => $tenantId,
                 'store_id' => $lockedSafe->store_id,
                 'cash_bank_account_id' => $lockedSafe->id,
@@ -478,7 +479,7 @@ class CashBankTransactionService
                 'deposit_transaction' => $depositTxn,
                 'journal_entry' => $journal,
             ];
-        });
+        }));
     }
 
     /**
@@ -527,15 +528,15 @@ class CashBankTransactionService
         // Resolve Akun Beban MDR Gateway (PAYMENT_GATEWAY_FEE)
         $mdrAccount = $this->coaService->getAccountBySystemKey('PAYMENT_GATEWAY_FEE', $tenantId);
 
-        return DB::transaction(function () use ($tenantId, $pgClearingAccount, $bankAccount, $normGross, $normMdr, $normNet, $mdrAccount, $dateStr, $settlementRef, $idempotencyBase, $actor) {
+        return app(TenantContext::class)->runAs((int) $tenantId, null, fn () => DB::transaction(function () use ($tenantId, $pgClearingAccount, $bankAccount, $normGross, $normMdr, $normNet, $mdrAccount, $dateStr, $settlementRef, $idempotencyBase, $actor) {
             $firstId = min($pgClearingAccount->id, $bankAccount->id);
             $secondId = max($pgClearingAccount->id, $bankAccount->id);
 
-            CashBankAccount::withoutTenantScope()->where('tenant_id', $tenantId)->where('id', $firstId)->lockForUpdate()->first();
-            CashBankAccount::withoutTenantScope()->where('tenant_id', $tenantId)->where('id', $secondId)->lockForUpdate()->first();
+            CashBankAccount::query()->where('tenant_id', $tenantId)->where('id', $firstId)->lockForUpdate()->first();
+            CashBankAccount::query()->where('tenant_id', $tenantId)->where('id', $secondId)->lockForUpdate()->first();
 
-            $lockedPg = CashBankAccount::withoutTenantScope()->where('tenant_id', $tenantId)->findOrFail($pgClearingAccount->id);
-            $lockedBank = CashBankAccount::withoutTenantScope()->where('tenant_id', $tenantId)->findOrFail($bankAccount->id);
+            $lockedPg = CashBankAccount::query()->where('tenant_id', $tenantId)->findOrFail($pgClearingAccount->id);
+            $lockedBank = CashBankAccount::query()->where('tenant_id', $tenantId)->findOrFail($bankAccount->id);
 
             $pgNewBalance = bcsub((string) $lockedPg->current_balance, $normGross, 2);
             $lockedPg->current_balance = $pgNewBalance;
@@ -595,7 +596,7 @@ class CashBankTransactionService
             $pgTxnNumber = 'CBT-SETTLE-OUT-'.$lockedPg->id.'-'.date('Ymd').'-'.Str::upper(Str::random(4));
             $bankTxnNumber = 'CBT-SETTLE-IN-'.$lockedBank->id.'-'.date('Ymd').'-'.Str::upper(Str::random(4));
 
-            $pgTxn = CashBankTransaction::withoutTenantScope()->create([
+            $pgTxn = CashBankTransaction::query()->create([
                 'tenant_id' => $tenantId,
                 'store_id' => $lockedPg->store_id,
                 'cash_bank_account_id' => $lockedPg->id,
@@ -614,7 +615,7 @@ class CashBankTransactionService
                 'posted_by_user_id' => $actor->id,
             ]);
 
-            $bankTxn = CashBankTransaction::withoutTenantScope()->create([
+            $bankTxn = CashBankTransaction::query()->create([
                 'tenant_id' => $tenantId,
                 'store_id' => $lockedBank->store_id,
                 'cash_bank_account_id' => $lockedBank->id,
@@ -638,7 +639,7 @@ class CashBankTransactionService
                 'pg_transaction' => $pgTxn,
                 'journal_entry' => $journal,
             ];
-        });
+        }));
     }
 
     /**
@@ -670,8 +671,8 @@ class CashBankTransactionService
         $dateStr = $date instanceof CarbonInterface ? $date->toDateString() : Carbon::parse($date)->toDateString();
         $idempotencyBase = $idempotencyKey ?: Str::uuid()->toString();
 
-        return DB::transaction(function () use ($tenantId, $account, $typeEnum, $normAmount, $dateStr, $description, $referenceNumber, $idempotencyBase, $actor) {
-            $lockedAccount = CashBankAccount::withoutTenantScope()
+        return app(TenantContext::class)->runAs((int) $tenantId, null, fn () => DB::transaction(function () use ($tenantId, $account, $typeEnum, $normAmount, $dateStr, $description, $referenceNumber, $idempotencyBase, $actor) {
+            $lockedAccount = CashBankAccount::query()
                 ->where('tenant_id', $tenantId)
                 ->lockForUpdate()
                 ->findOrFail($account->id);
@@ -736,7 +737,7 @@ class CashBankTransactionService
                 actor: $actor
             );
 
-            return CashBankTransaction::withoutTenantScope()->create([
+            return CashBankTransaction::query()->create([
                 'tenant_id' => $tenantId,
                 'store_id' => $lockedAccount->store_id,
                 'cash_bank_account_id' => $lockedAccount->id,
@@ -753,7 +754,7 @@ class CashBankTransactionService
                 'created_by_user_id' => $actor->id,
                 'posted_by_user_id' => $actor->id,
             ]);
-        });
+        }));
     }
 
     /**
@@ -772,13 +773,13 @@ class CashBankTransactionService
 
         $tenantId = $transaction->tenant_id;
 
-        return DB::transaction(function () use ($tenantId, $transaction, $actor, $reason) {
-            $lockedTxn = CashBankTransaction::withoutTenantScope()
+        return app(TenantContext::class)->runAs((int) $tenantId, null, fn () => DB::transaction(function () use ($tenantId, $transaction, $actor, $reason) {
+            $lockedTxn = CashBankTransaction::query()
                 ->where('tenant_id', $tenantId)
                 ->lockForUpdate()
                 ->findOrFail($transaction->id);
 
-            $account = CashBankAccount::withoutTenantScope()
+            $account = CashBankAccount::query()
                 ->where('tenant_id', $tenantId)
                 ->lockForUpdate()
                 ->findOrFail($lockedTxn->cash_bank_account_id);
@@ -809,7 +810,7 @@ class CashBankTransactionService
 
             // Jika transaksi berpasangan (transfer internal / setoran POS / settlement PG):
             if ($lockedTxn->transfer_pair_account_id) {
-                $counterpartTxn = CashBankTransaction::withoutTenantScope()
+                $counterpartTxn = CashBankTransaction::query()
                     ->where('tenant_id', $tenantId)
                     ->where('journal_entry_id', $lockedTxn->journal_entry_id)
                     ->where('id', '!=', $lockedTxn->id)
@@ -817,7 +818,7 @@ class CashBankTransactionService
                     ->first();
 
                 if ($counterpartTxn && $counterpartTxn->status === CashBankTransactionStatusEnum::POSTED) {
-                    $counterpartAccount = CashBankAccount::withoutTenantScope()
+                    $counterpartAccount = CashBankAccount::query()
                         ->where('tenant_id', $tenantId)
                         ->lockForUpdate()
                         ->findOrFail($counterpartTxn->cash_bank_account_id);
@@ -859,6 +860,6 @@ class CashBankTransactionService
             }
 
             return $lockedTxn;
-        });
+        }));
     }
 }

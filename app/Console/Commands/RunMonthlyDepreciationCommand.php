@@ -51,6 +51,7 @@ class RunMonthlyDepreciationCommand extends Command
             $year = (int) $date->year;
             $month = (int) $date->month;
 
+            // @tenant-bypass: console_command
             $period = AccountingPeriod::withoutTenantScope()->firstOrCreate(
                 [
                     'tenant_id' => $tenant->id,

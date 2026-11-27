@@ -24,6 +24,7 @@ class ProcessEmailOutbox extends Command
         $limit = max(1, (int) $this->option('limit'));
 
         // Temukan item bebas hambatan scope (outbox adalah tabel platform-level per-tenant)
+        // @tenant-bypass: console_command
         $due = app(TenantContext::class)->runWithoutTenant(function () use ($limit) {
             return EmailOutbox::query()
                 ->where(function ($q) {

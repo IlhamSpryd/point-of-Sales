@@ -152,7 +152,7 @@ class EmployeeManager extends Component
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
         /** @var Employee|null $employee */
-        $employee = Employee::withoutTenantScope()
+        $employee = Employee::query()
             ->where('tenant_id', $tenantId)
             ->where('id', $employeeId)
             ->firstOrFail();
@@ -221,7 +221,7 @@ class EmployeeManager extends Component
 
         if ($this->modalMode === 'edit' && $this->editingEmployeeId) {
             /** @var Employee|null $employee */
-            $employee = Employee::withoutTenantScope()
+            $employee = Employee::query()
                 ->where('tenant_id', $tenantId)
                 ->where('id', $this->editingEmployeeId)
                 ->firstOrFail();
@@ -275,7 +275,7 @@ class EmployeeManager extends Component
                 ]);
                 $userId = $user->id;
 
-                $defaultStore = Store::withoutGlobalScopes()
+                $defaultStore = Store::query()
                     ->where('tenant_id', $tenantId)
                     ->first();
                 if ($defaultStore) {
@@ -311,7 +311,7 @@ class EmployeeManager extends Component
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
         /** @var Employee|null $employee */
-        $employee = Employee::withoutTenantScope()
+        $employee = Employee::query()
             ->where('tenant_id', $tenantId)
             ->where('id', $employeeId)
             ->first();
@@ -325,7 +325,7 @@ class EmployeeManager extends Component
 
             // Cascade status to linked user account if exists
             if ($employee->user_id) {
-                $linkedUser = User::withoutGlobalScopes()->find($employee->user_id);
+                $linkedUser = User::query()->find($employee->user_id);
                 if ($linkedUser) {
                     $linkedUser->is_active = ($employee->employment_status === EmploymentStatusEnum::ACTIVE);
                     $linkedUser->save();
@@ -348,7 +348,7 @@ class EmployeeManager extends Component
     {
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
-        $query = Employee::withoutTenantScope()
+        $query = Employee::query()
             ->where('tenant_id', $tenantId)
             ->with(['department', 'jobTitle'])
             ->orderBy('id', 'desc');
@@ -378,37 +378,37 @@ class EmployeeManager extends Component
         $employees = $query->paginate(10);
 
         /** @var Collection<int, Department> $departments */
-        $departments = Department::withoutTenantScope()
+        $departments = Department::query()
             ->where('tenant_id', $tenantId)
             ->orderBy('name')
             ->get();
 
         /** @var Collection<int, JobTitle> $jobTitles */
-        $jobTitles = JobTitle::withoutTenantScope()
+        $jobTitles = JobTitle::query()
             ->where('tenant_id', $tenantId)
             ->orderBy('name')
             ->get();
 
-        $roles = Role::withoutTenantScope()
+        $roles = Role::query()
             ->where('tenant_id', $tenantId)
             ->orderBy('name')
             ->get();
 
-        $totalEmployees = Employee::withoutTenantScope()
+        $totalEmployees = Employee::query()
             ->where('tenant_id', $tenantId)
             ->count();
 
-        $activeEmployees = Employee::withoutTenantScope()
+        $activeEmployees = Employee::query()
             ->where('tenant_id', $tenantId)
             ->where('employment_status', EmploymentStatusEnum::ACTIVE)
             ->count();
 
-        $contractEmployees = Employee::withoutTenantScope()
+        $contractEmployees = Employee::query()
             ->where('tenant_id', $tenantId)
             ->where('employment_type', EmploymentTypeEnum::CONTRACT_PKWT)
             ->count();
 
-        $totalDepartments = Department::withoutTenantScope()
+        $totalDepartments = Department::query()
             ->where('tenant_id', $tenantId)
             ->count();
 

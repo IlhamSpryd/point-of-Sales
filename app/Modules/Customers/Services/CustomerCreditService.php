@@ -12,7 +12,7 @@ use App\Modules\Customers\Models\Customer;
 use App\Modules\Customers\Models\CustomerCreditAccount;
 use App\Modules\Customers\Models\CustomerCreditLog;
 use App\Modules\Organization\Models\User;
-use App\Modules\Organization\Services\AuditTrailService;
+use App\Platform\Audit\AuditLoggerInterface;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Gate;
 class CustomerCreditService
 {
     public function __construct(
-        protected AuditTrailService $auditTrailService,
+        protected AuditLoggerInterface $auditTrailService,
         protected TenantContext $tenantContext
     ) {}
 
@@ -33,7 +33,7 @@ class CustomerCreditService
         $customerId = $customer instanceof Customer ? (int) $customer->id : (int) $customer;
         $tId = $tenantId ?: (int) ($customer instanceof Customer ? $customer->tenant_id : $this->tenantContext->requireTenantId());
 
-        return CustomerCreditAccount::withoutGlobalScopes()->firstOrCreate(
+        return $this->tenantContext->runAs($tId, null, fn () => CustomerCreditAccount::query()->firstOrCreate(
             ['tenant_id' => $tId, 'customer_id' => $customerId],
             [
                 'credit_limit' => '0.00',
@@ -45,7 +45,7 @@ class CustomerCreditService
                 'invoiced_exposure' => '0.00',
                 'unapplied_credit_balance' => '0.00',
             ]
-        );
+        ));
     }
 
     /**
@@ -202,7 +202,7 @@ class CustomerCreditService
 
         // Kunci baris CustomerCreditAccount secara eksklusif (Anti-Deadlock Step 2 A0/A8)
         /** @var CustomerCreditAccount $lockedAccount */
-        $lockedAccount = CustomerCreditAccount::withoutGlobalScopes()
+        $lockedAccount = CustomerCreditAccount::query()
             ->where('tenant_id', $tenantId)
             ->where('customer_id', $customerId)
             ->lockForUpdate()
@@ -290,7 +290,7 @@ class CustomerCreditService
         }
 
         /** @var CustomerCreditAccount $lockedAccount */
-        $lockedAccount = CustomerCreditAccount::withoutGlobalScopes()
+        $lockedAccount = CustomerCreditAccount::query()
             ->where('tenant_id', $tenantId)
             ->where('customer_id', $customerId)
             ->lockForUpdate()
@@ -343,14 +343,14 @@ class CustomerCreditService
     {
         $tenantId = (int) ($actor->tenant_id ?: $this->tenantContext->requireTenantId());
 
-        return DB::transaction(function () use ($tenantId, $customerId, $newLimit, $actor, $reason) {
-            $customer = Customer::withoutGlobalScopes()->where('tenant_id', $tenantId)->findOrFail($customerId);
+        return $this->tenantContext->runAs($tenantId, null, fn () => DB::transaction(function () use ($tenantId, $customerId, $newLimit, $actor, $reason) {
+            $customer = Customer::query()->where('tenant_id', $tenantId)->findOrFail($customerId);
             Gate::forUser($actor)->authorize('manageCreditLimit', $customer);
 
             $account = $this->getOrCreateCreditAccount($customer, $tenantId);
 
             /** @var CustomerCreditAccount $locked */
-            $locked = CustomerCreditAccount::withoutGlobalScopes()
+            $locked = CustomerCreditAccount::query()
                 ->where('tenant_id', $tenantId)
                 ->where('id', $account->id)
                 ->lockForUpdate()
@@ -385,7 +385,7 @@ class CustomerCreditService
             );
 
             return $locked;
-        });
+        }));
     }
 
     /**
@@ -395,14 +395,14 @@ class CustomerCreditService
     {
         $tenantId = (int) ($actor->tenant_id ?: $this->tenantContext->requireTenantId());
 
-        return DB::transaction(function () use ($tenantId, $customerId, $paymentTermsDays, $gracePeriodDays, $actor, $reason) {
-            $customer = Customer::withoutGlobalScopes()->where('tenant_id', $tenantId)->findOrFail($customerId);
+        return $this->tenantContext->runAs($tenantId, null, fn () => DB::transaction(function () use ($tenantId, $customerId, $paymentTermsDays, $gracePeriodDays, $actor, $reason) {
+            $customer = Customer::query()->where('tenant_id', $tenantId)->findOrFail($customerId);
             Gate::forUser($actor)->authorize('manageCreditLimit', $customer);
 
             $account = $this->getOrCreateCreditAccount($customer, $tenantId);
 
             /** @var CustomerCreditAccount $locked */
-            $locked = CustomerCreditAccount::withoutGlobalScopes()
+            $locked = CustomerCreditAccount::query()
                 ->where('tenant_id', $tenantId)
                 ->where('id', $account->id)
                 ->lockForUpdate()
@@ -432,7 +432,7 @@ class CustomerCreditService
             ]);
 
             return $locked;
-        });
+        }));
     }
 
     /**
@@ -442,14 +442,14 @@ class CustomerCreditService
     {
         $tenantId = (int) ($actor->tenant_id ?: $this->tenantContext->requireTenantId());
 
-        return DB::transaction(function () use ($tenantId, $customerId, $status, $actor, $reason) {
-            $customer = Customer::withoutGlobalScopes()->where('tenant_id', $tenantId)->findOrFail($customerId);
+        return $this->tenantContext->runAs($tenantId, null, fn () => DB::transaction(function () use ($tenantId, $customerId, $status, $actor, $reason) {
+            $customer = Customer::query()->where('tenant_id', $tenantId)->findOrFail($customerId);
             Gate::forUser($actor)->authorize('manageCreditStatus', $customer);
 
             $account = $this->getOrCreateCreditAccount($customer, $tenantId);
 
             /** @var CustomerCreditAccount $locked */
-            $locked = CustomerCreditAccount::withoutGlobalScopes()
+            $locked = CustomerCreditAccount::query()
                 ->where('tenant_id', $tenantId)
                 ->where('id', $account->id)
                 ->lockForUpdate()
@@ -484,6 +484,6 @@ class CustomerCreditService
             );
 
             return $locked;
-        });
+        }));
     }
 }

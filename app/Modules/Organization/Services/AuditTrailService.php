@@ -7,6 +7,7 @@ namespace App\Modules\Organization\Services;
 use App\Core\Context\TenantContext;
 use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\User;
+use App\Platform\Audit\AuditLoggerInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -19,7 +20,7 @@ use Illuminate\Support\Facades\Log;
  * 2. Atribusi palsu ke user_id sembarang (seperti auth()->id() ?? 1).
  * 3. Gagal tulis karena ketiadaan store_id (otomatis menyelesaikan store valid untuk tenant).
  */
-class AuditTrailService
+class AuditTrailService implements AuditLoggerInterface
 {
     /**
      * Catat aktivitas ke tabel activity_logs secara aman dan terisolasi.
@@ -111,6 +112,7 @@ class AuditTrailService
             return null;
         }
 
+        // @tenant-bypass: superadmin
         $belongsToTenant = User::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('id', $userId)
@@ -140,6 +142,7 @@ class AuditTrailService
     {
         // A. Cek storeId eksplisit jika diberikan
         if ($storeId !== null) {
+            // @tenant-bypass: superadmin
             $exists = Store::withoutTenantScope()
                 ->where('tenant_id', $tenantId)
                 ->where('id', $storeId)
@@ -153,6 +156,7 @@ class AuditTrailService
         // B. Cek dari TenantContext
         $contextStoreId = app(TenantContext::class)->getStoreId();
         if ($contextStoreId !== null) {
+            // @tenant-bypass: superadmin
             $contextStoreExists = Store::withoutTenantScope()
                 ->where('tenant_id', $tenantId)
                 ->where('id', $contextStoreId)
@@ -177,6 +181,7 @@ class AuditTrailService
         }
 
         // D. Fallback ke cabang pertama milik tenant
+        // @tenant-bypass: superadmin
         $firstStoreId = Store::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->orderBy('id')

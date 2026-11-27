@@ -7,7 +7,6 @@ namespace App\Modules\Workforce\Models;
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Organization\Models\Approval;
-use App\Modules\Organization\Models\Tenant;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -25,7 +24,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $approval_id
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
- * @property-read Tenant|null $tenant
  * @property-read Employee|null $employee
  * @property-read SalaryComponent|null $component
  * @property-read Approval|null $approval
@@ -56,14 +54,6 @@ class EmployeeCompensation extends Model
             'end_date' => 'date',
             'is_active' => 'boolean',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
     /**

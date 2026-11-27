@@ -121,7 +121,7 @@ class FixedAssetManager extends Component
         $actor = Auth::user();
         $tenantId = (int) $actor->tenant_id;
 
-        $asset = FixedAsset::withoutTenantScope()
+        $asset = FixedAsset::query()
             ->where('tenant_id', $tenantId)
             ->where('id', $assetId)
             ->firstOrFail();
@@ -144,7 +144,7 @@ class FixedAssetManager extends Component
     {
         $tenantId = app(TenantContext::class)->getTenantId() ?? (int) Auth::user()->tenant_id;
 
-        $query = FixedAsset::withoutTenantScope()
+        $query = FixedAsset::query()
             ->where('tenant_id', $tenantId)
             ->with(['category', 'store']);
 
@@ -161,11 +161,11 @@ class FixedAssetManager extends Component
         }
 
         $assets = $query->latest('id')->paginate(15);
-        $categories = FixedAssetCategory::withoutTenantScope()->where('tenant_id', $tenantId)->get();
-        $stores = Store::withoutGlobalScopes()->where('tenant_id', $tenantId)->get();
+        $categories = FixedAssetCategory::query()->where('tenant_id', $tenantId)->get();
+        $stores = Store::query()->where('tenant_id', $tenantId)->get();
 
         $selectedAsset = $this->selectedAssetId
-            ? FixedAsset::withoutTenantScope()->where('tenant_id', $tenantId)->with(['schedules', 'category'])->find($this->selectedAssetId)
+            ? FixedAsset::query()->where('tenant_id', $tenantId)->with(['schedules', 'category'])->find($this->selectedAssetId)
             : null;
 
         return view('livewire.finance.fixed-asset-manager', [

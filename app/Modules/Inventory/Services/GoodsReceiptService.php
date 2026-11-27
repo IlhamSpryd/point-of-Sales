@@ -61,8 +61,8 @@ class GoodsReceiptService
         $idempotencyKey = $data['idempotency_key'] ?? (string) Str::uuid();
 
         // Cek jika idempotency key sudah ada pada tenant ini
-        $existing = GoodsReceipt::withoutTenantScope()
-            ->withoutGlobalScopes()
+        // @tenant-bypass: maintenance
+        $existing = GoodsReceipt::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('idempotency_key', $idempotencyKey)
             ->first();
@@ -172,8 +172,8 @@ class GoodsReceiptService
     {
         return DB::transaction(function () use ($receipt, $userId) {
             /** @var GoodsReceipt $lockedReceipt */
-            $lockedReceipt = GoodsReceipt::withoutTenantScope()
-                ->withoutGlobalScopes()
+            // @tenant-bypass: maintenance
+            $lockedReceipt = GoodsReceipt::withoutGlobalScopes()
                 ->where('id', $receipt->id)
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -248,8 +248,8 @@ class GoodsReceiptService
 
         return DB::transaction(function () use ($receipt, $userId, $reason) {
             /** @var GoodsReceipt $lockedReceipt */
-            $lockedReceipt = GoodsReceipt::withoutTenantScope()
-                ->withoutGlobalScopes()
+            // @tenant-bypass: maintenance
+            $lockedReceipt = GoodsReceipt::withoutGlobalScopes()
                 ->where('id', $receipt->id)
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -346,6 +346,7 @@ class GoodsReceiptService
                 throw new InvalidArgumentException('Untuk item_type product, product_id wajib diisi dan ingredient_id harus null.');
             }
 
+            // @tenant-bypass: maintenance
             $productExists = Product::withoutTenantScope()
                 ->where('tenant_id', $receipt->tenant_id)
                 ->where('id', $productId)
@@ -359,6 +360,7 @@ class GoodsReceiptService
                 throw new InvalidArgumentException('Untuk item_type ingredient, ingredient_id wajib diisi dan product_id harus null.');
             }
 
+            // @tenant-bypass: maintenance
             $ingredientExists = Ingredient::withoutTenantScope()
                 ->where('tenant_id', $receipt->tenant_id)
                 ->where('id', $ingredientId)
@@ -401,8 +403,8 @@ class GoodsReceiptService
     {
         $prefix = 'GRN-'.date('Ymd').'-';
 
-        $lastNumber = GoodsReceipt::withoutTenantScope()
-            ->withoutGlobalScopes()
+        // @tenant-bypass: maintenance
+        $lastNumber = GoodsReceipt::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('store_id', $storeId)
             ->where('receipt_number', 'like', "{$prefix}%")

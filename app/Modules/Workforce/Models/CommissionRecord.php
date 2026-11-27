@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Workforce\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\OrderItem;
 use App\Modules\Workforce\Enums\CommissionRecordStatusEnum;
@@ -36,8 +35,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property CarbonInterface|null $paid_at
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
- * @property-read Tenant|null $tenant
- * @property-read Store|null $store
  * @property-read Employee|null $employee
  * @property-read CommissionRule|null $rule
  * @property-read Order|null $order
@@ -47,6 +44,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class CommissionRecord extends Model
 {
     use AssignsTenant;
+    use HasStoreRelation;
     use ScopedToTenant;
 
     protected $table = 'commission_records';
@@ -82,22 +80,6 @@ class CommissionRecord extends Model
     public function payrollBatch(): BelongsTo
     {
         return $this->belongsTo(PayrollBatch::class, 'payroll_batch_id');
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class, 'tenant_id');
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class, 'store_id');
     }
 
     /**

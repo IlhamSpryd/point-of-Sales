@@ -6,7 +6,6 @@ namespace App\Modules\Workforce\Models;
 
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use App\Modules\Workforce\Enums\EmploymentStatusEnum;
 use Carbon\CarbonInterface;
@@ -29,7 +28,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $actor_user_id
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
- * @property-read Tenant|null $tenant
  * @property-read Employee|null $employee
  * @property-read Department|null $fromDepartment
  * @property-read Department|null $toDepartment
@@ -66,14 +64,6 @@ class EmployeeEmploymentHistory extends Model
             'to_status' => EmploymentStatusEnum::class,
             'effective_date' => 'date',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
     /**

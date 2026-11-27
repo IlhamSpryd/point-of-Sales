@@ -10,7 +10,6 @@ use App\Core\Traits\ScopedToStore;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Customers\Models\Customer;
 use App\Modules\Organization\Models\Device;
-use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\User;
 use App\Modules\Pricing\Models\Discount;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -82,14 +81,6 @@ class ParkedCart extends Model
             'cart_payload' => 'array',
             'expires_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

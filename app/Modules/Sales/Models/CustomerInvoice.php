@@ -10,8 +10,6 @@ use App\Core\Traits\BelongsToCompany;
 use App\Core\Traits\ScopedToStore;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Customers\Models\Customer;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use App\Modules\Sales\Contracts\InvoiceReaderInterface;
 use App\Modules\Sales\Enums\CustomerInvoiceStatusEnum;
@@ -112,22 +110,6 @@ class CustomerInvoice extends Model implements InvoiceReaderInterface
             'posted_at' => 'datetime',
             'voided_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

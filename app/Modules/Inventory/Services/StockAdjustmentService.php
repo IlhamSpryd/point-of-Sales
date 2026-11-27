@@ -13,7 +13,7 @@ use App\Modules\Finance\Services\InventoryAccountingService;
 use App\Modules\Inventory\Models\Ingredient;
 use App\Modules\Inventory\Models\StockAdjustment;
 use App\Modules\Inventory\Models\StockAdjustmentItem;
-use App\Modules\Organization\Services\AuditTrailService;
+use App\Platform\Audit\AuditLoggerInterface;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -30,7 +30,7 @@ class StockAdjustmentService
 {
     public function __construct(
         protected InventoryLedgerService $ledgerService,
-        protected AuditTrailService $auditTrailService
+        protected AuditLoggerInterface $auditTrailService
     ) {}
 
     /**
@@ -54,8 +54,8 @@ class StockAdjustmentService
         $idempotencyKey = $data['idempotency_key'] ?? (string) Str::uuid();
 
         // Cek Idempotency Key
-        $existing = StockAdjustment::withoutTenantScope()
-            ->withoutGlobalScopes()
+        // @tenant-bypass: maintenance
+        $existing = StockAdjustment::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('idempotency_key', $idempotencyKey)
             ->first();
@@ -194,8 +194,8 @@ class StockAdjustmentService
     {
         return DB::transaction(function () use ($adjustment, $userId) {
             /** @var StockAdjustment $locked */
-            $locked = StockAdjustment::withoutTenantScope()
-                ->withoutGlobalScopes()
+            // @tenant-bypass: maintenance
+            $locked = StockAdjustment::withoutGlobalScopes()
                 ->where('id', $adjustment->id)
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -360,6 +360,7 @@ class StockAdjustmentService
                 throw new InvalidArgumentException('For item_type product, product_id is required and ingredient_id must be null.');
             }
 
+            // @tenant-bypass: maintenance
             $product = Product::withoutTenantScope()
                 ->where('tenant_id', $adjustment->tenant_id)
                 ->where('id', $productId)
@@ -380,6 +381,7 @@ class StockAdjustmentService
                 throw new InvalidArgumentException('For item_type ingredient, ingredient_id is required and product_id must be null.');
             }
 
+            // @tenant-bypass: maintenance
             $ingredient = Ingredient::withoutTenantScope()
                 ->where('tenant_id', $adjustment->tenant_id)
                 ->where('id', $ingredientId)
@@ -418,8 +420,8 @@ class StockAdjustmentService
     {
         $prefix = 'ADJ-'.date('Ymd').'-';
 
-        $lastNumber = StockAdjustment::withoutTenantScope()
-            ->withoutGlobalScopes()
+        // @tenant-bypass: maintenance
+        $lastNumber = StockAdjustment::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('store_id', $storeId)
             ->where('adjustment_number', 'like', "{$prefix}%")

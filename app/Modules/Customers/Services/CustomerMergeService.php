@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Customers\Services;
 
+use App\Core\Context\TenantContext;
 use App\Modules\Customers\Models\Customer;
 use App\Modules\Customers\Models\CustomerAddress;
 use App\Modules\Customers\Models\CustomerContact;
@@ -45,7 +46,7 @@ class CustomerMergeService
             throw new InvalidArgumentException('Profil pelanggan tujuan dan duplikat tidak boleh sama.');
         }
 
-        return DB::transaction(function () use (
+        return app(TenantContext::class)->runAs($tenantId, null, fn () => DB::transaction(function () use (
             $tenantId,
             $targetCustomerId,
             $duplicateCustomerId,
@@ -54,14 +55,14 @@ class CustomerMergeService
         ) {
             // Kunci kedua profil pelanggan secara pesimis
             /** @var Customer|null $target */
-            $target = Customer::withoutGlobalScopes()
+            $target = Customer::query()
                 ->where('tenant_id', $tenantId)
                 ->where('id', $targetCustomerId)
                 ->lockForUpdate()
                 ->first();
 
             /** @var Customer|null $duplicate */
-            $duplicate = Customer::withoutGlobalScopes()
+            $duplicate = Customer::query()
                 ->where('tenant_id', $tenantId)
                 ->where('id', $duplicateCustomerId)
                 ->lockForUpdate()
@@ -98,13 +99,13 @@ class CustomerMergeService
             $reassignedSummary['vouchers_count'] = $vouchersCount;
 
             // 3. Pindahkan buku alamat & kontak
-            $addressesCount = CustomerAddress::withoutGlobalScopes()
+            $addressesCount = CustomerAddress::query()
                 ->where('tenant_id', $tenantId)
                 ->where('customer_id', $duplicateCustomerId)
                 ->update(['customer_id' => $targetCustomerId]);
             $reassignedSummary['addresses_count'] = $addressesCount;
 
-            $contactsCount = CustomerContact::withoutGlobalScopes()
+            $contactsCount = CustomerContact::query()
                 ->where('tenant_id', $tenantId)
                 ->where('customer_id', $duplicateCustomerId)
                 ->update(['customer_id' => $targetCustomerId]);
@@ -138,7 +139,7 @@ class CustomerMergeService
 
             // 5. Catat riwayat penggabungan ke customer_merge_logs
             /** @var CustomerMergeLog $mergeLog */
-            $mergeLog = CustomerMergeLog::withoutGlobalScopes()->create([
+            $mergeLog = CustomerMergeLog::query()->create([
                 'tenant_id' => $tenantId,
                 'source_customer_id' => $duplicateCustomerId,
                 'target_customer_id' => $targetCustomerId,
@@ -155,6 +156,6 @@ class CustomerMergeService
             $duplicate->delete(); // Soft delete
 
             return $mergeLog;
-        });
+        }));
     }
 }

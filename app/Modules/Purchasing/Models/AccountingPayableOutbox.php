@@ -6,10 +6,8 @@ namespace App\Modules\Purchasing\Models;
 
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Tenant;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -28,7 +26,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonInterface|null $processed_at
  * @property CarbonInterface $created_at
  * @property CarbonInterface $updated_at
- * @property-read Tenant $tenant
  */
 class AccountingPayableOutbox extends Model
 {
@@ -62,14 +59,6 @@ class AccountingPayableOutbox extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
     }
 
     public function isPending(): bool

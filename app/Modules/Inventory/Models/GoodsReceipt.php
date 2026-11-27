@@ -9,7 +9,6 @@ use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToStore;
 use App\Core\Traits\ScopedToTenant;
 use App\Enums\GoodsReceiptStatusEnum;
-use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -86,16 +85,6 @@ class GoodsReceipt extends Model
     public function items(): HasMany
     {
         return $this->hasMany(GoodsReceiptItem::class, 'goods_receipt_id');
-    }
-
-    /**
-     * Cabang / Toko penerima.
-     *
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class, 'store_id');
     }
 
     /**

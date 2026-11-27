@@ -6,12 +6,11 @@ namespace App\Modules\Purchasing\Models;
 
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\BelongsToCompany;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
 use App\Enums\InvoiceMatchingStatusEnum;
 use App\Enums\InvoiceSettlementStatusEnum;
 use App\Enums\SupplierInvoiceStatusEnum;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Collection;
@@ -54,8 +53,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $idempotency_key
  * @property CarbonInterface $created_at
  * @property CarbonInterface $updated_at
- * @property-read Tenant $tenant
- * @property-read Store $store
  * @property-read Supplier $supplier
  * @property-read PurchaseOrder|null $purchaseOrder
  * @property-read User|null $approvedPayableBy
@@ -69,6 +66,7 @@ class SupplierInvoice extends Model
 {
     use AssignsTenant;
     use BelongsToCompany;
+    use HasStoreRelation;
     use ScopedToTenant;
 
     protected $table = 'supplier_invoices';
@@ -141,22 +139,6 @@ class SupplierInvoice extends Model
     public static function normalizeInvoiceNumber(string $invoiceNumber): string
     {
         return strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', $invoiceNumber));
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

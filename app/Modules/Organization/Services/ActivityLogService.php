@@ -61,12 +61,14 @@ class ActivityLogService
                 ->value('store_id') ?? 0) ?: null;
         }
         if ($resolvedStoreId === null) {
+            // @tenant-bypass: superadmin
             $resolvedStoreId = (int) (Store::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->orderBy('id')
                 ->value('id') ?? 0) ?: null;
         }
 
+        // @tenant-bypass: superadmin
         return ActivityLog::withoutGlobalScopes()->create([
             'tenant_id' => $tenantId,
             'store_id' => $resolvedStoreId,
@@ -124,6 +126,7 @@ class ActivityLogService
      */
     public function getLogsForTenant(int $tenantId, int $limit = 50): Collection
     {
+        // @tenant-bypass: superadmin
         return ActivityLog::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->latest('id')

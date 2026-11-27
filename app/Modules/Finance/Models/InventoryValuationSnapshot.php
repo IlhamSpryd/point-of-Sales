@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Finance\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -33,6 +32,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class InventoryValuationSnapshot extends Model
 {
     use AssignsTenant;
+    use HasStoreRelation;
     use ScopedToTenant;
 
     protected $table = 'inventory_valuation_snapshots';
@@ -66,27 +66,11 @@ class InventoryValuationSnapshot extends Model
     }
 
     /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    /**
      * @return BelongsTo<AccountingPeriod, $this>
      */
     public function accountingPeriod(): BelongsTo
     {
         return $this->belongsTo(AccountingPeriod::class, 'accounting_period_id');
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

@@ -9,8 +9,6 @@ use App\Core\Traits\AssignsStore;
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\BelongsToCompany;
 use App\Modules\Inventory\Models\Ingredient;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -33,8 +31,6 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property-read Ingredient $parentIngredient
  * @property-read Ingredient $componentIngredient
- * @property-read Store|null $store
- * @property-read Tenant $tenant
  */
 #[ScopedBy(TenantScope::class)]
 class IngredientRecipe extends Model
@@ -62,22 +58,6 @@ class IngredientRecipe extends Model
         return [
             'quantity_required' => 'decimal:4',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

@@ -7,7 +7,6 @@ namespace App\Modules\Workforce\Models;
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Organization\Models\Approval;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Workforce\Enums\LeaveRequestStatusEnum;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,7 +28,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property LeaveRequestStatusEnum $status
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
- * @property-read Tenant|null $tenant
  * @property-read Employee|null $employee
  * @property-read LeavePolicy|null $policy
  * @property-read Approval|null $approval
@@ -62,14 +60,6 @@ class LeaveRequest extends Model
             'total_days' => 'decimal:2',
             'status' => LeaveRequestStatusEnum::class,
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
     /**

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Purchasing\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Store;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -42,6 +42,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class SupplierPerformanceLog extends Model
 {
     use AssignsTenant;
+    use HasStoreRelation;
     use ScopedToTenant;
 
     protected $table = 'supplier_performance_logs';
@@ -84,14 +85,6 @@ class SupplierPerformanceLog extends Model
             'unit_price' => 'string',
             'effective_unit_cost' => 'string',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class, 'store_id');
     }
 
     /**

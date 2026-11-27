@@ -31,6 +31,7 @@ class BackfillBalances extends Command
                 $defaultStore = $stores->first();
 
                 // Products
+                // @tenant-bypass: cross_tenant_reconciliation
                 $products = Product::withoutTenantScope()->where('tenant_id', $tenant->id)->get();
                 $maxProductMovementId = DB::table('stock_movements')->where('tenant_id', $tenant->id)->max('id') ?? 0;
 

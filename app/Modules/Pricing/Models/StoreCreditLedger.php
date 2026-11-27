@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Pricing\Models;
 
 use App\Core\Traits\AssignsTenant;
+use App\Core\Traits\HasStoreRelation;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Customers\Models\Customer;
-use App\Modules\Organization\Models\Store;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use App\Modules\Pricing\Enums\StoreCreditLedgerTypeEnum;
 use Illuminate\Database\Eloquent\Model;
@@ -28,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class StoreCreditLedger extends Model
 {
     use AssignsTenant;
+    use HasStoreRelation;
     use ScopedToTenant;
 
     public $timestamps = false;
@@ -60,14 +60,6 @@ class StoreCreditLedger extends Model
     }
 
     /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    /**
      * @return BelongsTo<StoreCreditAccount, $this>
      */
     public function account(): BelongsTo
@@ -81,14 +73,6 @@ class StoreCreditLedger extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
-    }
-
-    /**
-     * @return BelongsTo<Store, $this>
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
     }
 
     /**

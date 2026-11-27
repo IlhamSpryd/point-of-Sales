@@ -9,12 +9,12 @@ use App\Enums\ApprovalStatusEnum;
 use App\Enums\PurchaseOrderStatusEnum;
 use App\Enums\PurchaseRequestStatusEnum;
 use App\Modules\Organization\Models\User;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Purchasing\Models\PurchaseApprovalLog;
 use App\Modules\Purchasing\Models\PurchaseApprovalRequest;
 use App\Modules\Purchasing\Models\PurchaseApprovalRule;
 use App\Modules\Purchasing\Models\PurchaseOrder;
 use App\Modules\Purchasing\Models\PurchaseRequest;
+use App\Platform\Audit\AuditLoggerInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -22,7 +22,7 @@ use Illuminate\Validation\ValidationException;
 class PurchaseApprovalService
 {
     public function __construct(
-        protected AuditTrailService $auditTrailService,
+        protected AuditLoggerInterface $auditTrailService,
         protected TenantContext $tenantContext
     ) {}
 

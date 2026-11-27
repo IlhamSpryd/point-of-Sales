@@ -25,6 +25,7 @@ class ProcessFinancialOutboxCommand extends Command
         $limit = (int) $this->option('limit');
         $tenantId = $this->option('tenant');
 
+        // @tenant-bypass: console_command
         $query = FinancialEventOutbox::withoutTenantScope()
             ->where(function ($q) {
                 $q->where('status', 'PENDING')

@@ -7,7 +7,6 @@ use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Modules\Organization\Models\Store;
 use App\Modules\Organization\Models\User;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Organization\Services\CashierPinService;
 use App\Modules\Reporting\Models\StoreTarget;
 use App\Modules\Reporting\Services\CashierWorkspaceService;
@@ -18,6 +17,7 @@ use App\Modules\Reporting\Services\ManagerDashboardService;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\Shift;
 use App\Modules\Sales\Services\TransactionService;
+use App\Platform\Audit\AuditLoggerInterface;
 use App\Platform\Authorization\AbilityEvaluator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -40,7 +40,7 @@ class DashboardController extends Controller
         protected CashierWorkspaceService $cashierWorkspaceService,
         protected TransactionService $transactionService,
         protected CashierPinService $cashierPinService,
-        protected AuditTrailService $auditTrailService,
+        protected AuditLoggerInterface $auditTrailService,
         protected TenantContext $tenantContext,
         protected ?AbilityEvaluator $abilityEvaluator = null,
         protected ?DashboardOperationsQueryService $operationsQueryService = null,

@@ -160,7 +160,7 @@ jobs:
         run: php artisan migrate:fresh --seed --force
 
       - name: Core Quality Gate (Arch, Unit & Enterprise Integrity suites)
-        run: vendor/bin/phpunit --testsuite=Arch,Unit,Integrity
+        run: vendor/bin/phpunit --testsuite=Arch,Unit,Integrity --fail-on-risky
 
       - name: Test suite (paralel, tanpa grup chaos)
         run: php artisan test --parallel --exclude-group=chaos --coverage --min=${{ env.COVERAGE_MIN }}

@@ -47,7 +47,7 @@ class OnlinePaymentAndWebhookHandler
         ?int $originalAmount = null,
     ): Order {
         return DB::transaction(function () use ($orderCode, $transactionStatus, $fraudStatus, $grossAmount, $originalAmount) {
-            $order = Order::withoutGlobalScopes()->where('order_code', $orderCode)->lockForUpdate()->firstOrFail();
+            $order = Order::withoutGlobalScopes()->where('order_code', $orderCode)->lockForUpdate()->firstOrFail(); // @tenant-bypass: cross_tenant_reconciliation
 
             if ($order->order_status->isFinal()) {
                 return $order;
@@ -168,7 +168,7 @@ class OnlinePaymentAndWebhookHandler
         $tenantId = (int) ($order->tenant_id ?? $tenantContext->requireTenantId());
         $storeId = (int) ($order->store_id ?? $tenantContext->requireStoreId());
 
-        $existing = PaymentAttempt::withoutGlobalScopes()
+        $existing = PaymentAttempt::withoutGlobalScopes() // @tenant-bypass: cross_tenant_reconciliation
             ->where('tenant_id', $tenantId)
             ->where('idempotency_key', $idempotencyKey)
             ->first();
@@ -195,7 +195,7 @@ class OnlinePaymentAndWebhookHandler
 
         $providerOrderId = null;
         if ($provider === 'midtrans') {
-            $existingCount = PaymentAttempt::withoutGlobalScopes()
+            $existingCount = PaymentAttempt::withoutGlobalScopes() // @tenant-bypass: cross_tenant_reconciliation
                 ->where('tenant_id', $tenantId)
                 ->where('order_id', $order->id)
                 ->where('provider', 'midtrans')
@@ -208,7 +208,7 @@ class OnlinePaymentAndWebhookHandler
             $deviceId, $shiftId, $userId, $provider, $providerOrderId,
             $tenantId, $storeId
         ) {
-            $lockedOrder = Order::withoutGlobalScopes()->where('id', $order->id)->lockForUpdate()->firstOrFail();
+            $lockedOrder = Order::withoutGlobalScopes()->where('id', $order->id)->lockForUpdate()->firstOrFail(); // @tenant-bypass: cross_tenant_reconciliation
 
             $remaining = $lockedOrder->getRemainingBalance();
             if ($numAmount > $remaining) {
@@ -244,7 +244,7 @@ class OnlinePaymentAndWebhookHandler
 
         return $tenantContext->runAs($attempt->tenant_id, $attempt->store_id, function () use ($attempt, $providerMeta) {
             return DB::transaction(function () use ($attempt, $providerMeta) {
-                $order = Order::withoutGlobalScopes()->where('id', $attempt->order_id)->lockForUpdate()->firstOrFail();
+                $order = Order::withoutGlobalScopes()->where('id', $attempt->order_id)->lockForUpdate()->firstOrFail(); // @tenant-bypass: cross_tenant_reconciliation
                 $lockedAttempt = PaymentAttempt::withoutGlobalScopes()->where('id', $attempt->id)->lockForUpdate()->firstOrFail();
 
                 if ((int) $lockedAttempt->tenant_id !== (int) $order->tenant_id) {
@@ -252,7 +252,7 @@ class OnlinePaymentAndWebhookHandler
                 }
 
                 if ($lockedAttempt->status === PaymentAttemptStatus::Succeeded && $lockedAttempt->payment_id) {
-                    return Payment::withoutGlobalScopes()->findOrFail($lockedAttempt->payment_id);
+                    return Payment::withoutGlobalScopes()->findOrFail($lockedAttempt->payment_id); // @tenant-bypass: cross_tenant_reconciliation
                 }
 
                 if (in_array($lockedAttempt->status, [PaymentAttemptStatus::Expired, PaymentAttemptStatus::Cancelled], true)) {
@@ -263,7 +263,7 @@ class OnlinePaymentAndWebhookHandler
                 $change = isset($providerMeta['change_amount']) ? (int) $providerMeta['change_amount'] : 0;
                 $appliedAmount = (int) $lockedAttempt->amount;
 
-                $currentPaid = (int) Payment::withoutGlobalScopes()
+                $currentPaid = (int) Payment::withoutGlobalScopes() // @tenant-bypass: cross_tenant_reconciliation
                     ->where('order_id', $order->id)
                     ->whereIn('status', [PaymentStatusEnum::Captured, 'settled'])
                     ->sum('amount');
@@ -302,7 +302,7 @@ class OnlinePaymentAndWebhookHandler
                     $shiftId = (int) ($lockedAttempt->shift_id ?? $order->shift_id);
                     $netCash = $tendered - $change;
                     if ($netCash > 0) {
-                        $activeShift = Shift::withoutGlobalScopes()->where('id', $shiftId)->lockForUpdate()->first();
+                        $activeShift = Shift::withoutGlobalScopes()->where('id', $shiftId)->lockForUpdate()->first(); // @tenant-bypass: cross_tenant_reconciliation
                         if ($activeShift && $activeShift->status === 'open') {
                             CashDrawerMovement::forceCreate([
                                 'tenant_id' => $order->tenant_id,
@@ -319,7 +319,7 @@ class OnlinePaymentAndWebhookHandler
                     }
                 }
 
-                $totalCaptured = Payment::withoutGlobalScopes()
+                $totalCaptured = Payment::withoutGlobalScopes() // @tenant-bypass: cross_tenant_reconciliation
                     ->where('order_id', $order->id)
                     ->whereIn('status', [PaymentStatusEnum::Captured, 'settled'])
                     ->sum('amount');
@@ -389,13 +389,13 @@ class OnlinePaymentAndWebhookHandler
             return;
         }
 
-        $attempt = PaymentAttempt::withoutGlobalScopes()->where('provider_order_id', $orderId)->first();
+        $attempt = PaymentAttempt::withoutGlobalScopes()->where('provider_order_id', $orderId)->first(); // @tenant-bypass: cross_tenant_reconciliation
         $order = null;
 
         if ($attempt) {
-            $order = Order::withoutGlobalScopes()->where('id', $attempt->order_id)->first();
+            $order = Order::withoutGlobalScopes()->where('id', $attempt->order_id)->first(); // @tenant-bypass: cross_tenant_reconciliation
         } else {
-            $order = Order::withoutGlobalScopes()->where('order_code', $orderId)->first();
+            $order = Order::withoutGlobalScopes()->where('order_code', $orderId)->first(); // @tenant-bypass: cross_tenant_reconciliation
         }
 
         if (! $order) {
@@ -416,7 +416,7 @@ class OnlinePaymentAndWebhookHandler
         $tenantContext = app(TenantContext::class);
         $tenantContext->runAs((int) $order->tenant_id, $order->store_id, function () use ($order, $attempt, $transactionStatus, $fraudStatus, $grossAmount, $originalAmount, $verifiedPayload) {
             DB::transaction(function () use ($order, $attempt, $transactionStatus, $fraudStatus, $grossAmount, $originalAmount, $verifiedPayload) {
-                $lockedOrder = Order::withoutGlobalScopes()->where('id', $order->id)->lockForUpdate()->firstOrFail();
+                $lockedOrder = Order::withoutGlobalScopes()->where('id', $order->id)->lockForUpdate()->firstOrFail(); // @tenant-bypass: cross_tenant_reconciliation
 
                 if ($lockedOrder->order_status->isFinal()) {
                     if ($attempt && $attempt->status !== PaymentAttemptStatus::Succeeded) {
@@ -577,7 +577,7 @@ class OnlinePaymentAndWebhookHandler
             return $order;
         }
 
-        $attempt = PaymentAttempt::withoutGlobalScopes()
+        $attempt = PaymentAttempt::withoutGlobalScopes() // @tenant-bypass: cross_tenant_reconciliation
             ->where('order_id', $order->id)
             ->where('provider', 'midtrans')
             ->latest('id')

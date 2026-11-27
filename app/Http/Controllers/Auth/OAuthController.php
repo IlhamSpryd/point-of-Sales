@@ -187,6 +187,7 @@ class OAuthController extends Controller
 
         // KASUS 1: Akun sosial SUDAH tertaut ke User
         if ($identity !== null) {
+            // @tenant-bypass: auth_lookup
             $user = User::withoutGlobalScopes()
                 ->withTrashed()
                 ->where('tenant_id', $identity->tenant_id)
@@ -213,6 +214,7 @@ class OAuthController extends Controller
         }
 
         // KASUS 2: Belum tertaut, tetapi email sudah ada di tabel users (Zero Auto-Linking Guard [REQ-SEC-21])
+        // @tenant-bypass: auth_lookup
         $existingUser = User::withoutGlobalScopes()
             ->where('email_normalized', $claims['email_normalized'])
             ->whereNull('deleted_at')
@@ -254,6 +256,7 @@ class OAuthController extends Controller
         }
 
         // Jika email sudah dipakai akun lain, tolak auto-link
+        // @tenant-bypass: auth_lookup
         $existingUser = User::withoutGlobalScopes()
             ->where('email_normalized', $claims['email_normalized'])
             ->whereNull('deleted_at')

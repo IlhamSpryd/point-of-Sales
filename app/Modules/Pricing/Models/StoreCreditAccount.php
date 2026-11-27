@@ -7,7 +7,6 @@ namespace App\Modules\Pricing\Models;
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToTenant;
 use App\Modules\Customers\Models\Customer;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Pricing\Enums\StoreCreditStatusEnum;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -44,14 +43,6 @@ class StoreCreditAccount extends Model
             'status' => StoreCreditStatusEnum::class,
             'current_balance' => 'decimal:2',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
     }
 
     /**

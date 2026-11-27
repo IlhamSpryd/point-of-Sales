@@ -9,7 +9,6 @@ use App\Core\Support\EmailNormalizer;
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToTenant;
 use App\Enums\SupplierStatusEnum;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -85,14 +84,6 @@ class Supplier extends Model
                 $supplier->email = EmailNormalizer::normalize($supplier->email);
             }
         });
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
     }
 
     /**

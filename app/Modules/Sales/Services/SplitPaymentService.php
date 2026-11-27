@@ -9,11 +9,11 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Modules\Finance\Services\FinancialOutboxDispatcherService;
 use App\Modules\Organization\Models\User;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Sales\Exceptions\ShiftClosedException;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\Payment;
 use App\Modules\Sales\Models\Shift;
+use App\Platform\Audit\AuditLoggerInterface;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -23,7 +23,7 @@ use Illuminate\Validation\ValidationException;
 class SplitPaymentService
 {
     public function __construct(
-        protected AuditTrailService $auditTrail,
+        protected AuditLoggerInterface $auditTrail,
         protected TenantContext $tenantContext,
         protected ShiftManagementService $shiftManagementService,
         protected FinancialOutboxDispatcherService $financialOutboxDispatcher

@@ -13,12 +13,12 @@ use App\Modules\Catalog\Models\Product;
 use App\Modules\Inventory\Models\Ingredient;
 use App\Modules\Inventory\Models\StockBalance;
 use App\Modules\Organization\Models\User;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Purchasing\Models\PurchaseOrderLine;
 use App\Modules\Purchasing\Models\PurchaseRequest;
 use App\Modules\Purchasing\Models\PurchaseRequestLine;
 use App\Modules\Purchasing\Models\ReorderSuggestion;
 use App\Modules\Purchasing\Models\SupplierProduct;
+use App\Platform\Audit\AuditLoggerInterface;
 use App\Platform\Documents\DocumentSequenceService;
 use Carbon\Carbon;
 use DomainException;
@@ -31,7 +31,7 @@ class ReorderSuggestionService
     public function __construct(
         protected PurchaseRequestService $purchaseRequestService,
         protected DocumentSequenceService $sequenceService,
-        protected AuditTrailService $auditTrailService
+        protected AuditLoggerInterface $auditTrailService
     ) {}
 
     /**

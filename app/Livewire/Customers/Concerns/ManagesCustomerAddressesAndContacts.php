@@ -76,7 +76,7 @@ trait ManagesCustomerAddressesAndContacts
     public function editAddress(int $addressId): void
     {
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $address = CustomerAddress::withoutGlobalScopes()
+        $address = CustomerAddress::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($addressId);
 
@@ -103,7 +103,7 @@ trait ManagesCustomerAddressesAndContacts
         ]);
 
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $customer = Customer::withoutGlobalScopes()
+        $customer = Customer::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($this->activeCustomerId);
 
@@ -126,7 +126,7 @@ trait ManagesCustomerAddressesAndContacts
             ];
 
             if ($this->addressId) {
-                $address = CustomerAddress::withoutGlobalScopes()
+                $address = CustomerAddress::query()
                     ->where('tenant_id', $tenantId)
                     ->findOrFail($this->addressId);
                 $customerService->updateAddress($address, $data);
@@ -145,11 +145,11 @@ trait ManagesCustomerAddressesAndContacts
     public function deleteAddress(int $addressId, CustomerService $customerService): void
     {
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $address = CustomerAddress::withoutGlobalScopes()
+        $address = CustomerAddress::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($addressId);
 
-        $customer = Customer::withoutGlobalScopes()
+        $customer = Customer::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($address->customer_id);
 
@@ -179,7 +179,7 @@ trait ManagesCustomerAddressesAndContacts
     public function editContact(int $contactId): void
     {
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $contact = CustomerContact::withoutGlobalScopes()
+        $contact = CustomerContact::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($contactId);
 
@@ -198,7 +198,7 @@ trait ManagesCustomerAddressesAndContacts
         ]);
 
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $customer = Customer::withoutGlobalScopes()
+        $customer = Customer::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($this->activeCustomerId);
 
@@ -214,7 +214,7 @@ trait ManagesCustomerAddressesAndContacts
             ];
 
             if ($this->contactId) {
-                $contact = CustomerContact::withoutGlobalScopes()
+                $contact = CustomerContact::query()
                     ->where('tenant_id', $tenantId)
                     ->findOrFail($this->contactId);
                 $customerService->updateContact($contact, $data);
@@ -233,11 +233,11 @@ trait ManagesCustomerAddressesAndContacts
     public function deleteContact(int $contactId, CustomerService $customerService): void
     {
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $contact = CustomerContact::withoutGlobalScopes()
+        $contact = CustomerContact::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($contactId);
 
-        $customer = Customer::withoutGlobalScopes()
+        $customer = Customer::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($contact->customer_id);
 

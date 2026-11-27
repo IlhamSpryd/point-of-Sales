@@ -66,6 +66,7 @@ class RegisteredUserController extends Controller
         try {
             return DB::transaction(function () use ($request, $normalizedEmail) {
                 // Periksa apakah user aktif sudah terdaftar secara global
+                // @tenant-bypass: auth_lookup
                 $existingUser = User::withoutGlobalScopes()
                     ->where('email_normalized', $normalizedEmail)
                     ->whereNull('deleted_at')

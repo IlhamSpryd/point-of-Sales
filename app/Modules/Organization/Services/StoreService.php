@@ -28,6 +28,7 @@ class StoreService
     {
         $tenantId = app(TenantContext::class)->requireTenantId();
 
+        // @tenant-bypass: superadmin
         $query = Store::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->latest('id');
@@ -66,6 +67,7 @@ class StoreService
 
             // Auto generate store code jika tidak diisi
             if (empty($store->code)) {
+                // @tenant-bypass: superadmin
                 $latest = Store::withoutTenantScope()->where('tenant_id', $tenantId)->latest('id')->first();
                 $nextId = $latest ? $latest->id + 1 : 1;
                 $store->code = 'STR-'.str_pad((string) $nextId, 3, '0', STR_PAD_LEFT);
@@ -148,6 +150,7 @@ class StoreService
         }
 
         // 2. Cek perangkat aktif
+        // @tenant-bypass: superadmin
         $hasActiveDevices = Device::withoutGlobalScopes()
             ->where('tenant_id', $store->tenant_id)
             ->where('store_id', $store->id)

@@ -231,7 +231,7 @@ class StockOpnameManager extends Component
         $tenantId = $context->getTenantId();
         $storeId = $context->getStoreId();
 
-        $query = StockOpname::withoutGlobalScopes()
+        $query = StockOpname::allStores()
             ->where('tenant_id', $tenantId)
             ->where('store_id', $storeId)
             ->with(['creator', 'submitter', 'approver'])
@@ -253,18 +253,18 @@ class StockOpnameManager extends Component
         $opnames = $query->paginate(10);
 
         // Preload catalog for form
-        $availableProducts = Product::withoutGlobalScopes()
+        $availableProducts = Product::query()
             ->where('tenant_id', $tenantId)
             ->orderBy('product_name')
             ->get(['id', 'product_name as name', 'product_code as code']);
 
-        $availableIngredients = Ingredient::withoutGlobalScopes()
+        $availableIngredients = Ingredient::query()
             ->where('tenant_id', $tenantId)
             ->orderBy('name')
             ->get(['id', 'name', 'ingredient_code as code']);
 
         $selectedOpname = $this->selectedOpnameId
-            ? StockOpname::withoutGlobalScopes()
+            ? StockOpname::allStores()
                 ->where('tenant_id', $tenantId)
                 ->where('store_id', $storeId)
                 ->with(['items.product', 'items.ingredient', 'creator', 'submitter', 'approver'])
@@ -272,7 +272,7 @@ class StockOpnameManager extends Component
             : null;
 
         $activeOpname = $this->activeOpnameId
-            ? StockOpname::withoutGlobalScopes()
+            ? StockOpname::allStores()
                 ->where('tenant_id', $tenantId)
                 ->where('store_id', $storeId)
                 ->with(['items.product', 'items.ingredient'])
@@ -309,7 +309,7 @@ class StockOpnameManager extends Component
         $tenantId = $context->getTenantId();
         $storeId = $context->getStoreId();
 
-        return StockOpname::withoutGlobalScopes()
+        return StockOpname::allStores()
             ->where('tenant_id', $tenantId)
             ->where('store_id', $storeId)
             ->with(['items.product', 'items.ingredient'])

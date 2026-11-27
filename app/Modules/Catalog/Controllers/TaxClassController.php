@@ -9,7 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTaxClassRequest;
 use App\Http\Requests\UpdateTaxClassRequest;
 use App\Modules\Catalog\Models\TaxClass;
-use App\Modules\Organization\Services\AuditTrailService;
+use App\Platform\Audit\AuditLoggerInterface;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,9 +18,9 @@ use Illuminate\View\View;
 class TaxClassController extends Controller
 {
     public function __construct(
-        protected ?AuditTrailService $auditTrail = null
+        protected ?AuditLoggerInterface $auditTrail = null
     ) {
-        $this->auditTrail ??= app(AuditTrailService::class);
+        $this->auditTrail ??= app(AuditLoggerInterface::class);
     }
 
     public function index(Request $request): View

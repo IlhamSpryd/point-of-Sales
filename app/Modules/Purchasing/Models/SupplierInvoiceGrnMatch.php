@@ -6,7 +6,6 @@ namespace App\Modules\Purchasing\Models;
 
 use App\Core\Traits\AssignsTenant;
 use App\Core\Traits\ScopedToTenant;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Organization\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
@@ -30,7 +29,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $variance_approval_notes
  * @property CarbonInterface $created_at
  * @property CarbonInterface $updated_at
- * @property-read Tenant $tenant
  * @property-read SupplierInvoice $supplierInvoice
  * @property-read SupplierInvoiceLine $supplierInvoiceLine
  * @property-read GoodsReceivedNoteLine $goodsReceivedNoteLine
@@ -73,14 +71,6 @@ class SupplierInvoiceGrnMatch extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
     }
 
     /**

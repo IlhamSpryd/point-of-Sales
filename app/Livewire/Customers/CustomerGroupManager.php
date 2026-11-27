@@ -81,7 +81,7 @@ class CustomerGroupManager extends Component
         Gate::authorize('manageGroups', Customer::class);
 
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $group = CustomerGroup::withoutGlobalScopes()
+        $group = CustomerGroup::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($id);
 
@@ -109,11 +109,11 @@ class CustomerGroupManager extends Component
 
         try {
             if ($this->isEditing && $this->groupId) {
-                $group = CustomerGroup::withoutGlobalScopes()
+                $group = CustomerGroup::query()
                     ->where('tenant_id', $tenantId)
                     ->findOrFail($this->groupId);
 
-                $codeExists = CustomerGroup::withoutGlobalScopes()
+                $codeExists = CustomerGroup::query()
                     ->where('tenant_id', $tenantId)
                     ->where('code', $code)
                     ->where('id', '!=', $group->id)
@@ -150,7 +150,7 @@ class CustomerGroupManager extends Component
 
                 session()->flash('message', "Customer group '{$group->name}' updated successfully.");
             } else {
-                $codeExists = CustomerGroup::withoutGlobalScopes()
+                $codeExists = CustomerGroup::query()
                     ->where('tenant_id', $tenantId)
                     ->where('code', $code)
                     ->exists();
@@ -199,11 +199,11 @@ class CustomerGroupManager extends Component
         Gate::authorize('manageGroups', Customer::class);
 
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $group = CustomerGroup::withoutGlobalScopes()
+        $group = CustomerGroup::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($id);
 
-        $hasAssignedCustomers = Customer::withoutGlobalScopes()
+        $hasAssignedCustomers = Customer::query()
             ->where('tenant_id', $tenantId)
             ->where('customer_group_id', $group->id)
             ->exists();
@@ -251,7 +251,7 @@ class CustomerGroupManager extends Component
 
         $tenantId = app(TenantContext::class)->requireTenantId();
 
-        $query = CustomerGroup::withoutGlobalScopes()
+        $query = CustomerGroup::query()
             ->where('tenant_id', $tenantId)
             ->withCount('customers');
 
@@ -265,7 +265,7 @@ class CustomerGroupManager extends Component
 
         $groups = $query->orderBy('name')->paginate(15);
 
-        $priceLists = PriceList::withoutGlobalScopes()
+        $priceLists = PriceList::query()
             ->where('tenant_id', $tenantId)
             ->where('is_active', true)
             ->orderBy('name')

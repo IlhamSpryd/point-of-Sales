@@ -12,6 +12,7 @@ class SettingPolicy
 {
     private function isOwnerOrAdmin(User $user): bool
     {
+        // @tenant-bypass: auth_lookup
         $role = $user->relationLoaded('role') ? $user->role : $user->role()->withoutGlobalScopes()->first();
         if (! $role instanceof Role) {
             return false;

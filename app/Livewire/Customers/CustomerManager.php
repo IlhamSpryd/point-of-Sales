@@ -134,7 +134,7 @@ class CustomerManager extends Component
     public function edit(int $id): void
     {
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $customer = Customer::withoutGlobalScopes()
+        $customer = Customer::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($id);
 
@@ -166,7 +166,7 @@ class CustomerManager extends Component
 
         try {
             if ($this->isEditing && $this->customerId) {
-                $customer = Customer::withoutGlobalScopes()
+                $customer = Customer::query()
                     ->where('tenant_id', app(TenantContext::class)->requireTenantId())
                     ->findOrFail($this->customerId);
 
@@ -219,7 +219,7 @@ class CustomerManager extends Component
     public function delete(int $id, CustomerService $customerService): void
     {
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $customer = Customer::withoutGlobalScopes()
+        $customer = Customer::query()
             ->where('tenant_id', $tenantId)
             ->findOrFail($id);
 
@@ -257,7 +257,7 @@ class CustomerManager extends Component
 
         $tenantId = app(TenantContext::class)->requireTenantId();
 
-        $query = Customer::withoutGlobalScopes()
+        $query = Customer::query()
             ->where('tenant_id', $tenantId)
             ->whereNull('merged_into_customer_id')
             ->with(['group', 'defaultBillingAddress', 'defaultShippingAddress', 'addresses']);
@@ -289,7 +289,7 @@ class CustomerManager extends Component
 
         $customers = $query->orderBy('name')->paginate(15);
 
-        $customerGroups = CustomerGroup::withoutGlobalScopes()
+        $customerGroups = CustomerGroup::query()
             ->where('tenant_id', $tenantId)
             ->where('is_active', true)
             ->orderBy('name')
@@ -300,12 +300,12 @@ class CustomerManager extends Component
         $activeCustomer = null;
 
         if ($this->activeCustomerId) {
-            $activeCustomer = Customer::withoutGlobalScopes()
+            $activeCustomer = Customer::query()
                 ->where('tenant_id', $tenantId)
                 ->find($this->activeCustomerId);
 
             if ($this->showAddressModal) {
-                $activeAddresses = CustomerAddress::withoutGlobalScopes()
+                $activeAddresses = CustomerAddress::query()
                     ->where('tenant_id', $tenantId)
                     ->where('customer_id', $this->activeCustomerId)
                     ->orderByDesc('is_default_shipping')
@@ -313,7 +313,7 @@ class CustomerManager extends Component
             }
 
             if ($this->showContactModal) {
-                $activeContacts = CustomerContact::withoutGlobalScopes()
+                $activeContacts = CustomerContact::query()
                     ->where('tenant_id', $tenantId)
                     ->where('customer_id', $this->activeCustomerId)
                     ->orderByDesc('is_primary')
@@ -324,7 +324,7 @@ class CustomerManager extends Component
 
         $mergeTargetCandidates = collect();
         if ($this->showMergeModal && $this->mergeSourceId) {
-            $mergeTargetCandidates = Customer::withoutGlobalScopes()
+            $mergeTargetCandidates = Customer::query()
                 ->where('tenant_id', $tenantId)
                 ->whereNull('merged_into_customer_id')
                 ->where('id', '!=', $this->mergeSourceId)

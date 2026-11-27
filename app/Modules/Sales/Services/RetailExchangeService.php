@@ -11,9 +11,9 @@ use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductVariant;
 use App\Modules\Finance\Services\FinancialOutboxDispatcherService;
 use App\Modules\Inventory\Services\InventoryLedgerService;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\OrderItem;
+use App\Platform\Audit\AuditLoggerInterface;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -22,7 +22,7 @@ class RetailExchangeService
 {
     public function __construct(
         protected InventoryLedgerService $inventoryLedgerService,
-        protected AuditTrailService $auditTrail,
+        protected AuditLoggerInterface $auditTrail,
         protected TenantContext $tenantContext,
         protected FinancialOutboxDispatcherService $financialOutboxDispatcher
     ) {}

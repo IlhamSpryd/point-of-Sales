@@ -26,6 +26,7 @@ class ApOutboxConsumerService
      */
     public function processPendingOutbox(?int $tenantId = null, int $limit = 50): int
     {
+        // @tenant-bypass: background_job
         $query = AccountingPayableOutbox::withoutTenantScope()
             ->where('status', 'pending')
             ->orderBy('id', 'asc')
@@ -102,6 +103,7 @@ class ApOutboxConsumerService
         $invoiceId = (int) $outbox->source_document_id;
 
         /** @var SupplierInvoice|null $invoice */
+        // @tenant-bypass: background_job
         $invoice = SupplierInvoice::withoutTenantScope()
             ->with(['lines', 'grnMatches'])
             ->where('tenant_id', $tenantId)
@@ -141,6 +143,7 @@ class ApOutboxConsumerService
             }
 
             // 2. Kunci dan perbarui running balance subledger AP
+            // @tenant-bypass: background_job
             $latestEntry = ApLedgerEntry::withoutTenantScope()
                 ->where('tenant_id', $tenantId)
                 ->where('supplier_id', $invoice->supplier_id)
@@ -153,6 +156,7 @@ class ApOutboxConsumerService
 
             // 3. Catat INVOICE_CREDIT di ap_ledger_entries (idempoten)
             $idempotencyKey = "aple:inv:{$tenantId}:{$invoice->id}";
+            // @tenant-bypass: background_job
             $ledgerEntry = ApLedgerEntry::withoutTenantScope()->firstOrCreate(
                 [
                     'tenant_id' => $tenantId,
@@ -238,6 +242,7 @@ class ApOutboxConsumerService
 
         DB::transaction(function () use ($outbox, $tenantId, $supplierId, $storeId, $appliedAmount, $debitNoteId, $supplierInvoiceId, $appliedAt) {
             // 1. Kunci dan perbarui running balance subledger AP
+            // @tenant-bypass: background_job
             $latestEntry = ApLedgerEntry::withoutTenantScope()
                 ->where('tenant_id', $tenantId)
                 ->where('supplier_id', $supplierId)
@@ -250,9 +255,11 @@ class ApOutboxConsumerService
 
             // 2. Catat DEBIT_NOTE_APPLIED di ap_ledger_entries
             $idempotencyKey = "aple:dn_apply:{$tenantId}:{$outbox->id}";
+            // @tenant-bypass: background_job
             $invExists = $supplierInvoiceId > 0 && SupplierInvoice::withoutTenantScope()->where('tenant_id', $tenantId)->where('id', $supplierInvoiceId)->exists();
             $validInvoiceId = $invExists ? $supplierInvoiceId : null;
 
+            // @tenant-bypass: background_job
             $ledgerEntry = ApLedgerEntry::withoutTenantScope()->firstOrCreate(
                 [
                     'tenant_id' => $tenantId,

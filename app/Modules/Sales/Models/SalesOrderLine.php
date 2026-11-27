@@ -9,7 +9,6 @@ use App\Core\Traits\ScopedToTenant;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductVariant;
 use App\Modules\Catalog\Models\UnitOfMeasure;
-use App\Modules\Organization\Models\Tenant;
 use App\Modules\Pricing\Models\PriceList;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -88,14 +87,6 @@ class SalesOrderLine extends Model
             'tax_amount' => 'string',
             'line_total' => 'string',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
     }
 
     /**

@@ -110,12 +110,15 @@ class MidtransNotificationController extends Controller
 
         try {
             // Kompatibilitas ganda: cek apakah order_id adalah provider_order_id di payment_attempts atau order_code di orders
+            // @tenant-bypass: cross_tenant_reconciliation
             $attempt = PaymentAttempt::withoutGlobalScopes()->where('provider_order_id', (string) $orderId)->first();
             $order = null;
 
             if ($attempt) {
+                // @tenant-bypass: cross_tenant_reconciliation
                 $order = Order::withoutGlobalScopes()->where('id', $attempt->order_id)->first();
             } else {
+                // @tenant-bypass: cross_tenant_reconciliation
                 $order = Order::withoutGlobalScopes()->where('order_code', (string) $orderId)->first();
             }
 

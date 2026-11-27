@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ExportTaskController;
-use App\Http\Controllers\ReportController;
 use App\Livewire\Reports\AdvancedAnalyticsDashboard;
 use App\Modules\Reporting\Controllers\DashboardChartApiController;
+use App\Modules\Reporting\Controllers\DashboardController;
+use App\Modules\Reporting\Controllers\ExportTaskController;
+use App\Modules\Reporting\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 /*

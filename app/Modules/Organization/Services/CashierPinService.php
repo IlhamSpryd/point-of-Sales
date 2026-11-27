@@ -249,6 +249,7 @@ class CashierPinService
      */
     public function verifySupervisorPin(int $userId, string $pin, int $tenantId): bool
     {
+        // @tenant-bypass: superadmin
         $user = User::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('id', $userId)

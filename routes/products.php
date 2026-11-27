@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\BrandController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\PriceListController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\StoreProductAssortmentController;
-use App\Http\Controllers\TaxClassController;
-use App\Http\Controllers\UnitOfMeasureController;
+use App\Modules\Catalog\Controllers\BrandController;
+use App\Modules\Catalog\Controllers\CategoryController;
+use App\Modules\Catalog\Controllers\ProductController;
+use App\Modules\Catalog\Controllers\StoreProductAssortmentController;
+use App\Modules\Catalog\Controllers\TaxClassController;
+use App\Modules\Catalog\Controllers\UnitOfMeasureController;
+use App\Modules\Pricing\Controllers\PriceListController;
 use Illuminate\Support\Facades\Route;
 
 /*

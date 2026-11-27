@@ -8,7 +8,7 @@ use App\Core\Context\TenantContext;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductVariant;
 use App\Modules\Catalog\Models\ShelfLabel;
-use App\Modules\Organization\Services\AuditTrailService;
+use App\Platform\Audit\AuditLoggerInterface;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -16,7 +16,7 @@ use Illuminate\Support\Str;
 class ShelfLabelBatchService
 {
     public function __construct(
-        protected AuditTrailService $auditTrail,
+        protected AuditLoggerInterface $auditTrail,
         protected TenantContext $tenantContext
     ) {}
 

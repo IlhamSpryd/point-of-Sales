@@ -40,6 +40,7 @@ class BackfillBranchTablesAndOrders extends Command
 
         try {
             // 1. Rekonsiliasi tables.store_id
+            // @tenant-bypass: cross_tenant_reconciliation
             $tables = Table::withoutGlobalScopes()->get();
 
             foreach ($tables as $table) {
@@ -63,6 +64,7 @@ class BackfillBranchTablesAndOrders extends Command
                 }
 
                 // Cek pesanan terkait
+                // @tenant-bypass: cross_tenant_reconciliation
                 $associatedStoreIds = Order::withoutGlobalScopes()
                     ->where('tenant_id', $table->tenant_id)
                     ->where('table_id', $table->id)
@@ -81,12 +83,14 @@ class BackfillBranchTablesAndOrders extends Command
                     }
                 } elseif (empty($associatedStoreIds)) {
                     // Meja belum pernah memiliki pesanan
+                    // @tenant-bypass: cross_tenant_reconciliation
                     $tenantStoreCount = Store::withoutGlobalScopes()
                         ->where('tenant_id', $table->tenant_id)
                         ->count();
 
                     if ($tenantStoreCount === 1) {
                         // ATURAN 2: Inferensi Cabang Tunggal
+                        // @tenant-bypass: cross_tenant_reconciliation
                         $soleStore = Store::withoutGlobalScopes()
                             ->where('tenant_id', $table->tenant_id)
                             ->first();
@@ -121,12 +125,14 @@ class BackfillBranchTablesAndOrders extends Command
                             // Klon meja untuk store lain
                             $clonedTable = $table->replicate();
                             $clonedTable->store_id = (int) $otherStoreId;
+                            // @tenant-bypass: cross_tenant_reconciliation
                             $clonedTable->table_code = 'YVL-TBL-'.str_pad((string) (Table::withoutGlobalScopes()->max('id') + 1), 3, '0', STR_PAD_LEFT);
                             $clonedTable->secure_token = (string) Str::uuid();
                             $clonedTable->qr_token = bin2hex(random_bytes(32));
                             $clonedTable->saveQuietly();
 
                             // Tautkan kembali pesanan store tersebut ke ID meja yang baru
+                            // @tenant-bypass: cross_tenant_reconciliation
                             Order::withoutGlobalScopes()
                                 ->where('tenant_id', $table->tenant_id)
                                 ->where('store_id', $otherStoreId)
@@ -142,6 +148,7 @@ class BackfillBranchTablesAndOrders extends Command
             }
 
             // 2. Backfill orders.table_number dari tables.table_name
+            // @tenant-bypass: cross_tenant_reconciliation
             $ordersNeedingTableNumber = Order::withoutGlobalScopes()
                 ->whereNotNull('table_id')
                 ->whereNull('table_number')

@@ -10,7 +10,6 @@ use App\Enums\PoInvoicingStatusEnum;
 use App\Enums\SupplierInvoiceStatusEnum;
 use App\Modules\Organization\Models\Setting;
 use App\Modules\Organization\Models\User;
-use App\Modules\Organization\Services\AuditTrailService;
 use App\Modules\Purchasing\Models\AccountingPayableOutbox;
 use App\Modules\Purchasing\Models\GoodsReceivedNoteLine;
 use App\Modules\Purchasing\Models\PurchaseOrder;
@@ -19,6 +18,7 @@ use App\Modules\Purchasing\Models\Supplier;
 use App\Modules\Purchasing\Models\SupplierInvoice;
 use App\Modules\Purchasing\Models\SupplierInvoiceGrnMatch;
 use App\Modules\Purchasing\Models\SupplierInvoiceLine;
+use App\Platform\Audit\AuditLoggerInterface;
 use App\Platform\Documents\DocumentSequenceService;
 use DomainException;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +29,7 @@ class SupplierInvoiceMatchingService
 {
     public function __construct(
         protected DocumentSequenceService $sequenceService,
-        protected AuditTrailService $auditTrailService
+        protected AuditLoggerInterface $auditTrailService
     ) {}
 
     /**
