@@ -33,6 +33,9 @@ return [
     // Sprint 2: Owner self-registration flag (defaults to true for public SaaS onboarding)
     'allow_web_registration' => env('POS_ALLOW_WEB_REGISTRATION', true),
 
+    // Explicit test-DB opt-in guard for Tier1DemoSeeder safety check
+    'allow_tier1_demo_test_db' => env('TIER1_SEEDER_ALLOW_TEST_DB', false),
+
     /*
     |------------------------------------------------------------------
     | Domain 1 — Tenant provisioning

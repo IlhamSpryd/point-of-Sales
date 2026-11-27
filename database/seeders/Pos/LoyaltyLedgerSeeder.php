@@ -52,6 +52,9 @@ class LoyaltyLedgerSeeder extends Seeder
         $ledgerRows = [];
         $totalEntries = 0;
 
+        // O(1) map: customer_id => hash entri terakhir (mencegah reset prev_hash saat chunk flush)
+        $lastHashByCustomer = [];
+
         $bar = $this->command->getOutput()->createProgressBar($orders->count());
         $bar->setFormat(' Loyalty: %current%/%max% [%bar%] %percent:3s%%');
 
@@ -74,8 +77,8 @@ class LoyaltyLedgerSeeder extends Seeder
             $balances[$cid] += $earnedPoints;
             $lifetimeEarned[$cid] += $earnedPoints;
 
-            $prevHash = null;
-            // Compute hash chain manually
+            $prevHash = $lastHashByCustomer[$cid] ?? null;
+
             $entryHash = hash('sha256', implode('|', [
                 $cid,
                 $order->id,
@@ -86,26 +89,7 @@ class LoyaltyLedgerSeeder extends Seeder
                 $order->created_at,
             ]));
 
-            // Check for last hash
-            if (! empty($ledgerRows)) {
-                // Find last entry for this customer
-                for ($i = count($ledgerRows) - 1; $i >= 0; $i--) {
-                    if ($ledgerRows[$i]['customer_id'] === $cid) {
-                        $prevHash = $ledgerRows[$i]['entry_hash'];
-                        break;
-                    }
-                }
-                // Recompute with correct prev_hash
-                $entryHash = hash('sha256', implode('|', [
-                    $cid,
-                    $order->id,
-                    'earn',
-                    $earnedPoints,
-                    $balances[$cid],
-                    $prevHash ?? '',
-                    $order->created_at,
-                ]));
-            }
+            $lastHashByCustomer[$cid] = $entryHash;
 
             $ledgerRows[] = [
                 'customer_id' => $cid,
@@ -126,7 +110,7 @@ class LoyaltyLedgerSeeder extends Seeder
                 $redeemPoints = min($balances[$cid], rand(50, 200));
                 $balances[$cid] -= $redeemPoints;
 
-                $prevHash = $entryHash; // Previous entry's hash
+                $prevHash = $lastHashByCustomer[$cid];
                 $redeemHash = hash('sha256', implode('|', [
                     $cid,
                     $order->id,
@@ -136,6 +120,8 @@ class LoyaltyLedgerSeeder extends Seeder
                     $prevHash,
                     $order->created_at,
                 ]));
+
+                $lastHashByCustomer[$cid] = $redeemHash;
 
                 $ledgerRows[] = [
                     'customer_id' => $cid,
