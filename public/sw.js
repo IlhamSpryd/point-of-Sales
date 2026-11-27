@@ -2,12 +2,13 @@
  * Apeiron POS — Service Worker (FE-PWA-01 / DEC-006)
  * Resilience, offline caching, and PWA standalone kiosk capabilities.
  */
-const CACHE_NAME = 'apeiron-pos-v3';
+const CACHE_NAME = 'apeiron-pos-v4';
 const PRECACHE_ASSETS = [
     '/offline.html',
     '/fonts/material-symbols-rounded.woff2',
     '/fonts/plus-jakarta-sans.woff2',
     '/vendor/qz-tray.js',
+    '/js/pos-offline-queue.js',
     '/favicon.svg',
     '/manifest.json'
 ];

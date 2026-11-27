@@ -129,6 +129,7 @@
 
             const db = await openDatabase();
             const uuid = orderPayload.offline_client_uuid || this.generateUuid();
+            const userId = getActiveUserId();
             const parsedUserId = parseInt(userId, 10) || null;
             const parsedShiftId = window.__APEIRON_BOOT__?.shiftId || window.ApeironShiftId || null;
 
@@ -279,6 +280,10 @@
 
         notifyQueueChanged() {
             this.getPendingCount().then(count => {
+                const tenantId = getActiveTenantId();
+                if (tenantId) {
+                    localStorage.setItem(`apeiron_pos_pending_count_${tenantId}`, count);
+                }
                 window.dispatchEvent(new CustomEvent('offline-queue-updated', { detail: { count } }));
             }).catch(() => {});
         }
@@ -290,7 +295,9 @@
         if (form && typeof form.getAttribute === 'function') {
             const action = form.getAttribute('action') || '';
             if (action.includes('logout')) {
-                ApeironOfflinePos.getPendingCount().then((count) => {
+                const tenantId = getActiveTenantId();
+                if (tenantId) {
+                    const count = parseInt(localStorage.getItem(`apeiron_pos_pending_count_${tenantId}`) || '0', 10);
                     if (count > 0) {
                         const ok = window.confirm(`Peringatan: Ada ${count} transaksi offline yang belum tersinkronisasi. Pastikan sinkronisasi selesai sebelum berganti kasir. Tetap logout?`);
                         if (!ok) {
@@ -299,7 +306,7 @@
                             return;
                         }
                     }
-                }).catch(() => {});
+                }
                 ApeironOfflinePos.closeDatabase();
             }
         }

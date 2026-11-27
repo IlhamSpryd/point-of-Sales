@@ -108,6 +108,7 @@ class OfflineOrderSyncService
 
                     if ($creatorShiftId) {
                         $originShift = Shift::where('tenant_id', $tenantId)
+                            ->where('store_id', $storeId)
                             ->where('id', $creatorShiftId)
                             ->first();
 

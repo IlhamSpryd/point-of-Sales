@@ -434,6 +434,33 @@ trait ManagesPosPaymentAndSplitBill
         }
     }
 
+    /**
+     * Membersihkan state keranjang setelah transaksi TUNAI diantrekan secara luring (P0-03).
+     * Tidak membuat order di server; server akan menerimanya via /api/v1/pos/sync-offline-orders.
+     */
+    public function clearCartAfterOfflineQueue(): void
+    {
+        $this->authorize('create', Order::class);
+
+        $this->cart = [];
+        $this->dispatch('pos-cart-state-changed', dirty: false);
+        $this->orderType = null;
+        $this->tableId = null;
+        $this->customerId = null;
+        $this->customerName = null;
+        $this->selectedDiscountId = null;
+        $this->appliedManualDiscount = 0;
+        $this->appliedManualDiscountReason = '';
+        $this->manualDiscountApprovalId = null;
+        $this->voucherCode = null;
+        $this->voucherInput = '';
+        $this->voucherError = null;
+        $this->pendingOrderId = null;
+        $this->pendingOrderCode = null;
+        $this->cashReceived = 0;
+        $this->idempotencyKey = (string) Str::uuid();
+    }
+
     public function verifyMidtransPayment(string $orderCode): void
     {
         $tenantId = app(TenantContext::class)->requireTenantId();

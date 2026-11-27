@@ -27,6 +27,7 @@ use App\Modules\Sales\Models\Payment;
 use App\Modules\Sales\Models\PaymentAttempt;
 use App\Modules\Sales\Models\Shift;
 use App\Modules\Sales\Models\Table;
+use App\Platform\Documents\DocumentSequenceService;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -367,9 +368,11 @@ class CheckoutOrderHandler
                     $initialStatus = $isImmediateCash ? OrderStatus::Paid : OrderStatus::Pending;
                 }
 
-                do {
-                    $orderCode = 'POS-'.strtoupper(Str::random(6)).'-'.rand(100, 999);
-                } while (Order::where('order_code', $orderCode)->exists());
+                $orderCode = app(DocumentSequenceService::class)->nextOrderCode(
+                    (int) $tenantId,
+                    $activeStoreId !== null ? (int) $activeStoreId : null,
+                    date('Ym')
+                );
 
                 $order = Order::forceCreate([
                     'user_id' => $userId,

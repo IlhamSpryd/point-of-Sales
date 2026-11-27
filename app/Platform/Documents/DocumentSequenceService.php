@@ -36,6 +36,8 @@ class DocumentSequenceService
 
     public const TYPE_LANDED_COST = 'LC';
 
+    public const TYPE_POS_ORDER = 'POS';
+
     /**
      * Resolusi kunci cakupan: 'global' jika tanpa store_id, atau 'store:{store_id}'.
      */
@@ -242,6 +244,31 @@ class DocumentSequenceService
         return $code !== null && $code !== ''
             ? "{$prefix}/{$code}/{$period}/{$paddedNumber}"
             : "{$prefix}/{$period}/{$paddedNumber}";
+    }
+
+    /**
+     * Helper khusus: Kode Order POS gap-free per (tenant, store, YYYYMM) -> POS-{YYYYMM}-{STORE}-{SEQ}.
+     * Menggantikan generator acak `POS-XXXXXX-NNN` yang rawan bentrok lintas cabang (P1-04).
+     */
+    public function nextOrderCode(int $tenantId, ?int $storeId = null, ?string $period = null, int $padding = 4): string
+    {
+        $period = $period !== null && $period !== '' ? $period : date('Ym');
+        $scope = $storeId !== null ? 'store:'.$storeId : 'global';
+        $prefix = 'POS';
+
+        $sequence = $this->nextValue(
+            tenantId: $tenantId,
+            docType: self::TYPE_POS_ORDER,
+            storeId: null,
+            periodKey: $period.'|'.$scope,
+            customPrefix: $prefix
+        );
+
+        $padded = str_pad((string) $sequence, $padding, '0', STR_PAD_LEFT);
+
+        return $storeId !== null
+            ? "{$prefix}-{$period}-{$storeId}-{$padded}"
+            : "{$prefix}-{$period}-{$padded}";
     }
 
     /**

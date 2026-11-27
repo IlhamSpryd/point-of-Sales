@@ -834,9 +834,73 @@
                 try {
                     await wire.call('submitOrder', payload, this.idempotencyKey, useMidtransGateway);
                 } catch (err) {
-                    this.errorMsg = err?.message || 'Unable to complete cashier payment. Please try again.';
+                    const isCashOnly = this.method === 'cash' && !useMidtransGateway;
+                    const offlineQueued = isCashOnly ? await this.queueOfflineOrder(payload) : false;
+
+                    if (!offlineQueued) {
+                        this.errorMsg = err?.message || 'Unable to complete cashier payment. Please try again.';
+                    }
                 } finally {
                     this.submitting = false;
+                }
+            },
+
+            /**
+             * Offline POS fallback (P0-03 / DEC-006): menyimpan transaksi TUNAI ke antrean IndexedDB
+             * lokal ketika perangkat luring atau permintaan jaringan gagal. UUID idempotensi draft
+             * dipakai ulang sehingga replay ke server tidak membuat order ganda.
+             */
+            async queueOfflineOrder(payload) {
+                if (!window.ApeironOfflinePos || typeof window.ApeironOfflinePos.enqueueOrder !== 'function') {
+                    return false;
+                }
+                if (navigator.onLine && this._onlineConfirmed !== false) {
+                    return false;
+                }
+
+                try {
+                    const cart = await this.getWire().get('cart');
+                    const items = (cart || []).map((row) => ({
+                        product_id: row.product_id,
+                        product_variant_id: row.product_variant_id ?? null,
+                        quantity: row.qty ?? 1,
+                        modifier_ids: row.modifier_ids ?? [],
+                        custom_price: row.custom_price ?? null,
+                        item_discount_amount: row.item_discount_amount ?? 0,
+                        notes: row.notes ?? null,
+                    }));
+
+                    if (items.length === 0) {
+                        return false;
+                    }
+
+                    const record = await window.ApeironOfflinePos.enqueueOrder({
+                        offline_client_uuid: this.idempotencyKey,
+                        idempotency_key: this.idempotencyKey,
+                        payment_method: 'cash',
+                        order_type: (await this.getWire().get('orderType')) || 'takeaway',
+                        items: items,
+                        payments: payload,
+                        cash_received: payload[0]?.amount_tendered ?? this.amountRaw,
+                    });
+
+                    this.errorMsg = '';
+                    this.receiptReady = false;
+                    window.dispatchEvent(new CustomEvent('pos-offline-order-queued', {
+                        detail: { uuid: record.offline_client_uuid },
+                    }));
+
+                    // Umpan balik visual: kosongkan keranjang & tutup modal seperti transaksi normal.
+                    const wireClient = this.getWire();
+                    if (wireClient) {
+                        await wireClient.call('clearCartAfterOfflineQueue');
+                    }
+                    window.dispatchEvent(new CustomEvent('close-modal', { detail: 'checkout-payment' }));
+
+                    return true;
+                } catch (e) {
+                    console.error('[OFFLINE POS] Gagal menyimpan transaksi luring:', e);
+                    return false;
                 }
             },
         }));
