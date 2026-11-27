@@ -157,6 +157,8 @@ jobs:
           fi
 
       - name: Smoke test migrasi + seeder
+        env:
+          TIER1_SEEDER_ALLOW_TEST_DB: 'true'
         run: php artisan migrate:fresh --seed --force
 
       - name: Core Quality Gate (Arch, Unit & Enterprise Integrity suites)
@@ -167,3 +169,113 @@ jobs:
 
       - name: Chaos / concurrency suite (serial)
         run: php artisan test --group=chaos || true # Toleran jika file chaos test berstatus .disabled
+
+  e2e-playwright:
+    name: E2E & Accessibility (Playwright)
+    needs: [lint]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mariadb:10.11
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: yovel_pos_e2e
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      APP_ENV: local
+      APP_URL: http://127.0.0.1:8000
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: '3306'
+      DB_DATABASE: yovel_pos_e2e
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      BROADCAST_CONNECTION: log
+      QUEUE_CONNECTION: database
+      MIDTRANS_SERVER_KEY: test-e2e-midtrans-server-key
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: shivammathur/setup-php@c541c155eee45413f5b09a52248675b1a2575231 # v2.32.0
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, intl, pdo_mysql, pcntl, bcmath, gd, zip, exif, fileinfo
+          coverage: none
+          tools: composer:v2
+
+      - uses: ramsey/composer-install@57532f83ebe8450269752074714e3a380757bc7a # v3.1.0
+
+      - name: Ensure Composer dependencies
+        run: |
+          if [ ! -f vendor/autoload.php ]; then composer install --no-interaction --no-progress --prefer-dist; fi
+
+      - name: Configure isolated E2E environment
+        run: |
+          cp .env.example .env
+          sed -i 's|APP_URL=.*|APP_URL=http://127.0.0.1:8000|' .env
+          sed -i 's/DB_DATABASE=.*/DB_DATABASE=yovel_pos_e2e/' .env
+          sed -i 's/DB_USERNAME=.*/DB_USERNAME=root/' .env
+          sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=root/' .env
+          sed -i 's/SESSION_DRIVER=.*/SESSION_DRIVER=database/' .env
+          sed -i 's/CACHE_STORE=.*/CACHE_STORE=database/' .env
+          sed -i 's/BROADCAST_CONNECTION=.*/BROADCAST_CONNECTION=log/' .env
+          sed -i 's/MIDTRANS_SERVER_KEY=.*/MIDTRANS_SERVER_KEY=test-e2e-midtrans-server-key/' .env
+          sed -i 's/TRUSTED_HOSTS=.*/TRUSTED_HOSTS=127.0.0.1,localhost/' .env
+          php artisan key:generate --ansi
+
+      - name: Ensure E2E database ready
+        run: |
+          mysql -h 127.0.0.1 -u root -proot -e "
+            CREATE DATABASE IF NOT EXISTS yovel_pos_e2e;
+            CREATE USER IF NOT EXISTS 'laravel_pos'@'%' IDENTIFIED BY 'root';
+            GRANT ALL PRIVILEGES ON *.* TO 'laravel_pos'@'%' WITH GRANT OPTION;
+            CREATE USER IF NOT EXISTS 'laravel_pos'@'localhost' IDENTIFIED BY 'root';
+            GRANT ALL PRIVILEGES ON *.* TO 'laravel_pos'@'localhost' WITH GRANT OPTION;
+            FLUSH PRIVILEGES;
+          "
+
+      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832e0b1 # v4.2.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Build frontend assets & check budget
+        run: |
+          npm ci
+          npm run build
+
+      - name: Migrate & Seed Tier1DemoSeeder (<10s SLA)
+        run: |
+          php artisan migrate:fresh --force
+          START_TS=$(date +%s)
+          php artisan db:seed --force
+          ELAPSED=$(( $(date +%s) - START_TS ))
+          echo "Database seeding elapsed: ${ELAPSED}s"
+          if [ "$ELAPSED" -ge 10 ]; then
+            echo "ERROR: Tier1DemoSeeder exceeded 10s SLA (${ELAPSED}s)"
+            exit 1
+          fi
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright E2E & Accessibility matrix
+        run: npx playwright test --workers=1
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b5404509e18a0054b1008d57e # v4.6.2
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
