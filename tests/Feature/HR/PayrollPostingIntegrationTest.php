@@ -367,7 +367,7 @@ class PayrollPostingIntegrationTest extends TestCase
         $finalizedBatch = $this->batchService->finalizeBatch($batch->id, $this->user->id, $approval->id);
 
         $job = new PostPayrollToGeneralLedgerJob($finalizedBatch->id, 'ACCRUAL', null, $this->user->id);
-        $job->handle($this->postingService);
+        $job->handle();
 
         $finalizedBatch->refresh();
         $this->assertNotNull($finalizedBatch->gl_accrual_journal_id);

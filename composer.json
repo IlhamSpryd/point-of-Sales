@@ -19,6 +19,7 @@
     ],
     "require": {
         "php": "^8.3",
+        "barryvdh/laravel-dompdf": "^3.1",
         "devdojo/components": "^1.0",
         "gehrisandro/tailwind-merge-php": "^1.2",
         "laravel/framework": "^13.17",

@@ -4,42 +4,34 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Jobs;
 
-use App\Core\Context\TenantContext;
 use App\Modules\Finance\Models\AccountingPeriod;
 use App\Modules\Finance\Services\DepreciationService;
-use App\Modules\Organization\Models\User;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
+use App\Platform\Tenancy\TenantAwareJob;
 use Illuminate\Support\Facades\Log;
 
-class RunMonthlyDepreciationJob implements ShouldQueue
+class RunMonthlyDepreciationJob extends TenantAwareJob
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
     public int $tries = 3;
 
     public function __construct(
-        public int $tenantId,
+        int $tenantId,
         public int $periodId,
         public ?int $actorUserId = null
-    ) {}
+    ) {
+        parent::__construct(tenantId: $tenantId, actorId: $actorUserId);
+    }
 
-    public function handle(
-        DepreciationService $depreciationService,
-        TenantContext $tenantContext
-    ): void {
-        $tenantContext->setTenantId($this->tenantId);
-
-        $period = AccountingPeriod::withoutTenantScope()
+    protected function execute(): void
+    {
+        $period = AccountingPeriod::query()
             ->where('tenant_id', $this->tenantId)
             ->findOrFail($this->periodId);
 
-        $actor = $this->actorUserId ? User::find($this->actorUserId) : null;
+        $actor = $this->actorUserId
+            ? \App\Modules\Organization\Models\User::where('tenant_id', $this->tenantId)->find($this->actorUserId)
+            : null;
         if (! $actor) {
-            $actor = User::where('tenant_id', $this->tenantId)->first();
+            $actor = \App\Modules\Organization\Models\User::where('tenant_id', $this->tenantId)->first();
         }
 
         if (! $actor) {
@@ -48,7 +40,7 @@ class RunMonthlyDepreciationJob implements ShouldQueue
             return;
         }
 
-        $result = $depreciationService->postMonthlyDepreciation($period, $this->tenantId, $actor);
+        $result = app(DepreciationService::class)->postMonthlyDepreciation($period, $this->tenantId, $actor);
 
         Log::info("RunMonthlyDepreciationJob selesai untuk tenant #{$this->tenantId}, periode #{$period->period_code}. Diproses: {$result['total_processed']} aset, Total penyusutan: {$result['total_depreciation_amount']}");
     }

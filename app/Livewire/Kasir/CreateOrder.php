@@ -50,6 +50,12 @@ class CreateOrder extends Component
     #[Locked]
     public string $idempotencyKey;
 
+    protected function allowsSuspendedTenantAccess(): bool
+    {
+        return request()->is('*orders/*/pay*', '*kasir/shift/close*', '*tables/*/release*')
+            || $this->pendingOrderId !== null;
+    }
+
     public function boot(): void
     {
         $this->bootRequiresTenantContext();

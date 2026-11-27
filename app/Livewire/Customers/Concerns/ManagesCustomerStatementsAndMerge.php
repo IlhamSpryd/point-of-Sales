@@ -82,7 +82,14 @@ trait ManagesCustomerStatementsAndMerge
 
     public function openStatement(int $customerId): void
     {
-        $this->activeCustomerId = $customerId;
+        $tenantId = (int) app(TenantContext::class)->requireTenantId();
+        $customer = Customer::query()
+            ->where('tenant_id', $tenantId)
+            ->findOrFail($customerId);
+
+        Gate::authorize('view', $customer);
+
+        $this->activeCustomerId = (int) $customer->id;
         $this->statementStartDate = now()->startOfMonth()->toDateString();
         $this->statementEndDate = now()->toDateString();
         $this->loadStatementPreview();
@@ -95,11 +102,18 @@ trait ManagesCustomerStatementsAndMerge
             return;
         }
 
+        $tenantId = (int) app(TenantContext::class)->requireTenantId();
+        $customer = Customer::query()
+            ->where('tenant_id', $tenantId)
+            ->findOrFail($this->activeCustomerId);
+
+        Gate::authorize('view', $customer);
+
         try {
             $arService = app(AccountsReceivableService::class);
             $start = Carbon::parse($this->statementStartDate);
             $end = Carbon::parse($this->statementEndDate);
-            $this->statementPreview = $arService->generateCustomerStatement($this->activeCustomerId, $start, $end);
+            $this->statementPreview = $arService->generateCustomerStatement((int) $customer->id, $start, $end);
         } catch (\Throwable $e) {
             $this->statementPreview = null;
             session()->flash('error', 'Unable to load statement: '.$e->getMessage());
@@ -113,6 +127,12 @@ trait ManagesCustomerStatementsAndMerge
         }
 
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
+        $customer = Customer::query()
+            ->where('tenant_id', $tenantId)
+            ->findOrFail($this->activeCustomerId);
+
+        Gate::authorize('view', $customer);
+
         $storeId = app(TenantContext::class)->getStoreId();
 
         $task = ExportTask::create([

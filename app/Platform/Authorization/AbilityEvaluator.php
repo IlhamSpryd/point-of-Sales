@@ -137,16 +137,16 @@ class AbilityEvaluator
             return Scope::BRANCH;
         }
 
-        // 4. Frontline Roles: Kasir, Waiter, Cook, Barista, Staff
-        // Scope::BRANCH for operational abilities; Scope::SELF for personal self-service records
-        if (in_array($roleName, ['Kasir', 'Waiter', 'Cook', 'Barista', 'Staff'], true)) {
-            if ($ability !== null && ($ability->scope === Scope::SELF || str_ends_with($ability->name, '.own') || in_array($ability->name, ['hrm.leave', 'workforce.leave.apply', 'workforce.payslip.view_own'], true))) {
-                return Scope::SELF;
-            }
-
-            return Scope::BRANCH;
+        if ($user->role === null) {
+            return Scope::SELF;
         }
 
-        return Scope::SELF;
+        // 4. Frontline & Custom Operational Roles:
+        // Scope::BRANCH for operational abilities; Scope::SELF for personal self-service records
+        if ($ability !== null && ($ability->scope === Scope::SELF || str_ends_with($ability->name, '.own') || in_array($ability->name, ['hrm.leave', 'workforce.leave.apply', 'workforce.payslip.view_own'], true))) {
+            return Scope::SELF;
+        }
+
+        return Scope::BRANCH;
     }
 }

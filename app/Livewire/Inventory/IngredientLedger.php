@@ -5,6 +5,8 @@ namespace App\Livewire\Inventory;
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Modules\Inventory\Models\Ingredient;
 use App\Modules\Inventory\Models\IngredientStockMovement;
+use App\Platform\Authorization\AbilityEvaluator;
+use App\Platform\Authorization\Scope;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -19,11 +21,7 @@ class IngredientLedger extends Component
     public function boot(): void
     {
         $this->bootRequiresTenantContext();
-
-        $user = auth()->user();
-        if (! $user || ! $user->role || ! in_array($user->role->name, ['Owner', 'Manager', 'Inventory'])) {
-            abort(403, 'Anda tidak memiliki hak akses untuk halaman ini.');
-        }
+        $this->authorize('inventory.view');
     }
 
     #[Url(history: true)]
@@ -44,8 +42,11 @@ class IngredientLedger extends Component
 
     public function render()
     {
-        $isOwnerConsolidated = auth()->user()?->role?->name === 'Owner' && session('active_store_id') === 'all';
-        $query = $isOwnerConsolidated
+        $authUser = auth()->user();
+        $isTenantWideScope = $authUser instanceof \App\Modules\Organization\Models\User
+            && app(AbilityEvaluator::class)->resolveUserScope($authUser) === Scope::TENANT
+            && session('active_store_id') === 'all';
+        $query = $isTenantWideScope
             ? IngredientStockMovement::allStores()
             : IngredientStockMovement::query();
 

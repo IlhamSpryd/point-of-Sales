@@ -96,6 +96,12 @@ class CustomerManager extends Component
         ];
     }
 
+    public function boot(): void
+    {
+        $this->bootRequiresTenantContext();
+        $this->authorize('viewAny', Customer::class);
+    }
+
     public function updatingSearch(): void
     {
         $this->resetPage();

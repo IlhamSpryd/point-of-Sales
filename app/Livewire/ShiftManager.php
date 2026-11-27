@@ -43,6 +43,14 @@ class ShiftManager extends Component
 
     public string $supervisorPin = '';
 
+    protected function allowsSuspendedTenantAccess(): bool
+    {
+        $refererPath = trim((string) parse_url((string) request()->headers->get('referer', ''), PHP_URL_PATH), '/');
+
+        return request()->is('*shifts/*/close*', '*shifts/close*', '*kasir/shift/close*')
+            || str_contains($refererPath, 'shift');
+    }
+
     public function boot(): void
     {
         $this->bootRequiresTenantContext();

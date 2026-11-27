@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Sales;
 
 use App\Core\Context\TenantContext;
+use App\Livewire\Concerns\RequiresTenantContext;
 use App\Modules\Sales\Enums\CreditNoteStatusEnum;
 use App\Modules\Sales\Models\CustomerInvoice;
 use App\Modules\Sales\Models\OrderReturn;
@@ -19,7 +20,14 @@ use Livewire\WithPagination;
 
 class ReturnCreditNoteManager extends Component
 {
+    use RequiresTenantContext;
     use WithPagination;
+
+    public function boot(): void
+    {
+        $this->bootRequiresTenantContext();
+        $this->authorize('viewAny', SalesCreditNote::class);
+    }
 
     #[Url(history: true)]
     public string $activeTab = 'credit_notes'; // 'returns' | 'credit_notes'

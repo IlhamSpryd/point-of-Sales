@@ -33,8 +33,14 @@ class SubscriptionPortal extends Component
 
     public ?string $pendingPaymentToken = null;
 
+    protected function allowsSuspendedTenantAccess(): bool
+    {
+        return true;
+    }
+
     public function boot(): void
     {
+        $this->bootRequiresTenantContext();
         $this->authorize('subscription.manage');
     }
 

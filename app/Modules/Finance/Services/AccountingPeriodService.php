@@ -24,6 +24,7 @@ use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use DomainException;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -135,8 +136,8 @@ class AccountingPeriodService
      */
     public function evaluateClosingGates(int|AccountingPeriod $period, ?User $actor = null): array
     {
-        $period = $period instanceof AccountingPeriod ? $period : AccountingPeriod::withoutTenantScope()->findOrFail($period);
-        $tenantId = $period->tenant_id;
+        $period = $this->resolveAuthorizedPeriod($period, $actor);
+        $tenantId = (int) $period->tenant_id;
         $startDate = $period->start_date->toDateString();
         $endDate = $period->end_date->toDateString();
         $startDateTime = $period->start_date->copy()->startOfDay()->toDateTimeString();
@@ -417,8 +418,8 @@ class AccountingPeriodService
 
     public function closePeriod(int|AccountingPeriod $period, User $actor): AccountingPeriod
     {
-        $period = $period instanceof AccountingPeriod ? $period : AccountingPeriod::withoutTenantScope()->findOrFail($period);
-        $tenantId = $period->tenant_id;
+        $period = $this->resolveAuthorizedPeriod($period, $actor);
+        $tenantId = (int) $period->tenant_id;
 
         $gates = $this->evaluateClosingGates($period, $actor);
 
@@ -447,18 +448,32 @@ class AccountingPeriodService
             $this->snapshotInventoryValuation($lockedPeriod);
 
             // 3. Log
-            PeriodClosingLog::create([
-                'tenant_id' => $tenantId,
-                'accounting_period_id' => $lockedPeriod->id,
-                'action' => 'HARD_CLOSE',
-                'user_id' => $actor->id,
-                'reason' => "All 7 reconciliation gates passed. Period {$lockedPeriod->period_code} successfully closed.",
-                'previous_status' => $prevStatus,
-                'new_status' => AccountingPeriodStatusEnum::CLOSED->value,
-            ]);
+            $this->recordClosingLog($tenantId, (int) $lockedPeriod->id, 'HARD_CLOSE', $actor, "All 7 reconciliation gates passed. Period {$lockedPeriod->period_code} successfully closed.", $prevStatus, AccountingPeriodStatusEnum::CLOSED->value);
 
             return $lockedPeriod;
         });
+    }
+
+    private function resolveAuthorizedPeriod(int|AccountingPeriod $period, ?User $actor = null): AccountingPeriod
+    {
+        $expectedTenantId = $actor !== null ? (int) $actor->tenant_id : (int) $this->tenantContext->requireTenantId();
+        $activeTenantId = $this->tenantContext->getTenantId();
+        $targetId = $period instanceof AccountingPeriod ? $period->id : $period;
+
+        if (($actor !== null && $activeTenantId !== null && (int) $activeTenantId !== $expectedTenantId)
+            || ($period instanceof AccountingPeriod && (int) $period->tenant_id !== $expectedTenantId)) {
+            throw (new ModelNotFoundException)->setModel(AccountingPeriod::class, [$targetId]);
+        }
+
+        if ($period instanceof AccountingPeriod) {
+            return $period;
+        }
+
+        return $this->tenantContext->runAs(
+            $expectedTenantId,
+            null,
+            fn (): AccountingPeriod => AccountingPeriod::query()->where('tenant_id', $expectedTenantId)->findOrFail($period)
+        );
     }
 
     public function softClosePeriod(int $periodId, User $actor): AccountingPeriod
@@ -504,15 +519,7 @@ class AccountingPeriodService
             $period->reopen_reason = $reason;
             $period->save();
 
-            PeriodClosingLog::create([
-                'tenant_id' => $tenantId,
-                'accounting_period_id' => $period->id,
-                'action' => 'REOPEN',
-                'user_id' => $actor->id,
-                'reason' => $reason,
-                'previous_status' => $prevStatus,
-                'new_status' => AccountingPeriodStatusEnum::OPEN->value,
-            ]);
+            $this->recordClosingLog($tenantId, (int) $period->id, 'REOPEN', $actor, $reason, $prevStatus, AccountingPeriodStatusEnum::OPEN->value);
 
             return $period;
         });
@@ -958,23 +965,28 @@ class AccountingPeriodService
 
             $prevStatus = $period->status->value;
             $period->status = $newStatus;
-            if ($newStatus === AccountingPeriodStatusEnum::CLOSED || $newStatus === AccountingPeriodStatusEnum::LOCKED) {
+            if (in_array($newStatus, [AccountingPeriodStatusEnum::CLOSED, AccountingPeriodStatusEnum::LOCKED], true)) {
                 $period->closed_at = now();
                 $period->closed_by_user_id = $actor->id;
             }
             $period->save();
 
-            PeriodClosingLog::create([
-                'tenant_id' => $tenantId,
-                'accounting_period_id' => $period->id,
-                'action' => $action,
-                'user_id' => $actor->id,
-                'reason' => "Transition to {$newStatus->value}",
-                'previous_status' => $prevStatus,
-                'new_status' => $newStatus->value,
-            ]);
+            $this->recordClosingLog($tenantId, (int) $period->id, $action, $actor, "Transition to {$newStatus->value}", $prevStatus, $newStatus->value);
 
             return $period;
         });
+    }
+
+    private function recordClosingLog(int $tenantId, int $periodId, string $action, User $actor, string $reason, string $previousStatus, string $newStatus): void
+    {
+        PeriodClosingLog::create([
+            'tenant_id' => $tenantId,
+            'accounting_period_id' => $periodId,
+            'action' => $action,
+            'user_id' => $actor->id,
+            'reason' => $reason,
+            'previous_status' => $previousStatus,
+            'new_status' => $newStatus,
+        ]);
     }
 }

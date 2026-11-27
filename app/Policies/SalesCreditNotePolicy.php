@@ -9,16 +9,22 @@ use App\Modules\Sales\Models\SalesCreditNote;
 
 class SalesCreditNotePolicy
 {
-    protected array $financeRoles = ['Owner', 'Manager', 'Finance', 'Admin'];
-
     public function viewAny(User $user): bool
     {
-        return true;
+        return (bool) ($user->role->is_admin ?? false)
+            || $user->hasPermission('credit_notes.view')
+            || $user->hasPermission('credit_notes.apply')
+            || $user->hasPermission('returns.view')
+            || $user->hasPermission('sales.returns.view')
+            || $user->hasPermission('sales.*')
+            || $user->hasPermission('finance.*')
+            || $user->hasPermission('orders.*');
     }
 
     public function view(User $user, SalesCreditNote $creditNote): bool
     {
-        return (int) $user->tenant_id === (int) $creditNote->tenant_id;
+        return (int) $user->tenant_id === (int) $creditNote->tenant_id
+            && $this->viewAny($user);
     }
 
     public function create(User $user): bool
@@ -42,12 +48,14 @@ class SalesCreditNotePolicy
 
     protected function hasAccess(User $user, string $permission): bool
     {
-        $roleName = $user->role?->name;
-
-        if (in_array($roleName, $this->financeRoles, true)) {
+        if ((bool) ($user->role->is_admin ?? false)) {
             return true;
         }
 
-        return $user->hasPermission($permission) || (bool) $user->role?->hasPermission($permission);
+        return $user->hasPermission($permission)
+            || $user->hasPermission('finance.*')
+            || $user->hasPermission('orders.*')
+            || $user->hasPermission('sales.*')
+            || (bool) $user->role?->hasPermission($permission);
     }
 }
